@@ -10,7 +10,7 @@ export default function Settings() {
     instruments, instrumentEvaluations, schedule, diagnosticEvaluations,
     setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
     setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
-    setCurrentUser
+    setCurrentUser, syncToSupabaseManual
   } = useStore();
   const [localDates, setLocalDates] = useState(periodDates);
   const [saved, setSaved] = useState(false);
@@ -130,25 +130,7 @@ export default function Settings() {
     setSyncMsg('Sincronizando...');
     
     try {
-      const tables = [
-        { name: 'users', data: users },
-        { name: 'students', data: students },
-        { name: 'subjects', data: subjects.map(s => ({ ...s, competencies: JSON.stringify(s.competencies) })) },
-        { name: 'classes', data: classes },
-        { name: 'grades', data: grades },
-        { name: 'attendance', data: attendance },
-        { name: 'instruments', data: instruments },
-        { name: 'instrument_evaluations', data: instrumentEvaluations },
-        { name: 'schedule', data: schedule },
-        { name: 'diagnostic_evaluations', data: diagnosticEvaluations }
-      ];
-
-      for (const table of tables) {
-        if (table.data && table.data.length > 0) {
-          await supabase.from(table.name).upsert(table.data, { onConflict: 'id' });
-        }
-      }
-
+      await syncToSupabaseManual();
       setSyncMsg('✓ Sincronización completa');
     } catch (err) {
       console.error('Sync error:', err);

@@ -93,8 +93,17 @@ function Sidebar({ isOpen, onClose }) {
 }
 
 function AppContent() {
-  const { currentUser, isAdmin } = useStore();
+  const { currentUser, isAdmin, isLoading } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)' }}>
+        <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent-primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <h2 style={{ marginTop: '1rem', color: 'var(--text-primary)' }}>Sincronizando con la nube...</h2>
+      </div>
+    );
+  }
 
   if (!currentUser) return <Login />;
 

@@ -105,9 +105,20 @@ export const StoreProvider = ({ children }) => {
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline || !data || data.length === 0) return;
     try {
-      await supabase.from(table).upsert(data, { onConflict: 'id' });
+      const { error } = await supabase.from(table).upsert(data, { onConflict: 'id' });
+      if (error) console.error(`Supabase error upserting to ${table}:`, error);
     } catch (err) {
-      console.warn(`Sync error for ${table}:`, err);
+      console.error(`Sync exception for ${table}:`, err);
+    }
+  }, [isOnline]);
+
+  const deleteFromSupabase = useCallback(async (table, id) => {
+    if (!isOnline || !id) return;
+    try {
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) console.error(`Supabase error deleting from ${table}:`, error);
+    } catch (err) {
+      console.error(`Delete exception for ${table}:`, err);
     }
   }, [isOnline]);
 
@@ -124,9 +135,75 @@ export const StoreProvider = ({ children }) => {
   }, [isOnline]);
 
   const initialSync = useCallback(async () => {
-    setIsLoading(false);
-    setSyncStatus('offline');
-  }, []);
+    if (!isOnline) {
+      setIsLoading(false);
+      setSyncStatus('offline');
+      return;
+    }
+    setSyncStatus('syncing');
+    try {
+      const [
+        usersData, studentsData, subjectsData, classesData, gradesData,
+        attendanceData, instrumentsData, evalData, scheduleData,
+        diagnosticData, periodData
+      ] = await Promise.all([
+        fetchFromSupabase('users'),
+        fetchFromSupabase('students'),
+        fetchFromSupabase('subjects'),
+        fetchFromSupabase('classes'),
+        fetchFromSupabase('grades'),
+        fetchFromSupabase('attendance'),
+        fetchFromSupabase('instruments'),
+        fetchFromSupabase('instrument_evaluations'),
+        fetchFromSupabase('schedule'),
+        fetchFromSupabase('diagnostic_evaluations'),
+        fetchFromSupabase('period_dates')
+      ]);
+
+      if (usersData?.length > 0) setUsers(usersData);
+      if (studentsData?.length > 0) setStudents(studentsData);
+      if (subjectsData?.length > 0) {
+        setSubjects(subjectsData.map(s => ({
+          ...s,
+          competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
+        })));
+      }
+      if (classesData?.length > 0) setClasses(classesData);
+      if (gradesData?.length > 0) {
+        setGrades(gradesData.map(g => ({
+          ...g, studentId: g.student_id || g.studentId, competencyId: g.competency_id || g.competencyId
+        })));
+      }
+      if (attendanceData?.length > 0) setAttendance(attendanceData);
+      if (instrumentsData?.length > 0) setInstruments(instrumentsData);
+      if (evalData?.length > 0) {
+        setInstrumentEvaluations(evalData.map(e => ({
+          ...e, instrumentId: e.instrument_id || e.instrumentId, studentId: e.student_id || e.studentId
+        })));
+      }
+      if (scheduleData?.length > 0) {
+        setSchedule(scheduleData.map(s => ({
+          ...s, classId: s.class_id || s.classId, subjectId: s.subject_id || s.subjectId
+        })));
+      }
+      if (diagnosticData?.length > 0) {
+        setDiagnosticEvaluations(diagnosticData.map(d => ({
+          ...d, classId: d.class_id || d.classId, subjectId: d.subject_id || d.subjectId
+        })));
+      }
+      if (periodData?.length > 0) {
+        const pDates = { ...DEFAULT_PERIOD_DATES };
+        periodData.forEach(p => { pDates[p.id] = { start: p.start_date, end: p.end_date }; });
+        setPeriodDates(pDates);
+      }
+      setSyncStatus('online');
+    } catch (err) {
+      console.error('Initial sync error:', err);
+      setSyncStatus('error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchFromSupabase, isOnline]);
 
   useEffect(() => {
     initialSync();
@@ -156,12 +233,12 @@ export const StoreProvider = ({ children }) => {
         syncToSupabase('students', students),
         syncToSupabase('subjects', subjects.map(s => ({ ...s, competencies: JSON.stringify(s.competencies) }))),
         syncToSupabase('classes', classes),
-        syncToSupabase('grades', grades),
-        syncToSupabase('attendance', attendance),
-        syncToSupabase('instruments', instruments),
-        syncToSupabase('instrument_evaluations', instrumentEvaluations),
-        syncToSupabase('schedule', schedule),
-        syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
+        syncToSupabase('grades', grades.map((g, i) => ({ ...g, id: g.id || Date.now().toString()+i, student_id: g.studentId, competency_id: g.competencyId }))),
+        syncToSupabase('attendance', attendance.map((a, i) => ({ ...a, id: a.id || Date.now().toString()+i, student_id: 'batch' }))),
+        syncToSupabase('instruments', instruments.map((ins, i) => ({ ...ins, id: ins.id || Date.now().toString()+i }))),
+        syncToSupabase('instrument_evaluations', instrumentEvaluations.map((e, i) => ({ ...e, id: e.id || Date.now().toString()+i, instrument_id: e.instrumentId, student_id: e.studentId }))),
+        syncToSupabase('schedule', schedule.map((s, i) => ({ ...s, id: s.id || Date.now().toString()+i, class_id: s.classId, subject_id: s.subjectId }))),
+        syncToSupabase('diagnostic_evaluations', diagnosticEvaluations.map((d, i) => ({ ...d, id: d.id || Date.now().toString()+i, class_id: d.classId, subject_id: d.subjectId }))),
         syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({
           id, start_date: dates.start, end_date: dates.end
         })))
@@ -202,30 +279,74 @@ export const StoreProvider = ({ children }) => {
     const newUser = { id: Date.now().toString(), name, username, password, role, assignments: [] };
     setUsers([...users, newUser]);
     setCurrentUser(newUser);
+    syncToSupabase('users', [newUser]);
     return true;
   };
 
-  const addStudent = (student) => setStudents([...students, { ...student, id: Date.now().toString() }]);
-  const updateStudent = (id, data) => setStudents(students.map(s => s.id === id ? { ...s, ...data } : s));
-  const deleteStudent = (id) => setStudents(students.filter(s => s.id !== id));
-  const addSubject = (name) => setSubjects([...subjects, { id: Date.now().toString(), name, competencies: [] }]);
-  const deleteSubject = (id) => setSubjects(subjects.filter(s => s.id !== id));
+  const addStudent = (student) => {
+    const newStudent = { ...student, id: Date.now().toString() };
+    setStudents([...students, newStudent]);
+    syncToSupabase('students', [newStudent]);
+  };
+  const updateStudent = (id, data) => {
+    const updated = students.find(s => s.id === id);
+    if (!updated) return;
+    const newStudent = { ...updated, ...data };
+    setStudents(students.map(s => s.id === id ? newStudent : s));
+    syncToSupabase('students', [newStudent]);
+  };
+  const deleteStudent = (id) => {
+    setStudents(students.filter(s => s.id !== id));
+    deleteFromSupabase('students', id);
+  };
+  
+  const addSubject = (name) => {
+    const newSubject = { id: Date.now().toString(), name, competencies: [] };
+    setSubjects([...subjects, newSubject]);
+    syncToSupabase('subjects', [{ ...newSubject, competencies: JSON.stringify(newSubject.competencies) }]);
+  };
+  const deleteSubject = (id) => {
+    setSubjects(subjects.filter(s => s.id !== id));
+    deleteFromSupabase('subjects', id);
+  };
   const addCompetency = (subjectId, competencyName) => {
-    setSubjects(subjects.map(s => s.id === subjectId ? { ...s, competencies: [...(s.competencies||[]), { id: Date.now().toString(), name: competencyName }] } : s));
+    const defaultSubj = subjects.find(s => s.id === subjectId);
+    if (!defaultSubj) return;
+    const newComp = { id: Date.now().toString(), name: competencyName };
+    const newSubj = { ...defaultSubj, competencies: [...(defaultSubj.competencies||[]), newComp] };
+    setSubjects(subjects.map(s => s.id === subjectId ? newSubj : s));
+    syncToSupabase('subjects', [{ ...newSubj, competencies: JSON.stringify(newSubj.competencies) }]);
   };
   const deleteCompetency = (subjectId, competencyId) => {
-    setSubjects(subjects.map(s => s.id === subjectId ? { ...s, competencies: (s.competencies||[]).filter(c => c.id !== competencyId) } : s));
+    const defaultSubj = subjects.find(s => s.id === subjectId);
+    if (!defaultSubj) return;
+    const newSubj = { ...defaultSubj, competencies: (defaultSubj.competencies||[]).filter(c => c.id !== competencyId) };
+    setSubjects(subjects.map(s => s.id === subjectId ? newSubj : s));
+    syncToSupabase('subjects', [{ ...newSubj, competencies: JSON.stringify(newSubj.competencies) }]);
   };
-  const addClass = (name) => setClasses([...classes, { id: Date.now().toString(), name }]);
-  const deleteClass = (id) => setClasses(classes.filter(c => c.id !== id));
+  
+  const addClass = (name) => {
+    const newClass = { id: Date.now().toString(), name };
+    setClasses([...classes, newClass]);
+    syncToSupabase('classes', [newClass]);
+  };
+  const deleteClass = (id) => {
+    setClasses(classes.filter(c => c.id !== id));
+    deleteFromSupabase('classes', id);
+  };
   const updateUser = (id, data) => {
-    setUsers(users.map(u => u.id === id ? { ...u, ...data } : u));
-    if (currentUser?.id === id) setCurrentUser({ ...currentUser, ...data });
+    const updated = users.find(u => u.id === id);
+    if (!updated) return;
+    const newUser = { ...updated, ...data };
+    setUsers(users.map(u => u.id === id ? newUser : u));
+    if (currentUser?.id === id) setCurrentUser(newUser);
+    syncToSupabase('users', [newUser]);
   };
   const deleteUser = (id) => {
     if (users.length <= 1) return false;
     setUsers(users.filter(u => u.id !== id));
     if (currentUser?.id === id) setCurrentUser(null);
+    deleteFromSupabase('users', id);
     return true;
   };
   const logout = () => setCurrentUser(null);
@@ -236,6 +357,7 @@ export const StoreProvider = ({ children }) => {
     let headerRowIndex = -1;
     let maxScore = 0;
     
+    // ... [existing detection logic] ...
     const nameKeywords = ['APELLIDOS Y NOMBRES', 'ESTUDIANTE', 'NOMBRE', 'NAME', 'ALUMNO', 'ALUMNO(A)', 'FULL NAME'];
     const sectionKeywords = ['GRADO', 'SECCIÓN', 'SECCION', 'AULA', 'GRADE', 'SECTION'];
     const idKeywords = ['DNI', 'N°', 'NRO', 'NÚMERO', 'ORDEN', 'ID', 'DOCUMENTO'];
@@ -336,30 +458,61 @@ export const StoreProvider = ({ children }) => {
     });
 
     if (processedStudents.length === 0) { alert("Se detectaron encabezados pero no se encontraron filas de estudiantes válidas."); return; }
-    if (classUpdateNeeded) setClasses(currentClasses);
+    
+    if (classUpdateNeeded) {
+      setClasses(currentClasses);
+      syncToSupabase('classes', currentClasses);
+    }
+    
     setStudents([...students, ...processedStudents]);
+    syncToSupabase('students', processedStudents);
   };
 
   const saveAttendanceDate = (dateStr, records) => {
-    const existing = attendance.findIndex(a => a.date === dateStr);
-    if (existing >= 0) {
+    const existingIndex = attendance.findIndex(a => a.date === dateStr);
+    let newRecord;
+    if (existingIndex >= 0) {
       const newAtt = [...attendance];
-      newAtt[existing].records = records;
+      newRecord = { ...newAtt[existingIndex], records };
+      if (!newRecord.id) newRecord.id = Date.now().toString();
+      newAtt[existingIndex] = newRecord;
       setAttendance(newAtt);
-    } else { setAttendance([...attendance, { date: dateStr, records }]); }
+    } else { 
+      newRecord = { id: Date.now().toString(), student_id: 'batch', date: dateStr, records };
+      setAttendance([...attendance, newRecord]); 
+    }
+    syncToSupabase('attendance', [{ ...newRecord, student_id: 'batch' }]);
   };
 
   const saveGrade = (studentId, subjectName, competencyId, period, score, conclusion = null) => {
     const existingIndex = grades.findIndex(g => g.studentId === studentId && g.subject === subjectName && g.competencyId === competencyId && g.period === period);
+    let newRecord;
     if (existingIndex >= 0) {
       const newGrades = [...grades];
-      const existingGrade = newGrades[existingIndex];
-      newGrades[existingIndex] = { ...existingGrade, score, conclusion: conclusion !== null ? conclusion : (existingGrade.conclusion || '') };
+      newRecord = { 
+        ...newGrades[existingIndex], 
+        score, 
+        conclusion: conclusion !== null ? conclusion : (newGrades[existingIndex].conclusion || '') 
+      };
+      if (!newRecord.id) newRecord.id = Date.now().toString();
+      newGrades[existingIndex] = newRecord;
       setGrades(newGrades);
-    } else { setGrades([...grades, { studentId, subject: subjectName, competencyId, period, score, conclusion: conclusion || '' }]); }
+    } else { 
+      newRecord = { id: Date.now().toString(), studentId, subject: subjectName, competencyId, period, score, conclusion: conclusion || '' };
+      setGrades([...grades, newRecord]); 
+    }
+    syncToSupabase('grades', [{ 
+      ...newRecord, 
+      student_id: newRecord.studentId, 
+      competency_id: newRecord.competencyId 
+    }]);
   };
 
-  const updatePeriodDates = (id, dates) => setPeriodDates(prev => ({ ...prev, [id]: dates }));
+  const updatePeriodDates = (id, dates) => {
+    setPeriodDates(prev => ({ ...prev, [id]: dates }));
+    syncToSupabase('period_dates', [{ id, start_date: dates.start, end_date: dates.end }]);
+  };
+  
   const calculateQualitativeGrade = (score, maxScore) => {
     if (maxScore === 0) return 'C';
     const percentage = (score / maxScore) * 100;
@@ -372,29 +525,63 @@ export const StoreProvider = ({ children }) => {
   const addInstrument = (instrument) => {
     const newInstrument = instrument.id ? instrument : { ...instrument, id: Date.now().toString() };
     setInstruments([...instruments, newInstrument]);
+    syncToSupabase('instruments', [newInstrument]);
   };
-  const updateInstrument = (id, updates) => setInstruments(instruments.map(i => i.id === id ? { ...i, ...updates } : i));
-  const deleteInstrument = (id) => setInstruments(instruments.filter(i => i.id !== id));
-  const deleteInstrumentEvaluation = (id) => setInstrumentEvaluations(instrumentEvaluations.filter(e => e.id !== id));
-  const saveInstrumentEvaluation = (evaluation) => setInstrumentEvaluations([...instrumentEvaluations, { ...evaluation, id: Date.now().toString(), date: new Date().toISOString() }]);
+  const updateInstrument = (id, updates) => {
+    const updated = instruments.find(i => i.id === id);
+    if (!updated) return;
+    const newInstrument = { ...updated, ...updates };
+    setInstruments(instruments.map(i => i.id === id ? newInstrument : i));
+    syncToSupabase('instruments', [newInstrument]);
+  };
+  const deleteInstrument = (id) => {
+    setInstruments(instruments.filter(i => i.id !== id));
+    deleteFromSupabase('instruments', id);
+  };
+  const deleteInstrumentEvaluation = (id) => {
+    setInstrumentEvaluations(instrumentEvaluations.filter(e => e.id !== id));
+    deleteFromSupabase('instrument_evaluations', id);
+  };
+  const saveInstrumentEvaluation = (evaluation) => {
+    const newEval = { ...evaluation, id: Date.now().toString(), date: new Date().toISOString() };
+    setInstrumentEvaluations([...instrumentEvaluations, newEval]);
+    syncToSupabase('instrument_evaluations', [{ ...newEval, instrument_id: newEval.instrumentId, student_id: newEval.studentId }]);
+  };
 
   const saveScheduleItem = (item) => {
+    const newItem = item.id ? item : { ...item, id: Date.now().toString() };
     if (item.id) setSchedule(schedule.map(s => s.id === item.id ? item : s));
-    else setSchedule([...schedule, { ...item, id: Date.now().toString() }]);
+    else setSchedule([...schedule, newItem]);
+    syncToSupabase('schedule', [{ ...newItem, class_id: newItem.classId, subject_id: newItem.subjectId }]);
   };
-  const deleteScheduleItem = (id) => setSchedule(schedule.filter(s => s.id !== id));
-  const clearAllStudents = () => setStudents([]);
+  const deleteScheduleItem = (id) => {
+    setSchedule(schedule.filter(s => s.id !== id));
+    deleteFromSupabase('schedule', id);
+  };
+  const clearAllStudents = () => {
+    setStudents([]);
+    // Clearing all locally
+  };
 
   const saveDiagnosticEvaluation = (evaluation) => {
     const existingIndex = diagnosticEvaluations.findIndex(e => e.classId === evaluation.classId && e.subjectId === evaluation.subjectId && e.period === evaluation.period);
+    let newEval;
     if (existingIndex >= 0) {
       const newEvals = [...diagnosticEvaluations];
-      newEvals[existingIndex] = { ...evaluation, id: diagnosticEvaluations[existingIndex].id, updatedAt: new Date().toISOString() };
+      newEval = { ...evaluation, id: diagnosticEvaluations[existingIndex].id, updatedAt: new Date().toISOString() };
+      newEvals[existingIndex] = newEval;
       setDiagnosticEvaluations(newEvals);
-    } else { setDiagnosticEvaluations([...diagnosticEvaluations, { ...evaluation, id: Date.now().toString(), createdAt: new Date().toISOString() }]); }
+    } else { 
+      newEval = { ...evaluation, id: Date.now().toString(), createdAt: new Date().toISOString() };
+      setDiagnosticEvaluations([...diagnosticEvaluations, newEval]); 
+    }
+    syncToSupabase('diagnostic_evaluations', [{ ...newEval, class_id: newEval.classId, subject_id: newEval.subjectId }]);
   };
   const getDiagnosticEvaluation = (classId, subjectId, period) => diagnosticEvaluations.find(e => e.classId === classId && e.subjectId === subjectId && e.period === period);
-  const deleteDiagnosticEvaluation = (id) => setDiagnosticEvaluations(diagnosticEvaluations.filter(e => e.id !== id));
+  const deleteDiagnosticEvaluation = (id) => {
+    setDiagnosticEvaluations(diagnosticEvaluations.filter(e => e.id !== id));
+    deleteFromSupabase('diagnostic_evaluations', id);
+  };
 
   return (
     <StoreContext.Provider value={{
@@ -412,7 +599,7 @@ export const StoreProvider = ({ children }) => {
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
-      autoBackup, syncToSupabaseManual,
+      autoBackup, syncToSupabaseManual, fetchFromSupabase,
       isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin'
     }}>
       {children}
