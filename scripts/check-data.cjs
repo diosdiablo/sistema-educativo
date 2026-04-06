@@ -1,0 +1,12 @@
+const fs = require('fs');
+const b = JSON.parse(fs.readFileSync('C:/Users/diosd/Downloads/backup_agrop110_2026-04-05.json','utf8'));
+console.log('Users:', b.data.users?.length);
+console.log('Students:', b.data.students?.length);
+console.log('Attendance:', b.data.attendance?.length);
+console.log('Grades:', b.data.grades?.length);
+console.log('Classes:', b.data.classes?.length);
+console.log('Subjects:', b.data.subjects?.length);
+console.log('Instruments:', b.data.instruments?.length);
+console.log('Instrument Evaluations:', b.data.instrumentEvaluations?.length);
+console.log('Schedule:', b.data.schedule?.length);
+console.log('Diagnostic Evaluations:', b.data.diagnosticEvaluations?.length);
