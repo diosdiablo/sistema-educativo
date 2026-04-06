@@ -5,6 +5,8 @@ const StoreContext = createContext();
 
 export const useStore = () => useContext(StoreContext);
 
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 const loadData = (key, defaultValue) => {
   try {
     const saved = localStorage.getItem(key);
@@ -103,10 +105,138 @@ export const StoreProvider = ({ children }) => {
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
 
   const syncToSupabase = useCallback(async (table, data) => {
-    if (!isOnline || !data || data.length === 0) return;
+    if (!isOnline || !data) return;
+    
+    const dataArray = Array.isArray(data) ? data : [data];
+    if (dataArray.length === 0) return;
+    
+    let mappedData;
     try {
-      const { error } = await supabase.from(table).upsert(data, { onConflict: 'id' });
-      if (error) console.error(`Supabase error upserting to ${table}:`, error);
+      switch (table) {
+        case 'students':
+          mappedData = dataArray.map(s => ({ 
+            id: s.id, 
+            name: s.name || '', 
+            dni: s.dni || null, 
+            class_id: s.gradeLevel || s.class_id || 'Sin asignar', 
+            grade_level: s.gradeLevel || s.grade_level || 'Sin asignar',
+            guardian_name: s.guardianName || s.guardian_name || null, 
+            guardian_dni: s.guardianDni || s.guardian_dni || null, 
+            guardian_phone: s.guardianPhone || s.guardian_phone || null, 
+            birth_date: s.birthDate || s.birth_date || null 
+          }));
+          break;
+          
+        case 'attendance':
+          mappedData = dataArray.map(a => ({ 
+            id: a.id, 
+            date: a.date, 
+            records: typeof a.records === 'object' ? a.records : (JSON.parse(a.records || '{}')),
+            created_at: a.created_at || new Date().toISOString()
+          }));
+          break;
+          
+        case 'grades':
+          mappedData = dataArray.map(g => ({ 
+            id: g.id, 
+            student_id: g.studentId || g.student_id || '', 
+            subject: g.subject || '', 
+            competency_id: g.competencyId || g.competency_id || null, 
+            period: g.period || '1', 
+            score: g.score ?? null, 
+            conclusion: g.conclusion || null 
+          }));
+          break;
+          
+        case 'subjects':
+          mappedData = dataArray.map(s => ({ 
+            id: s.id, 
+            name: s.name || '', 
+            competencies: s.competencies || [] 
+          }));
+          break;
+          
+        case 'classes':
+          mappedData = dataArray.map(c => ({ 
+            id: c.id, 
+            name: c.name || '' 
+          }));
+          break;
+          
+        case 'instruments':
+          mappedData = dataArray.map(i => ({ 
+            id: i.id, 
+            name: i.name || '', 
+            type: i.type || null, 
+            subject_id: i.subjectId || i.subject_id || null, 
+            class_id: i.classId || i.class_id || null, 
+            date: i.date || null, 
+            max_score: i.maxScore || i.max_score || null, 
+            description: i.description || null 
+          }));
+          break;
+          
+        case 'instrument_evaluations':
+          mappedData = dataArray.map(e => ({ 
+            id: e.id, 
+            instrument_id: e.instrumentId || e.instrument_id || '', 
+            student_id: e.studentId || e.student_id || '', 
+            score: e.score ?? null, 
+            observations: e.observations || null, 
+            date: e.date || null 
+          }));
+          break;
+          
+        case 'schedule':
+          mappedData = dataArray.map(s => ({ 
+            id: s.id, 
+            class_id: s.classId || s.class_id || '', 
+            subject_id: s.subjectId || s.subject_id || '', 
+            day_of_week: s.dayOfWeek || s.day_of_week || 1, 
+            start_time: s.startTime || s.start_time || null, 
+            end_time: s.endTime || s.end_time || null 
+          }));
+          break;
+          
+        case 'diagnostic_evaluations':
+          mappedData = dataArray.map(d => ({ 
+            id: d.id, 
+            class_id: d.classId || d.class_id || '', 
+            subject_id: d.subjectId || d.subject_id || '', 
+            period: d.period || '1', 
+            proficiency_level: d.proficiencyLevel || d.proficiency_level || null, 
+            student_results: d.studentResults || d.student_results || [], 
+            observations: d.observations || null 
+          }));
+          break;
+          
+        case 'period_dates':
+          mappedData = dataArray.map(p => ({ 
+            id: p.id, 
+            start_date: p.start_date || p.start || null, 
+            end_date: p.end_date || p.end || null 
+          }));
+          break;
+          
+        case 'users':
+          mappedData = dataArray.map(u => ({ 
+            id: u.id, 
+            name: u.name || '', 
+            username: u.username || '', 
+            password: u.password || '', 
+            role: u.role || 'user', 
+            assignments: u.assignments || [] 
+          }));
+          break;
+          
+        default:
+          mappedData = dataArray;
+      }
+
+      const { error } = await supabase.from(table).upsert(mappedData, { onConflict: 'id' });
+      if (error) {
+        console.error(`Supabase error upserting to ${table}:`, error);
+      }
     } catch (err) {
       console.error(`Sync exception for ${table}:`, err);
     }
@@ -134,6 +264,16 @@ export const StoreProvider = ({ children }) => {
     }
   }, [isOnline]);
 
+  const mergeData = (localData, cloudData, idField = 'id') => {
+    if (!cloudData || !localData) return cloudData || localData || [];
+    const merged = new Map();
+    (cloudData || []).forEach(item => merged.set(item[idField], item));
+    (localData || []).forEach(item => {
+      if (!merged.has(item[idField])) merged.set(item[idField], item);
+    });
+    return Array.from(merged.values());
+  };
+
   const initialSync = useCallback(async () => {
     if (!isOnline) {
       setIsLoading(false);
@@ -160,36 +300,57 @@ export const StoreProvider = ({ children }) => {
         fetchFromSupabase('period_dates')
       ]);
 
-      if (usersData?.length > 0) setUsers(usersData);
-      if (studentsData?.length > 0) setStudents(studentsData);
+      if (usersData?.length > 0) setUsers(mergeData(loadData('edu_users', []), usersData));
+      if (studentsData?.length > 0) {
+        const cloudStudents = studentsData.map(s => ({
+          ...s,
+          gradeLevel: s.class_id || s.grade_level || s.gradeLevel,
+          guardianName: s.guardian_name || s.guardianName,
+          guardianDni: s.guardian_dni || s.guardianDni,
+          guardianPhone: s.guardian_phone || s.guardianPhone,
+          birthDate: s.birth_date || s.birthDate
+        }));
+        setStudents(mergeData(loadData('edu_students', []), cloudStudents));
+      }
       if (subjectsData?.length > 0) {
-        setSubjects(subjectsData.map(s => ({
+        const cloudSubjects = subjectsData.map(s => ({
           ...s,
           competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
-        })));
+        }));
+        setSubjects(mergeData(loadData('edu_subjects', DEFAULT_SUBJECTS), cloudSubjects));
       }
-      if (classesData?.length > 0) setClasses(classesData);
+      if (classesData?.length > 0) setClasses(mergeData(loadData('edu_classes', DEFAULT_CLASSES), classesData));
       if (gradesData?.length > 0) {
-        setGrades(gradesData.map(g => ({
+        const cloudGrades = gradesData.map(g => ({
           ...g, studentId: g.student_id || g.studentId, competencyId: g.competency_id || g.competencyId
-        })));
+        }));
+        setGrades(mergeData(loadData('edu_grades', []), cloudGrades));
       }
-      if (attendanceData?.length > 0) setAttendance(attendanceData);
-      if (instrumentsData?.length > 0) setInstruments(instrumentsData);
+      if (attendanceData?.length > 0) {
+        const cloudAttendance = attendanceData.map(a => ({
+          ...a,
+          records: typeof a.records === 'string' ? JSON.parse(a.records) : (a.records || {})
+        }));
+        setAttendance(mergeData(loadData('edu_attendance', []), cloudAttendance));
+      }
+      if (instrumentsData?.length > 0) setInstruments(mergeData(loadData('edu_instruments', []), instrumentsData));
       if (evalData?.length > 0) {
-        setInstrumentEvaluations(evalData.map(e => ({
+        const cloudEvals = evalData.map(e => ({
           ...e, instrumentId: e.instrument_id || e.instrumentId, studentId: e.student_id || e.studentId
-        })));
+        }));
+        setInstrumentEvaluations(mergeData(loadData('edu_instrument_evaluations', []), cloudEvals));
       }
       if (scheduleData?.length > 0) {
-        setSchedule(scheduleData.map(s => ({
+        const cloudSchedule = scheduleData.map(s => ({
           ...s, classId: s.class_id || s.classId, subjectId: s.subject_id || s.subjectId
-        })));
+        }));
+        setSchedule(mergeData(loadData('edu_schedule', []), cloudSchedule));
       }
       if (diagnosticData?.length > 0) {
-        setDiagnosticEvaluations(diagnosticData.map(d => ({
+        const cloudDiags = diagnosticData.map(d => ({
           ...d, classId: d.class_id || d.classId, subjectId: d.subject_id || d.subjectId
-        })));
+        }));
+        setDiagnosticEvaluations(mergeData(loadData('edu_diagnostic_evaluations', []), cloudDiags));
       }
       if (periodData?.length > 0) {
         const pDates = { ...DEFAULT_PERIOD_DATES };
@@ -231,17 +392,15 @@ export const StoreProvider = ({ children }) => {
       await Promise.all([
         syncToSupabase('users', users),
         syncToSupabase('students', students),
-        syncToSupabase('subjects', subjects.map(s => ({ ...s, competencies: JSON.stringify(s.competencies) }))),
+        syncToSupabase('subjects', subjects),
         syncToSupabase('classes', classes),
-        syncToSupabase('grades', grades.map((g, i) => ({ ...g, id: g.id || Date.now().toString()+i, student_id: g.studentId, competency_id: g.competencyId }))),
-        syncToSupabase('attendance', attendance.map((a, i) => ({ ...a, id: a.id || Date.now().toString()+i, student_id: 'batch' }))),
-        syncToSupabase('instruments', instruments.map((ins, i) => ({ ...ins, id: ins.id || Date.now().toString()+i }))),
-        syncToSupabase('instrument_evaluations', instrumentEvaluations.map((e, i) => ({ ...e, id: e.id || Date.now().toString()+i, instrument_id: e.instrumentId, student_id: e.studentId }))),
-        syncToSupabase('schedule', schedule.map((s, i) => ({ ...s, id: s.id || Date.now().toString()+i, class_id: s.classId, subject_id: s.subjectId }))),
-        syncToSupabase('diagnostic_evaluations', diagnosticEvaluations.map((d, i) => ({ ...d, id: d.id || Date.now().toString()+i, class_id: d.classId, subject_id: d.subjectId }))),
-        syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({
-          id, start_date: dates.start, end_date: dates.end
-        })))
+        syncToSupabase('grades', grades),
+        syncToSupabase('attendance', attendance),
+        syncToSupabase('instruments', instruments),
+        syncToSupabase('instrument_evaluations', instrumentEvaluations),
+        syncToSupabase('schedule', schedule),
+        syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
+        syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end })))
       ]);
       alert('Datos sincronizados a la nube');
     } catch (err) {
@@ -276,7 +435,7 @@ export const StoreProvider = ({ children }) => {
   const register = (name, username, password) => {
     if (users.find(u => u.username === username)) return false;
     const role = users.length === 0 ? 'admin' : 'teacher';
-    const newUser = { id: Date.now().toString(), name, username, password, role, assignments: [] };
+    const newUser = { id: generateId(), name, username, password, role, assignments: [] };
     setUsers([...users, newUser]);
     setCurrentUser(newUser);
     syncToSupabase('users', [newUser]);
@@ -284,7 +443,7 @@ export const StoreProvider = ({ children }) => {
   };
 
   const addStudent = (student) => {
-    const newStudent = { ...student, id: Date.now().toString() };
+    const newStudent = { ...student, id: generateId() };
     setStudents([...students, newStudent]);
     syncToSupabase('students', [newStudent]);
   };
@@ -301,9 +460,9 @@ export const StoreProvider = ({ children }) => {
   };
   
   const addSubject = (name) => {
-    const newSubject = { id: Date.now().toString(), name, competencies: [] };
+    const newSubject = { id: generateId(), name, competencies: [] };
     setSubjects([...subjects, newSubject]);
-    syncToSupabase('subjects', [{ ...newSubject, competencies: JSON.stringify(newSubject.competencies) }]);
+    syncToSupabase('subjects', [newSubject]);
   };
   const deleteSubject = (id) => {
     setSubjects(subjects.filter(s => s.id !== id));
@@ -312,21 +471,21 @@ export const StoreProvider = ({ children }) => {
   const addCompetency = (subjectId, competencyName) => {
     const defaultSubj = subjects.find(s => s.id === subjectId);
     if (!defaultSubj) return;
-    const newComp = { id: Date.now().toString(), name: competencyName };
+    const newComp = { id: generateId(), name: competencyName };
     const newSubj = { ...defaultSubj, competencies: [...(defaultSubj.competencies||[]), newComp] };
     setSubjects(subjects.map(s => s.id === subjectId ? newSubj : s));
-    syncToSupabase('subjects', [{ ...newSubj, competencies: JSON.stringify(newSubj.competencies) }]);
+    syncToSupabase('subjects', [newSubj]);
   };
   const deleteCompetency = (subjectId, competencyId) => {
     const defaultSubj = subjects.find(s => s.id === subjectId);
     if (!defaultSubj) return;
     const newSubj = { ...defaultSubj, competencies: (defaultSubj.competencies||[]).filter(c => c.id !== competencyId) };
     setSubjects(subjects.map(s => s.id === subjectId ? newSubj : s));
-    syncToSupabase('subjects', [{ ...newSubj, competencies: JSON.stringify(newSubj.competencies) }]);
+    syncToSupabase('subjects', [newSubj]);
   };
   
   const addClass = (name) => {
-    const newClass = { id: Date.now().toString(), name };
+    const newClass = { id: generateId(), name };
     setClasses([...classes, newClass]);
     syncToSupabase('classes', [newClass]);
   };
@@ -424,7 +583,7 @@ export const StoreProvider = ({ children }) => {
 
       let gradeLevel = getVal(sectionKeywords) || defaultGradeLevel;
       if (gradeLevel !== 'Sin Asignar' && !currentClasses.some(c => c.name === gradeLevel)) {
-        currentClasses.push({ id: Date.now().toString() + '-' + index, name: gradeLevel });
+        currentClasses.push({ id: generateId(), name: gradeLevel });
         classUpdateNeeded = true;
       }
 
@@ -443,7 +602,7 @@ export const StoreProvider = ({ children }) => {
 
       processedStudents.push({
         ...data,
-        id: Date.now().toString() + '-' + index,
+        id: generateId(),
         dni: (data['DNI'] || '').toString().replace(/\D/g, '').slice(0, 8),
         name: name.toString().trim(),
         gradeLevel: gradeLevel.toString().trim(),
@@ -470,18 +629,18 @@ export const StoreProvider = ({ children }) => {
 
   const saveAttendanceDate = (dateStr, records) => {
     const existingIndex = attendance.findIndex(a => a.date === dateStr);
+    const recordId = `att_${dateStr}`;
     let newRecord;
     if (existingIndex >= 0) {
       const newAtt = [...attendance];
-      newRecord = { ...newAtt[existingIndex], records };
-      if (!newRecord.id) newRecord.id = Date.now().toString();
+      newRecord = { ...newAtt[existingIndex], id: recordId, date: dateStr, records };
       newAtt[existingIndex] = newRecord;
       setAttendance(newAtt);
     } else { 
-      newRecord = { id: Date.now().toString(), student_id: 'batch', date: dateStr, records };
-      setAttendance([...attendance, newRecord]); 
+      newRecord = { id: recordId, date: dateStr, records };
+      setAttendance(prev => [...prev.filter(a => a.date !== dateStr), newRecord]); 
     }
-    syncToSupabase('attendance', [{ ...newRecord, student_id: 'batch' }]);
+    syncToSupabase('attendance', [newRecord]);
   };
 
   const saveGrade = (studentId, subjectName, competencyId, period, score, conclusion = null) => {
@@ -494,18 +653,14 @@ export const StoreProvider = ({ children }) => {
         score, 
         conclusion: conclusion !== null ? conclusion : (newGrades[existingIndex].conclusion || '') 
       };
-      if (!newRecord.id) newRecord.id = Date.now().toString();
+      if (!newRecord.id) newRecord.id = generateId();
       newGrades[existingIndex] = newRecord;
       setGrades(newGrades);
     } else { 
-      newRecord = { id: Date.now().toString(), studentId, subject: subjectName, competencyId, period, score, conclusion: conclusion || '' };
+      newRecord = { id: generateId(), studentId, subject: subjectName, competencyId, period, score, conclusion: conclusion || '' };
       setGrades([...grades, newRecord]); 
     }
-    syncToSupabase('grades', [{ 
-      ...newRecord, 
-      student_id: newRecord.studentId, 
-      competency_id: newRecord.competencyId 
-    }]);
+    syncToSupabase('grades', [newRecord]);
   };
 
   const updatePeriodDates = (id, dates) => {
@@ -523,7 +678,7 @@ export const StoreProvider = ({ children }) => {
   };
 
   const addInstrument = (instrument) => {
-    const newInstrument = instrument.id ? instrument : { ...instrument, id: Date.now().toString() };
+    const newInstrument = instrument.id ? instrument : { ...instrument, id: generateId() };
     setInstruments([...instruments, newInstrument]);
     syncToSupabase('instruments', [newInstrument]);
   };
@@ -543,16 +698,16 @@ export const StoreProvider = ({ children }) => {
     deleteFromSupabase('instrument_evaluations', id);
   };
   const saveInstrumentEvaluation = (evaluation) => {
-    const newEval = { ...evaluation, id: Date.now().toString(), date: new Date().toISOString() };
+    const newEval = { ...evaluation, id: generateId(), date: new Date().toISOString() };
     setInstrumentEvaluations([...instrumentEvaluations, newEval]);
-    syncToSupabase('instrument_evaluations', [{ ...newEval, instrument_id: newEval.instrumentId, student_id: newEval.studentId }]);
+    syncToSupabase('instrument_evaluations', [newEval]);
   };
 
   const saveScheduleItem = (item) => {
-    const newItem = item.id ? item : { ...item, id: Date.now().toString() };
+    const newItem = item.id ? item : { ...item, id: generateId() };
     if (item.id) setSchedule(schedule.map(s => s.id === item.id ? item : s));
     else setSchedule([...schedule, newItem]);
-    syncToSupabase('schedule', [{ ...newItem, class_id: newItem.classId, subject_id: newItem.subjectId }]);
+    syncToSupabase('schedule', [newItem]);
   };
   const deleteScheduleItem = (id) => {
     setSchedule(schedule.filter(s => s.id !== id));
@@ -572,10 +727,10 @@ export const StoreProvider = ({ children }) => {
       newEvals[existingIndex] = newEval;
       setDiagnosticEvaluations(newEvals);
     } else { 
-      newEval = { ...evaluation, id: Date.now().toString(), createdAt: new Date().toISOString() };
+      newEval = { ...evaluation, id: generateId(), createdAt: new Date().toISOString() };
       setDiagnosticEvaluations([...diagnosticEvaluations, newEval]); 
     }
-    syncToSupabase('diagnostic_evaluations', [{ ...newEval, class_id: newEval.classId, subject_id: newEval.subjectId }]);
+    syncToSupabase('diagnostic_evaluations', [newEval]);
   };
   const getDiagnosticEvaluation = (classId, subjectId, period) => diagnosticEvaluations.find(e => e.classId === classId && e.subjectId === subjectId && e.period === period);
   const deleteDiagnosticEvaluation = (id) => {

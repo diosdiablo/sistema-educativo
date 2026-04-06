@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
@@ -21,7 +21,6 @@ import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
 
 function Sidebar({ isOpen, onClose }) {
   const { logout, currentUser, isAdmin } = useStore();
-  const location = useLocation();
   
   const handleNavClick = () => {
     if (window.innerWidth <= 768) onClose();
@@ -107,7 +106,7 @@ function AppContent() {
 
   if (!currentUser) return <Login />;
 
-  const AdminOnly = ({ children }) => {
+  const AdminOnlyRoute = ({ children }) => {
     return isAdmin ? children : <Navigate to="/" replace />;
   };
 
@@ -126,14 +125,14 @@ function AppContent() {
           <Route path="/students" element={<Students />} />
           <Route path="/diagnostic-evaluation" element={<DiagnosticEvaluation />} />
           <Route path="/attendance" element={<Attendance />} />
-          <Route path="/classes" element={<AdminOnly><Classes /></AdminOnly>} />
-          <Route path="/subjects" element={<AdminOnly><Subjects /></AdminOnly>} />
+          <Route path="/classes" element={<AdminOnlyRoute><Classes /></AdminOnlyRoute>} />
+          <Route path="/subjects" element={<AdminOnlyRoute><Subjects /></AdminOnlyRoute>} />
           <Route path="/grades" element={<Grades />} />
-          <Route path="/users" element={<AdminOnly><UsersPage /></AdminOnly>} />
+          <Route path="/users" element={<AdminOnlyRoute><UsersPage /></AdminOnlyRoute>} />
           <Route path="/instruments" element={<Instruments />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<AdminOnly><Settings /></AdminOnly>} />
+          <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
