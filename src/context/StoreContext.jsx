@@ -81,9 +81,9 @@ const DEFAULT_PERIOD_DATES = {
 };
 
 export const StoreProvider = ({ children }) => {
-  const [isOnline, setIsOnline] = useState(!!import.meta.env.VITE_SUPABASE_URL);
+  const [isOnline] = useState(!!import.meta.env.VITE_SUPABASE_URL);
   const [isLoading, setIsLoading] = useState(true);
-  const [syncStatus, setSyncStatus] = useState('local');
+  const [syncStatus, setSyncStatus] = useState('checking');
 
   const [users, setUsers] = useState(() => loadData('edu_users', []));
   const [currentUser, setCurrentUser] = useState(() => loadData('edu_current_user', null));
@@ -103,12 +103,11 @@ export const StoreProvider = ({ children }) => {
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
 
   const syncToSupabase = useCallback(async (table, data) => {
-    if (!isOnline) return;
+    if (!isOnline || !data || data.length === 0) return;
     try {
-      const { error } = await supabase.from(table).upsert(data);
-      if (error) console.warn(`Sync error for ${table}:`, error);
+      await supabase.from(table).upsert(data, { onConflict: 'id' });
     } catch (err) {
-      console.warn(`Failed to sync ${table}:`, err);
+      console.warn(`Sync error for ${table}:`, err);
     }
   }, [isOnline]);
 
@@ -124,65 +123,113 @@ export const StoreProvider = ({ children }) => {
     }
   }, [isOnline]);
 
-  useEffect(() => {
-    const initData = async () => {
-      setIsLoading(true);
-      
-      if (isOnline) {
-        const [usersData, studentsData, subjectsData, classesData, gradesData, attendanceData,
-               instrumentsData, evaluationsData, scheduleData, diagnosticData, periodsData] = await Promise.all([
-          fetchFromSupabase('users'),
-          fetchFromSupabase('students'),
-          fetchFromSupabase('subjects'),
-          fetchFromSupabase('classes'),
-          fetchFromSupabase('grades'),
-          fetchFromSupabase('attendance'),
-          fetchFromSupabase('instruments'),
-          fetchFromSupabase('instrument_evaluations'),
-          fetchFromSupabase('schedule'),
-          fetchFromSupabase('diagnostic_evaluations'),
-          fetchFromSupabase('period_dates')
-        ]);
+  const initialSync = useCallback(async () => {
+    setIsLoading(true);
+    setSyncStatus('loading');
 
+    if (!isOnline) {
+      setSyncStatus('offline');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const [usersData, studentsData, subjectsData, classesData, gradesData, attendanceData,
+             instrumentsData, evaluationsData, scheduleData, diagnosticData, periodsData] = await Promise.all([
+        fetchFromSupabase('users'),
+        fetchFromSupabase('students'),
+        fetchFromSupabase('subjects'),
+        fetchFromSupabase('classes'),
+        fetchFromSupabase('grades'),
+        fetchFromSupabase('attendance'),
+        fetchFromSupabase('instruments'),
+        fetchFromSupabase('instrument_evaluations'),
+        fetchFromSupabase('schedule'),
+        fetchFromSupabase('diagnostic_evaluations'),
+        fetchFromSupabase('period_dates')
+      ]);
+
+      const hasSupabaseData = usersData?.length > 0 || studentsData?.length > 0 || classesData?.length > 0;
+
+      if (hasSupabaseData) {
         if (usersData && usersData.length > 0) {
-          setUsers(usersData.map(u => ({ ...u, assignments: u.assignments || [] })));
-          localStorage.setItem('edu_users', JSON.stringify(usersData));
+          const formattedUsers = usersData.map(u => ({ ...u, assignments: u.assignments || [] }));
+          setUsers(formattedUsers);
+          localStorage.setItem('edu_users', JSON.stringify(formattedUsers));
         }
         if (studentsData && studentsData.length > 0) {
           setStudents(studentsData);
           localStorage.setItem('edu_students', JSON.stringify(studentsData));
         }
         if (subjectsData && subjectsData.length > 0) {
-          setSubjects(subjectsData.map(s => ({
+          const formattedSubjects = subjectsData.map(s => ({
             ...s,
             competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
-          })));
-          localStorage.setItem('edu_subjects', JSON.stringify(subjectsData));
+          }));
+          setSubjects(formattedSubjects);
+          localStorage.setItem('edu_subjects', JSON.stringify(formattedSubjects));
         }
         if (classesData && classesData.length > 0) {
           setClasses(classesData);
           localStorage.setItem('edu_classes', JSON.stringify(classesData));
         }
-        if (gradesData && gradesData.length > 0) setGrades(gradesData);
-        if (attendanceData && attendanceData.length > 0) setAttendance(attendanceData);
-        if (instrumentsData && instrumentsData.length > 0) setInstruments(instrumentsData);
-        if (evaluationsData && evaluationsData.length > 0) setInstrumentEvaluations(evaluationsData);
-        if (scheduleData && scheduleData.length > 0) setSchedule(scheduleData);
-        if (diagnosticData && diagnosticData.length > 0) setDiagnosticEvaluations(diagnosticData);
-        if (periodsData && periodsData.length > 0) {
+        if (gradesData?.length > 0) setGrades(gradesData);
+        if (attendanceData?.length > 0) setAttendance(attendanceData);
+        if (instrumentsData?.length > 0) setInstruments(instrumentsData);
+        if (evaluationsData?.length > 0) setInstrumentEvaluations(evaluationsData);
+        if (scheduleData?.length > 0) setSchedule(scheduleData);
+        if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+        if (periodsData?.length > 0) {
           const periodsObj = {};
           periodsData.forEach(p => { periodsObj[p.id] = { start: p.start_date, end: p.end_date }; });
           setPeriodDates(periodsObj);
         }
-
         setSyncStatus('online');
-      }
-      
-      setIsLoading(false);
-    };
+      } else {
+        const localUsers = loadData('edu_users', []);
+        const localStudents = loadData('edu_students', []);
+        const localSubjects = loadData('edu_subjects', DEFAULT_SUBJECTS);
+        const localClasses = loadData('edu_classes', DEFAULT_CLASSES);
+        const localGrades = loadData('edu_grades', []);
+        const localAttendance = loadData('edu_attendance', []);
+        const localInstruments = loadData('edu_instruments', []);
+        const localEvaluations = loadData('edu_instrument_evaluations', []);
+        const localSchedule = loadData('edu_schedule', []);
+        const localDiagnostic = loadData('edu_diagnostic_evaluations', []);
+        const localPeriods = loadData('edu_period_dates', DEFAULT_PERIOD_DATES);
 
-    initData();
-  }, [isOnline, fetchFromSupabase]);
+        if (localUsers.length > 0 || localStudents.length > 0 || localClasses.length > 0) {
+          await Promise.all([
+            syncToSupabase('users', localUsers),
+            syncToSupabase('students', localStudents),
+            syncToSupabase('subjects', localSubjects.map(s => ({ ...s, competencies: JSON.stringify(s.competencies) }))),
+            syncToSupabase('classes', localClasses),
+            syncToSupabase('grades', localGrades),
+            syncToSupabase('attendance', localAttendance),
+            syncToSupabase('instruments', localInstruments),
+            syncToSupabase('instrument_evaluations', localEvaluations),
+            syncToSupabase('schedule', localSchedule),
+            syncToSupabase('diagnostic_evaluations', localDiagnostic),
+            syncToSupabase('period_dates', Object.entries(localPeriods).map(([id, dates]) => ({
+              id, start_date: dates.start, end_date: dates.end
+            })))
+          ]);
+          setSyncStatus('synced');
+        } else {
+          setSyncStatus('online');
+        }
+      }
+    } catch (err) {
+      console.error('Initial sync error:', err);
+      setSyncStatus('error');
+    }
+
+    setIsLoading(false);
+  }, [isOnline, fetchFromSupabase, syncToSupabase]);
+
+  useEffect(() => {
+    initialSync();
+  }, [initialSync]);
 
   useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
   useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
@@ -203,19 +250,19 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => { syncToSupabase('students', students); }, [students, syncToSupabase]);
   useEffect(() => { syncToSupabase('subjects', subjects.map(s => ({ ...s, competencies: JSON.stringify(s.competencies) }))); }, [subjects, syncToSupabase]);
   useEffect(() => { syncToSupabase('classes', classes); }, [classes, syncToSupabase]);
-  useEffect(() => { syncToSupabase('grades', grades); }, [grades, syncToSupabase]);
-  useEffect(() => { syncToSupabase('attendance', attendance); }, [attendance, syncToSupabase]);
-  useEffect(() => { syncToSupabase('instruments', instruments); }, [instruments, syncToSupabase]);
-  useEffect(() => { syncToSupabase('instrument_evaluations', instrumentEvaluations); }, [instrumentEvaluations, syncToSupabase]);
-  useEffect(() => { syncToSupabase('schedule', schedule); }, [schedule, syncToSupabase]);
-  useEffect(() => { syncToSupabase('diagnostic_evaluations', diagnosticEvaluations); }, [diagnosticEvaluations, syncToSupabase]);
+  useEffect(() => { if (grades.length > 0) syncToSupabase('grades', grades); }, [grades, syncToSupabase]);
+  useEffect(() => { if (attendance.length > 0) syncToSupabase('attendance', attendance); }, [attendance, syncToSupabase]);
+  useEffect(() => { if (instruments.length > 0) syncToSupabase('instruments', instruments); }, [instruments, syncToSupabase]);
+  useEffect(() => { if (instrumentEvaluations.length > 0) syncToSupabase('instrument_evaluations', instrumentEvaluations); }, [instrumentEvaluations, syncToSupabase]);
+  useEffect(() => { if (schedule.length > 0) syncToSupabase('schedule', schedule); }, [schedule, syncToSupabase]);
+  useEffect(() => { if (diagnosticEvaluations.length > 0) syncToSupabase('diagnostic_evaluations', diagnosticEvaluations); }, [diagnosticEvaluations, syncToSupabase]);
   useEffect(() => {
     const periodsData = Object.entries(periodDates).map(([id, dates]) => ({
       id,
       start_date: dates.start,
       end_date: dates.end
     }));
-    syncToSupabase('period_dates', periodsData);
+    if (periodsData.length > 0) syncToSupabase('period_dates', periodsData);
   }, [periodDates, syncToSupabase]);
 
   const autoBackup = () => {
