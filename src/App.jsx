@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList } from 'lucide-react';
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -19,8 +19,13 @@ import Schedule from './pages/Schedule';
 import Settings from './pages/Settings';
 import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
 
-function Sidebar() {
+function Sidebar({ isOpen, onClose }) {
   const { logout, currentUser, isAdmin } = useStore();
+  const location = useLocation();
+  
+  const handleNavClick = () => {
+    if (window.innerWidth <= 768) onClose();
+  };
   
   const allMenuItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
@@ -43,45 +48,53 @@ function Sidebar() {
   const menuItems = isAdmin ? [...allMenuItems.slice(0, 2), ...adminItems, ...allMenuItems.slice(2)] : allMenuItems;
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-brand">
-        <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-        <h1 className="sidebar-title">Portal Agro 110</h1>
-      </div>
-      <div className="nav-menu">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          >
-            {item.icon}
-            <span>{item.name}</span>
-          </NavLink>
-        ))}
-      </div>
-      
-      <div style={{ marginTop: 'auto', padding: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(0,0,0,0.1)' }}>
-        <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column' }}>
-          <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
-          </span>
-          <strong style={{color: '#ffffff', fontSize: '0.95rem'}}>{currentUser?.name}</strong>
+    <>
+      <div className={`sidebar-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
+      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-brand">
+          <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+          <h1 className="sidebar-title">Portal Agro 110</h1>
+          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', marginLeft: 'auto', background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+            <X size={24} />
+          </button>
         </div>
-        <button 
-          onClick={logout}
-          className="btn-primary" 
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef4444' }}
-        >
-          <LogOut size={18} /> Cerrar Sesión
-        </button>
+        <div className="nav-menu">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </NavLink>
+          ))}
+        </div>
+        
+        <div style={{ marginTop: 'auto', padding: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(0,0,0,0.1)' }}>
+          <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column' }}>
+            <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
+            </span>
+            <strong style={{color: '#ffffff', fontSize: '0.95rem'}}>{currentUser?.name}</strong>
+          </div>
+          <button 
+            onClick={() => { logout(); onClose(); }}
+            className="btn-primary" 
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef4444' }}
+          >
+            <LogOut size={18} /> Cerrar Sesión
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 function AppContent() {
   const { currentUser, isAdmin } = useStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!currentUser) return <Login />;
 
@@ -91,7 +104,13 @@ function AppContent() {
 
   return (
     <div className="app-container">
-      <Sidebar />
+      <div className="mobile-header">
+        <button onClick={() => setSidebarOpen(true)}>
+          <Menu size={24} />
+        </button>
+        <span className="mobile-title">Portal Agro 110</span>
+      </div>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
         <Routes>
           <Route path="/" element={<Dashboard />} />
