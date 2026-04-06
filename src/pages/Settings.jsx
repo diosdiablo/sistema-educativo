@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, Download, Upload, Database, AlertTriangle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, Download, Upload, Database, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function Settings() {
   const { 
@@ -15,6 +16,8 @@ export default function Settings() {
   const [saved, setSaved] = useState(false);
   const [backupMsg, setBackupMsg] = useState('');
   const [restoreMsg, setRestoreMsg] = useState('');
+  const [syncMsg, setSyncMsg] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
   const fileInputRef = useRef(null);
 
   if (!isAdmin) {
@@ -120,6 +123,40 @@ export default function Settings() {
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const syncToCloud = async () => {
+    setIsSyncing(true);
+    setSyncMsg('Sincronizando...');
+    
+    try {
+      const tables = [
+        { name: 'users', data: users },
+        { name: 'students', data: students },
+        { name: 'subjects', data: subjects.map(s => ({ ...s, competencies: JSON.stringify(s.competencies) })) },
+        { name: 'classes', data: classes },
+        { name: 'grades', data: grades },
+        { name: 'attendance', data: attendance },
+        { name: 'instruments', data: instruments },
+        { name: 'instrument_evaluations', data: instrumentEvaluations },
+        { name: 'schedule', data: schedule },
+        { name: 'diagnostic_evaluations', data: diagnosticEvaluations }
+      ];
+
+      for (const table of tables) {
+        if (table.data && table.data.length > 0) {
+          await supabase.from(table.name).upsert(table.data, { onConflict: 'id' });
+        }
+      }
+
+      setSyncMsg('✓ Sincronización completa');
+    } catch (err) {
+      console.error('Sync error:', err);
+      setSyncMsg('✗ Error al sincronizar');
+    }
+    
+    setIsSyncing(false);
+    setTimeout(() => setSyncMsg(''), 3000);
   };
 
   return (
@@ -334,6 +371,33 @@ export default function Settings() {
             <strong>Datos incluidos en el respaldo:</strong> Usuarios, Estudiantes, Asistencia, Calificaciones, 
             Grados/Secciones, Áreas Curriculares, Instrumentos, Evaluaciones, Horario y Evaluación Diagnóstica.
           </p>
+        </div>
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <button 
+            className="btn-primary"
+            onClick={syncToCloud}
+            disabled={isSyncing}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: '#8b5cf6',
+              padding: '0.75rem 1.5rem',
+              width: '100%',
+              justifyContent: 'center'
+            }}
+          >
+            <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} /> 
+            {isSyncing ? 'Sincronizando...' : 'Sincronizar Datos a la Nube'}
+          </button>
+          {syncMsg && (
+            <p style={{ 
+              color: syncMsg.includes('✓') ? '#10b981' : '#ef4444', 
+              fontSize: '0.85rem', 
+              marginTop: '0.75rem',
+              fontWeight: 600,
+              textAlign: 'center'
+            }}>{syncMsg}</p>
+          )}
         </div>
       </div>
     </div>
