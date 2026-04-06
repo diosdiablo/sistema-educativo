@@ -10,7 +10,7 @@ export default function Settings() {
     instruments, instrumentEvaluations, schedule, diagnosticEvaluations,
     setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
     setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
-    setCurrentUser, syncToSupabaseManual
+    setCurrentUser, syncToSupabaseManual, isOnline
   } = useStore();
   const [localDates, setLocalDates] = useState(periodDates);
   const [saved, setSaved] = useState(false);
@@ -126,6 +126,10 @@ export default function Settings() {
   };
 
   const syncToCloud = async () => {
+    if (!isOnline) {
+      setSyncMsg('✗ Error: No se conectó a Supabase (Faltan Configurar Variables de Entorno en Vercel)');
+      return;
+    }
     setIsSyncing(true);
     setSyncMsg('Sincronizando...');
     
