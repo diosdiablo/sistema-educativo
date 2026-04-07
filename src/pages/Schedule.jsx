@@ -227,9 +227,10 @@ export default function Schedule() {
                       {item ? (
                         <div style={{ 
                           backgroundColor: item.color, 
-                          color: 'white', 
+                          color: 'white',
                           padding: '8px', 
                           borderRadius: '8px',
+                          borderLeft: `5px solid ${classes.find(c => c.id === item.classId)?.color || item.color}`,
                           display: 'flex',
                           flexDirection: 'column',
                           height: '100%',
@@ -320,11 +321,22 @@ export default function Schedule() {
                 <select 
                   className="input-field" 
                   value={formData.classId} 
-                  onChange={e => setFormData({...formData, classId: e.target.value})}
+                  onChange={e => {
+                    const selectedClass = classes.find(c => c.id === e.target.value);
+                    setFormData({
+                      ...formData, 
+                      classId: e.target.value,
+                      color: selectedClass?.color || formData.color
+                    });
+                  }}
                   required
                 >
                   <option value="">Seleccionar Grado</option>
-                  {availableClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {availableClasses.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.color ? '●' : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 
