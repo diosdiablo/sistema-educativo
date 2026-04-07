@@ -189,12 +189,14 @@ export const StoreProvider = ({ children }) => {
           mappedData = dataArray.map(i => ({ 
             id: i.id, 
             name: i.name || '', 
+            title: i.title || i.name || '',
             type: i.type || null, 
             subject_id: i.subjectId || i.subject_id || null, 
             class_id: i.classId || i.class_id || null, 
             date: i.date || null, 
             max_score: i.maxScore || i.max_score || null, 
-            description: i.description || null 
+            description: i.description || null,
+            criteria: typeof i.criteria === 'string' ? i.criteria : JSON.stringify(i.criteria || [])
           }));
           break;
           
@@ -214,8 +216,8 @@ export const StoreProvider = ({ children }) => {
             class_id: e.classId || e.class_id || null, 
             activity_name: e.activityName || null, 
             observations: e.observations || null, 
-            scores: e.scores || '{}', 
-            criteria: e.criteria || '[]', 
+            scores: typeof e.scores === 'string' ? e.scores : JSON.stringify(e.scores || {}), 
+            criteria: typeof e.criteria === 'string' ? e.criteria : JSON.stringify(e.criteria || []), 
             date: e.date || null 
           }));
           break;
@@ -384,7 +386,14 @@ export const StoreProvider = ({ children }) => {
         }));
         setAttendance(mergeData(loadData('edu_attendance', []), cloudAttendance));
       }
-      if (instrumentsData?.length > 0) setInstruments(mergeData(loadData('edu_instruments', []), instrumentsData));
+      if (instrumentsData?.length > 0) {
+        const cloudInstruments = instrumentsData.map(i => ({
+          ...i,
+          title: i.title || i.name || '',
+          criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
+        }));
+        setInstruments(mergeData(loadData('edu_instruments', []), cloudInstruments));
+      }
       if (evalData?.length > 0) {
         const cloudEvals = evalData.map(e => ({
           ...e, 
@@ -393,6 +402,8 @@ export const StoreProvider = ({ children }) => {
           studentName: e.student_name || e.studentName,
           criteria: typeof e.criteria === 'string' ? JSON.parse(e.criteria) : (e.criteria || [])
         }));
+        console.log('[FETCH] Evaluaciones desde Supabase:', cloudEvals.length);
+        console.log('[FETCH] Muestra primera:', cloudEvals[0]);
         setInstrumentEvaluations(mergeData(loadData('edu_instrument_evaluations', []), cloudEvals));
       }
       if (scheduleData?.length > 0) {
@@ -797,6 +808,9 @@ export const StoreProvider = ({ children }) => {
   };
   const saveInstrumentEvaluation = (evaluation) => {
     const newEval = { ...evaluation, id: generateId(), date: new Date().toISOString() };
+    console.log('[SAVE] Nueva evaluación:', newEval);
+    console.log('[SAVE] studentName:', newEval.studentName);
+    console.log('[SAVE] criteria:', newEval.criteria);
     setInstrumentEvaluations([...instrumentEvaluations, newEval]);
     syncToSupabase('instrument_evaluations', [newEval]);
   };
