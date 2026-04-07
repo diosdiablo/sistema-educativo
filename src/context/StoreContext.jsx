@@ -540,8 +540,9 @@ export const StoreProvider = ({ children }) => {
   };
   
   const addClass = (name) => {
-    const colorIndex = classes.length % CLASS_COLORS.length;
-    const newClass = { id: generateId(), name, color: CLASS_COLORS[colorIndex] };
+    const usedColors = new Set(classes.map(c => c.color));
+    const availableColor = CLASS_COLORS.find(c => !usedColors.has(c)) || CLASS_COLORS[classes.length % CLASS_COLORS.length];
+    const newClass = { id: generateId(), name, color: availableColor };
     setClasses([...classes, newClass]);
     syncToSupabase('classes', [newClass]);
   };
