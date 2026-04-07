@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS students (
   name TEXT NOT NULL,
   dni TEXT,
   class_id TEXT NOT NULL,
+  grade_level TEXT,
   guardian_name TEXT,
   guardian_dni TEXT,
   guardian_phone TEXT,
