@@ -635,13 +635,36 @@ export const StoreProvider = ({ children }) => {
 
     if (processedStudents.length === 0) { alert("Se detectaron encabezados pero no se encontraron filas de estudiantes válidas."); return; }
     
+    // Filtrar duplicados: evitar estudiantes con mismo DNI o mismo nombre+grado
+    const existingStudents = new Set([
+      ...students.map(s => s.dni?.toLowerCase()),
+      ...students.map(s => `${s.name?.toLowerCase()}_${s.gradeLevel?.toLowerCase()}`)
+    ]);
+    
+    const newStudents = processedStudents.filter(s => {
+      const dni = s.dni?.toLowerCase();
+      const nameGrade = `${s.name?.toLowerCase()}_${s.gradeLevel?.toLowerCase()}`;
+      return !existingStudents.has(dni) && !existingStudents.has(nameGrade);
+    });
+    
+    const skipped = processedStudents.length - newStudents.length;
+    if (skipped > 0) {
+      console.log(`[Import] Se omitieron ${skipped} estudiantes duplicados`);
+    }
+    
+    if (newStudents.length === 0) {
+      alert("Todos los estudiantes del archivo ya existen en el sistema.");
+      return;
+    }
+    
     if (classUpdateNeeded) {
       setClasses(currentClasses);
       syncToSupabase('classes', currentClasses);
     }
     
-    setStudents([...students, ...processedStudents]);
-    syncToSupabase('students', processedStudents);
+    setStudents([...students, ...newStudents]);
+    syncToSupabase('students', newStudents);
+    alert(`Se importaron ${newStudents.length} estudiantes correctamente.`);
   };
 
   const saveAttendanceDate = (dateStr, records) => {
