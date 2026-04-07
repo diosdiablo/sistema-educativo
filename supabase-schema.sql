@@ -47,11 +47,10 @@ CREATE TABLE IF NOT EXISTS classes (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de asistencia
+-- Tabla de asistencia (por fecha, no por estudiante)
 CREATE TABLE IF NOT EXISTS attendance (
   id TEXT PRIMARY KEY,
-  student_id TEXT NOT NULL,
-  date TEXT NOT NULL,
+  date TEXT NOT NULL UNIQUE,
   records JSONB DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -89,7 +88,16 @@ CREATE TABLE IF NOT EXISTS instrument_evaluations (
   instrument_id TEXT NOT NULL,
   student_id TEXT NOT NULL,
   score NUMERIC,
+  max_possible NUMERIC,
+  qualitative TEXT,
+  competency_id TEXT,
+  subject_id TEXT,
+  subject_name TEXT,
+  period TEXT,
+  class_id TEXT,
+  activity_name TEXT,
   observations TEXT,
+  scores JSONB DEFAULT '{}',
   date TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
