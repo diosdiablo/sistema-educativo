@@ -250,8 +250,8 @@ export default function Grades() {
                   const originalInstrument = instruments.find(i => i.id === ev.instrumentId);
                   const instrumentType = ev.instrumentType || originalInstrument?.type || 'checklist';
                   const InstrumentIcon = TYPE_ICONS[instrumentType] || ClipboardCheck;
-                  const criteria = ev.scores ? Object.keys(ev.scores).filter(k => !k.startsWith('__')) : [];
-                  const totalCriteria = originalInstrument?.criteria?.length || criteria.length;
+                  const evalCriteria = ev.criteria || originalInstrument?.criteria || [];
+                  const totalCriteria = evalCriteria.length;
 
                   return (
                     <div key={ev.id} style={{ 
@@ -286,7 +286,7 @@ export default function Grades() {
                         </div>
                       </div>
 
-                      {criteria.length > 0 && originalInstrument?.criteria && originalInstrument.criteria.length > 0 && (
+                      {evalCriteria.length > 0 && (
                         <div style={{ 
                           borderTop: '1px solid var(--border-color)', 
                           paddingTop: '0.75rem',
@@ -296,7 +296,7 @@ export default function Grades() {
                             Criterios evaluados
                           </p>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                            {originalInstrument.criteria.map((c, idx) => {
+                            {evalCriteria.map((c, idx) => {
                               const scoreValue = ev.scores?.[c.id];
                               let displayValue = '—';
                               let bgColor = 'transparent';
