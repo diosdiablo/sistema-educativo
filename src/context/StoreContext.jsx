@@ -135,8 +135,7 @@ export const StoreProvider = ({ children }) => {
           mappedData = dataArray.map(a => ({ 
             id: a.id, 
             date: a.date, 
-            records: typeof a.records === 'object' ? a.records : (JSON.parse(a.records || '{}')),
-            created_at: a.created_at || new Date().toISOString()
+            records: typeof a.records === 'object' ? a.records : (JSON.parse(a.records || '{}'))
           }));
           break;
           
@@ -185,8 +184,17 @@ export const StoreProvider = ({ children }) => {
             id: e.id, 
             instrument_id: e.instrumentId || e.instrument_id || '', 
             student_id: e.studentId || e.student_id || '', 
-            score: e.score ?? null, 
+            score: e.score ?? e.finalScore ?? null, 
+            max_possible: e.maxPossible || e.max_possible || null, 
+            qualitative: e.qualitative || null, 
+            competency_id: e.competencyId || e.competency_id || null, 
+            subject_id: e.subjectId || e.subject_id || null, 
+            subject_name: e.subjectName || null, 
+            period: e.period || null, 
+            class_id: e.classId || e.class_id || null, 
+            activity_name: e.activityName || null, 
             observations: e.observations || null, 
+            scores: e.scores || '{}', 
             date: e.date || null 
           }));
           break;
