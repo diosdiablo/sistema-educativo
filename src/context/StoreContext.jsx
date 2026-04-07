@@ -81,11 +81,11 @@ const DEFAULT_SUBJECTS = [
 ];
 
 const CLASS_COLORS = [
-  '#DC2626', '#2563EB', '#16A34A', '#CA8A04',
-  '#7C3AED', '#DB2777', '#EA580C', '#0891B2',
-  '#4F46E5', '#0D9488', '#84CC16', '#F43F5E',
-  '#0EA5E9', '#A855F7', '#F97316', '#059669',
-  '#8B5CF6', '#E11D48', '#0284C7', '#65A30D'
+  '#EF4444', '#3B82F6', '#22C55E', '#EAB308',
+  '#F97316', '#A855F7', '#EC4899', '#14B8A6',
+  '#8B5CF6', '#F43F5E', '#06B6D4', '#84CC16',
+  '#D946EF', '#6366F1', '#0EA5E9', '#A3E635',
+  '#FB923C', '#E879F9', '#2DD4BF', '#F472B6'
 ];
 
 const DEFAULT_CLASSES = [
@@ -357,11 +357,17 @@ export const StoreProvider = ({ children }) => {
         setSubjects(mergeData(loadData('edu_subjects', DEFAULT_SUBJECTS), cloudSubjects));
       }
       if (classesData?.length > 0) {
-        const cloudClasses = classesData.map(c => ({
+        const cloudClasses = classesData.map((c, i) => ({
           ...c,
-          color: c.color || CLASS_COLORS[Math.abs(hashCode(c.id)) % CLASS_COLORS.length]
+          color: CLASS_COLORS[i % CLASS_COLORS.length]
         }));
         setClasses(mergeData(loadData('edu_classes', DEFAULT_CLASSES), cloudClasses));
+      } else {
+        const localClasses = loadData('edu_classes', DEFAULT_CLASSES);
+        if (localClasses.length > 0) {
+          const updated = localClasses.map((c, i) => ({ ...c, color: CLASS_COLORS[i % CLASS_COLORS.length] }));
+          setClasses(updated);
+        }
       }
       if (gradesData?.length > 0) {
         const cloudGrades = gradesData.map(g => ({
@@ -538,6 +544,18 @@ export const StoreProvider = ({ children }) => {
     const newClass = { id: generateId(), name, color: CLASS_COLORS[colorIndex] };
     setClasses([...classes, newClass]);
     syncToSupabase('classes', [newClass]);
+  };
+
+  const updateClassColor = (id, color) => {
+    const updated = classes.map(c => c.id === id ? { ...c, color } : c);
+    setClasses(updated);
+    syncToSupabase('classes', updated);
+  };
+
+  const reassignClassColors = () => {
+    const updated = classes.map((c, i) => ({ ...c, color: CLASS_COLORS[i % CLASS_COLORS.length] }));
+    setClasses(updated);
+    syncToSupabase('classes', updated);
   };
   const deleteClass = (id) => {
     setClasses(classes.filter(c => c.id !== id));
@@ -869,7 +887,7 @@ export const StoreProvider = ({ children }) => {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
-      addClass, deleteClass, updateUser, deleteUser,
+      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser,
       saveAttendanceDate, saveGrade,
       calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
       schedule, saveScheduleItem, deleteScheduleItem,
