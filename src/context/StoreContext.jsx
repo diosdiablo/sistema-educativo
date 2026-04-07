@@ -356,19 +356,19 @@ export const StoreProvider = ({ children }) => {
         }));
         setSubjects(mergeData(loadData('edu_subjects', DEFAULT_SUBJECTS), cloudSubjects));
       }
+      let allClasses = [];
       if (classesData?.length > 0) {
-        const cloudClasses = classesData.map((c, i) => ({
+        allClasses = classesData.map((c, i) => ({
           ...c,
           color: CLASS_COLORS[i % CLASS_COLORS.length]
         }));
-        setClasses(mergeData(loadData('edu_classes', DEFAULT_CLASSES), cloudClasses));
       } else {
-        const localClasses = loadData('edu_classes', DEFAULT_CLASSES);
-        if (localClasses.length > 0) {
-          const updated = localClasses.map((c, i) => ({ ...c, color: CLASS_COLORS[i % CLASS_COLORS.length] }));
-          setClasses(updated);
-        }
+        allClasses = loadData('edu_classes', DEFAULT_CLASSES).map((c, i) => ({
+          ...c,
+          color: CLASS_COLORS[i % CLASS_COLORS.length]
+        }));
       }
+      setClasses(allClasses);
       if (gradesData?.length > 0) {
         const cloudGrades = gradesData.map(g => ({
           ...g, studentId: g.student_id || g.studentId, competencyId: g.competency_id || g.competencyId
