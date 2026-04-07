@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS instrument_evaluations (
   id TEXT PRIMARY KEY,
   instrument_id TEXT NOT NULL,
   student_id TEXT NOT NULL,
+  student_name TEXT,
   score NUMERIC,
   max_possible NUMERIC,
   qualitative TEXT,
@@ -113,6 +114,7 @@ CREATE TABLE IF NOT EXISTS instrument_evaluations (
   activity_name TEXT,
   observations TEXT,
   scores JSONB DEFAULT '{}',
+  criteria JSONB DEFAULT '[]',
   date TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -190,3 +192,28 @@ CREATE POLICY "Enable all for instrument_evaluations" ON instrument_evaluations 
 CREATE POLICY "Enable all for schedule" ON schedule FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all for diagnostic_evaluations" ON diagnostic_evaluations FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all for period_dates" ON period_dates FOR ALL USING (true) WITH CHECK (true);
+
+-- ══════════════════════════════════════════════════════════════
+-- MIGRACIONES ADICIONALES (ejecutar si ya existen las tablas)
+-- ══════════════════════════════════════════════════════════════
+
+-- Agregar columna color a classes si no existe
+DO $$BEGIN
+  ALTER TABLE classes ADD COLUMN IF NOT EXISTS color TEXT DEFAULT '#10b981';
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
+
+-- Agregar columna student_name a instrument_evaluations si no existe
+DO $$BEGIN
+  ALTER TABLE instrument_evaluations ADD COLUMN IF NOT EXISTS student_name TEXT;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
+
+-- Agregar columna criteria a instrument_evaluations si no existe
+DO $$BEGIN
+  ALTER TABLE instrument_evaluations ADD COLUMN IF NOT EXISTS criteria JSONB DEFAULT '[]';
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
