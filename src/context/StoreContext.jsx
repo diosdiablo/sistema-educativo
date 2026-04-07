@@ -7,6 +7,16 @@ export const useStore = () => useContext(StoreContext);
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+const hashCode = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash;
+};
+
 const loadData = (key, defaultValue) => {
   try {
     const saved = localStorage.getItem(key);
@@ -70,9 +80,17 @@ const DEFAULT_SUBJECTS = [
   ]}
 ];
 
+const CLASS_COLORS = [
+  '#10b981', '#84cc16', '#16a34a', '#2dd4bf',
+  '#3b82f6', '#38bdf8', '#6366f1', '#1d4ed8',
+  '#8b5cf6', '#a855f7', '#ec4899', '#e879f9',
+  '#ef4444', '#f97316', '#f59e0b', '#eab308',
+  '#64748b', '#4b6a8a', '#c2410c', '#65a30d'
+];
+
 const DEFAULT_CLASSES = [
-  { id: '1', name: '1ro Secundaria - A' },
-  { id: '2', name: '1ro Secundaria - B' }
+  { id: '1', name: '1ro Secundaria - A', color: '#10b981' },
+  { id: '2', name: '1ro Secundaria - B', color: '#3b82f6' }
 ];
 
 const DEFAULT_PERIOD_DATES = {
@@ -162,7 +180,8 @@ export const StoreProvider = ({ children }) => {
         case 'classes':
           mappedData = dataArray.map(c => ({ 
             id: c.id, 
-            name: c.name || '' 
+            name: c.name || '',
+            color: c.color || null 
           }));
           break;
           
@@ -337,7 +356,13 @@ export const StoreProvider = ({ children }) => {
         }));
         setSubjects(mergeData(loadData('edu_subjects', DEFAULT_SUBJECTS), cloudSubjects));
       }
-      if (classesData?.length > 0) setClasses(mergeData(loadData('edu_classes', DEFAULT_CLASSES), classesData));
+      if (classesData?.length > 0) {
+        const cloudClasses = classesData.map(c => ({
+          ...c,
+          color: c.color || CLASS_COLORS[Math.abs(hashCode(c.id)) % CLASS_COLORS.length]
+        }));
+        setClasses(mergeData(loadData('edu_classes', DEFAULT_CLASSES), cloudClasses));
+      }
       if (gradesData?.length > 0) {
         const cloudGrades = gradesData.map(g => ({
           ...g, studentId: g.student_id || g.studentId, competencyId: g.competency_id || g.competencyId
@@ -509,7 +534,8 @@ export const StoreProvider = ({ children }) => {
   };
   
   const addClass = (name) => {
-    const newClass = { id: generateId(), name };
+    const colorIndex = classes.length % CLASS_COLORS.length;
+    const newClass = { id: generateId(), name, color: CLASS_COLORS[colorIndex] };
     setClasses([...classes, newClass]);
     syncToSupabase('classes', [newClass]);
   };
