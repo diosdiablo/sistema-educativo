@@ -795,8 +795,10 @@ export const StoreProvider = ({ children }) => {
   };
 
   const saveScheduleItem = (item) => {
-    const newItem = item.id ? item : { ...item, id: generateId() };
-    if (item.id) setSchedule(schedule.map(s => s.id === item.id ? item : s));
+    const classColor = classes.find(c => c.id === item.classId)?.color || '#10b981';
+    const itemWithColor = { ...item, color: classColor };
+    const newItem = item.id ? itemWithColor : { ...itemWithColor, id: generateId() };
+    if (item.id) setSchedule(schedule.map(s => s.id === item.id ? newItem : s));
     else setSchedule([...schedule, newItem]);
     syncToSupabase('schedule', [newItem]);
   };
