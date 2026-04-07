@@ -50,9 +50,17 @@ CREATE TABLE IF NOT EXISTS subjects (
 CREATE TABLE IF NOT EXISTS classes (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  color TEXT DEFAULT '#10b981',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Agregar columna color si no existe (migración)
+DO $$BEGIN
+  ALTER TABLE classes ADD COLUMN IF NOT EXISTS color TEXT DEFAULT '#10b981';
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
 
 -- Tabla de asistencia (por fecha, no por estudiante)
 CREATE TABLE IF NOT EXISTS attendance (
