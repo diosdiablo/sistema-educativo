@@ -22,8 +22,7 @@ export default function Schedule() {
     day: 'Lunes',
     time: TIMES[0],
     classId: '',
-    subjectId: '',
-    color: '#10b981'
+    subjectId: ''
   });
 
   // Filter teachers only (non-admin users)
@@ -54,11 +53,12 @@ export default function Schedule() {
 
   const getAvailableSubjectsForClass = (classId) => {
     if (isAdmin || viewedUser?.role === 'admin') return subjects;
-    if (!viewedUser?.assignments) return [];
+    if (!viewedUser?.assignments || viewedUser.assignments.length === 0) return subjects;
     const subjectIds = viewedUser.assignments
       .filter(a => a.classId === classId)
       .map(a => a.subjectId);
-    return subjects.filter(s => subjectIds.includes(s.id));
+    const assigned = subjects.filter(s => subjectIds.includes(s.id));
+    return assigned.length > 0 ? assigned : subjects;
   };
 
   const handleOpenModal = (day = 'Lunes', time = TIMES[0], item = null) => {
@@ -68,8 +68,7 @@ export default function Schedule() {
         day: item.day,
         time: item.time,
         classId: item.classId,
-        subjectId: item.subjectId,
-        color: item.color || '#10b981'
+        subjectId: item.subjectId
       });
     } else {
       setEditingItem(null);
@@ -77,8 +76,7 @@ export default function Schedule() {
         day,
         time,
         classId: '',
-        subjectId: '',
-        color: '#10b981'
+        subjectId: ''
       });
     }
     setShowModal(true);
@@ -101,34 +99,6 @@ export default function Schedule() {
   const getSlotContent = (day, time) => {
     return filteredSchedule.find(s => s.day === day && s.time === time);
   };
-
-  const colors = [
-    // Verdes
-    { name: 'Esmeralda',   value: '#10b981' },
-    { name: 'Verde Lima',  value: '#84cc16' },
-    { name: 'Bosque',      value: '#16a34a' },
-    { name: 'Menta',       value: '#2dd4bf' },
-    // Azules
-    { name: 'Azul',        value: '#3b82f6' },
-    { name: 'Celeste',     value: '#38bdf8' },
-    { name: 'Índigo',      value: '#6366f1' },
-    { name: 'Marino',      value: '#1d4ed8' },
-    // Morados / Rosas
-    { name: 'Violeta',     value: '#8b5cf6' },
-    { name: 'Malva',       value: '#a855f7' },
-    { name: 'Rosa',        value: '#ec4899' },
-    { name: 'Fucsia',      value: '#e879f9' },
-    // Cálidos
-    { name: 'Rojo',        value: '#ef4444' },
-    { name: 'Coral',       value: '#f97316' },
-    { name: 'Ámbar',       value: '#f59e0b' },
-    { name: 'Amarillo',    value: '#eab308' },
-    // Neutros / Especiales
-    { name: 'Slate',       value: '#64748b' },
-    { name: 'Gris Azul',   value: '#4b6a8a' },
-    { name: 'Cobre',       value: '#c2410c' },
-    { name: 'Lima Oscuro', value: '#65a30d' },
-  ];
 
   return (
     <div className="animate-fade-in">
@@ -224,13 +194,14 @@ export default function Schedule() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      {item ? (
+                      {item ? (() => {
+                        const classColor = classes.find(c => c.id === item.classId)?.color || '#10b981';
+                        return (
                         <div style={{ 
-                          backgroundColor: item.color, 
+                          backgroundColor: classColor, 
                           color: 'white',
                           padding: '8px', 
                           borderRadius: '8px',
-                          borderLeft: `5px solid ${classes.find(c => c.id === item.classId)?.color || item.color}`,
                           display: 'flex',
                           flexDirection: 'column',
                           height: '100%',
@@ -250,7 +221,8 @@ export default function Schedule() {
                             {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
                           </span>
                         </div>
-                      ) : (
+                        );
+                      })() : (
                         !(isAdmin && selectedUserId === 'all') && (
                           <div style={{ 
                             height: '100%', 
@@ -281,7 +253,7 @@ export default function Schedule() {
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '4rem 1rem', zIndex: 1100
         }}>
-          <div className="card shadow-glass animate-fade-in" style={{ maxWidth: '450px', width: '100%', borderTop: `6px solid ${formData.color}` }}>
+          <div className="card shadow-glass animate-fade-in" style={{ maxWidth: '450px', width: '100%', borderTop: `6px solid ${classes.find(c => c.id === formData.classId)?.color || '#10b981'}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.3rem' }}>{editingItem ? 'Editar Bloque' : 'Asignar Bloque'}</h3>
@@ -321,14 +293,7 @@ export default function Schedule() {
                 <select 
                   className="input-field" 
                   value={formData.classId} 
-                  onChange={e => {
-                    const selectedClass = classes.find(c => c.id === e.target.value);
-                    setFormData({
-                      ...formData, 
-                      classId: e.target.value,
-                      color: selectedClass?.color || formData.color
-                    });
-                  }}
+                  onChange={e => setFormData({ ...formData, classId: e.target.value })}
                   required
                 >
                   <option value="">Seleccionar Grado</option>
