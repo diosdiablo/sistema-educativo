@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
-import { supabase } from '../lib/supabase';
-import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, Download, Upload, Database, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, Download, Upload, Database, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
   const { 
@@ -10,7 +9,8 @@ export default function Settings() {
     instruments, instrumentEvaluations, schedule, diagnosticEvaluations,
     setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
     setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
-    setCurrentUser, syncToSupabaseManual, isOnline
+    setCurrentUser, syncToSupabaseManual, isOnline,
+    clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData
   } = useStore();
   const [localDates, setLocalDates] = useState(periodDates);
   const [saved, setSaved] = useState(false);
@@ -18,6 +18,8 @@ export default function Settings() {
   const [restoreMsg, setRestoreMsg] = useState('');
   const [syncMsg, setSyncMsg] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [clearMsg, setClearMsg] = useState('');
+  const [clearType, setClearType] = useState(null);
   const fileInputRef = useRef(null);
 
   if (!isAdmin) {
@@ -143,6 +145,41 @@ export default function Settings() {
     
     setIsSyncing(false);
     setTimeout(() => setSyncMsg(''), 3000);
+  };
+
+  const handleClearData = async (type) => {
+    setClearType(type);
+  };
+
+  const confirmClear = async () => {
+    try {
+      switch (clearType) {
+        case 'students':
+          await clearAllStudents();
+          setClearMsg('✓ Estudiantes eliminados');
+          break;
+        case 'attendance':
+          await clearAllAttendance();
+          setClearMsg('✓ Asistencia eliminada');
+          break;
+        case 'grades':
+          await clearAllGrades();
+          setClearMsg('✓ Calificaciones eliminadas');
+          break;
+        case 'instruments':
+          await clearAllInstruments();
+          setClearMsg('✓ Instrumentos eliminados');
+          break;
+        case 'all':
+          await clearAllData();
+          setClearMsg('✓ Todos los datos eliminados');
+          break;
+      }
+    } catch (err) {
+      setClearMsg('✗ Error al limpiar datos');
+    }
+    setClearType(null);
+    setTimeout(() => setClearMsg(''), 3000);
   };
 
   return (
@@ -386,6 +423,201 @@ export default function Settings() {
           )}
         </div>
       </div>
+
+      {/* Sección de Limpiar Datos */}
+      <div className="card shadow-glass" style={{ maxWidth: '800px', marginTop: '2rem', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+          <div style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px' }}>
+            <Trash2 size={24} color="#ef4444" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#ef4444' }}>Limpiar/Borrar Datos</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Elimina datos de Supabase y localStorage para comenzar desde cero</p>
+          </div>
+        </div>
+
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          padding: '1rem', 
+          background: 'rgba(239, 68, 68, 0.1)', 
+          borderRadius: '8px', 
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          marginBottom: '1.5rem'
+        }}>
+          <AlertTriangle size={20} color="#ef4444" />
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', margin: 0 }}>
+            <strong>Peligro:</strong> Esta acción elimina datos de Supabase y es IRREVERSIBLE. Asegúrate de tener un respaldo antes de continuar.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <button 
+            onClick={() => handleClearData('students')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '0.75rem 1rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontWeight: 600,
+              transition: 'all 0.2s'
+            }}
+          >
+            <Trash2 size={16} /> Borrar Estudiantes ({students.length})
+          </button>
+          <button 
+            onClick={() => handleClearData('attendance')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '0.75rem 1rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontWeight: 600,
+              transition: 'all 0.2s'
+            }}
+          >
+            <Trash2 size={16} /> Borrar Asistencia ({attendance.length})
+          </button>
+          <button 
+            onClick={() => handleClearData('grades')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '0.75rem 1rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontWeight: 600,
+              transition: 'all 0.2s'
+            }}
+          >
+            <Trash2 size={16} /> Borrar Calificaciones ({grades.length})
+          </button>
+          <button 
+            onClick={() => handleClearData('instruments')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '0.75rem 1rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontWeight: 600,
+              transition: 'all 0.2s'
+            }}
+          >
+            <Trash2 size={16} /> Borrar Instrumentos ({instruments.length})
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <button 
+            onClick={() => handleClearData('all')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '0.75rem 1.5rem',
+              background: '#ef4444',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: 'pointer',
+              fontWeight: 600,
+              width: '100%',
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Trash2 size={18} /> Borrar TODOS los Datos (Estudiantes, Asistencia, Calificaciones, Instrumentos)
+          </button>
+        </div>
+
+        {clearMsg && (
+          <p style={{ 
+            color: clearMsg.includes('✓') ? '#10b981' : '#ef4444', 
+            fontSize: '0.85rem', 
+            marginTop: '1rem',
+            fontWeight: 600,
+            textAlign: 'center'
+          }}>{clearMsg}</p>
+        )}
+      </div>
+
+      {/* Modal de Confirmación */}
+      {clearType && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', 
+          backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center',
+          alignItems: 'flex-start',
+          zIndex: 1000,
+          padding: '4rem 1rem'
+        }}>
+          <div className="card shadow-glass" style={{ 
+            maxWidth: '400px', 
+            width: '100%', 
+            textAlign: 'center', 
+            padding: '2rem',
+            borderTop: '6px solid #ef4444'
+          }}>
+            <div style={{ 
+              width: '64px', 
+              height: '64px', 
+              backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem auto'
+            }}>
+              <AlertTriangle size={32} color="#ef4444" />
+            </div>
+            
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+              ¿Confirmar eliminación?
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
+              {clearType === 'all' 
+                ? 'Estás a punto de eliminar TODOS los datos: estudiantes, asistencia, calificaciones e instrumentos. Esta acción es IRREVERSIBLE.'
+                : `Estás a punto de eliminar todos los registros de ${clearType === 'students' ? 'estudiantes' : clearType === 'attendance' ? 'asistencia' : clearType === 'grades' ? 'calificaciones' : 'instrumentos'}. Esta acción es IRREVERSIBLE.`
+              }
+            </p>
+            
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                className="btn-secondary" 
+                style={{ flex: 1, padding: '0.8rem', border: '1px solid var(--border-color)' }}
+                onClick={() => setClearType(null)}
+              >
+                Cancelar
+              </button>
+              <button 
+                style={{ 
+                  flex: 1, 
+                  padding: '0.8rem', 
+                  background: '#ef4444',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 14px 0 rgba(239, 68, 68, 0.3)'
+                }}
+                onClick={confirmClear}
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
