@@ -105,7 +105,11 @@ export const StoreProvider = ({ children }) => {
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
 
   const syncToSupabase = useCallback(async (table, data) => {
-    if (!isOnline || !data) return;
+    console.log(`[Sync] Attempting to sync ${table} with ${Array.isArray(data) ? data.length : 1} records`);
+    if (!isOnline || !data) {
+      console.warn(`[Sync] Skipping sync - isOnline: ${isOnline}, hasData: ${!!data}`);
+      return;
+    }
     
     const dataArray = Array.isArray(data) ? data : [data];
     if (dataArray.length === 0) return;
@@ -119,12 +123,12 @@ export const StoreProvider = ({ children }) => {
             name: s.name || '', 
             dni: s.dni || null, 
             class_id: s.gradeLevel || s.class_id || 'Sin asignar', 
-            grade_level: s.gradeLevel || s.grade_level || 'Sin asignar',
             guardian_name: s.guardianName || s.guardian_name || null, 
             guardian_dni: s.guardianDni || s.guardian_dni || null, 
             guardian_phone: s.guardianPhone || s.guardian_phone || null, 
             birth_date: s.birthDate || s.birth_date || null 
           }));
+          console.log('[Sync] Mapped students:', mappedData.slice(0, 2));
           break;
           
         case 'attendance':
@@ -233,12 +237,17 @@ export const StoreProvider = ({ children }) => {
           mappedData = dataArray;
       }
 
+      console.log(`[Sync] Upserting to ${table}:`, mappedData.length, 'records');
       const { error } = await supabase.from(table).upsert(mappedData, { onConflict: 'id' });
       if (error) {
-        console.error(`Supabase error upserting to ${table}:`, error);
+        console.error(`[Sync] Supabase ERROR upserting to ${table}:`, error);
+        alert(`Error al guardar en Supabase (${table}): ${error.message}`);
+      } else {
+        console.log(`[Sync] Success syncing ${table}`);
       }
     } catch (err) {
-      console.error(`Sync exception for ${table}:`, err);
+      console.error(`[Sync] Exception for ${table}:`, err);
+      alert(`Error de conexión al guardar ${table}`);
     }
   }, [isOnline]);
 
