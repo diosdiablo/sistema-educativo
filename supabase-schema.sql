@@ -87,12 +87,14 @@ CREATE TABLE IF NOT EXISTS grades (
 CREATE TABLE IF NOT EXISTS instruments (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  title TEXT,
   type TEXT,
   subject_id TEXT,
   class_id TEXT,
   date TEXT,
   max_score NUMERIC,
   description TEXT,
+  criteria JSONB DEFAULT '[]',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -214,6 +216,19 @@ END $$;
 -- Agregar columna criteria a instrument_evaluations si no existe
 DO $$BEGIN
   ALTER TABLE instrument_evaluations ADD COLUMN IF NOT EXISTS criteria JSONB DEFAULT '[]';
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
+
+-- Agregar columnas title y criteria a instruments si no existen
+DO $$BEGIN
+  ALTER TABLE instruments ADD COLUMN IF NOT EXISTS title TEXT;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
+
+DO $$BEGIN
+  ALTER TABLE instruments ADD COLUMN IF NOT EXISTS criteria JSONB DEFAULT '[]';
 EXCEPTION
   WHEN undefined_column THEN NULL;
 END $$;
