@@ -353,35 +353,6 @@ export default function Schedule() {
                 </select>
               </div>
 
-              <div>
-                <label className="input-label">
-                  Color del Bloque
-                  <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>
-                    — {colors.find(c => c.value === formData.color)?.name}
-                  </span>
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 30px)', gap: '6px' }}>
-                  {colors.map(c => (
-                    <div 
-                      key={c.value}
-                      title={c.name}
-                      onClick={() => setFormData({...formData, color: c.value})}
-                      style={{ 
-                        width: '30px', height: '30px', borderRadius: '7px', 
-                        backgroundColor: c.value, cursor: 'pointer',
-                        outline: formData.color === c.value ? `3px solid ${c.value}` : '2px solid transparent',
-                        outlineOffset: '2px',
-                        boxShadow: formData.color === c.value
-                          ? `0 0 0 2px white, 0 0 0 4px ${c.value}`
-                          : '0 2px 4px rgba(0,0,0,0.15)',
-                        transform: formData.color === c.value ? 'scale(1.15)' : 'scale(1)',
-                        transition: 'transform 0.15s, box-shadow 0.15s'
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
               <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
                 {editingItem && (
                   <button 
