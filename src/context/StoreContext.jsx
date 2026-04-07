@@ -201,12 +201,13 @@ export const StoreProvider = ({ children }) => {
           
         case 'schedule':
           mappedData = dataArray.map(s => ({ 
-            id: s.id, 
+            id: s.id,
+            user_id: s.userId || '',
             class_id: s.classId || s.class_id || '', 
             subject_id: s.subjectId || s.subject_id || '', 
-            day_of_week: s.dayOfWeek || s.day_of_week || 1, 
-            start_time: s.startTime || s.start_time || null, 
-            end_time: s.endTime || s.end_time || null 
+            day: s.day || '',
+            time: s.time || '',
+            color: s.color || '#10b981'
           }));
           break;
           
@@ -359,7 +360,13 @@ export const StoreProvider = ({ children }) => {
       }
       if (scheduleData?.length > 0) {
         const cloudSchedule = scheduleData.map(s => ({
-          ...s, classId: s.class_id || s.classId, subjectId: s.subject_id || s.subjectId
+          ...s, 
+          classId: s.class_id || s.classId, 
+          subjectId: s.subject_id || s.subjectId,
+          userId: s.user_id || s.userId || '',
+          day: s.day || '',
+          time: s.time || '',
+          color: s.color || '#10b981'
         }));
         setSchedule(mergeData(loadData('edu_schedule', []), cloudSchedule));
       }
