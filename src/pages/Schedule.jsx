@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Clock, X, Save, Edit3, User } from 'lucide-react';
+import { Plus, Trash2, Clock, X, Save, Edit3, User, Upload } from 'lucide-react';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 const TIMES = [
@@ -10,7 +10,8 @@ const TIMES = [
 ];
 
 export default function Schedule() {
-  const { classes, subjects, schedule, saveScheduleItem, deleteScheduleItem, currentUser, isAdmin, users } = useStore();
+  const { classes, subjects, schedule, saveScheduleItem, deleteScheduleItem, currentUser, isAdmin, users, syncToSupabaseManual, isOnline } = useStore();
+  const [syncing, setSyncing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   
@@ -162,6 +163,20 @@ export default function Schedule() {
               <Plus size={18} /> Agregar Bloque
             </button>
           )}
+          <button 
+            className="btn-secondary" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={async () => {
+              if (!isOnline) { alert('Sin conexión a internet'); return; }
+              setSyncing(true);
+              await syncToSupabaseManual();
+              setSyncing(false);
+              alert('Horario guardado en Supabase');
+            }}
+            disabled={syncing}
+          >
+            <Upload size={18} /> {syncing ? 'Guardando...' : 'Guardar Horario'}
+          </button>
         </div>
       </div>
 
