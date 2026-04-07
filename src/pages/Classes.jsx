@@ -51,17 +51,32 @@ export default function Classes() {
             <tr>
               <th>ID</th>
               <th>Grado y Sección</th>
+              <th>Color</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {classes.length === 0 ? (
-              <tr><td colSpan="3" style={{ textAlign: 'center', padding: '2rem' }}>No hay grados registrados.</td></tr>
-            ) : (
+              {classes.length === 0 ? (
+                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>No hay grados registrados.</td></tr>
+              ) : (
               classes.map(c => (
                 <tr key={c.id}>
                   <td style={{ color: 'var(--text-secondary)' }}>{c.id.slice(-5)}</td>
                   <td style={{ fontWeight: 500 }}>{c.name}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ 
+                        width: '24px', 
+                        height: '24px', 
+                        borderRadius: '6px', 
+                        backgroundColor: c.color || '#10b981',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                      }} />
+                      <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        {c.color || '#10b981'}
+                      </span>
+                    </div>
+                  </td>
                   <td>
                     <button 
                       className="btn-danger" 
