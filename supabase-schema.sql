@@ -10,10 +10,17 @@ CREATE TABLE IF NOT EXISTS users (
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   role TEXT DEFAULT 'user',
-  assignments TEXT[] DEFAULT '{}',
+  assignments JSONB DEFAULT '[]',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Migración: cambiar assignments de TEXT[] a JSONB
+DO $$BEGIN
+  ALTER TABLE users ALTER COLUMN assignments TYPE JSONB USING assignments::jsonb;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
 
 -- Tabla de estudiantes
 CREATE TABLE IF NOT EXISTS students (
