@@ -713,9 +713,58 @@ export const StoreProvider = ({ children }) => {
     setSchedule(schedule.filter(s => s.id !== id));
     deleteFromSupabase('schedule', id);
   };
-  const clearAllStudents = () => {
+  const clearAllStudents = async () => {
     setStudents([]);
-    // Clearing all locally
+    if (isOnline) {
+      const { error } = await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) console.error('Error clearing students from Supabase:', error);
+    }
+  };
+
+  const clearAllAttendance = async () => {
+    setAttendance([]);
+    if (isOnline) {
+      const { error } = await supabase.from('attendance').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) console.error('Error clearing attendance from Supabase:', error);
+    }
+  };
+
+  const clearAllGrades = async () => {
+    setGrades([]);
+    if (isOnline) {
+      const { error } = await supabase.from('grades').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) console.error('Error clearing grades from Supabase:', error);
+    }
+  };
+
+  const clearAllInstruments = async () => {
+    setInstruments([]);
+    setInstrumentEvaluations([]);
+    if (isOnline) {
+      await Promise.all([
+        supabase.from('instruments').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('instrument_evaluations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      ]);
+    }
+  };
+
+  const clearAllData = async () => {
+    if (isOnline) {
+      await Promise.all([
+        supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('attendance').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('grades').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('instruments').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('instrument_evaluations').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('diagnostic_evaluations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      ]);
+    }
+    setStudents([]);
+    setAttendance([]);
+    setGrades([]);
+    setInstruments([]);
+    setInstrumentEvaluations([]);
+    setDiagnosticEvaluations([]);
   };
 
   const saveDiagnosticEvaluation = (evaluation) => {
@@ -745,6 +794,7 @@ export const StoreProvider = ({ children }) => {
       students, subjects, attendance, grades, classes,
       instruments, instrumentEvaluations, diagnosticEvaluations,
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
+      clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateUser, deleteUser,
       saveAttendanceDate, saveGrade,
