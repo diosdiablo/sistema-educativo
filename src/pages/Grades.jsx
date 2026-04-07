@@ -293,7 +293,9 @@ export default function Grades() {
                       const originalInstrument = instruments.find(i => i.id === ev.instrumentId);
                       const instrumentType = ev.instrumentType || originalInstrument?.type || 'checklist';
                       const InstrumentIcon = TYPE_ICONS[instrumentType] || ClipboardCheck;
-                      const evalCriteria = ev.criteria || originalInstrument?.criteria || [];
+                      const evalCriteria = (ev.criteria && Array.isArray(ev.criteria) && ev.criteria.length > 0) 
+                        ? ev.criteria 
+                        : (originalInstrument?.criteria || []);
                       const totalCriteria = evalCriteria.length;
 
                       const typeColors = {
