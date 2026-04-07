@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -226,131 +226,218 @@ export default function Grades() {
             </table>
           </div>
 
-          {/* Detail tooltip/panel */}
+          {/* Modal flotante de detalle del instrumento */}
           {tooltip && (
-            <div style={{
-              marginTop: '1.5rem',
-              background: 'var(--card-bg, rgba(255,255,255,0.04))',
-              border: '1px solid var(--border-color)',
-              borderRadius: '14px',
-              padding: '1.25rem 1.5rem'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                <div>
-                  <h4 style={{ fontWeight: 700, marginBottom: '2px' }}>{tooltip.studentName}</h4>
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                    {currentSubject.name} · {tooltip.compName} · Bimestre {selectedPeriod}
-                  </p>
+            <div 
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000,
+                padding: '1rem'
+              }}
+              onClick={(e) => { if (e.target === e.currentTarget) setTooltip(null); }}
+            >
+              <div className="card shadow-glass animate-fade-in" style={{ 
+                maxWidth: '650px', 
+                width: '100%',
+                maxHeight: '90vh',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                {/* Header del modal */}
+                <div style={{ 
+                  padding: '1.25rem 1.5rem',
+                  borderBottom: '1px solid var(--border-color)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, transparent 100%)'
+                }}>
+                  <div>
+                    <h3 style={{ fontWeight: 700, marginBottom: '4px', fontSize: '1.2rem' }}>{tooltip.studentName}</h3>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      {currentSubject.name} · {tooltip.compName} · Bimestre {selectedPeriod}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setTooltip(null)}
+                    style={{ 
+                      color: 'var(--text-secondary)', 
+                      background: 'none', 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      padding: '0.5rem',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
-                <button onClick={() => setTooltip(null)} style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {tooltip.evs.map((ev, evIdx) => {
-                  const originalInstrument = instruments.find(i => i.id === ev.instrumentId);
-                  const instrumentType = ev.instrumentType || originalInstrument?.type || 'checklist';
-                  const InstrumentIcon = TYPE_ICONS[instrumentType] || ClipboardCheck;
-                  const evalCriteria = ev.criteria || originalInstrument?.criteria || [];
-                  const totalCriteria = evalCriteria.length;
+                {/* Contenido scrolleable */}
+                <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    {tooltip.evs.map((ev) => {
+                      const originalInstrument = instruments.find(i => i.id === ev.instrumentId);
+                      const instrumentType = ev.instrumentType || originalInstrument?.type || 'checklist';
+                      const InstrumentIcon = TYPE_ICONS[instrumentType] || ClipboardCheck;
+                      const evalCriteria = ev.criteria || originalInstrument?.criteria || [];
+                      const totalCriteria = evalCriteria.length;
 
-                  return (
-                    <div key={ev.id} style={{ 
-                      border: '1px solid var(--border-color)', 
-                      borderRadius: '12px', 
-                      padding: '1rem',
-                      background: 'rgba(0,0,0,0.1)'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div style={{ 
-                            background: `${originalInstrument?.type ? '#6366f1' : '#64748b'}20`, 
-                            padding: '0.5rem', 
-                            borderRadius: '8px' 
-                          }}>
-                            <InstrumentIcon size={18} color="#6366f1" />
-                          </div>
-                          <div>
-                            <h5 style={{ fontWeight: 700, marginBottom: '2px' }}>{ev.activityName || 'Sin actividad'}</h5>
-                            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                              {TYPE_LABELS[instrumentType] || 'Instrumento'} · {ev.instrumentTitle || originalInstrument?.title || 'Sin título'}
-                            </p>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                            {new Date(ev.date).toLocaleDateString('es-PE')}
-                          </span>
-                          <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '1rem', padding: '0.4rem 0.8rem' }}>
-                            {ev.qualitative}
-                          </span>
-                        </div>
-                      </div>
+                      const typeColors = {
+                        checklist: '#10b981',
+                        scale: '#3b82f6',
+                        rubric: '#8b5cf6',
+                        observation: '#f59e0b',
+                        written: '#ef4444',
+                        selfeval: '#ec4899',
+                        portfolio: '#14b8a6',
+                        anecdotal: '#6366f1'
+                      };
+                      const typeColor = typeColors[instrumentType] || '#6366f1';
 
-                      {evalCriteria.length > 0 && (
-                        <div style={{ 
-                          borderTop: '1px solid var(--border-color)', 
-                          paddingTop: '0.75rem',
-                          marginTop: '0.5rem'
+                      return (
+                        <div key={ev.id} style={{ 
+                          border: `2px solid ${typeColor}40`,
+                          borderRadius: '14px', 
+                          padding: '1rem',
+                          background: `${typeColor}08`
                         }}>
-                          <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                            Criterios evaluados
-                          </p>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                            {evalCriteria.map((c, idx) => {
-                              const scoreValue = ev.scores?.[c.id];
-                              let displayValue = '—';
-                              let bgColor = 'transparent';
-
-                              if (instrumentType === 'checklist') {
-                                displayValue = scoreValue === true ? '✅ Logrado' : scoreValue === false ? '❌ No Logrado' : '—';
-                                bgColor = scoreValue === true ? 'rgba(16,185,129,0.1)' : scoreValue === false ? 'rgba(239,68,68,0.1)' : 'transparent';
-                              } else if (instrumentType === 'observation') {
-                                const freqMap = { 3: '🟢 Siempre', 2: '🟡 A veces', 1: '🔴 Nunca' };
-                                displayValue = freqMap[scoreValue] || '—';
-                                bgColor = scoreValue === 3 ? 'rgba(16,185,129,0.1)' : scoreValue === 2 ? 'rgba(245,158,11,0.1)' : scoreValue === 1 ? 'rgba(239,68,68,0.1)' : 'transparent';
-                              } else if (typeof scoreValue === 'number') {
-                                const levelMap = { 4: 'AD', 3: 'A', 2: 'B', 1: 'C' };
-                                displayValue = levelMap[scoreValue] || '—';
-                                const levelColors = { 4: '#10b981', 3: '#3b82f6', 2: '#f59e0b', 1: '#ef4444' };
-                                bgColor = levelColors[scoreValue] ? `${levelColors[scoreValue]}15` : 'transparent';
-                              }
-
-                              return (
-                                <div key={c.id} style={{ 
-                                  display: 'flex', 
-                                  justifyContent: 'space-between', 
-                                  alignItems: 'center',
-                                  padding: '0.4rem 0.6rem',
-                                  borderRadius: '6px',
-                                  background: bgColor,
-                                  fontSize: '0.8rem'
-                                }}>
-                                  <span style={{ fontWeight: 500 }}>{idx + 1}. {c.text}</span>
-                                  <span style={{ fontWeight: 700 }}>{displayValue}</span>
-                                </div>
-                              );
-                            })}
+                          {/* Header del instrumento */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <div style={{ 
+                                background: `${typeColor}20`, 
+                                padding: '0.6rem', 
+                                borderRadius: '10px',
+                                border: `1px solid ${typeColor}40`
+                              }}>
+                                <InstrumentIcon size={20} color={typeColor} />
+                              </div>
+                              <div>
+                                <h5 style={{ fontWeight: 700, marginBottom: '2px', fontSize: '1rem' }}>{ev.activityName || 'Sin actividad'}</h5>
+                                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                                  <span style={{ color: typeColor, fontWeight: 600 }}>{TYPE_LABELS[instrumentType]}</span>
+                                  <span style={{ margin: '0 6px' }}>·</span>
+                                  {ev.instrumentTitle || originalInstrument?.title || 'Sin título'}
+                                </p>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                                <Calendar size={14} />
+                                {new Date(ev.date).toLocaleDateString('es-PE')}
+                              </div>
+                              <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '1.1rem', padding: '0.4rem 0.9rem' }}>
+                                {ev.qualitative}
+                              </span>
+                            </div>
                           </div>
-                          {(ev.finalScore !== null && ev.finalScore !== undefined) && (
+
+                          {/* Criterios evaluados */}
+                          {evalCriteria.length > 0 && (
                             <div style={{ 
-                              marginTop: '0.75rem', 
-                              paddingTop: '0.5rem', 
-                              borderTop: '1px solid var(--border-color)',
-                              display: 'flex', 
-                              justifyContent: 'flex-end',
-                              fontSize: '0.82rem',
-                              color: 'var(--text-secondary)'
+                              borderTop: `1px solid ${typeColor}30`, 
+                              paddingTop: '1rem',
+                              marginTop: '0.5rem'
                             }}>
-                              Puntaje: <strong style={{ marginLeft: '0.25rem', color: 'var(--text-primary)' }}>
-                                {ev.finalScore}/{ev.maxPossible || totalCriteria * (instrumentType === 'numeric' ? 20 : 4)}
-                              </strong>
+                              <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Detalle de la Evaluación
+                              </p>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {evalCriteria.map((c, idx) => {
+                                  const scoreValue = ev.scores?.[c.id];
+                                  let displayValue = '—';
+                                  let bgColor = 'transparent';
+                                  let borderColor = 'var(--border-color)';
+
+                                  if (instrumentType === 'checklist') {
+                                    displayValue = scoreValue === true ? '✅ Logrado' : scoreValue === false ? '❌ No Logrado' : '—';
+                                    bgColor = scoreValue === true ? 'rgba(16,185,129,0.15)' : scoreValue === false ? 'rgba(239,68,68,0.15)' : 'transparent';
+                                    borderColor = scoreValue === true ? '#10b98160' : scoreValue === false ? '#ef444460' : 'var(--border-color)';
+                                  } else if (instrumentType === 'observation') {
+                                    const freqMap = { 3: '🟢 Siempre', 2: '🟡 A veces', 1: '🔴 Nunca' };
+                                    const bgMaps = { 3: 'rgba(16,185,129,0.15)', 2: 'rgba(245,158,11,0.15)', 1: 'rgba(239,68,68,0.15)' };
+                                    displayValue = freqMap[scoreValue] || '—';
+                                    bgColor = bgMaps[scoreValue] || 'transparent';
+                                    borderColor = scoreValue === 3 ? '#10b98160' : scoreValue === 2 ? '#f59e0b60' : scoreValue === 1 ? '#ef444460' : 'var(--border-color)';
+                                  } else if (typeof scoreValue === 'number') {
+                                    const levelMap = { 4: 'AD', 3: 'A', 2: 'B', 1: 'C' };
+                                    const levelColors = { 4: '#10b981', 3: '#3b82f6', 2: '#f59e0b', 1: '#ef4444' };
+                                    displayValue = levelMap[scoreValue] || '—';
+                                    bgColor = levelColors[scoreValue] ? `${levelColors[scoreValue]}15` : 'transparent';
+                                    borderColor = levelColors[scoreValue] ? `${levelColors[scoreValue]}50` : 'var(--border-color)';
+                                  }
+
+                                  return (
+                                    <div key={c.id} style={{ 
+                                      display: 'flex', 
+                                      justifyContent: 'space-between', 
+                                      alignItems: 'center',
+                                      padding: '0.6rem 0.8rem',
+                                      borderRadius: '8px',
+                                      background: bgColor,
+                                      border: `1px solid ${borderColor}`,
+                                      fontSize: '0.85rem'
+                                    }}>
+                                      <span style={{ fontWeight: 500, flex: 1 }}>{idx + 1}. {c.text}</span>
+                                      <span style={{ fontWeight: 700, marginLeft: '0.75rem', color: 'var(--text-primary)' }}>{displayValue}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {(ev.finalScore !== null && ev.finalScore !== undefined) && (
+                                <div style={{ 
+                                  marginTop: '1rem', 
+                                  padding: '0.75rem',
+                                  borderRadius: '8px',
+                                  background: 'rgba(0,0,0,0.2)',
+                                  display: 'flex', 
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center'
+                                }}>
+                                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Puntaje Total</span>
+                                  <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+                                    {ev.finalScore} <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>/</span> {ev.maxPossible || totalCriteria * 4}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Para instrumentos sin criterios (prueba escrita, portafolio) */}
+                          {evalCriteria.length === 0 && (
+                            <div style={{ 
+                              marginTop: '0.5rem',
+                              padding: '0.75rem',
+                              borderRadius: '8px',
+                              background: 'rgba(0,0,0,0.15)'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Puntaje</span>
+                                <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+                                  {ev.finalScore ?? '—'} <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>/</span> {ev.maxPossible ?? 20}
+                                </span>
+                              </div>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           )}
