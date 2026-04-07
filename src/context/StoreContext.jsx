@@ -203,6 +203,7 @@ export const StoreProvider = ({ children }) => {
             id: e.id, 
             instrument_id: e.instrumentId || e.instrument_id || '', 
             student_id: e.studentId || e.student_id || '', 
+            student_name: e.studentName || null, 
             score: e.score ?? e.finalScore ?? null, 
             max_possible: e.maxPossible || e.max_possible || null, 
             qualitative: e.qualitative || null, 
@@ -214,6 +215,7 @@ export const StoreProvider = ({ children }) => {
             activity_name: e.activityName || null, 
             observations: e.observations || null, 
             scores: e.scores || '{}', 
+            criteria: e.criteria || '[]', 
             date: e.date || null 
           }));
           break;
@@ -385,7 +387,11 @@ export const StoreProvider = ({ children }) => {
       if (instrumentsData?.length > 0) setInstruments(mergeData(loadData('edu_instruments', []), instrumentsData));
       if (evalData?.length > 0) {
         const cloudEvals = evalData.map(e => ({
-          ...e, instrumentId: e.instrument_id || e.instrumentId, studentId: e.student_id || e.studentId
+          ...e, 
+          instrumentId: e.instrument_id || e.instrumentId, 
+          studentId: e.student_id || e.studentId,
+          studentName: e.student_name || e.studentName,
+          criteria: typeof e.criteria === 'string' ? JSON.parse(e.criteria) : (e.criteria || [])
         }));
         setInstrumentEvaluations(mergeData(loadData('edu_instrument_evaluations', []), cloudEvals));
       }
