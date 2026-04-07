@@ -106,14 +106,25 @@ CREATE TABLE IF NOT EXISTS instrument_evaluations (
 -- Tabla de horarios
 CREATE TABLE IF NOT EXISTS schedule (
   id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
   class_id TEXT NOT NULL,
   subject_id TEXT NOT NULL,
-  day_of_week INTEGER NOT NULL,
-  start_time TEXT,
-  end_time TEXT,
+  day TEXT NOT NULL,
+  time TEXT NOT NULL,
+  color TEXT DEFAULT '#10b981',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Agregar columnas faltantes si la tabla ya existe (migración)
+DO $$BEGIN
+  ALTER TABLE schedule ADD COLUMN IF NOT EXISTS user_id TEXT;
+  ALTER TABLE schedule ADD COLUMN IF NOT EXISTS day TEXT;
+  ALTER TABLE schedule ADD COLUMN IF NOT EXISTS time TEXT;
+  ALTER TABLE schedule ADD COLUMN IF NOT EXISTS color TEXT DEFAULT '#10b981';
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
 
 -- Tabla de evaluaciones diagnósticas
 CREATE TABLE IF NOT EXISTS diagnostic_evaluations (
