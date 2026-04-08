@@ -377,7 +377,7 @@ export default function Grades() {
                                 <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                                   <span style={{ color: typeColor, fontWeight: 600 }}>{TYPE_LABELS[instrumentType] || 'Instrumento'}</span>
                                   <span style={{ margin: '0 6px' }}>·</span>
-                                  {ev.title || originalInstrument?.title || 'Sin título'}
+                                  {originalInstrument?.title || 'Sin título'}
                                 </p>
                               </div>
                             </div>
