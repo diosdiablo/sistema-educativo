@@ -204,6 +204,7 @@ export const StoreProvider = ({ children }) => {
           mappedData = dataArray.map(e => ({ 
             id: e.id, 
             instrument_id: e.instrumentId || e.instrument_id || '', 
+            instrument_title: e.instrumentTitle || e.title || null,
             student_id: e.studentId || e.student_id || '', 
             student_name: e.studentName || null, 
             score: e.score ?? e.finalScore ?? null, 
@@ -218,7 +219,8 @@ export const StoreProvider = ({ children }) => {
             observations: e.observations || null, 
             scores: typeof e.scores === 'string' ? e.scores : JSON.stringify(e.scores || {}), 
             criteria: typeof e.criteria === 'string' ? e.criteria : JSON.stringify(e.criteria || []), 
-            date: e.date || null 
+            date: e.date || null,
+            instrument_type: e.instrumentType || null
           }));
           break;
           
@@ -395,15 +397,35 @@ export const StoreProvider = ({ children }) => {
         setInstruments(mergeData(loadData('edu_instruments', []), cloudInstruments));
       }
       if (evalData?.length > 0) {
-        const cloudEvals = evalData.map(e => ({
-          ...e, 
-          instrumentId: e.instrument_id || e.instrumentId, 
-          studentId: e.student_id || e.studentId,
-          studentName: e.student_name || e.studentName,
-          criteria: typeof e.criteria === 'string' ? JSON.parse(e.criteria) : (e.criteria || [])
-        }));
+        const cloudEvals = evalData.map(e => {
+          let parsedCriteria = [];
+          if (e.criteria) {
+            if (typeof e.criteria === 'string') {
+              try { parsedCriteria = JSON.parse(e.criteria); } catch { parsedCriteria = []; }
+            } else if (Array.isArray(e.criteria)) {
+              parsedCriteria = e.criteria;
+            }
+          }
+          let parsedScores = {};
+          if (e.scores) {
+            if (typeof e.scores === 'string') {
+              try { parsedScores = JSON.parse(e.scores); } catch { parsedScores = {}; }
+            } else if (typeof e.scores === 'object') {
+              parsedScores = e.scores;
+            }
+          }
+          return {
+            ...e, 
+            instrumentId: e.instrument_id || e.instrumentId, 
+            studentId: e.student_id || e.studentId,
+            studentName: e.student_name || e.studentName,
+            title: e.instrument_title || e.title || e.instrumentTitle || '',
+            activityName: e.activity_name || e.activityName || '',
+            scores: parsedScores,
+            criteria: parsedCriteria
+          };
+        });
         console.log('[FETCH] Evaluaciones desde Supabase:', cloudEvals.length);
-        console.log('[FETCH] Muestra primera:', cloudEvals[0]);
         setInstrumentEvaluations(mergeData(loadData('edu_instrument_evaluations', []), cloudEvals));
       }
       if (scheduleData?.length > 0) {
