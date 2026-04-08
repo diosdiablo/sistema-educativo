@@ -124,7 +124,7 @@ const numToQualitative = (score, max) => {
 
 export default function Instruments() {
   const { 
-    instruments, instrumentEvaluations, students, classes, subjects,
+    instruments, instrumentEvaluations, students, classes, subjects = [],
     addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
     currentUser, isAdmin
   } = useStore();
