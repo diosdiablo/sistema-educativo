@@ -275,40 +275,42 @@ export default function Instruments() {
     const { score, max, direct } = calcScore(applyingInstrument.type, evaluationScores, applyingInstrument.criteria);
     const qualitative = direct ?? numToQualitative(score, max);
 
-    const evaluationData = {
-      instrumentId: applyingInstrument.id,
-      instrumentType: applyingInstrument.type,
-      criteria: applyingInstrument.criteria || [],
-      activityName,
-      scores: evaluationScores,
-      score,
-      maxPossible: max,
-      qualitative,
-      subjectId: selectedSubjectId,
-      subjectName: selectedSubjectObj?.name || '',
-      competencyId: selectedCompetencyId,
-      competencyName: availableCompetencies.find(c => c.id === selectedCompetencyId)?.name || '',
-      period: selectedPeriod,
-      classId: classes.find(c => c.name === selectedClass)?.id || ''
-    };
-
-    const save = (student) => {
-      const evalData = { ...evaluationData, studentId: student.id, studentName: student.name };
-      console.log('[SAVE EVAL] Guardando evaluación para:', student.name, student.id);
-      console.log('[SAVE EVAL] activityName:', evalData.activityName);
-      console.log('[SAVE EVAL] competencyId:', evalData.competencyId);
-      saveInstrumentEvaluation(evalData);
+    const buildEvaluationData = (student) => {
+      const evalData = {
+        instrumentId: applyingInstrument.id,
+        instrumentType: applyingInstrument.type,
+        criteria: applyingInstrument.criteria || [],
+        activityName,
+        scores: { ...evaluationScores },
+        score,
+        maxPossible: max,
+        qualitative,
+        subjectId: selectedSubjectId,
+        subjectName: selectedSubjectObj?.name || '',
+        competencyId: selectedCompetencyId,
+        competencyName: availableCompetencies.find(c => c.id === selectedCompetencyId)?.name || '',
+        period: selectedPeriod,
+        classId: classes.find(c => c.name === selectedClass)?.id || '',
+        studentId: student.id,
+        studentName: student.name
+      };
+      console.log('[SAVE] Evaluando:', student.name, '| score:', score, '| qualitative:', qualitative, '| scores:', JSON.stringify(evalData.scores));
+      return evalData;
     };
 
     if (applyMode === 'individual') {
       const s = students.find(s => s.id === selectedStudent);
-      save(s);
+      saveInstrumentEvaluation(buildEvaluationData(s));
       setSavedGroupMembers(prev => new Set([...prev, selectedStudent]));
     } else if (selectedGroupIdx !== null && tempGroups[selectedGroupIdx]?.members.length > 0) {
       const membersToSave = tempGroups[selectedGroupIdx].members;
-      console.log('[SAVE GROUP] Guardando evaluaciones para grupo:', tempGroups[selectedGroupIdx].name);
-      console.log('[SAVE GROUP] Miembros:', membersToSave.map(m => ({ id: m.id, name: m.name })));
-      membersToSave.forEach(save);
+      console.log('[SAVE GROUP] Guardando evaluaciones para grupo:', tempGroups[selectedGroupIdx].name, '| miembros:', membersToSave.length);
+      
+      membersToSave.forEach((member, idx) => {
+        const evalData = buildEvaluationData(member);
+        console.log('[SAVE GROUP]', idx + 1, '/', membersToSave.length, ':', member.name, '| score:', evalData.score, '| qualitative:', evalData.qualitative);
+        saveInstrumentEvaluation(evalData);
+      });
       const newMemberIds = new Set(membersToSave.map(m => m.id));
       setSavedGroupMembers(prev => new Set([...prev, ...newMemberIds]));
     } else {
