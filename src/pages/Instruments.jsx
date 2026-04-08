@@ -1166,15 +1166,6 @@ export default function Instruments() {
                 <div style={{ fontWeight: 600 }}>{viewingEvaluation.period}</div>
               </div>
             </div>
-              <div>
-                <span style={{ color: 'var(--text-secondary)' }}>Fecha:</span>
-                <div style={{ fontWeight: 600 }}>{new Date(viewingEvaluation.date).toLocaleDateString('es-PE')}</div>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-secondary)' }}>Bimestre:</span>
-                <div style={{ fontWeight: 600 }}>{viewingEvaluation.period}</div>
-              </div>
-            </div>
 
             <button 
               className="btn-primary" 
