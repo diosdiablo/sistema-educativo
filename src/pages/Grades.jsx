@@ -296,9 +296,11 @@ export default function Grades() {
               </div>
             );
           })()}
-
-          {/* Modal flotante de detalle del instrumento */}
-          {tooltip && (
+        </>
+      )}
+    </div>
+  );
+}
             <>
               <div 
                 style={{
