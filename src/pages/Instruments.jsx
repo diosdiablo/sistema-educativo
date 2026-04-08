@@ -1155,15 +1155,11 @@ export default function Instruments() {
             }}>
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Área:</span>
-                <div style={{ fontWeight: 600, color: 'red' }}>
-                  DEBUG: subjectName='{viewingEvaluation.subjectName}' subjectId='{viewingEvaluation.subjectId}' subject_id='{viewingEvaluation.subject_id}' subject_name='{viewingEvaluation.subject_name}'
-                </div>
                 <div style={{ fontWeight: 600 }}>
                   {viewingEvaluation.subjectName || 
                    (viewingEvaluation.subjectId && subjects?.find(s => s.id === viewingEvaluation.subjectId)?.name) ||
                    (viewingEvaluation.subject_name && viewingEvaluation.subject_name) ||
                    (viewingEvaluation.subject_id && subjects?.find(s => s.id === viewingEvaluation.subject_id)?.name) ||
-                   (viewingEvaluation.instrumentId && instruments?.find(i => i.id === viewingEvaluation.instrumentId)?.subjectId && subjects?.find(s => s.id === instruments.find(i => i.id === viewingEvaluation.instrumentId)?.subjectId)?.name) ||
                    '—'}
                 </div>
               </div>
