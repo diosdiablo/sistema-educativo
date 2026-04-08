@@ -218,9 +218,7 @@ export const StoreProvider = ({ children }) => {
             observations: e.observations || null, 
             scores: typeof e.scores === 'string' ? e.scores : JSON.stringify(e.scores || {}), 
             criteria: typeof e.criteria === 'string' ? e.criteria : JSON.stringify(e.criteria || []), 
-            date: e.date || null,
-            instrument_type: e.instrumentType || null,
-            title: e.instrumentTitle || e.title || null
+            date: e.date || null
           }));
           break;
           
