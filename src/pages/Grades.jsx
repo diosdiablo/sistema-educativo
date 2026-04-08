@@ -202,11 +202,12 @@ export default function Grades() {
 
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
-            // Obtener todos los instrumentos únicos aplicados a cada competencia en este período
+            // Función para obtener instrumentos únicos aplicados a una competencia en este período
             const getInstrumentsForCompetency = (competencyId) => {
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && ev.period === selectedPeriod
               );
+              console.log('Competency:', competencyId, 'Evaluations:', evs.length);
               // Obtener instrumentos únicos
               const uniqueInstruments = {};
               evs.forEach(ev => {
@@ -296,7 +297,7 @@ export default function Grades() {
                                 return (
                                   <td
                                     key={inst.id}
-                                    style={{ textAlign: 'center', cursor: 'pointer' }}
+                                    style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
                                     onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                     onMouseLeave={handleMouseLeaveCell}
                                     onClick={() => {
@@ -304,9 +305,14 @@ export default function Grades() {
                                       setHoveredEval(null);
                                     }}
                                   >
-                                    <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700 }}>
+                                    <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>
                                       {ev.qualitative}
                                     </span>
+                                    {ev.score !== null && (
+                                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                        {ev.score}/{ev.maxPossible}
+                                      </div>
+                                    )}
                                   </td>
                                 );
                               });
