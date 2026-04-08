@@ -176,7 +176,7 @@ export default function Grades() {
             // Función para obtener instrumentos únicos aplicados a una competencia en este período
             const getInstrumentsForCompetency = (competencyId) => {
               const evs = instrumentEvaluations.filter(
-                ev => ev.competencyId === competencyId && ev.period === selectedPeriod
+                ev => (ev.competencyId === competencyId || ev.competency_id === competencyId) && ev.period === selectedPeriod
               );
               console.log('[GRADES] getInstrumentsForCompetency:', competencyId, 'evs:', evs.map(e => ({ id: e.id, activityName: e.activityName, instrumentId: e.instrumentId })));
               
@@ -184,12 +184,12 @@ export default function Grades() {
               const uniqueInstruments = {};
               evs.forEach(ev => {
                 // Usar activityName como clave para mostrar cada evaluación diferente
-                const key = ev.activityName || ev.instrumentId;
+                const key = ev.activityName || ev.activity_name || ev.instrumentId || ev.instrument_id;
                 if (!uniqueInstruments[key]) {
                   uniqueInstruments[key] = {
                     id: key,
-                    title: ev.activityName || instruments.find(i => i.id === ev.instrumentId)?.title || 'Sin título',
-                    instrumentType: ev.instrumentType
+                    title: ev.activityName || ev.activity_name || instruments.find(i => i.id === ev.instrumentId || i.id === ev.instrument_id)?.title || 'Sin título',
+                    instrumentType: ev.instrumentType || ev.instrument_type
                   };
                 }
               });
@@ -255,7 +255,7 @@ export default function Grades() {
                           }
                           return instruments.map(inst => {
                             const ev = instrumentEvaluations.find(
-                              e => e.studentId === student.id && e.competencyId === comp.id && (e.activityName || e.instrumentId) === inst.id && e.period === selectedPeriod
+                              e => (e.studentId === student.id || e.student_id === student.id) && e.competencyId === comp.id && (e.activityName || e.activity_name || e.instrumentId) === inst.id && e.period === selectedPeriod
                             );
                             if (!ev) {
                               return (
