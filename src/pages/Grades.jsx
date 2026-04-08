@@ -97,10 +97,11 @@ export default function Grades() {
     const nums = evs.map(ev => {
       if (ev.qualitative && GRADE_TO_NUM[ev.qualitative]) return GRADE_TO_NUM[ev.qualitative];
       if (ev.finalScore !== null && ev.finalScore !== undefined) {
-        return numToQualitative(ev.finalScore, ev.maxPossible || 20);
+        const numGrade = numToQualitative(ev.finalScore, ev.maxPossible || 20);
+        return GRADE_TO_NUM[numGrade] || 0;
       }
-      return null;
-    }).filter(n => n && n > 0);
+      return 0;
+    }).filter(n => n > 0);
     
     if (nums.length === 0) return { grade: null, count: evs.length, evaluations: evs };
 
