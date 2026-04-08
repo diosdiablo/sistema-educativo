@@ -110,7 +110,8 @@ export default function Grades() {
   };
 
   const [tooltip, setTooltip] = useState(null);
-  const [viewingEvaluation, setViewingEvaluation] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
+  const [viewingEvaluation, setViewingEvaluation] = useState(null);
+  const [evalPosition, setEvalPosition] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
 
   return (
     <div className="animate-fade-in">
@@ -216,6 +217,8 @@ export default function Grades() {
                             style={{ textAlign: 'center', cursor: count > 0 ? 'pointer' : 'default' }}
                             onClick={(e) => {
                               if (count > 0 && evaluations.length > 0) {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setEvalPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
                                 setViewingEvaluation(evaluations[0]);
                                 setTooltip(null);
                               }
