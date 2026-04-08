@@ -173,11 +173,18 @@ export default function Grades() {
 
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
+            console.log('[GRADES] instrumentEvaluations:', instrumentEvaluations);
+            console.log('[GRADES] selectedPeriod:', selectedPeriod);
+            console.log('[GRADES] currentSubject:', currentSubject?.name);
+            console.log('[GRADES] competencies:', currentSubject?.competencies?.map(c => c.id));
+            
             // Función para obtener instrumentos únicos aplicados a una competencia en este período
             const getInstrumentsForCompetency = (competencyId) => {
+              console.log('[GRADES] getInstrumentsForCompetency:', competencyId);
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && ev.period === selectedPeriod
               );
+              console.log('[GRADES]   evaluations found:', evs.length);
               // Obtener instrumentos únicos
               const uniqueInstruments = {};
               evs.forEach(ev => {
