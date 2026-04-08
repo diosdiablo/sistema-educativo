@@ -109,8 +109,24 @@ export default function Grades() {
     return { grade: NUM_TO_GRADE(avg), count: evs.length, evaluations: evs };
   };
 
-  const [tooltip, setTooltip] = useState(null);
-  const [viewingEvaluation, setViewingEvaluation] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
+  const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
+  const [hoveredEval, setHoveredEval] = useState(null); // { evaluation, position: { x, y } }
+  const [viewingEvaluation, setViewingEvaluation] = useState(null);
+
+  // Función para obtener la posición del tooltip en hover
+  const handleMouseEnterCell = (e, evaluations) => {
+    if (evaluations.length > 0) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setHoveredEval({
+        evaluation: evaluations[0],
+        position: { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+      });
+    }
+  };
+
+  const handleMouseLeaveCell = () => {
+    setHoveredEval(null);
+  };
 
   return (
     <div className="animate-fade-in">
@@ -214,9 +230,12 @@ export default function Grades() {
                           <td
                             key={comp.id}
                             style={{ textAlign: 'center', cursor: count > 0 ? 'pointer' : 'default' }}
+                            onMouseEnter={(e) => handleMouseEnterCell(e, evaluations)}
+                            onMouseLeave={handleMouseLeaveCell}
                             onClick={() => {
                               if (count > 0 && evaluations.length > 0) {
                                 setViewingEvaluation(evaluations[0]);
+                                setHoveredEval(null);
                               }
                             }}
                             title={count > 0 ? `${count} instrumento(s) aplicado(s)` : 'Sin evaluaciones aún'}
@@ -478,6 +497,44 @@ export default function Grades() {
             </>
           )}
 
+          {/* Tooltip de evaluación al hacer hover */}
+          {hoveredEval && hoveredEval.evaluation && (
+            <div 
+              style={{
+                position: 'fixed',
+                top: hoveredEval.position.y + hoveredEval.position.height + 8,
+                left: Math.min(hoveredEval.position.x, window.innerWidth - 360),
+                maxWidth: '340px',
+                zIndex: 1000,
+              }}
+            >
+              <div className="card shadow-glass animate-fade-in" style={{ 
+                padding: '1rem',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                    {hoveredEval.evaluation.activityName || 'Sin actividad'}
+                  </span>
+                  <span className={`badge ${BADGE_THEME[hoveredEval.evaluation.qualitative]}`} style={{ fontWeight: 700 }}>
+                    {hoveredEval.evaluation.qualitative}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  {TYPE_LABELS[hoveredEval.evaluation.instrumentType] || 'Instrumento'} · {new Date(hoveredEval.evaluation.date).toLocaleDateString('es-PE')}
+                </div>
+                {hoveredEval.evaluation.score !== null && (
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
+                    Puntaje: <strong>{hoveredEval.evaluation.score}</strong> / {hoveredEval.evaluation.maxPossible || 20}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Modal para ver instrumento aplicado desde calificaciones */}
           {viewingEvaluation && (
             <div className="modal-overlay animate-fade-in" style={{
@@ -499,7 +556,6 @@ export default function Grades() {
                   </button>
                 </div>
 
-                {/* Resultado */}
                 <div style={{ 
                   display: 'flex', alignItems: 'center', gap: '1rem', 
                   padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem',
@@ -527,14 +583,13 @@ export default function Grades() {
                   </div>
                 </div>
 
-                {/* Criterios evaluados */}
                 {viewingEvaluation.scores && Object.keys(viewingEvaluation.scores).filter(k => !k.startsWith('__')).length > 0 && (
                   <div style={{ marginBottom: '1.5rem' }}>
                     <h4 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>
                       Criterios Evaluados
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {viewingEvaluation.scores && Object.entries(viewingEvaluation.scores).map(([criterionId, score]) => {
+                      {Object.entries(viewingEvaluation.scores).map(([criterionId, score]) => {
                         if (criterionId.startsWith('__')) return null;
                         const criterion = viewingEvaluation.criteria?.find(c => c.id === criterionId) || { text: criterionId };
                         const scoreLabel = viewingEvaluation.instrumentType === 'checklist' 
@@ -565,7 +620,6 @@ export default function Grades() {
                   </div>
                 )}
 
-                {/* Nota adicional (para registro anecdótico) */}
                 {viewingEvaluation.scores?.__note__ && (
                   <div style={{ 
                     padding: '1rem', background: 'rgba(99,102,241,0.05)',
@@ -577,7 +631,6 @@ export default function Grades() {
                   </div>
                 )}
 
-                {/* Detalles adicionales */}
                 <div style={{ 
                   display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
                   gap: '0.75rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px',
