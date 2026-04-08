@@ -1,106 +1,136 @@
 import * as XLSX from 'xlsx';
 
-export const EXPORT_TEMPLATES = {
+export const TEMPLATE_CONFIG = {
   attendance: {
     id: 'attendance',
     name: 'Registro de Asistencia',
     description: 'Plantilla para exportar asistencia diaria',
-    headerRows: 1,
-    columns: {
-      student: { header: 'Estudiante', width: 35 },
-      dates: { header: 'Fecha (dd/mm)', width: 12 },
-      totals: { header: 'Totales', width: 10 }
-    },
-    styles: {
-      title: { fontSize: 14, bold: true, alignment: 'center' },
-      header: { bold: true, fill: 'D9E1F2' },
-      totals: { bold: true, fill: 'E2EFDA' }
-    }
+    templateFile: 'asistencia.xlsx',
+    requiredColumns: ['Estudiante'],
+    dataStartRow: 2
   },
   
   auxiliaryRegister: {
     id: 'auxiliaryRegister',
     name: 'Registro Auxiliar',
     description: 'Plantilla para exportar calificaciones por competencia',
-    headerRows: 2,
-    columns: {
-      student: { header: 'Estudiante', width: 40 },
-      competency: { header: 'Competencia', width: 50 },
-      score: { header: 'Nota', width: 10 }
-    },
-    styles: {
-      title: { fontSize: 14, bold: true, alignment: 'center' },
-      header: { bold: true, fill: 'D9E1F2' },
-      score: { alignment: 'center' }
-    }
+    templateFile: 'registro_auxiliar.xlsx',
+    requiredColumns: ['Estudiante'],
+    dataStartRow: 3
   },
   
   finalReport: {
     id: 'finalReport',
     name: 'Reporte Final',
     description: 'Plantilla oficial con conclusiones descriptivas',
-    headerRows: 8,
-    columns: {
-      order: { header: 'N°', width: 5 },
-      student: { header: 'Estudiante', width: 40 },
-      score: { header: 'Nota', width: 12 },
-      conclusion: { header: 'Conclusión Descriptiva', width: 50 }
-    },
-    styles: {
-      title: { fontSize: 16, bold: true, alignment: 'center' },
-      header: { bold: true, fill: 'D9E1F2' },
-      infoLabel: { bold: true },
-      infoValue: { }
-    }
+    templateFile: 'reporte_final.xlsx',
+    requiredColumns: ['Estudiante'],
+    dataStartRow: 9
   },
 
   instrumentGrades: {
     id: 'instrumentGrades',
     name: 'Calificaciones por Instrumento',
     description: 'Plantilla para exportar evaluaciones por instrumento',
-    headerRows: 3,
-    columns: {
-      order: { header: 'N°', width: 5 },
-      student: { header: 'Estudiante', width: 40 },
-      instrument: { header: 'Instrumento', width: 35 },
-      activity: { header: 'Actividad', width: 25 },
-      score: { header: 'Puntaje', width: 10 },
-      qualitative: { header: 'Nivel', width: 10 },
-      period: { header: 'Bimestre', width: 10 }
-    },
-    styles: {
-      title: { fontSize: 14, bold: true, alignment: 'center' },
-      header: { bold: true, fill: 'D9E1F2' }
-    }
+    templateFile: 'instrumentos.xlsx',
+    requiredColumns: ['Estudiante'],
+    dataStartRow: 4
+  },
+
+  studentList: {
+    id: 'studentList',
+    name: 'Lista de Estudiantes',
+    description: 'Plantilla para exportar lista de estudiantes',
+    templateFile: 'lista_estudiantes.xlsx',
+    requiredColumns: ['Estudiante'],
+    dataStartRow: 2
   }
 };
 
-export const createStyledWorksheet = (data, options = {}) => {
-  const {
-    title = '',
-    titleRow = null,
-    headerRow = null,
-    infoRows = [],
-    columnWidths = {},
-    freezeRows = 0,
-    freezeCols = 1
-  } = options;
-
-  const worksheet = XLSX.utils.json_to_sheet(data, { 
-    header: Object.keys(data[0] || {}),
-    skipHeader: false 
-  });
-
-  worksheet['!cols'] = Object.keys(data[0] || {}).map(key => ({
-    wch: columnWidths[key] || 15
-  }));
-
-  worksheet['!freeze'] = { xSplit: freezeCols, ySplit: freezeRows };
-
-  return worksheet;
+export const loadTemplate = async (templateFileName) => {
+  try {
+    const response = await fetch(`/templates/${templateFileName}`);
+    if (!response.ok) {
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    return workbook;
+  } catch (error) {
+    console.warn(`No se encontró plantilla: ${templateFileName}`);
+    return null;
+  }
 };
 
-export const buildAttendanceData = (students, attendanceRecords, dates, period) => {
+export const fillTemplateWithData = (workbook, data, config) => {
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+  
+  const dataStartRow = config.dataStartRow || 2;
+  
+  data.forEach((rowData, rowIndex) => {
+    const excelRow = dataStartRow + rowIndex;
+    
+    Object.entries(rowData).forEach(([key, value]) => {
+      let colIndex = -1;
+      
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+      for (let col = 0; col <= range.e.c; col++) {
+        const cellRef = XLSX.utils.encode_cell({ r: dataStartRow - 1, c: col });
+        const cellValue = worksheet[cellRef]?.v;
+        if (cellValue && String(cellValue).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+          colIndex = col;
+          break;
+        }
+      }
+      
+      if (colIndex === -1) {
+        for (let col = 0; col <= range.e.c; col++) {
+          const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
+          const cellValue = worksheet[cellRef]?.v;
+          if (cellValue && String(cellValue).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+            colIndex = col;
+            break;
+          }
+        }
+      }
+      
+      if (colIndex === -1) {
+        colIndex = Object.keys(rowData).indexOf(key);
+      }
+      
+      if (colIndex >= 0) {
+        const cellRef = XLSX.utils.encode_cell({ r: excelRow, c: colIndex });
+        worksheet[cellRef] = { t: 's', v: String(value) };
+      }
+    });
+  });
+  
+  return workbook;
+};
+
+export const createWorkbookFromData = (data, options = {}) => {
+  const { 
+    sheetName = 'Datos',
+    columnWidths = {},
+    headerRow = 0 
+  } = options;
+  
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  
+  if (Object.keys(columnWidths).length > 0) {
+    worksheet['!cols'] = Object.keys(data[0] || {}).map(key => ({
+      wch: columnWidths[key] || 15
+    }));
+  }
+  
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  
+  return workbook;
+};
+
+export const buildAttendanceData = (students, attendanceRecords, dates) => {
   return students.map(student => {
     const row = { 'Estudiante': student.name };
     
@@ -150,18 +180,10 @@ export const buildAuxiliaryRegisterData = (students, grades, subject, period) =>
   });
 };
 
-export const buildFinalReportData = (students, grades, subject, period, teacherName = '') => {
-  const infoRows = [
-    ['ÁREA CURRICULAR:', subject.name],
-    ['GRADO Y SECCIÓN:', ''],
-    ['DOCENTE:', teacherName],
-    ['BIMESTRE:', period],
-    [''],
-    ['N°', 'Estudiante', ...subject.competencies.flatMap(c => [c.name, 'Conclusión Descriptiva'])]
-  ];
-
-  const studentRows = students.map((student, idx) => {
-    const row = [idx + 1, student.name];
+export const buildFinalReportData = (students, grades, subject, period) => {
+  return students.map((student, idx) => {
+    const row = { 'N°': idx + 1, 'Estudiante': student.name };
+    
     subject.competencies.forEach(comp => {
       const grade = grades.find(g => 
         g.studentId === student.id && 
@@ -169,29 +191,84 @@ export const buildFinalReportData = (students, grades, subject, period, teacherN
         g.competencyId === comp.id && 
         g.period === period
       );
-      row.push(grade?.score ?? '-');
-      row.push(grade?.conclusion ?? '-');
+      row[comp.name] = grade?.score ?? '-';
+      row[`${comp.name} - Conclusión`] = grade?.conclusion ?? '-';
     });
+
     return row;
   });
-
-  return { infoRows, studentRows };
 };
 
-export const applyStylesToWorksheet = (worksheet, dataLength, styles) => {
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+export const buildStudentListData = (students) => {
+  return students.map((student, idx) => ({
+    'N°': idx + 1,
+    'Estudiante': student.name,
+    'DNI': student.dni || '-',
+    'Fecha de Nacimiento': student.birthDate || '-',
+    'Nombre del Apoderado': student.guardianName || '-',
+    'Teléfono': student.guardianPhone || '-'
+  }));
+};
+
+export const buildInstrumentGradesData = (students, evaluations, instruments, period) => {
+  const data = [];
   
-  if (styles.header) {
-    for (let col = 0; col <= range.e.c; col++) {
-      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-      if (!worksheet[cellRef]) continue;
-      worksheet[cellRef].s = {
-        font: { bold: true },
-        fill: { fgColor: { rgb: styles.header.fill || 'D9E1F2' } },
-        alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
-      };
-    }
-  }
+  students.forEach((student, idx) => {
+    const studentEvals = evaluations.filter(ev => 
+      ev.studentId === student.id && ev.period === period
+    );
 
-  return worksheet;
+    if (studentEvals.length > 0) {
+      studentEvals.forEach(ev => {
+        data.push({
+          'N°': idx + 1,
+          'Estudiante': student.name,
+          'Instrumento': instruments.find(i => i.id === ev.instrumentId)?.title || ev.activityName || '-',
+          'Actividad': ev.activityName || '-',
+          'Puntaje': ev.score ?? '-',
+          'Nivel': ev.qualitative || '-',
+          'Bimestre': ev.period
+        });
+      });
+    } else {
+      data.push({
+        'N°': idx + 1,
+        'Estudiante': student.name,
+        'Instrumento': '-',
+        'Actividad': '-',
+        'Puntaje': '-',
+        'Nivel': '-',
+        'Bimestre': period
+      });
+    }
+  });
+
+  return data;
 };
+
+export const TEMPLATE_INSTRUCTIONS = `
+INSTRUCCIONES PARA PLANTILLAS PERSONALIZADAS
+============================================
+
+Ubicación de plantillas:
+Coloca tus archivos .xlsx en: /public/templates/
+
+Nombres de archivos aceptados:
+- asistencia.xlsx
+- registro_auxiliar.xlsx
+- reporte_final.xlsx
+- instrumentos.xlsx
+- lista_estudiantes.xlsx
+
+Estructura requerida:
+- La primera fila debe contener los encabezados de columna
+- Los encabezados deben coincidir con los nombres de datos:
+  * "Estudiante" - Nombre del estudiante
+  * "N°" - Número de orden
+  * "DNI" - Número de documento
+  * etc.
+
+- A partir de la segunda/tercera fila se llenarán los datos automáticamente
+
+Si no hay plantilla, el sistema generará el formato automáticamente.
+`;
