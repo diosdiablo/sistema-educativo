@@ -263,12 +263,11 @@ export default function Instruments() {
 
     const evaluationData = {
       instrumentId: applyingInstrument.id,
-      instrumentTitle: applyingInstrument.title,
       instrumentType: applyingInstrument.type,
       criteria: applyingInstrument.criteria || [],
       activityName,
       scores: evaluationScores,
-      finalScore: score,
+      score,
       maxPossible: max,
       qualitative,
       subjectId: selectedSubjectId,
