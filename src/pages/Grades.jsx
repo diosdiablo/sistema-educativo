@@ -493,7 +493,6 @@ export default function Grades() {
                   </div>
                 </div>
               </div>
-              </div>
             </>
           )}
 
