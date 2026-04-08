@@ -255,7 +255,7 @@ export default function Grades() {
                           }
                           return instruments.map(inst => {
                             const ev = instrumentEvaluations.find(
-                              e => e.studentId === student.id && e.competencyId === comp.id && e.instrumentId === inst.id && e.period === selectedPeriod
+                              e => e.studentId === student.id && e.competencyId === comp.id && (e.activityName || e.instrumentId) === inst.id && e.period === selectedPeriod
                             );
                             if (!ev) {
                               return (
