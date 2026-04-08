@@ -484,13 +484,34 @@ export default function Grades() {
 
           {/* Modal para ver instrumento aplicado desde calificaciones */}
           {viewingEvaluation && (
-            <div className="modal-overlay animate-fade-in" style={{
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
-              display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
-              padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
-            }}>
-              <div className="card shadow-glass" style={{ maxWidth: '700px', width: '100%' }}>
+            <>
+              <div 
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  zIndex: 999
+                }}
+                onClick={() => { setViewingEvaluation(null); setEvalPosition(null); }}
+              />
+              <div 
+                style={{
+                  position: 'fixed',
+                  top: evalPosition ? evalPosition.y + evalPosition.height + 8 : '50%',
+                  left: evalPosition ? Math.min(evalPosition.x, window.innerWidth - 720) : '50%',
+                  maxWidth: '700px',
+                  width: '100%',
+                  zIndex: 1000,
+                  transform: 'translateX(0)'
+                }}
+              >
+                <div className="card shadow-glass animate-fade-in" style={{ 
+                  maxHeight: '80vh', 
+                  overflowY: 'auto' 
+                }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                   <div>
                     <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.25rem' }}>{viewingEvaluation.activityName || 'Sin actividad'}</h3>
@@ -604,12 +625,13 @@ export default function Grades() {
                 <button 
                   className="btn-primary" 
                   style={{ width: '100%', marginTop: '1.5rem' }}
-                  onClick={() => setViewingEvaluation(null)}
+                  onClick={() => { setViewingEvaluation(null); setEvalPosition(null); }}
                 >
                   Cerrar
                 </button>
               </div>
-            </div>
+              </div>
+            </>
           )}
         </>
       )}
