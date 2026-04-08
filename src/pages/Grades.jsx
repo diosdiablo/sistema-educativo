@@ -230,67 +230,50 @@ export default function Grades() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredStudents.length === 0 ? (
+                    {filteredStudents.length === 0 && (
                       <tr>
                         <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                           No hay estudiantes matriculados en esta sección.
                         </td>
                       </tr>
-                    ) : (
-                      filteredStudents.map(student => {
-                        return (
-                          <tr key={student.id}>
-                            <td style={{ fontWeight: 600, position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 5 }}>{student.name}</td>
-                            {currentSubject.competencies.map(comp => {
-                              const instruments = getInstrumentsForCompetency(comp.id);
-                              if (instruments.length === 0) {
-                                return (
-                                  <td key={comp.id} style={{ textAlign: 'center' }}>
-                                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
-                                  </td>
-                                );
-                              }
-                              return instruments.map(inst => {
-                                const ev = instrumentEvaluations.find(
-                                  e => e.studentId === student.id && 
-                                       e.competencyId === comp.id && 
-                                       e.instrumentId === inst.id &&
-                                       e.period === selectedPeriod
-                                );
-                                if (!ev) {
-                                  return (
-                                    <td key={inst.id} style={{ textAlign: 'center' }}>
-                                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
-                                    </td>
-                                  );
-                                }
-                                return (
-                                  <td
-                                    key={inst.id}
-                                    style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
-                                    onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
-                                    onMouseLeave={handleMouseLeaveCell}
-                                    onClick={() => {
-                                      setViewingEvaluation(ev);
-                                      setHoveredEval(null);
-                                    }}
-                                  >
-                                    <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                                      {ev.qualitative}
-                                    </span>
-                                    {ev.score !== null && (
-                                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                                        {ev.score}/{ev.maxPossible}
-                                      </div>
-                                    )}
-                                  </td>
-                                );
-                              });
-                            })}
-                          </tr>
-                        );
-                      })}
                     )}
+                    {filteredStudents.map(student => (
+                      <tr key={student.id}>
+                        <td style={{ fontWeight: 600, position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 5 }}>{student.name}</td>
+                        {currentSubject.competencies.map(comp => {
+                          const instruments = getInstrumentsForCompetency(comp.id);
+                          if (instruments.length === 0) {
+                            return (
+                              <td key={comp.id} style={{ textAlign: 'center' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
+                              </td>
+                            );
+                          }
+                          return instruments.map(inst => {
+                            const ev = instrumentEvaluations.find(
+                              e => e.studentId === student.id && e.competencyId === comp.id && e.instrumentId === inst.id && e.period === selectedPeriod
+                            );
+                            if (!ev) {
+                              return (
+                                <td key={inst.id} style={{ textAlign: 'center' }}>
+                                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
+                                </td>
+                              );
+                            }
+                            return (
+                              <td key={inst.id} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
+                                onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
+                                onMouseLeave={handleMouseLeaveCell}
+                                onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
+                              >
+                                <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>{ev.qualitative}</span>
+                                {ev.score !== null && <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{ev.score}/{ev.maxPossible}</div>}
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
