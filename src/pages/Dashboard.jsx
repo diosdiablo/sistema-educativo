@@ -60,38 +60,57 @@ export default function Dashboard() {
     grades.forEach(g => {
       if (counts[g.score] !== undefined) counts[g.score]++;
     });
+    instrumentEvaluations.forEach(ev => {
+      const level = ev.qualitative || (['AD', 'A', 'B', 'C'].includes(ev.score) ? ev.score : null);
+      if (level && counts[level] !== undefined) counts[level]++;
+    });
     return [
       { name: 'AD - Destacado', value: counts.AD, color: '#10b981' },
       { name: 'A - Logrado', value: counts.A, color: '#3b82f6' },
       { name: 'B - En Proceso', value: counts.B, color: '#f59e0b' },
       { name: 'C - En Inicio', value: counts.C, color: '#ef4444' },
     ];
-  }, [grades]);
+  }, [grades, instrumentEvaluations]);
 
   const gradesByClass = useMemo(() => {
     const classStats = {};
     classes.forEach(c => {
-      classStats[c.name] = { AD: 0, A: 0, B: 0, C: 0, total: 0 };
+      classStats[c.id] = { AD: 0, A: 0, B: 0, C: 0, total: 0, name: c.name };
     });
     
     grades.forEach(g => {
       const student = students.find(s => s.id === g.studentId);
-      if (student && classStats[student.gradeLevel]) {
-        if (classStats[student.gradeLevel][g.score] !== undefined) {
-          classStats[student.gradeLevel][g.score]++;
+      if (student) {
+        const classData = classes.find(c => c.name === student.gradeLevel || c.id === student.gradeLevel);
+        if (classData && classStats[classData.id]) {
+          if (classStats[classData.id][g.score] !== undefined) {
+            classStats[classData.id][g.score]++;
+          }
+          classStats[classData.id].total++;
         }
-        classStats[student.gradeLevel].total++;
+      }
+    });
+    
+    instrumentEvaluations.forEach(ev => {
+      const classId = ev.classId || ev.class_id;
+      const classData = classes.find(c => c.id === classId);
+      if (classData && classStats[classData.id]) {
+        const level = ev.qualitative || (['AD', 'A', 'B', 'C'].includes(ev.score) ? ev.score : null);
+        if (level && classStats[classData.id][level] !== undefined) {
+          classStats[classData.id][level]++;
+        }
+        classStats[classData.id].total++;
       }
     });
     
     return classes.map(c => ({
       name: c.name.replace(/"/g, ''),
-      ad: classStats[c.name]?.AD || 0,
-      a: classStats[c.name]?.A || 0,
-      b: classStats[c.name]?.B || 0,
-      c: classStats[c.name]?.C || 0,
+      ad: classStats[c.id]?.AD || 0,
+      a: classStats[c.id]?.A || 0,
+      b: classStats[c.id]?.B || 0,
+      c: classStats[c.id]?.C || 0,
     }));
-  }, [grades, students, classes]);
+  }, [grades, students, classes, instrumentEvaluations]);
 
   const topInstruments = useMemo(() => {
     const counts = {};
