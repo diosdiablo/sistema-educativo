@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download, FileSpreadsheet, Table } from 'lucide-react';
+import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download, FileSpreadsheet, Table, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { EXPORT_TEMPLATES } from '../templates/exportTemplates';
+import { loadTemplate, createWorkbookFromData, buildAttendanceData, buildAuxiliaryRegisterData, buildFinalReportData, buildStudentListData, buildInstrumentGradesData } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
@@ -12,7 +12,7 @@ const Reports = () => {
 
   const periods = ['1', '2', '3', '4'];
 
-  const exportAttendance = () => {
+  const exportAttendance = async () => {
     if (!selectedClass) {
       alert('Por favor selecciona un grado/sección');
       return;
@@ -34,52 +34,49 @@ const Reports = () => {
       return;
     }
     
-    const data = classStudents.map(student => {
-      const row = { 'Estudiante': student.name };
-      let presentCount = 0;
-      let absentCount = 0;
-      let tardyCount = 0;
-      let justifiedCount = 0;
+    const data = buildAttendanceData(classStudents, attendance, allDates);
 
-      allDates.forEach(date => {
-        const dayRecord = attendance.find(a => a.date === date);
-        const status = dayRecord?.records?.[student.id] || '-';
-        const formattedDate = new Date(date).toLocaleDateString('es-PE', { 
-          day: '2-digit', 
-          month: '2-digit' 
-        });
-        row[formattedDate] = status;
-
-        if (status === 'P') presentCount++;
-        if (status === 'F') absentCount++;
-        if (status === 'T') tardyCount++;
-        if (status === 'J') justifiedCount++;
-      });
-
-      row['Total P'] = presentCount;
-      row['Total F'] = absentCount;
-      row['Total T'] = tardyCount;
-      row['Total J'] = justifiedCount;
-
-      return row;
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencia');
+    const template = await loadTemplate('asistencia.xlsx');
+    let workbook;
     
-    const dateCols = allDates.length;
-    const wscols = [
-      { wch: 35 }, // Estudiante
-      ...Array(dateCols).fill({ wch: 10 }), // Fechas
-      { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 } // Totales
-    ];
-    worksheet['!cols'] = wscols;
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
+      
+      data.forEach((row, rowIndex) => {
+        Object.entries(row).forEach(([key, value]) => {
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+          for (let col = 0; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 1, c: col });
+            const header = worksheet[cellRef]?.v;
+            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+              const targetCell = XLSX.utils.encode_cell({ r: 2 + rowIndex, c: col });
+              worksheet[targetCell] = { t: 's', v: String(value) };
+              break;
+            }
+          }
+        });
+      });
+      
+      workbook = template;
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencia');
+      
+      const dateCols = allDates.length;
+      const wscols = [
+        { wch: 35 },
+        ...Array(dateCols).fill({ wch: 10 }),
+        { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+      ];
+      worksheet['!cols'] = wscols;
+    }
 
     XLSX.writeFile(workbook, `Asistencia_${selectedClass.replace(/ /g, '_')}_Bimestre_${selectedPeriod}.xlsx`);
   };
 
-  const exportAuxiliaryRegister = () => {
+  const exportAuxiliaryRegister = async () => {
     if (!selectedClass || !selectedSubject) {
       alert('Por favor selecciona un grado/sección y un área');
       return;
@@ -90,36 +87,47 @@ const Reports = () => {
     
     if (!subject) return;
 
-    const data = classStudents.map(student => {
-      const row = { 'Estudiante': student.name };
+    const data = buildAuxiliaryRegisterData(classStudents, grades, subject, selectedPeriod);
+
+    const template = await loadTemplate('registro_auxiliar.xlsx');
+    let workbook;
+    
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
       
-      subject.competencies.forEach(comp => {
-        const grade = grades.find(g => 
-          g.studentId === student.id && 
-          g.subject === subject.name && 
-          g.competencyId === comp.id && 
-          g.period === selectedPeriod
-        );
-        row[comp.name] = grade ? grade.score : '-';
+      data.forEach((row, rowIndex) => {
+        Object.entries(row).forEach(([key, value]) => {
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+          for (let col = 0; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 2, c: col });
+            const header = worksheet[cellRef]?.v;
+            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+              const targetCell = XLSX.utils.encode_cell({ r: 3 + rowIndex, c: col });
+              worksheet[targetCell] = { t: 's', v: String(value) };
+              break;
+            }
+          }
+        });
       });
+      
+      workbook = template;
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, `Bimestre ${selectedPeriod}`);
 
-      return row;
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, `Bimestre ${selectedPeriod}`);
-
-    const wscols = [
-      { wch: 40 }, // Estudiante
-      ...subject.competencies.map(() => ({ wch: 50 })) // Competencias
-    ];
-    worksheet['!cols'] = wscols;
+      const wscols = [
+        { wch: 40 },
+        ...subject.competencies.map(() => ({ wch: 50 }))
+      ];
+      worksheet['!cols'] = wscols;
+    }
 
     XLSX.writeFile(workbook, `Registro_Auxiliar_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
-  const exportFinalReport = () => {
+  const exportFinalReport = async () => {
     if (!selectedClass || !selectedSubject) {
       alert('Por favor selecciona un grado/sección y un área');
       return;
@@ -163,25 +171,43 @@ const Reports = () => {
       return row;
     });
 
-    const worksheetData = [...headerRows, dataHeaders, ...studentData];
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
+    const template = await loadTemplate('reporte_final.xlsx');
+    let workbook;
+    
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
+      
+      const worksheetData = [...headerRows, dataHeaders, ...studentData];
+      const newWorksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, newWorksheet, 'Reporte Final');
+      
+      const wscols = [{ wch: 5 }, { wch: 40 }];
+      subject.competencies.forEach(() => {
+        wscols.push({ wch: 15 });
+        wscols.push({ wch: 50 });
+      });
+      newWorksheet['!cols'] = wscols;
+    } else {
+      const worksheetData = [...headerRows, dataHeaders, ...studentData];
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
 
-    const wscols = [
-      { wch: 5 },
-      { wch: 40 },
-    ];
-    subject.competencies.forEach(() => {
-      wscols.push({ wch: 15 });
-      wscols.push({ wch: 50 });
-    });
-    worksheet['!cols'] = wscols;
+      const wscols = [{ wch: 5 }, { wch: 40 }];
+      subject.competencies.forEach(() => {
+        wscols.push({ wch: 15 });
+        wscols.push({ wch: 50 });
+      });
+      worksheet['!cols'] = wscols;
+    }
 
     XLSX.writeFile(workbook, `Reporte_Final_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
-  const exportInstrumentGrades = () => {
+  const exportInstrumentGrades = async () => {
     if (!selectedClass || !selectedSubject) {
       alert('Por favor selecciona un grado/sección y un área');
       return;
@@ -194,64 +220,56 @@ const Reports = () => {
     const subject = subjects.find(s => s.id === selectedSubject);
     if (!subject) return;
 
-    const subjectEvals = instrumentEvaluations.filter(ev => 
-      ev.subjectId === selectedSubject || ev.subject_name === subject.name
-    );
+    const data = buildInstrumentGradesData(classStudents, instrumentEvaluations, instruments, selectedPeriod);
 
-    const studentData = [];
-    classStudents.forEach((student, idx) => {
-      const studentEvals = subjectEvals.filter(ev => 
-        ev.studentId === student.id && ev.period === selectedPeriod
-      );
-
-      if (studentEvals.length > 0) {
-        studentEvals.forEach(ev => {
-          studentData.push({
-            'N°': idx + 1,
-            'Estudiante': student.name,
-            'Instrumento': instruments.find(i => i.id === ev.instrumentId)?.title || ev.activityName || 'Sin título',
-            'Actividad': ev.activityName || '-',
-            'Puntaje': ev.score ?? '-',
-            'Nivel': ev.qualitative || '-',
-            'Bimestre': ev.period
-          });
-        });
-      } else {
-        studentData.push({
-          'N°': idx + 1,
-          'Estudiante': student.name,
-          'Instrumento': '-',
-          'Actividad': '-',
-          'Puntaje': '-',
-          'Nivel': '-',
-          'Bimestre': selectedPeriod
-        });
-      }
-    });
-
-    if (studentData.every(row => row['Puntaje'] === '-')) {
+    if (data.every(row => row['Puntaje'] === '-')) {
       alert('No hay evaluaciones registradas para este período');
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(studentData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Calificaciones');
+    const template = await loadTemplate('instrumentos.xlsx');
+    let workbook;
+    
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
+      
+      data.forEach((row, rowIndex) => {
+        Object.entries(row).forEach(([key, value]) => {
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+          for (let col = 0; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 3, c: col });
+            const header = worksheet[cellRef]?.v;
+            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+              const targetCell = XLSX.utils.encode_cell({ r: 4 + rowIndex, c: col });
+              worksheet[targetCell] = { t: 's', v: String(value) };
+              break;
+            }
+          }
+        });
+      });
+      
+      workbook = template;
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Calificaciones');
 
-    worksheet['!cols'] = [
-      { wch: 5 },   // N°
-      { wch: 40 },  // Estudiante
-      { wch: 30 },  // Instrumento
-      { wch: 25 },  // Actividad
-      { wch: 10 },  // Puntaje
-      { wch: 10 },  // Nivel
-      { wch: 10 }   // Bimestre
-    ];
+      worksheet['!cols'] = [
+        { wch: 5 },
+        { wch: 40 },
+        { wch: 30 },
+        { wch: 25 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 }
+      ];
+    }
 
     XLSX.writeFile(workbook, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
-  const exportStudentList = () => {
+  const exportStudentList = async () => {
     if (!selectedClass) {
       alert('Por favor selecciona un grado/sección');
       return;
@@ -264,27 +282,45 @@ const Reports = () => {
       return;
     }
 
-    const data = classStudents.map((student, idx) => ({
-      'N°': idx + 1,
-      'Estudiante': student.name,
-      'DNI': student.dni || '-',
-      'Fecha de Nacimiento': student.birthDate || '-',
-      'Nombre del Apoderado': student.guardianName || '-',
-      'Teléfono': student.guardianPhone || '-'
-    }));
+    const data = buildStudentListData(classStudents);
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Estudiantes');
+    const template = await loadTemplate('lista_estudiantes.xlsx');
+    let workbook;
+    
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
+      
+      data.forEach((row, rowIndex) => {
+        Object.entries(row).forEach(([key, value]) => {
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+          for (let col = 0; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 1, c: col });
+            const header = worksheet[cellRef]?.v;
+            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+              const targetCell = XLSX.utils.encode_cell({ r: 2 + rowIndex, c: col });
+              worksheet[targetCell] = { t: 's', v: String(value) };
+              break;
+            }
+          }
+        });
+      });
+      
+      workbook = template;
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Estudiantes');
 
-    worksheet['!cols'] = [
-      { wch: 5 },   // N°
-      { wch: 40 },  // Estudiante
-      { wch: 12 },  // DNI
-      { wch: 20 },  // Fecha Nac
-      { wch: 40 },  // Apoderado
-      { wch: 15 }   // Teléfono
-    ];
+      worksheet['!cols'] = [
+        { wch: 5 },
+        { wch: 40 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 40 },
+        { wch: 15 }
+      ];
+    }
 
     XLSX.writeFile(workbook, `Lista_Estudiantes_${selectedClass.replace(/ /g, '_')}.xlsx`);
   };
@@ -649,6 +685,55 @@ const Reports = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Sección de ayuda para plantillas */}
+      <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+          <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px' }}>
+            <FolderOpen size={24} color="#8b5cf6" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '600' }}>Plantillas Personalizadas</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+              Usa las plantillas de tu institución como base
+            </p>
+          </div>
+        </div>
+
+        <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <p style={{ marginBottom: '1rem' }}>
+            <strong>Ubicación de plantillas:</strong><br />
+            <code style={{ background: '#e2e8f0', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+              public/templates/
+            </code>
+          </p>
+
+          <p style={{ marginBottom: '0.75rem' }}><strong>Archivos de plantilla que puedes usar:</strong></p>
+          <ul style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
+            <li><code>asistencia.xlsx</code> - Para exportar asistencia</li>
+            <li><code>registro_auxiliar.xlsx</code> - Para registros de calificaciones</li>
+            <li><code>reporte_final.xlsx</code> - Para reporte final oficial</li>
+            <li><code>instrumentos.xlsx</code> - Para calificaciones por instrumento</li>
+            <li><code>lista_estudiantes.xlsx</code> - Para lista de estudiantes</li>
+          </ul>
+
+          <p style={{ marginBottom: '0.75rem' }}><strong>Cómo usar:</strong></p>
+          <ol style={{ marginLeft: '1.5rem' }}>
+            <li>Copia tus plantillas de Excel en la carpeta <code>public/templates/</code></li>
+            <li>Asegúrate de que los encabezados de columna coincidan con los datos esperados:<br />
+              <code>Estudiante</code>, <code>N°</code>, <code>DNI</code>, <code>Instrumento</code>, etc.
+            </li>
+            <li>Al exportar, el sistema usará tu plantilla y llenará los datos automáticamente</li>
+            <li>Si no hay plantilla, se generará el formato predeterminado</li>
+          </ol>
+
+          <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+            <p style={{ margin: 0, fontSize: '0.8rem' }}>
+              💡 <strong>Tip:</strong> Los encabezados deben estar en la primera fila de datos para que el sistema pueda identificarlos correctamente.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
