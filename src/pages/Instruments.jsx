@@ -164,6 +164,7 @@ export default function Instruments() {
   const [tempGroups, setTempGroups] = useState([]);
   const [randomStudent, setRandomStudent] = useState(null);
   const [isPicking, setIsPicking] = useState(false);
+  const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
 
   const availableSubjects = useMemo(() => {
     if (isAdmin || !currentUser?.assignments || currentUser.assignments.length === 0) {
@@ -190,11 +191,12 @@ export default function Instruments() {
   }, [filteredStudents]);
 
   const pickRandom = () => {
-    if (!filteredStudents.length) return;
+    const availableStudents = filteredStudents.filter(s => !savedGroupMembers.has(s.id));
+    if (!availableStudents.length) return;
     setIsPicking(true);
     let count = 0;
     const interval = setInterval(() => {
-      const r = filteredStudents[Math.floor(Math.random() * filteredStudents.length)];
+      const r = availableStudents[Math.floor(Math.random() * availableStudents.length)];
       setRandomStudent(r);
       if (++count > 10) { clearInterval(interval); setIsPicking(false); setSelectedStudent(r.id); }
     }, 100);
@@ -247,6 +249,7 @@ export default function Instruments() {
     setApplyMode('individual');
     setSelectedGroupIdx(null);
     setTempGroups([]);
+    setSavedGroupMembers(new Set());
     setView('apply');
   };
 
@@ -277,42 +280,67 @@ export default function Instruments() {
       period: selectedPeriod,
       classId: classes.find(c => c.name === selectedClass)?.id || ''
     };
-    console.log('[SAVE EVAL] selectedSubjectObj:', selectedSubjectObj);
-    console.log('[SAVE EVAL] subjectName:', selectedSubjectObj?.name);
 
     const save = (student) => saveInstrumentEvaluation({ ...evaluationData, studentId: student.id, studentName: student.name });
 
     if (applyMode === 'individual') {
       const s = students.find(s => s.id === selectedStudent);
       save(s);
+      setSavedGroupMembers(prev => new Set([...prev, selectedStudent]));
     } else if (selectedGroupIdx !== null && tempGroups[selectedGroupIdx]?.members.length > 0) {
-      tempGroups[selectedGroupIdx].members.forEach(save);
+      const membersToSave = tempGroups[selectedGroupIdx].members;
+      membersToSave.forEach(save);
+      const newMemberIds = new Set(membersToSave.map(m => m.id));
+      setSavedGroupMembers(prev => new Set([...prev, ...newMemberIds]));
     } else {
       alert('Debes seleccionar un estudiante o un grupo.');
       return;
     }
 
-    // Preguntar si quiere evaluar otro estudiante o grupo con la misma configuración
-    if (applyMode === 'individual' && window.confirm('¿Evaluar otro estudiante con la misma configuración?')) {
-      setSelectedStudent('');
+    const resetScores = () => {
       setEvaluationScores({});
       document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+    };
+
+    if (applyMode === 'individual' && window.confirm('¿Evaluar otro estudiante con la misma configuración?')) {
+      setSelectedStudent('');
+      resetScores();
     } else if (applyMode === 'groups') {
       const groupName = tempGroups[selectedGroupIdx]?.name;
-      if (window.confirm(`Evaluación guardada para el grupo "${groupName}" con ${tempGroups[selectedGroupIdx]?.members.length || 0} estudiante(s).\n\n¿Evaluar otro grupo con la misma configuración?`)) {
-        setSelectedGroupIdx(null);
-        setTempGroups([]);
-        setEvaluationScores({});
-        document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+      const memberCount = tempGroups[selectedGroupIdx]?.members.length || 0;
+      
+      const allGroupMemberIds = new Set();
+      tempGroups.forEach(g => g.members.forEach(m => allGroupMemberIds.add(m.id)));
+      const remainingStudents = filteredStudents.length - allGroupMemberIds.size;
+      
+      if (remainingStudents > 0) {
+        if (window.confirm(`Evaluación guardada para el grupo "${groupName}" con ${memberCount} estudiante(s).\n\nQuedan ${remainingStudents} estudiante(s) sin evaluar.\n\n¿Evaluar otro grupo?`)) {
+          setSelectedGroupIdx(null);
+          resetScores();
+        } else {
+          setView('list');
+          setApplyingInstrument(null);
+          setTempGroups([]);
+          setSavedGroupMembers(new Set());
+        }
       } else {
-        setView('list');
-        setApplyingInstrument(null);
-        setTempGroups([]);
+        if (window.confirm(`Evaluación guardada para el grupo "${groupName}" con ${memberCount} estudiante(s).\n\n¡Todos los estudiantes han sido evaluados!`)) {
+          setView('list');
+          setApplyingInstrument(null);
+          setTempGroups([]);
+          setSavedGroupMembers(new Set());
+        } else {
+          setView('list');
+          setApplyingInstrument(null);
+          setTempGroups([]);
+          setSavedGroupMembers(new Set());
+        }
       }
     } else {
       setView('list');
       setApplyingInstrument(null);
       setTempGroups([]);
+      setSavedGroupMembers(new Set());
     }
   };
 
@@ -573,11 +601,29 @@ export default function Instruments() {
                       <Dices size={13} /> Sorteo
                     </button>
                   </div>
-                  <select className="input-field" value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)}>
-                    <option value="">-- Selecciona --</option>
-                    {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                  {isPicking && randomStudent && (
+                  {(() => {
+                    const availableStudents = filteredStudents.filter(s => !savedGroupMembers.has(s.id));
+                    if (availableStudents.length === 0) {
+                      return (
+                        <div style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(16,185,129,0.1)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.3)' }}>
+                          <p style={{ fontSize: '0.8rem', color: '#10b981', marginBottom: '0.5rem' }}>Todos los estudiantes de esta sección ya fueron evaluados</p>
+                          <button 
+                            onClick={() => setSavedGroupMembers(new Set())}
+                            style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                          >
+                            Reiniciar evaluación
+                          </button>
+                        </div>
+                      );
+                    }
+                    return (
+                      <select className="input-field" value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)}>
+                        <option value="">-- Selecciona --</option>
+                        {availableStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                    );
+                  })()}
+                  {isPicking && randomStudent && !savedGroupMembers.has(randomStudent.id) && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginTop: '4px', fontWeight: 600 }}>🎲 {randomStudent.name}</p>
                   )}
                 </div>
@@ -692,38 +738,60 @@ export default function Instruments() {
                         Añadir estudiantes a "{tempGroups[selectedGroupIdx]?.name}":
                       </label>
                       <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.5rem' }}>
-                        {filteredStudents.filter(s => !tempGroups[selectedGroupIdx]?.members.some(m => m.id === s.id)).length === 0 ? (
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Todos los estudiantes ya están en este grupo</p>
-                        ) : (
-                          filteredStudents
-                            .filter(s => !tempGroups[selectedGroupIdx]?.members.some(m => m.id === s.id))
-                            .map(s => (
-                              <div 
-                                key={s.id}
-                                onClick={() => {
-                                  setTempGroups(prev => prev.map((g, i) => 
-                                    i === selectedGroupIdx 
-                                      ? { ...g, members: [...g.members, { id: s.id, name: s.name }] }
-                                      : g
-                                  ));
-                                }}
-                                style={{ 
-                                  padding: '0.3rem 0.5rem', 
-                                  cursor: 'pointer',
-                                  borderRadius: '4px',
-                                  fontSize: '0.78rem',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.5rem'
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                              >
-                                <span style={{ color: 'var(--accent-primary)' }}>+</span> {s.name}
-                              </div>
-                            ))
-                        )}
+                        {/* Get all student IDs that are already in ANY group (for this evaluation session) */}
+                        {(() => {
+                          const allGroupMemberIds = new Set();
+                          tempGroups.forEach(g => g.members.forEach(m => allGroupMemberIds.add(m.id)));
+                          const availableStudents = filteredStudents.filter(s => !allGroupMemberIds.has(s.id));
+                          
+                          if (availableStudents.length === 0) {
+                            return (
+                              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                                {tempGroups.every(g => g.members.length > 0) 
+                                  ? 'Todos los estudiantes ya fueron añadidos a algún grupo' 
+                                  : 'Todos los estudiantes ya están en este grupo'}
+                              </p>
+                            );
+                          }
+                          
+                          return availableStudents.map(s => (
+                            <div 
+                              key={s.id}
+                              onClick={() => {
+                                setTempGroups(prev => prev.map((g, i) => 
+                                  i === selectedGroupIdx 
+                                    ? { ...g, members: [...g.members, { id: s.id, name: s.name }] }
+                                    : g
+                                ));
+                              }}
+                              style={{ 
+                                padding: '0.3rem 0.5rem', 
+                                cursor: 'pointer',
+                                borderRadius: '4px',
+                                fontSize: '0.78rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                              <span style={{ color: 'var(--accent-primary)' }}>+</span> {s.name}
+                            </div>
+                          ));
+                        })()}
                       </div>
+                      {/* Show count of already added students */}
+                      {(() => {
+                        const allGroupMemberIds = new Set();
+                        tempGroups.forEach(g => g.members.forEach(m => allGroupMemberIds.add(m.id)));
+                        const remaining = filteredStudents.length - allGroupMemberIds.size;
+                        return allGroupMemberIds.size > 0 && remaining > 0 ? (
+                          <p style={{ fontSize: '0.7rem', color: 'var(--warning-color)', marginTop: '0.3rem', textAlign: 'center' }}>
+                            {remaining} estudiante(s) disponible(s)
+                          </p>
+                        ) : null;
+                      })()}
                     </div>
                   )}
                 </div>
