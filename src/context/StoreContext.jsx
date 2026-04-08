@@ -417,6 +417,7 @@ export const StoreProvider = ({ children }) => {
             instrumentId: e.instrument_id || e.instrumentId, 
             studentId: e.student_id || e.studentId,
             studentName: e.student_name || e.studentName,
+            instrumentType: e.instrument_type || null,
             activityName: e.activity_name || e.activityName || '',
             scores: parsedScores,
             criteria: parsedCriteria
