@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download } from 'lucide-react';
+import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download, FileSpreadsheet, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { EXPORT_TEMPLATES } from '../templates/exportTemplates';
 
 const Reports = () => {
-  const { students, classes, subjects, attendance, grades, currentUser, periodDates } = useStore();
+  const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('1');
@@ -23,7 +24,6 @@ const Reports = () => {
       return;
     }
 
-    // Get only dates within the selected period's range
     const period = periodDates[selectedPeriod];
     const allDates = [...new Set(attendance.map(a => a.date))]
       .filter(date => date >= period.start && date <= period.end)
@@ -43,8 +43,12 @@ const Reports = () => {
 
       allDates.forEach(date => {
         const dayRecord = attendance.find(a => a.date === date);
-        const status = dayRecord?.records[student.id] || '-';
-        row[date] = status;
+        const status = dayRecord?.records?.[student.id] || '-';
+        const formattedDate = new Date(date).toLocaleDateString('es-PE', { 
+          day: '2-digit', 
+          month: '2-digit' 
+        });
+        row[formattedDate] = status;
 
         if (status === 'P') presentCount++;
         if (status === 'F') absentCount++;
@@ -64,9 +68,13 @@ const Reports = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencia');
     
-    // Auto-size columns
-    const max_width = data.reduce((w, r) => Math.max(w, r.Estudiante.length), 10);
-    worksheet['!cols'] = [{ wch: max_width + 5 }];
+    const dateCols = allDates.length;
+    const wscols = [
+      { wch: 35 }, // Estudiante
+      ...Array(dateCols).fill({ wch: 10 }), // Fechas
+      { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 } // Totales
+    ];
+    worksheet['!cols'] = wscols;
 
     XLSX.writeFile(workbook, `Asistencia_${selectedClass.replace(/ /g, '_')}_Bimestre_${selectedPeriod}.xlsx`);
   };
@@ -102,9 +110,11 @@ const Reports = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, `Bimestre ${selectedPeriod}`);
 
-    // Auto-size
-    const max_width = data.reduce((w, r) => Math.max(w, r.Estudiante.length), 10);
-    worksheet['!cols'] = [{ wch: max_width + 5 }];
+    const wscols = [
+      { wch: 40 }, // Estudiante
+      ...subject.competencies.map(() => ({ wch: 50 })) // Competencias
+    ];
+    worksheet['!cols'] = wscols;
 
     XLSX.writeFile(workbook, `Registro_Auxiliar_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
@@ -122,7 +132,6 @@ const Reports = () => {
     const subject = subjects.find(s => s.id === selectedSubject);
     if (!subject) return;
 
-    // Header information rows
     const headerRows = [
       ['REGISTRO FINAL'],
       [''],
@@ -133,14 +142,12 @@ const Reports = () => {
       ['']
     ];
 
-    // Data Headers
     const dataHeaders = ['N°', 'Estudiante'];
     subject.competencies.forEach(comp => {
       dataHeaders.push(comp.name);
       dataHeaders.push('Conclusión Descriptiva');
     });
 
-    // Student Data
     const studentData = classStudents.map((student, index) => {
       const row = [index + 1, student.name];
       subject.competencies.forEach(comp => {
@@ -161,18 +168,125 @@ const Reports = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
 
-    // Auto-size columns
     const wscols = [
-      { wch: 5 }, // N°
-      { wch: 35 }, // Estudiante
+      { wch: 5 },
+      { wch: 40 },
     ];
     subject.competencies.forEach(() => {
-      wscols.push({ wch: 15 }); // Nota
-      wscols.push({ wch: 45 }); // Conclusión
+      wscols.push({ wch: 15 });
+      wscols.push({ wch: 50 });
     });
     worksheet['!cols'] = wscols;
 
     XLSX.writeFile(workbook, `Reporte_Final_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
+  };
+
+  const exportInstrumentGrades = () => {
+    if (!selectedClass || !selectedSubject) {
+      alert('Por favor selecciona un grado/sección y un área');
+      return;
+    }
+
+    const classStudents = students
+      .filter(s => s.gradeLevel === selectedClass)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const subject = subjects.find(s => s.id === selectedSubject);
+    if (!subject) return;
+
+    const subjectEvals = instrumentEvaluations.filter(ev => 
+      ev.subjectId === selectedSubject || ev.subject_name === subject.name
+    );
+
+    const studentData = [];
+    classStudents.forEach((student, idx) => {
+      const studentEvals = subjectEvals.filter(ev => 
+        ev.studentId === student.id && ev.period === selectedPeriod
+      );
+
+      if (studentEvals.length > 0) {
+        studentEvals.forEach(ev => {
+          studentData.push({
+            'N°': idx + 1,
+            'Estudiante': student.name,
+            'Instrumento': instruments.find(i => i.id === ev.instrumentId)?.title || ev.activityName || 'Sin título',
+            'Actividad': ev.activityName || '-',
+            'Puntaje': ev.score ?? '-',
+            'Nivel': ev.qualitative || '-',
+            'Bimestre': ev.period
+          });
+        });
+      } else {
+        studentData.push({
+          'N°': idx + 1,
+          'Estudiante': student.name,
+          'Instrumento': '-',
+          'Actividad': '-',
+          'Puntaje': '-',
+          'Nivel': '-',
+          'Bimestre': selectedPeriod
+        });
+      }
+    });
+
+    if (studentData.every(row => row['Puntaje'] === '-')) {
+      alert('No hay evaluaciones registradas para este período');
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(studentData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Calificaciones');
+
+    worksheet['!cols'] = [
+      { wch: 5 },   // N°
+      { wch: 40 },  // Estudiante
+      { wch: 30 },  // Instrumento
+      { wch: 25 },  // Actividad
+      { wch: 10 },  // Puntaje
+      { wch: 10 },  // Nivel
+      { wch: 10 }   // Bimestre
+    ];
+
+    XLSX.writeFile(workbook, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
+  };
+
+  const exportStudentList = () => {
+    if (!selectedClass) {
+      alert('Por favor selecciona un grado/sección');
+      return;
+    }
+
+    const classStudents = students.filter(s => s.gradeLevel === selectedClass);
+    
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
+    }
+
+    const data = classStudents.map((student, idx) => ({
+      'N°': idx + 1,
+      'Estudiante': student.name,
+      'DNI': student.dni || '-',
+      'Fecha de Nacimiento': student.birthDate || '-',
+      'Nombre del Apoderado': student.guardianName || '-',
+      'Teléfono': student.guardianPhone || '-'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Estudiantes');
+
+    worksheet['!cols'] = [
+      { wch: 5 },   // N°
+      { wch: 40 },  // Estudiante
+      { wch: 12 },  // DNI
+      { wch: 20 },  // Fecha Nac
+      { wch: 40 },  // Apoderado
+      { wch: 15 }   // Teléfono
+    ];
+
+    XLSX.writeFile(workbook, `Lista_Estudiantes_${selectedClass.replace(/ /g, '_')}.xlsx`);
   };
 
   return (
@@ -402,6 +516,136 @@ const Reports = () => {
 
           <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
             <p><strong>Nota:</strong> Este reporte incluye el número de orden, notas finales y conclusiones descriptivas por cada competencia.</p>
+          </div>
+        </div>
+
+        {/* Card Calificaciones por Instrumento */}
+        <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '10px', background: 'rgba(249, 115, 22, 0.1)', borderRadius: '12px' }}>
+              <FileSpreadsheet size={24} color="#f97316" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Calificaciones por Instrumento</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Sección
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                >
+                  <option value="">-- Sección --</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Periodo
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                >
+                  {periods.map(p => (
+                    <option key={p} value={p}>Bimestre {p}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Área Curricular
+              </label>
+              <select 
+                className="input-field"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
+                <option value="">-- Selecciona el Área --</option>
+                {subjects.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={exportInstrumentGrades}
+              className="btn-primary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '1rem',
+                backgroundColor: '#f97316',
+                boxShadow: '0 4px 14px 0 rgba(249, 115, 22, 0.39)'
+              }}
+            >
+              <Download size={20} />
+              Exportar Calificaciones por Instrumento
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            <p><strong>Nota:</strong> Este reporte lista todas las evaluaciones por instrumento, incluyendo puntaje y nivel cualitativo.</p>
+          </div>
+        </div>
+
+        {/* Card Lista de Estudiantes */}
+        <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '10px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '12px' }}>
+              <Table size={24} color="#22c55e" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Lista de Estudiantes</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Seleccionar Grado y Sección
+              </label>
+              <select 
+                className="input-field"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+              >
+                <option value="">-- Elige una sección --</option>
+                {classes.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={exportStudentList}
+              className="btn-primary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '1rem',
+                backgroundColor: '#22c55e',
+                boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.39)'
+              }}
+            >
+              <Download size={20} />
+              Exportar Lista de Estudiantes
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            <p><strong>Nota:</strong> Este reporte incluye el número de orden, nombres, DNI, fecha de nacimiento y datos del apoderado.</p>
           </div>
         </div>
 
