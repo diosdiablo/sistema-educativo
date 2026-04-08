@@ -1153,7 +1153,9 @@ export default function Instruments() {
             }}>
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Área:</span>
-                <div style={{ fontWeight: 600 }}>{viewingEvaluation.subjectName}</div>
+                <div style={{ fontWeight: 600 }}>
+                  {viewingEvaluation.subjectName || (viewingEvaluation.subjectId ? (subjects?.find(s => s.id === viewingEvaluation.subjectId)?.name || viewingEvaluation.subjectId) : '—')}
+                </div>
               </div>
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Fecha:</span>
