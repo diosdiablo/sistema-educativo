@@ -267,7 +267,6 @@ export default function Grades() {
                                 onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
                               >
                                 <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>{ev.qualitative}</span>
-                                {ev.score !== null && <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{ev.score}/{ev.maxPossible}</div>}
                               </td>
                             );
                           });
