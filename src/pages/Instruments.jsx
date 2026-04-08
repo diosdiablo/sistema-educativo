@@ -180,6 +180,7 @@ export default function Instruments() {
   useEffect(() => { setSelectedStudent(''); setSelectedGroupIdx(null); }, [selectedClass]);
 
   const filteredStudents = useMemo(() => students.filter(s => s.gradeLevel === selectedClass), [students, selectedClass]);
+  
   const predefinedGroups = useMemo(() => {
     const map = {};
     filteredStudents.forEach(s => {
@@ -189,6 +190,16 @@ export default function Instruments() {
     });
     return Object.entries(map).map(([name, members]) => ({ name, members }));
   }, [filteredStudents]);
+
+  const allAssignedStudentIds = useMemo(() => {
+    const ids = new Set();
+    tempGroups.forEach(g => g.members.forEach(m => ids.add(m.id)));
+    return ids;
+  }, [tempGroups]);
+
+  const availableStudentsForGroups = useMemo(() => {
+    return filteredStudents.filter(s => !allAssignedStudentIds.has(s.id));
+  }, [filteredStudents, allAssignedStudentIds]);
 
   const pickRandom = () => {
     const availableStudents = filteredStudents.filter(s => !savedGroupMembers.has(s.id));
@@ -281,7 +292,13 @@ export default function Instruments() {
       classId: classes.find(c => c.name === selectedClass)?.id || ''
     };
 
-    const save = (student) => saveInstrumentEvaluation({ ...evaluationData, studentId: student.id, studentName: student.name });
+    const save = (student) => {
+      const evalData = { ...evaluationData, studentId: student.id, studentName: student.name };
+      console.log('[SAVE EVAL] Guardando evaluación para:', student.name, student.id);
+      console.log('[SAVE EVAL] activityName:', evalData.activityName);
+      console.log('[SAVE EVAL] competencyId:', evalData.competencyId);
+      saveInstrumentEvaluation(evalData);
+    };
 
     if (applyMode === 'individual') {
       const s = students.find(s => s.id === selectedStudent);
@@ -289,6 +306,8 @@ export default function Instruments() {
       setSavedGroupMembers(prev => new Set([...prev, selectedStudent]));
     } else if (selectedGroupIdx !== null && tempGroups[selectedGroupIdx]?.members.length > 0) {
       const membersToSave = tempGroups[selectedGroupIdx].members;
+      console.log('[SAVE GROUP] Guardando evaluaciones para grupo:', tempGroups[selectedGroupIdx].name);
+      console.log('[SAVE GROUP] Miembros:', membersToSave.map(m => ({ id: m.id, name: m.name })));
       membersToSave.forEach(save);
       const newMemberIds = new Set(membersToSave.map(m => m.id));
       setSavedGroupMembers(prev => new Set([...prev, ...newMemberIds]));
@@ -737,24 +756,47 @@ export default function Instruments() {
                       <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>
                         Añadir estudiantes a "{tempGroups[selectedGroupIdx]?.name}":
                       </label>
+                      
+                      {/* Info de estudiantes ya asignados */}
+                      {allAssignedStudentIds.size > 0 && (
+                        <div style={{ 
+                          padding: '0.5rem', 
+                          background: 'rgba(245,158,11,0.1)', 
+                          border: '1px solid rgba(245,158,11,0.3)',
+                          borderRadius: '6px',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.72rem'
+                        }}>
+                          <div style={{ color: '#f59e0b', fontWeight: 600, marginBottom: '0.25rem' }}>
+                            ⚠️ {allAssignedStudentIds.size} estudiante(s) ya asignado(s) a otros grupos:
+                          </div>
+                          <div style={{ color: 'var(--text-secondary)', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {Array.from(allAssignedStudentIds).map(id => {
+                              const student = filteredStudents.find(s => s.id === id);
+                              return student ? (
+                                <span key={id} style={{ 
+                                  background: 'rgba(245,158,11,0.15)', 
+                                  padding: '2px 6px', 
+                                  borderRadius: '4px',
+                                  fontSize: '0.68rem'
+                                }}>
+                                  {student.name}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
                       <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.5rem' }}>
-                        {/* Get all student IDs that are already in ANY group (for this evaluation session) */}
-                        {(() => {
-                          const allGroupMemberIds = new Set();
-                          tempGroups.forEach(g => g.members.forEach(m => allGroupMemberIds.add(m.id)));
-                          const availableStudents = filteredStudents.filter(s => !allGroupMemberIds.has(s.id));
-                          
-                          if (availableStudents.length === 0) {
-                            return (
-                              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-                                {tempGroups.every(g => g.members.length > 0) 
-                                  ? 'Todos los estudiantes ya fueron añadidos a algún grupo' 
-                                  : 'Todos los estudiantes ya están en este grupo'}
-                              </p>
-                            );
-                          }
-                          
-                          return availableStudents.map(s => (
+                        {availableStudentsForGroups.length === 0 ? (
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                            {tempGroups.every(g => g.members.length > 0) 
+                              ? '✓ Todos los estudiantes ya fueron añadidos a algún grupo' 
+                              : 'Este grupo ya tiene todos los estudiantes'}
+                          </p>
+                        ) : (
+                          availableStudentsForGroups.map(s => (
                             <div 
                               key={s.id}
                               onClick={() => {
@@ -778,20 +820,14 @@ export default function Instruments() {
                             >
                               <span style={{ color: 'var(--accent-primary)' }}>+</span> {s.name}
                             </div>
-                          ));
-                        })()}
+                          ))
+                        )}
                       </div>
-                      {/* Show count of already added students */}
-                      {(() => {
-                        const allGroupMemberIds = new Set();
-                        tempGroups.forEach(g => g.members.forEach(m => allGroupMemberIds.add(m.id)));
-                        const remaining = filteredStudents.length - allGroupMemberIds.size;
-                        return allGroupMemberIds.size > 0 && remaining > 0 ? (
-                          <p style={{ fontSize: '0.7rem', color: 'var(--warning-color)', marginTop: '0.3rem', textAlign: 'center' }}>
-                            {remaining} estudiante(s) disponible(s)
-                          </p>
-                        ) : null;
-                      })()}
+                      {availableStudentsForGroups.length > 0 && (
+                        <p style={{ fontSize: '0.7rem', color: 'var(--success-color)', marginTop: '0.3rem', textAlign: 'center' }}>
+                          {availableStudentsForGroups.length} estudiante(s) disponible(s)
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
