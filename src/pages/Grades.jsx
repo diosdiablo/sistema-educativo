@@ -93,7 +93,7 @@ export default function Grades() {
     return { grade: NUM_TO_GRADE(avg), count: evs.length, evaluations: evs };
   };
 
-  const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs }
+  const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
 
   return (
     <div className="animate-fade-in">
@@ -197,12 +197,20 @@ export default function Grades() {
                           <td
                             key={comp.id}
                             style={{ textAlign: 'center', cursor: count > 0 ? 'pointer' : 'default' }}
-                            onClick={() => {
+                            onClick={(e) => {
                               if (count > 0) {
+                                const rect = e.currentTarget.getBoundingClientRect();
                                 setTooltip(
                                   (tooltip?.studentId === student.id && tooltip?.competencyId === comp.id)
                                     ? null
-                                    : { studentId: student.id, competencyId: comp.id, evs: evaluations, compName: comp.name, studentName: student.name }
+                                    : { 
+                                        studentId: student.id, 
+                                        competencyId: comp.id, 
+                                        evs: evaluations, 
+                                        compName: comp.name, 
+                                        studentName: student.name,
+                                        position: { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+                                      }
                                 );
                               }
                             }}
@@ -235,22 +243,22 @@ export default function Grades() {
             <div 
               style={{
                 position: 'fixed',
-                top: 0,
-                left: 0,
+                top: tooltip.position.y + tooltip.position.height + 8,
+                left: Math.min(tooltip.position.x, window.innerWidth - 680),
                 right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                backdropFilter: 'blur(8px)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                maxWidth: '650px',
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                backdropFilter: 'blur(12px)',
+                borderRadius: '16px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
                 zIndex: 1000,
-                padding: '1rem'
+                margin: '0 1rem',
+                overflow: 'hidden'
               }}
               onClick={(e) => { if (e.target === e.currentTarget) setTooltip(null); }}
             >
               <div className="card shadow-glass animate-fade-in" style={{ 
-                maxWidth: '650px', 
+                maxWidth: 'none', 
                 width: '100%',
                 maxHeight: '90vh',
                 overflow: 'hidden',
