@@ -425,7 +425,8 @@ export const StoreProvider = ({ children }) => {
             competencyId: e.competency_id || e.competencyId || null,
             competencyName: e.competency_name || e.competencyName || '',
             scores: parsedScores,
-            criteria: parsedCriteria
+            criteria: parsedCriteria,
+            instrumentTitle: e.instrument_title || e.instrumentTitle || ''
           };
         });
         console.log('[FETCH] Evaluaciones desde Supabase:', cloudEvals.length);
