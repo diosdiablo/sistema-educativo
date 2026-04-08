@@ -240,32 +240,34 @@ export default function Grades() {
 
           {/* Modal flotante de detalle del instrumento */}
           {tooltip && (
-            <div 
-              style={{
-                position: 'fixed',
-                top: tooltip.position.y + tooltip.position.height + 8,
-                left: Math.min(tooltip.position.x, window.innerWidth - 680),
-                right: 0,
-                maxWidth: '650px',
-                backgroundColor: 'rgba(0,0,0,0.85)',
-                backdropFilter: 'blur(12px)',
-                borderRadius: '16px',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                zIndex: 1000,
-                margin: '0 1rem',
-                overflow: 'hidden'
-              }}
-              onClick={(e) => { if (e.target === e.currentTarget) setTooltip(null); }}
-            >
-              <div className="card shadow-glass animate-fade-in" style={{ 
-                maxWidth: 'none', 
-                width: '100%',
-                maxHeight: '90vh',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                {/* Header del modal */}
+            <>
+              <div 
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  zIndex: 999
+                }}
+                onClick={() => setTooltip(null)}
+              />
+              <div 
+                style={{
+                  position: 'fixed',
+                  top: tooltip.position.y + tooltip.position.height + 8,
+                  left: Math.min(tooltip.position.x, window.innerWidth - 670),
+                  maxWidth: '650px',
+                  width: '100%',
+                  zIndex: 1000,
+                }}
+              >
+                <div className="card shadow-glass animate-fade-in" style={{ 
+                  maxHeight: '80vh', 
+                  overflowY: 'auto' 
+                }}>
+                  {/* Header del modal */}
                 <div style={{ 
                   padding: '1.25rem 1.5rem',
                   borderBottom: '1px solid var(--border-color)',
@@ -467,7 +469,8 @@ export default function Grades() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            </>
           )}
         </>
       )}
