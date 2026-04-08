@@ -204,7 +204,6 @@ export const StoreProvider = ({ children }) => {
           mappedData = dataArray.map(e => ({ 
             id: e.id, 
             instrument_id: e.instrumentId || e.instrument_id || '', 
-            instrument_title: e.instrumentTitle || e.title || null,
             student_id: e.studentId || e.student_id || '', 
             student_name: e.studentName || null, 
             score: e.score ?? e.finalScore ?? null, 
@@ -220,7 +219,8 @@ export const StoreProvider = ({ children }) => {
             scores: typeof e.scores === 'string' ? e.scores : JSON.stringify(e.scores || {}), 
             criteria: typeof e.criteria === 'string' ? e.criteria : JSON.stringify(e.criteria || []), 
             date: e.date || null,
-            instrument_type: e.instrumentType || null
+            instrument_type: e.instrumentType || null,
+            title: e.instrumentTitle || e.title || null
           }));
           break;
           
@@ -419,7 +419,6 @@ export const StoreProvider = ({ children }) => {
             instrumentId: e.instrument_id || e.instrumentId, 
             studentId: e.student_id || e.studentId,
             studentName: e.student_name || e.studentName,
-            title: e.instrument_title || e.title || e.instrumentTitle || '',
             activityName: e.activity_name || e.activityName || '',
             scores: parsedScores,
             criteria: parsedCriteria
