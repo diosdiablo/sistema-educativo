@@ -50,7 +50,7 @@ export default function Dashboard() {
   attendance.forEach(dayRecord => {
     Object.values(dayRecord.records).forEach(status => {
       totalRecords++;
-      if (status === 'Presente') totalPresent++;
+      if (status === 'Presente' || status === 'P') totalPresent++;
     });
   });
   const avgAttendance = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) + '%' : '0%';
@@ -143,7 +143,7 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <StatCard icon={<Users />} title="Total Estudiantes" value={totalStudents} color="#3b82f6" />
         <StatCard icon={<CheckCircle />} title="Asistencia Promedio" value={avgAttendance} color="#10b981" />
-        <StatCard icon={<TrendingUp />} title="Calif. Registradas" value={grades.length + diagnosticEvaluations.length} color="#8b5cf6" />
+        <StatCard icon={<TrendingUp />} title="Calif. Registradas" value={grades.length + diagnosticEvaluations.length + instrumentEvaluations.length} color="#8b5cf6" />
         <StatCard icon={<ClipboardCheck />} title="Instrumentos" value={instruments.length} color="#f59e0b" />
       </div>
 
