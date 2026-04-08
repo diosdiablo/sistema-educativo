@@ -5,7 +5,7 @@ import {
   CheckSquare, BarChart2, Grid, ChevronLeft, 
   PlusCircle, Save, User, Activity, CheckCircle2,
   Dices, Users, Eye, BookOpen, FileText, MessageSquare, Star,
-  X, FileSearch, Edit2
+  X, FileSearch, Edit2, CheckCircle as CheckCircleIcon
 } from 'lucide-react';
 
 // ─── Definición de tipos DCNEB ──────────────────────────────────────────────
@@ -511,7 +511,7 @@ export default function Instruments() {
                   justifyContent: 'center',
                   gap: '6px'
                 }}>
-                  <CheckCircle size={14} /> Todos
+                  <CheckCircleIcon size={14} /> Todos
                 </button>
               </div>
 
