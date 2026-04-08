@@ -146,16 +146,67 @@ export default function Dashboard() {
   }, [diagnosticEvaluations]);
 
   const daysMapping = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const todayName = daysMapping[new Date().getDay()];
+  const monthsMapping = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const todayDate = new Date();
+  const todayName = daysMapping[todayDate.getDay()];
+  const formattedDate = `${todayDate.getDate()} de ${monthsMapping[todayDate.getMonth()]} de ${todayDate.getFullYear()}`;
   const todayScheduleRaw = schedule.filter(s => s.day === todayName);
   const todaySchedule = groupScheduleByCourse(todayScheduleRaw);
+
+  const motivationalMessages = [
+    "¡Cada día es una nueva oportunidad para aprender!",
+    "La educación es el arma más poderosa que puedes usar para cambiar el mundo.",
+    "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
+    "Aprender hoy, liderar mañana.",
+    "La curiosidad es el motor del conocimiento.",
+    "Cada estudiante puede aprender, solo necesita el método adecuado.",
+    "El conocimiento es poder, y el poder es dar lo mejor de ti.",
+    "Pequeños pasos llevan a grandes logros.",
+    "Hoy es el mejor día para empezar algo nuevo.",
+    "La enseñanza que deja huella es aquella que enciende la curiosidad.",
+    "No temas a los problemas, enfréntalos con lo que sabes.",
+    "El maestro no es el que más sabe, sino el que más inspira.",
+    "Un día a la vez, una lección a la vez.",
+    "El esfuerzo de hoy es el éxito de mañana."
+  ];
+  const dayMessage = motivationalMessages[todayDate.getDay()];
+
+  const getNextClass = () => {
+    if (todaySchedule.length === 0) return null;
+    const now = todayDate.getHours();
+    const currentMinutes = todayDate.getMinutes();
+    const currentTimeInMinutes = now * 60 + currentMinutes;
+    
+    for (const item of todaySchedule) {
+      const startTime = item.time.split(' - ')[0];
+      const [hours, minutes] = startTime.split(':').map(Number);
+      const classMinutes = hours < 7 ? (hours + 12) * 60 + minutes : hours * 60 + minutes;
+      if (classMinutes > currentTimeInMinutes) {
+        const className = classes.find(c => c.id === item.classId)?.name || 'Grado...';
+        const subjectName = subjects.find(s => s.id === item.subjectId)?.name || 'Área...';
+        return { className, subjectName, time: item.time };
+      }
+    }
+    return null;
+  };
+  const nextClass = getNextClass();
 
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <div>
-          <h2 className="page-title">{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
-          <p className="page-subtitle">Resumen general del sistema educativo</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h2 className="page-title">{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{formattedDate}</p>
+            <p style={{ color: '#8b5cf6', fontSize: '0.9rem', fontWeight: 500, marginTop: '0.5rem' }}>{dayMessage}</p>
+          </div>
+          {nextClass && (
+            <div style={{ background: '#10b98115', padding: '0.75rem 1rem', borderRadius: '10px', borderLeft: '4px solid #10b981' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Próxima clase</p>
+              <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{nextClass.subjectName}</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{nextClass.className} • {nextClass.time}</p>
+            </div>
+          )}
         </div>
       </div>
 
