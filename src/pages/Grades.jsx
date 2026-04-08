@@ -207,7 +207,6 @@ export default function Grades() {
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && ev.period === selectedPeriod
               );
-              console.log('Competency:', competencyId, 'Evaluations:', evs.length);
               // Obtener instrumentos únicos
               const uniqueInstruments = {};
               evs.forEach(ev => {
