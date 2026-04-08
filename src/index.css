@@ -4,9 +4,9 @@
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   
   /* Light Theme Colors */
-  --bg-color-main: #f8fafc; /* Slate 50 */
+  --bg-color-main: #FFFEF0; /* Light Yellow */
   --bg-color-surface: #ffffff; /* White */
-  --bg-color-glass: rgba(255, 255, 255, 0.8);
+  --bg-color-glass: rgba(255, 255, 255, 0.9);
   
   --text-primary: #1e293b; /* Slate 800 */
   --text-secondary: #64748b; /* Slate 500 */
