@@ -80,35 +80,6 @@ export default function Grades() {
     return students.filter(s => s.gradeLevel === selectedClass);
   }, [students, selectedClass]);
 
-  /**
-   * For a given student + competency, pull all instrument evaluations
-   * that match: studentId, competencyId, period.
-   * Returns { grade: 'AD'|'A'|'B'|'C'|null, count, evaluations[] }
-   */
-  const getCompetencyAverage = (studentId, competencyId) => {
-    const evs = instrumentEvaluations.filter(
-      ev =>
-        ev.studentId === studentId &&
-        ev.competencyId === competencyId &&
-        ev.period === selectedPeriod
-    );
-    if (evs.length === 0) return { grade: null, count: 0, evaluations: [] };
-
-    const nums = evs.map(ev => {
-      if (ev.qualitative && GRADE_TO_NUM[ev.qualitative]) return GRADE_TO_NUM[ev.qualitative];
-      if (ev.score !== null && ev.score !== undefined) {
-        const numGrade = numToQualitative(ev.score, ev.maxPossible || 20);
-        return GRADE_TO_NUM[numGrade] || 0;
-      }
-      return 0;
-    }).filter(n => n > 0);
-    
-    if (nums.length === 0) return { grade: null, count: evs.length, evaluations: evs };
-
-    const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-    return { grade: NUM_TO_GRADE(avg), count: evs.length, evaluations: evs };
-  };
-
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
   const [hoveredEval, setHoveredEval] = useState(null); // { evaluation, position: { x, y } }
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
