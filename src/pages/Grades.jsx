@@ -197,11 +197,15 @@ export default function Grades() {
                           <td
                             key={comp.id}
                             style={{ textAlign: 'center', cursor: count > 0 ? 'pointer' : 'default' }}
-                            onClick={() => count > 0 && setTooltip(
-                              (tooltip?.studentId === student.id && tooltip?.competencyId === comp.id)
-                                ? null
-                                : { studentId: student.id, competencyId: comp.id, evs: evaluations, compName: comp.name, studentName: student.name }
-                            )}
+                            onClick={() => {
+                              if (count > 0) {
+                                setTooltip(
+                                  (tooltip?.studentId === student.id && tooltip?.competencyId === comp.id)
+                                    ? null
+                                    : { studentId: student.id, competencyId: comp.id, evs: evaluations, compName: comp.name, studentName: student.name }
+                                );
+                              }
+                            }}
                             title={count > 0 ? `${count} instrumento(s) aplicado(s)` : 'Sin evaluaciones aún'}
                           >
                             {grade ? (
@@ -293,9 +297,23 @@ export default function Grades() {
                       const originalInstrument = instruments.find(i => i.id === ev.instrumentId);
                       const instrumentType = ev.instrumentType || originalInstrument?.type || 'checklist';
                       const InstrumentIcon = TYPE_ICONS[instrumentType] || ClipboardCheck;
-                      const evalCriteria = (ev.criteria && Array.isArray(ev.criteria) && ev.criteria.length > 0) 
-                        ? ev.criteria 
-                        : (originalInstrument?.criteria || []);
+                      const evalCriteria = (() => {
+                        if (ev.criteria && Array.isArray(ev.criteria) && ev.criteria.length > 0) {
+                          return ev.criteria;
+                        }
+                        if (typeof ev.criteria === 'string') {
+                          try {
+                            const parsed = JSON.parse(ev.criteria);
+                            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                          } catch (e) {
+                            console.warn('Error parsing criteria:', e);
+                          }
+                        }
+                        if (originalInstrument?.criteria && Array.isArray(originalInstrument.criteria)) {
+                          return originalInstrument.criteria;
+                        }
+                        return [];
+                      })();
                       const totalCriteria = evalCriteria.length;
 
                       const typeColors = {
@@ -331,9 +349,9 @@ export default function Grades() {
                               <div>
                                 <h5 style={{ fontWeight: 700, marginBottom: '2px', fontSize: '1rem' }}>{ev.activityName || 'Sin actividad'}</h5>
                                 <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                                  <span style={{ color: typeColor, fontWeight: 600 }}>{TYPE_LABELS[instrumentType]}</span>
+                                  <span style={{ color: typeColor, fontWeight: 600 }}>{TYPE_LABELS[instrumentType] || 'Instrumento'}</span>
                                   <span style={{ margin: '0 6px' }}>·</span>
-                                  {ev.instrumentTitle || originalInstrument?.title || 'Sin título'}
+                                  {ev.instrumentTitle || originalInstrument?.title || (ev.title ? ev.title : 'Sin título')}
                                 </p>
                               </div>
                             </div>
