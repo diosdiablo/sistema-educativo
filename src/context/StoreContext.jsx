@@ -419,6 +419,10 @@ export const StoreProvider = ({ children }) => {
             studentName: e.student_name || e.studentName,
             instrumentType: e.instrument_type || null,
             activityName: e.activity_name || e.activityName || '',
+            subjectId: e.subject_id || e.subjectId || null,
+            subjectName: e.subject_name || e.subjectName || '',
+            competencyId: e.competency_id || e.competencyId || null,
+            competencyName: e.competency_name || e.competencyName || '',
             scores: parsedScores,
             criteria: parsedCriteria
           };
