@@ -1154,7 +1154,13 @@ export default function Instruments() {
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Área:</span>
                 <div style={{ fontWeight: 600 }}>
-                  {viewingEvaluation.subjectName || (viewingEvaluation.subjectId ? (subjects?.find(s => s.id === viewingEvaluation.subjectId)?.name || viewingEvaluation.subjectId) : '—')}
+                  {(() => {
+                    console.log('viewingEvaluation:', viewingEvaluation);
+                    console.log('subjects:', subjects);
+                    const name = viewingEvaluation.subjectName || (viewingEvaluation.subjectId ? (subjects?.find(s => s.id === viewingEvaluation.subjectId)?.name || viewingEvaluation.subjectId) : '—');
+                    console.log('resolved name:', name);
+                    return name;
+                  })()}
                 </div>
               </div>
               <div>
