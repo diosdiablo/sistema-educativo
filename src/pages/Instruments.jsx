@@ -244,7 +244,13 @@ export default function Instruments() {
     setEditingInstrument(ins);
     setTitle(ins.title || '');
     setInstrumentType(ins.type || 'checklist');
-    setCriteria(ins.criteria && ins.criteria.length > 0 ? ins.criteria : [{ id: '1', text: '' }]);
+    const normalizedCriteria = ins.criteria && ins.criteria.length > 0 
+      ? ins.criteria.map(c => ({
+          ...c,
+          descriptors: c.descriptors || { AD: '', A: '', B: '', C: '' }
+        }))
+      : [{ id: '1', text: '', descriptors: { AD: '', A: '', B: '', C: '' } }];
+    setCriteria(normalizedCriteria);
     setView('create');
   };
 
@@ -431,22 +437,49 @@ export default function Instruments() {
                        instrumentType === 'checklist' ? 'Logrado / No Logrado' : 'AD / A / B / C'}
                     </span>
                   </h3>
-                  <button onClick={() => setCriteria([...criteria, { id: Date.now().toString(), text: '' }])} style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <button onClick={() => setCriteria([...criteria, { id: Date.now().toString(), text: '', descriptors: { AD: '', A: '', B: '', C: '' } }])} style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <PlusCircle size={18} /> Añadir
                   </button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {criteria.map((c, idx) => (
-                    <div key={c.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 600, width: '22px', flexShrink: 0 }}>{idx + 1}.</span>
-                      <input
-                        className="input-field" style={{ flex: 1 }} value={c.text}
-                        onChange={e => { const n = [...criteria]; n[idx].text = e.target.value; setCriteria(n); }}
-                        placeholder="Describe el indicador o criterio..."
-                      />
-                      <button onClick={() => { if (criteria.length > 1) { if (window.confirm('¿Eliminar?')) setCriteria(criteria.filter(x => x.id !== c.id)); } else alert('Mínimo 1 criterio.'); }} style={{ color: 'var(--danger-color)', flexShrink: 0 }}>
-                        <Trash2 size={16} />
-                      </button>
+                    <div key={c.id}>
+                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600, width: '22px', flexShrink: 0 }}>{idx + 1}.</span>
+                        <input
+                          className="input-field" style={{ flex: 1 }} value={c.text}
+                          onChange={e => { const n = [...criteria]; n[idx].text = e.target.value; setCriteria(n); }}
+                          placeholder="Describe el indicador o criterio..."
+                        />
+                        <button onClick={() => { if (criteria.length > 1) { if (window.confirm('¿Eliminar?')) setCriteria(criteria.filter(x => x.id !== c.id)); } else alert('Mínimo 1 criterio.'); }} style={{ color: 'var(--danger-color)', flexShrink: 0 }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      {/* Descriptores de rúbrica */}
+                      {instrumentType === 'rubric' && (
+                        <div style={{ marginLeft: '30px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '0.5rem' }}>
+                          {['AD', 'A', 'B', 'C'].map(level => (
+                            <div key={level}>
+                              <label style={{ fontSize: '0.7rem', fontWeight: 600, color: level === 'AD' ? '#10b981' : level === 'A' ? '#3b82f6' : level === 'B' ? '#f59e0b' : '#ef4444', display: 'block', marginBottom: '4px' }}>
+                                {level}
+                              </label>
+                              <textarea
+                                className="input-field"
+                                rows={2}
+                                style={{ fontSize: '0.75rem', resize: 'none' }}
+                                value={c.descriptors?.[level] || ''}
+                                onChange={e => {
+                                  const n = [...criteria];
+                                  if (!n[idx].descriptors) n[idx].descriptors = { AD: '', A: '', B: '', C: '' };
+                                  n[idx].descriptors[level] = e.target.value;
+                                  setCriteria(n);
+                                }}
+                                placeholder={`Descriptor ${level}...`}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -956,15 +989,15 @@ export default function Instruments() {
               {/* RÚBRICA — tabla horizontal con encabezados de color */}
               {scoring === 'qualitative' && applyingInstrument.type === 'rubric' && (() => {
                 const LEVELS = [
-                  { v: 4, g: 'AD', l: 'Destacado',   desc: 'Supera lo esperado con evidencias sólidas',  color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
-                  { v: 3, g: 'A',  l: 'Logrado',      desc: 'Cumple el estándar de manera satisfactoria', color: '#3b82f6', bg: 'rgba(59,130,246,0.10)' },
-                  { v: 2, g: 'B',  l: 'En Proceso',   desc: 'Muestra avance pero requiere acompañamiento', color: '#f59e0b', bg: 'rgba(245,158,11,0.10)' },
-                  { v: 1, g: 'C',  l: 'En Inicio',    desc: 'Evidencia dificultades en el desempeño',      color: '#ef4444', bg: 'rgba(239,68,68,0.10)'  },
+                  { v: 4, g: 'AD', l: 'Destacado',   color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
+                  { v: 3, g: 'A',  l: 'Logrado',      color: '#3b82f6', bg: 'rgba(59,130,246,0.10)' },
+                  { v: 2, g: 'B',  l: 'En Proceso',   color: '#f59e0b', bg: 'rgba(245,158,11,0.10)' },
+                  { v: 1, g: 'C',  l: 'En Inicio',    color: '#ef4444', bg: 'rgba(239,68,68,0.10)'  },
                 ];
                 return (
                   <div style={{ overflowX: 'auto' }}>
                     {/* Encabezado de la tabla */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '220px repeat(4, 1fr)', gap: '6px', marginBottom: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '180px repeat(4, 1fr)', gap: '6px', marginBottom: '6px' }}>
                       <div style={{ padding: '0.6rem 0.75rem', fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                         Criterio
                       </div>
@@ -976,7 +1009,6 @@ export default function Instruments() {
                         }}>
                           <div style={{ fontWeight: 800, fontSize: '1.1rem', color: lv.color }}>{lv.g}</div>
                           <div style={{ fontWeight: 700, fontSize: '0.78rem', color: lv.color }}>{lv.l}</div>
-                          <div style={{ fontSize: '0.66rem', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.3 }}>{lv.desc}</div>
                         </div>
                       ))}
                     </div>
@@ -986,7 +1018,7 @@ export default function Instruments() {
                       const selected = evaluationScores[c.id];
                       return (
                         <div key={c.id} style={{
-                          display: 'grid', gridTemplateColumns: '220px repeat(4, 1fr)', gap: '6px',
+                          display: 'grid', gridTemplateColumns: '180px repeat(4, 1fr)', gap: '6px',
                           marginBottom: '8px', alignItems: 'stretch'
                         }}>
                           {/* Nombre del criterio */}
@@ -999,27 +1031,41 @@ export default function Instruments() {
                             <span style={{ fontWeight: 600, fontSize: '0.88rem', lineHeight: 1.35 }}>{c.text}</span>
                           </div>
 
-                          {/* Botón por nivel */}
+                          {/* Botón por nivel con descriptor */}
                           {LEVELS.map(lv => {
                             const isSelected = selected == lv.v;
+                            const descriptor = c.descriptors?.[lv.g] || '';
                             return (
                               <button key={lv.v}
                                 onClick={() => setEvaluationScores({ ...evaluationScores, [c.id]: lv.v })}
                                 style={{
-                                  padding: '0.6rem 0.5rem', borderRadius: '0 0 10px 10px',
+                                  padding: '0.5rem', borderRadius: '0 0 10px 10px',
                                   border: `2px solid ${isSelected ? lv.color : lv.color + '30'}`,
                                   background: isSelected ? lv.bg : 'transparent',
                                   cursor: 'pointer', transition: 'all 0.15s',
-                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                                  boxShadow: isSelected ? `0 0 0 3px ${lv.color}30` : 'none'
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', gap: '4px',
+                                  boxShadow: isSelected ? `0 0 0 3px ${lv.color}30` : 'none',
+                                  minHeight: '100px'
                                 }}>
                                 {isSelected
-                                  ? <span style={{ fontSize: '1.4rem' }}>✅</span>
-                                  : <span style={{ width: '22px', height: '22px', borderRadius: '50%', border: `2px solid ${lv.color}60`, display: 'block' }} />
+                                  ? <span style={{ fontSize: '1.2rem' }}>✅</span>
+                                  : <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${lv.color}60`, display: 'block' }} />
                                 }
-                                <span style={{ fontSize: '0.7rem', fontWeight: isSelected ? 700 : 400, color: isSelected ? lv.color : 'var(--text-secondary)' }}>
-                                  {isSelected ? 'Seleccionado' : 'Seleccionar'}
-                                </span>
+                                {descriptor ? (
+                                  <span style={{ 
+                                    fontSize: '0.65rem', 
+                                    color: isSelected ? lv.color : 'var(--text-secondary)',
+                                    textAlign: 'center', 
+                                    lineHeight: 1.3,
+                                    fontStyle: 'italic'
+                                  }}>
+                                    "{descriptor}"
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                                    {isSelected ? '✓' : '—'}
+                                  </span>
+                                )}
                               </button>
                             );
                           })}
