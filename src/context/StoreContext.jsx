@@ -396,6 +396,7 @@ export const StoreProvider = ({ children }) => {
       }
       if (evalData?.length > 0) {
         const cloudEvals = evalData.map(e => {
+          console.log('[FETCH] Eval from Supabase:', e);
           let parsedCriteria = [];
           if (e.criteria) {
             if (typeof e.criteria === 'string') {
