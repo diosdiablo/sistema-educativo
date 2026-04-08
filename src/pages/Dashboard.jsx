@@ -235,7 +235,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {(grades.length > 0 || diagnosticEvaluations.length > 0) && (
+      {(grades.length > 0 || diagnosticEvaluations.length > 0 || instrumentEvaluations.length > 0) && (
         <div style={{ marginBottom: '1.5rem' }}>
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BarChart3 size={20} /> Estadísticas de Calificaciones
@@ -323,7 +323,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {(grades.length === 0 && diagnosticEvaluations.length === 0) && (
+      {(grades.length === 0 && diagnosticEvaluations.length === 0 && instrumentEvaluations.length === 0) && (
         <div className="card" style={{ textAlign: 'center', padding: '3rem', marginTop: '1rem' }}>
           <BarChart3 size={48} color="var(--text-secondary)" style={{ margin: '0 auto 1rem' }} />
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
