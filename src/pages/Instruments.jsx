@@ -1154,15 +1154,18 @@ export default function Instruments() {
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Área:</span>
                 <div style={{ fontWeight: 600 }}>
-                  {(() => {
-                    console.log('viewingEvaluation:', viewingEvaluation);
-                    console.log('subjects:', subjects);
-                    const name = viewingEvaluation.subjectName || (viewingEvaluation.subjectId ? (subjects?.find(s => s.id === viewingEvaluation.subjectId)?.name || viewingEvaluation.subjectId) : '—');
-                    console.log('resolved name:', name);
-                    return name;
-                  })()}
+                  {viewingEvaluation.subjectName || '—'}
                 </div>
               </div>
+              <div>
+                <span style={{ color: 'var(--text-secondary)' }}>Fecha:</span>
+                <div style={{ fontWeight: 600 }}>{new Date(viewingEvaluation.date).toLocaleDateString('es-PE')}</div>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-secondary)' }}>Bimestre:</span>
+                <div style={{ fontWeight: 600 }}>{viewingEvaluation.period}</div>
+              </div>
+            </div>
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Fecha:</span>
                 <div style={{ fontWeight: 600 }}>{new Date(viewingEvaluation.date).toLocaleDateString('es-PE')}</div>
