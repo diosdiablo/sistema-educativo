@@ -285,18 +285,23 @@ export default function Instruments() {
     if (applyMode === 'individual') {
       const s = students.find(s => s.id === selectedStudent);
       save(s);
-    } else if (applyMode === 'all') {
-      filteredStudents.forEach(save);
     } else if (selectedGroupIdx !== null && tempGroups[selectedGroupIdx]?.members.length > 0) {
       tempGroups[selectedGroupIdx].members.forEach(save);
     } else {
-      alert('Debes seleccionar un modo de evaluación y los estudiantes.');
+      alert('Debes seleccionar un estudiante o un grupo.');
       return;
     }
 
-    setView('list');
-    setApplyingInstrument(null);
-    setTempGroups([]);
+    // Preguntar si quiere evaluar otro estudiante con la misma configuración
+    if (applyMode === 'individual' && window.confirm('¿Evaluar otro estudiante con la misma configuración?')) {
+      setSelectedStudent('');
+      setEvaluationScores({});
+      document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+    } else {
+      setView('list');
+      setApplyingInstrument(null);
+      setTempGroups([]);
+    }
   };
 
   // ═══════════════════════════════════════════
@@ -498,20 +503,6 @@ export default function Instruments() {
                   gap: '6px'
                 }}>
                   <Users size={14} /> Grupos
-                </button>
-                <button onClick={() => setApplyMode('all')} style={{ 
-                  fontSize: '0.8rem', padding: '0.5rem',
-                  borderRadius: '8px',
-                  border: applyMode === 'all' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                  background: applyMode === 'all' ? 'var(--accent-primary)15' : 'transparent',
-                  color: applyMode === 'all' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}>
-                  <CheckCircleIcon size={14} /> Todos
                 </button>
               </div>
 
