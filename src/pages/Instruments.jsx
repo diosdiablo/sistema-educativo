@@ -292,11 +292,23 @@ export default function Instruments() {
       return;
     }
 
-    // Preguntar si quiere evaluar otro estudiante con la misma configuración
+    // Preguntar si quiere evaluar otro estudiante o grupo con la misma configuración
     if (applyMode === 'individual' && window.confirm('¿Evaluar otro estudiante con la misma configuración?')) {
       setSelectedStudent('');
       setEvaluationScores({});
       document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+    } else if (applyMode === 'groups') {
+      const allMembersEvaluated = tempGroups[selectedGroupIdx]?.members.length > 0;
+      if (window.confirm(`Evaluación grupal guardada${allMembersEvaluated ? ` para ${tempGroups[selectedGroupIdx].members.length} estudiante(s)` : ''}. ¿Evaluar otro grupo con la misma configuración?`)) {
+        setSelectedGroupIdx(null);
+        setTempGroups([]);
+        setEvaluationScores({});
+        document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+      } else {
+        setView('list');
+        setApplyingInstrument(null);
+        setTempGroups([]);
+      }
     } else {
       setView('list');
       setApplyingInstrument(null);
