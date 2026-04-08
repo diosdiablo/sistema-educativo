@@ -6,6 +6,33 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
+function parseTimeToMinutes(timeStr) {
+  const [time, period] = timeStr.split(' ');
+  const [hours, minutes] = time.split(':').map(Number);
+  let hour24 = hours;
+  if (period === 'PM' && hours !== 12) hour24 += 12;
+  if (period === 'AM' && hours === 12) hour24 = 0;
+  return hour24 * 60 + minutes;
+}
+
+function groupScheduleByCourse(schedule) {
+  const grouped = {};
+  schedule.forEach(item => {
+    const key = `${item.classId}-${item.subjectId}`;
+    if (!grouped[key]) {
+      grouped[key] = {
+        ...item,
+        times: [item.time],
+        count: 1
+      };
+    } else {
+      grouped[key].times.push(item.time);
+      grouped[key].count++;
+    }
+  });
+  return Object.values(grouped).sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { students, grades, attendance, subjects, schedule, classes, instruments, instrumentEvaluations, diagnosticEvaluations, currentUser } = useStore();
@@ -102,7 +129,8 @@ export default function Dashboard() {
 
   const daysMapping = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const todayName = daysMapping[new Date().getDay()];
-  const todaySchedule = schedule.filter(s => s.day === todayName).sort((a, b) => a.time.localeCompare(b.time));
+  const todayScheduleRaw = schedule.filter(s => s.day === todayName);
+  const todaySchedule = groupScheduleByCourse(todayScheduleRaw);
 
   return (
     <div className="animate-fade-in">
@@ -132,6 +160,7 @@ export default function Dashboard() {
               {todaySchedule.map((item, idx) => {
                 const className = classes.find(c => c.id === item.classId)?.name || 'Grado...';
                 const subjectName = subjects.find(s => s.id === item.subjectId)?.name || 'Área...';
+                const timesDisplay = item.times.length > 1 ? item.times.join(' y ') : item.time;
                 return (
                   <div key={idx} style={{ 
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
@@ -139,7 +168,7 @@ export default function Dashboard() {
                     borderLeft: `4px solid ${item.color || '#10b981'}`
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ fontWeight: 700, minWidth: '100px', fontSize: '0.85rem' }}>{item.time.split(' ')[0]}</div>
+                      <div style={{ fontWeight: 700, minWidth: '130px', fontSize: '0.85rem' }}>{timesDisplay}</div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{className}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{subjectName}</div>
