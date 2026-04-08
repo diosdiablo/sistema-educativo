@@ -258,28 +258,41 @@ export default function Grades() {
                             );
                           }
                           return instruments.map(inst => {
+                            const activityKey = inst.activityKey || inst.id || '';
+                            
                             const matchingEvs = instrumentEvaluations.filter(
-                              e => (e.studentId === student.id || e.student_id === student.id) && 
-                                   (e.competencyId === comp.id || e.competency_id === comp.id) && 
-                                   (e.activityName === inst.activityKey || e.activity_name === inst.activityKey || 
-                                    e.activityName === inst.id || e.activity_name === inst.id ||
-                                    e.instrumentId === inst.instrumentKey || e.instrument_id === inst.instrumentKey ||
-                                    e.instrumentId === inst.id || e.instrument_id === inst.id) && 
-                                   e.period === selectedPeriod
+                              e => {
+                                const studentMatch = e.studentId === student.id || e.student_id === student.id;
+                                const competencyMatch = e.competencyId === comp.id || e.competency_id === comp.id;
+                                const periodMatch = String(e.period) === String(selectedPeriod);
+                                const activityMatch = 
+                                  e.activityName === activityKey || 
+                                  e.activity_name === activityKey ||
+                                  e.activityName === inst.id ||
+                                  e.activity_name === inst.id ||
+                                  e.instrumentId === activityKey ||
+                                  e.instrument_id === activityKey;
+                                
+                                return studentMatch && competencyMatch && periodMatch && activityMatch;
+                              }
                             );
                             const ev = matchingEvs[0];
+                            
                             if (!ev && inst.id) {
+                              const studentEvs = instrumentEvaluations.filter(e => e.studentId === student.id || e.student_id === student.id);
                               console.log('[GRADES DEBUG] No se encontró evaluación:', {
                                 studentId: student.id,
                                 studentName: student.name,
                                 compId: comp.id,
                                 instId: inst.id,
-                                instActivityKey: inst.activityKey,
+                                activityKey,
                                 period: selectedPeriod,
-                                availableEvs: instrumentEvaluations.filter(e => e.studentId === student.id || e.student_id === student.id).map(e => ({
+                                totalEvsForStudent: studentEvs.length,
+                                studentEvsSample: studentEvs.slice(0, 3).map(e => ({
                                   activityName: e.activityName,
                                   activity_name: e.activity_name,
                                   competencyId: e.competencyId,
+                                  competency_id: e.competency_id,
                                   period: e.period
                                 }))
                               });
@@ -291,6 +304,11 @@ export default function Grades() {
                                 </td>
                               );
                             }
+                            console.log('[GRADES FOUND] Evaluación encontrada:', {
+                              studentName: student.name,
+                              activityName: ev.activityName,
+                              qualitative: ev.qualitative
+                            });
                             return (
                               <td key={inst.id} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
