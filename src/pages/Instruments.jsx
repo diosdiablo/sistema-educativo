@@ -277,6 +277,8 @@ export default function Instruments() {
       period: selectedPeriod,
       classId: classes.find(c => c.name === selectedClass)?.id || ''
     };
+    console.log('[SAVE EVAL] selectedSubjectObj:', selectedSubjectObj);
+    console.log('[SAVE EVAL] subjectName:', selectedSubjectObj?.name);
 
     const save = (student) => saveInstrumentEvaluation({ ...evaluationData, studentId: student.id, studentName: student.name });
 
@@ -1154,7 +1156,10 @@ export default function Instruments() {
               <div>
                 <span style={{ color: 'var(--text-secondary)' }}>Área:</span>
                 <div style={{ fontWeight: 600 }}>
-                  {viewingEvaluation.subjectName || '—'}
+                  {viewingEvaluation.subjectName || 
+                   (viewingEvaluation.subjectId && subjects?.find(s => s.id === viewingEvaluation.subjectId)?.name) ||
+                   (viewingEvaluation.instrumentId && instruments?.find(i => i.id === viewingEvaluation.instrumentId)?.subjectId && subjects?.find(s => s.id === instruments.find(i => i.id === viewingEvaluation.instrumentId)?.subjectId)?.name) ||
+                   '—'}
                 </div>
               </div>
               <div>
