@@ -178,18 +178,22 @@ export default function Grades() {
               const evs = instrumentEvaluations.filter(
                 ev => (ev.competencyId === competencyId || ev.competency_id === competencyId) && ev.period === selectedPeriod
               );
-              console.log('[GRADES] getInstrumentsForCompetency:', competencyId, 'evs:', evs.map(e => ({ id: e.id, activityName: e.activityName, instrumentId: e.instrumentId })));
               
               // Agrupar por activityName en lugar de instrumentId
               const uniqueInstruments = {};
               evs.forEach(ev => {
                 // Usar activityName como clave para mostrar cada evaluación diferente
-                const key = ev.activityName || ev.activity_name || ev.instrumentId || ev.instrument_id;
+                const activityKey = ev.activityName || ev.activity_name || '';
+                const instrumentKey = ev.instrumentId || ev.instrument_id || '';
+                const key = activityKey || instrumentKey;
+                
                 if (!uniqueInstruments[key]) {
                   uniqueInstruments[key] = {
                     id: key,
-                    title: ev.activityName || ev.activity_name || instruments.find(i => i.id === ev.instrumentId || i.id === ev.instrument_id)?.title || 'Sin título',
-                    instrumentType: ev.instrumentType || ev.instrument_type
+                    title: activityKey || instruments.find(i => i.id === instrumentKey)?.title || 'Sin título',
+                    instrumentType: ev.instrumentType || ev.instrument_type,
+                    activityKey,
+                    instrumentKey
                   };
                 }
               });
@@ -254,9 +258,32 @@ export default function Grades() {
                             );
                           }
                           return instruments.map(inst => {
-                            const ev = instrumentEvaluations.find(
-                              e => (e.studentId === student.id || e.student_id === student.id) && e.competencyId === comp.id && (e.activityName || e.activity_name || e.instrumentId) === inst.id && e.period === selectedPeriod
+                            const matchingEvs = instrumentEvaluations.filter(
+                              e => (e.studentId === student.id || e.student_id === student.id) && 
+                                   (e.competencyId === comp.id || e.competency_id === comp.id) && 
+                                   (e.activityName === inst.activityKey || e.activity_name === inst.activityKey || 
+                                    e.activityName === inst.id || e.activity_name === inst.id ||
+                                    e.instrumentId === inst.instrumentKey || e.instrument_id === inst.instrumentKey ||
+                                    e.instrumentId === inst.id || e.instrument_id === inst.id) && 
+                                   e.period === selectedPeriod
                             );
+                            const ev = matchingEvs[0];
+                            if (!ev && inst.id) {
+                              console.log('[GRADES DEBUG] No se encontró evaluación:', {
+                                studentId: student.id,
+                                studentName: student.name,
+                                compId: comp.id,
+                                instId: inst.id,
+                                instActivityKey: inst.activityKey,
+                                period: selectedPeriod,
+                                availableEvs: instrumentEvaluations.filter(e => e.studentId === student.id || e.student_id === student.id).map(e => ({
+                                  activityName: e.activityName,
+                                  activity_name: e.activity_name,
+                                  competencyId: e.competencyId,
+                                  period: e.period
+                                }))
+                              });
+                            }
                             if (!ev) {
                               return (
                                 <td key={inst.id} style={{ textAlign: 'center' }}>
