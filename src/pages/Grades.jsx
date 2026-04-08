@@ -197,70 +197,129 @@ export default function Grades() {
             fontSize: '0.85rem', color: 'var(--text-secondary)'
           }}>
             <Info size={16} style={{ color: '#6366f1', flexShrink: 0 }} />
-            El promedio se calcula automáticamente con todos los instrumentos aplicados a cada competencia en el bimestre seleccionado.
-            Haz clic en cualquier celda para ver el detalle de evaluaciones.
+            Cada columna representa un instrumento aplicado. Haz clic en la nota para ver el detalle.
           </div>
 
-          <div className="table-container" style={{ overflowX: 'auto' }}>
-            <table className="styled-table" style={{ tableLayout: 'auto', minWidth: '600px' }}>
-              <thead>
-                <tr>
-                  <th style={{ minWidth: '180px' }}>Estudiante</th>
-                  {currentSubject.competencies.map(comp => (
-                    <th key={comp.id} style={{ textAlign: 'center', minWidth: '140px', fontSize: '0.78rem' }}>
-                      {comp.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.length === 0 ? (
-                  <tr>
-                    <td colSpan={currentSubject.competencies.length + 1} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                      No hay estudiantes matriculados en esta sección.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredStudents.map(student => (
-                    <tr key={student.id}>
-                      <td style={{ fontWeight: 600 }}>{student.name}</td>
+          {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
+          {(() => {
+            // Obtener todos los instrumentos únicos aplicados a cada competencia en este período
+            const getInstrumentsForCompetency = (competencyId) => {
+              const evs = instrumentEvaluations.filter(
+                ev => ev.competencyId === competencyId && ev.period === selectedPeriod
+              );
+              // Obtener instrumentos únicos
+              const uniqueInstruments = {};
+              evs.forEach(ev => {
+                if (!uniqueInstruments[ev.instrumentId]) {
+                  uniqueInstruments[ev.instrumentId] = {
+                    id: ev.instrumentId,
+                    title: ev.activityName || instruments.find(i => i.id === ev.instrumentId)?.title || 'Sin título',
+                    instrumentType: ev.instrumentType
+                  };
+                }
+              });
+              return Object.values(uniqueInstruments);
+            };
+
+            return (
+              <div className="table-container" style={{ overflowX: 'auto' }}>
+                <table className="styled-table" style={{ tableLayout: 'auto' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ minWidth: '180px', position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 10 }}>Estudiante</th>
                       {currentSubject.competencies.map(comp => {
-                        const { grade, count, evaluations } = getCompetencyAverage(student.id, comp.id);
+                        const instruments = getInstrumentsForCompetency(comp.id);
+                        if (instruments.length === 0) {
+                          return (
+                            <th key={comp.id} style={{ textAlign: 'center', minWidth: '100px', fontSize: '0.78rem' }}>
+                              {comp.name}
+                            </th>
+                          );
+                        }
                         return (
-                          <td
-                            key={comp.id}
-                            style={{ textAlign: 'center', cursor: count > 0 ? 'pointer' : 'default' }}
-                            onMouseEnter={(e) => handleMouseEnterCell(e, evaluations)}
-                            onMouseLeave={handleMouseLeaveCell}
-                            onClick={() => {
-                              if (count > 0 && evaluations.length > 0) {
-                                setViewingEvaluation(evaluations[0]);
-                                setHoveredEval(null);
-                              }
-                            }}
-                            title={count > 0 ? `${count} instrumento(s) aplicado(s)` : 'Sin evaluaciones aún'}
-                          >
-                            {grade ? (
-                              <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                                <span className={`badge ${BADGE_THEME[grade]}`} style={{ fontWeight: 700 }}>
-                                  {grade}
-                                </span>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
-                                  {GRADE_LABEL[grade]} · {count} ev.
-                                </span>
-                              </div>
-                            ) : (
-                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
-                            )}
-                          </td>
+                          <th key={comp.id} colSpan={instruments.length} style={{ textAlign: 'center', minWidth: instruments.length * 80, fontSize: '0.78rem', background: 'var(--bg-secondary)' }}>
+                            {comp.name}
+                          </th>
                         );
                       })}
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                    <tr>
+                      <th style={{ minWidth: '180px', position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 10 }}></th>
+                      {currentSubject.competencies.map(comp => {
+                        const instruments = getInstrumentsForCompetency(comp.id);
+                        if (instruments.length === 0) {
+                          return <th key={comp.id} style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>—</th>;
+                        }
+                        return instruments.map(inst => (
+                          <th key={inst.id} style={{ textAlign: 'center', minWidth: '80px', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                            {inst.title.length > 10 ? inst.title.substring(0, 10) + '...' : inst.title}
+                          </th>
+                        ));
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                          No hay estudiantes matriculados en esta sección.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredStudents.map(student => {
+                        return (
+                          <tr key={student.id}>
+                            <td style={{ fontWeight: 600, position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 5 }}>{student.name}</td>
+                            {currentSubject.competencies.map(comp => {
+                              const instruments = getInstrumentsForCompetency(comp.id);
+                              if (instruments.length === 0) {
+                                return (
+                                  <td key={comp.id} style={{ textAlign: 'center' }}>
+                                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
+                                  </td>
+                                );
+                              }
+                              return instruments.map(inst => {
+                                const ev = instrumentEvaluations.find(
+                                  e => e.studentId === student.id && 
+                                       e.competencyId === comp.id && 
+                                       e.instrumentId === inst.id &&
+                                       e.period === selectedPeriod
+                                );
+                                if (!ev) {
+                                  return (
+                                    <td key={inst.id} style={{ textAlign: 'center' }}>
+                                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
+                                    </td>
+                                  );
+                                }
+                                return (
+                                  <td
+                                    key={inst.id}
+                                    style={{ textAlign: 'center', cursor: 'pointer' }}
+                                    onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
+                                    onMouseLeave={handleMouseLeaveCell}
+                                    onClick={() => {
+                                      setViewingEvaluation(ev);
+                                      setHoveredEval(null);
+                                    }}
+                                  >
+                                    <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700 }}>
+                                      {ev.qualitative}
+                                    </span>
+                                  </td>
+                                );
+                              });
+                            })}
+                          </tr>
+                        );
+                      })}
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
 
           {/* Modal flotante de detalle del instrumento */}
           {tooltip && (
