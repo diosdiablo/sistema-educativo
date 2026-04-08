@@ -173,24 +173,21 @@ export default function Grades() {
 
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
-            console.log('[GRADES] instrumentEvaluations:', instrumentEvaluations);
-            console.log('[GRADES] selectedPeriod:', selectedPeriod);
-            console.log('[GRADES] currentSubject:', currentSubject?.name);
-            console.log('[GRADES] competencies:', currentSubject?.competencies?.map(c => c.id));
-            
             // Función para obtener instrumentos únicos aplicados a una competencia en este período
             const getInstrumentsForCompetency = (competencyId) => {
-              console.log('[GRADES] getInstrumentsForCompetency:', competencyId);
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && ev.period === selectedPeriod
               );
-              console.log('[GRADES]   evaluations found:', evs.length);
-              // Obtener instrumentos únicos
+              console.log('[GRADES] getInstrumentsForCompetency:', competencyId, 'evs:', evs.map(e => ({ id: e.id, activityName: e.activityName, instrumentId: e.instrumentId })));
+              
+              // Agrupar por activityName en lugar de instrumentId
               const uniqueInstruments = {};
               evs.forEach(ev => {
-                if (!uniqueInstruments[ev.instrumentId]) {
-                  uniqueInstruments[ev.instrumentId] = {
-                    id: ev.instrumentId,
+                // Usar activityName como clave para mostrar cada evaluación diferente
+                const key = ev.activityName || ev.instrumentId;
+                if (!uniqueInstruments[key]) {
+                  uniqueInstruments[key] = {
+                    id: key,
                     title: ev.activityName || instruments.find(i => i.id === ev.instrumentId)?.title || 'Sin título',
                     instrumentType: ev.instrumentType
                   };
