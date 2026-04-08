@@ -109,7 +109,8 @@ export default function Grades() {
     return { grade: NUM_TO_GRADE(avg), count: evs.length, evaluations: evs };
   };
 
-  const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
+  const [tooltip, setTooltip] = useState(null);
+  const [viewingEvaluation, setViewingEvaluation] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
 
   return (
     <div className="animate-fade-in">
@@ -214,20 +215,9 @@ export default function Grades() {
                             key={comp.id}
                             style={{ textAlign: 'center', cursor: count > 0 ? 'pointer' : 'default' }}
                             onClick={(e) => {
-                              if (count > 0) {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setTooltip(
-                                  (tooltip?.studentId === student.id && tooltip?.competencyId === comp.id)
-                                    ? null
-                                    : { 
-                                        studentId: student.id, 
-                                        competencyId: comp.id, 
-                                        evs: evaluations, 
-                                        compName: comp.name, 
-                                        studentName: student.name,
-                                        position: { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
-                                      }
-                                );
+                              if (count > 0 && evaluations.length > 0) {
+                                setViewingEvaluation(evaluations[0]);
+                                setTooltip(null);
                               }
                             }}
                             title={count > 0 ? `${count} instrumento(s) aplicado(s)` : 'Sin evaluaciones aún'}
@@ -487,6 +477,136 @@ export default function Grades() {
               </div>
               </div>
             </>
+          )}
+
+          {/* Modal para ver instrumento aplicado desde calificaciones */}
+          {viewingEvaluation && (
+            <div className="modal-overlay animate-fade-in" style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+              display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+              padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
+            }}>
+              <div className="card shadow-glass" style={{ maxWidth: '700px', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                  <div>
+                    <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.25rem' }}>{viewingEvaluation.activityName || 'Sin actividad'}</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      Estudiante: <strong>{viewingEvaluation.studentName}</strong>
+                    </p>
+                  </div>
+                  <button onClick={() => setViewingEvaluation(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <X size={24} color="var(--text-secondary)" />
+                  </button>
+                </div>
+
+                {/* Resultado */}
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: '1rem', 
+                  padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem',
+                  background: viewingEvaluation.qualitative === 'AD' ? 'rgba(16,185,129,0.1)' :
+                             viewingEvaluation.qualitative === 'A' ? 'rgba(59,130,246,0.1)' :
+                             viewingEvaluation.qualitative === 'B' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)'
+                }}>
+                  <div style={{ 
+                    width: '56px', height: '56px', borderRadius: '12px',
+                    background: viewingEvaluation.qualitative === 'AD' ? '#10b981' :
+                               viewingEvaluation.qualitative === 'A' ? '#3b82f6' :
+                               viewingEvaluation.qualitative === 'B' ? '#f59e0b' : '#ef4444',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.5rem', fontWeight: 800, color: 'white'
+                  }}>
+                    {viewingEvaluation.qualitative}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{GRADE_LABEL[viewingEvaluation.qualitative]}</div>
+                    {viewingEvaluation.score !== null && (
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        Puntaje: {viewingEvaluation.score} / {viewingEvaluation.maxPossible || 20}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Criterios evaluados */}
+                {viewingEvaluation.scores && Object.keys(viewingEvaluation.scores).filter(k => !k.startsWith('__')).length > 0 && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h4 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+                      Criterios Evaluados
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {viewingEvaluation.scores && Object.entries(viewingEvaluation.scores).map(([criterionId, score]) => {
+                        if (criterionId.startsWith('__')) return null;
+                        const criterion = viewingEvaluation.criteria?.find(c => c.id === criterionId) || { text: criterionId };
+                        const scoreLabel = viewingEvaluation.instrumentType === 'checklist' 
+                          ? (score ? '✅ Logrado' : '❌ No Logrado')
+                          : viewingEvaluation.instrumentType === 'observation'
+                          ? (score === 3 ? '🟢 Siempre' : score === 2 ? '🟡 A veces' : '🔴 Nunca')
+                          : ['C', 'B', 'A', 'AD'][(score - 1)] || score;
+                        
+                        return (
+                          <div key={criterionId} style={{ 
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                            padding: '0.75rem', background: '#f8fafc', borderRadius: '8px',
+                            border: '1px solid var(--border-color)'
+                          }}>
+                            <span style={{ flex: 1, fontSize: '0.9rem' }}>{criterion.text || criterionId}</span>
+                            <span style={{ 
+                              fontWeight: 700, marginLeft: '1rem',
+                              color: viewingEvaluation.instrumentType === 'checklist' 
+                                ? (score ? '#10b981' : '#ef4444')
+                                : score === 4 ? '#10b981' : score === 3 ? '#3b82f6' : score === 2 ? '#f59e0b' : '#ef4444'
+                            }}>
+                              {scoreLabel}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Nota adicional (para registro anecdótico) */}
+                {viewingEvaluation.scores?.__note__ && (
+                  <div style={{ 
+                    padding: '1rem', background: 'rgba(99,102,241,0.05)',
+                    border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px',
+                    marginBottom: '1rem'
+                  }}>
+                    <h4 style={{ fontSize: '0.85rem', color: '#6366f1', marginBottom: '0.5rem' }}>Nota del docente:</h4>
+                    <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>{viewingEvaluation.scores.__note__}</p>
+                  </div>
+                )}
+
+                {/* Detalles adicionales */}
+                <div style={{ 
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '0.75rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px',
+                  fontSize: '0.85rem'
+                }}>
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)' }}>Área:</span>
+                    <div style={{ fontWeight: 600 }}>{viewingEvaluation.subjectName}</div>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)' }}>Fecha:</span>
+                    <div style={{ fontWeight: 600 }}>{new Date(viewingEvaluation.date).toLocaleDateString('es-PE')}</div>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)' }}>Bimestre:</span>
+                    <div style={{ fontWeight: 600 }}>{viewingEvaluation.period}</div>
+                  </div>
+                </div>
+
+                <button 
+                  className="btn-primary" 
+                  style={{ width: '100%', marginTop: '1.5rem' }}
+                  onClick={() => setViewingEvaluation(null)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
           )}
         </>
       )}
