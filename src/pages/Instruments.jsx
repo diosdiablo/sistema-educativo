@@ -273,6 +273,7 @@ export default function Instruments() {
       subjectId: selectedSubjectId,
       subjectName: selectedSubjectObj?.name || '',
       competencyId: selectedCompetencyId,
+      competencyName: availableCompetencies.find(c => c.id === selectedCompetencyId)?.name || '',
       period: selectedPeriod,
       classId: classes.find(c => c.name === selectedClass)?.id || ''
     };
@@ -1055,6 +1056,11 @@ export default function Instruments() {
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                   Estudiante: <strong>{viewingEvaluation.studentName}</strong> | {viewingEvaluation.activityName}
                 </p>
+                {viewingEvaluation.competencyName && (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginTop: '4px' }}>
+                    Competencia: <strong>{viewingEvaluation.competencyName}</strong>
+                  </p>
+                )}
               </div>
               <button onClick={() => setViewingEvaluation(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                 <X size={24} color="var(--text-secondary)" />
