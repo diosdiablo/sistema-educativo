@@ -118,9 +118,17 @@ CREATE TABLE IF NOT EXISTS instrument_evaluations (
   scores JSONB DEFAULT '{}',
   criteria JSONB DEFAULT '[]',
   date TEXT,
+  instrument_type TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Migración: agregar columnas instrument_type si no existen
+DO $$BEGIN
+  ALTER TABLE instrument_evaluations ADD COLUMN IF NOT EXISTS instrument_type TEXT;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
 
 -- Tabla de horarios
 CREATE TABLE IF NOT EXISTS schedule (
