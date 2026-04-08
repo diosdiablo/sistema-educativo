@@ -7,17 +7,16 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 function parseTimeToMinutes(timeStr) {
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  let hour24 = hours;
-  if (period === 'PM' && hours !== 12) hour24 += 12;
-  if (period === 'AM' && hours === 12) hour24 = 0;
-  return hour24 * 60 + minutes;
+  const firstTime = timeStr.split(' - ')[0];
+  const [hours, minutes] = firstTime.split(':').map(Number);
+  if (hours < 7) return (hours + 12) * 60 + minutes;
+  return hours * 60 + minutes;
 }
 
 function groupScheduleByCourse(schedule) {
+  const sorted = [...schedule].sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
   const grouped = {};
-  schedule.forEach(item => {
+  sorted.forEach(item => {
     const key = `${item.classId}-${item.subjectId}`;
     if (!grouped[key]) {
       grouped[key] = {
@@ -30,7 +29,7 @@ function groupScheduleByCourse(schedule) {
       grouped[key].count++;
     }
   });
-  return Object.values(grouped).sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
+  return Object.values(grouped);
 }
 
 export default function Dashboard() {
