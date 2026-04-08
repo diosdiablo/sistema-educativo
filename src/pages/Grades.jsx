@@ -32,6 +32,14 @@ const NUM_TO_GRADE = (n) => {
   if (n >= 1.5) return 'B';
   return 'C';
 };
+const numToQualitative = (score, max) => {
+  if (!max || max === 0) return 'C';
+  const pct = (score / max) * 100;
+  if (pct >= 87.5) return 'AD';
+  if (pct >= 62.5) return 'A';
+  if (pct >= 37.5) return 'B';
+  return 'C';
+};
 const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
@@ -86,8 +94,15 @@ export default function Grades() {
     );
     if (evs.length === 0) return { grade: null, count: 0, evaluations: [] };
 
-    const nums = evs.map(ev => GRADE_TO_NUM[ev.qualitative] ?? 0).filter(n => n > 0);
-    if (nums.length === 0) return { grade: null, count: 0, evaluations: evs };
+    const nums = evs.map(ev => {
+      if (ev.qualitative && GRADE_TO_NUM[ev.qualitative]) return GRADE_TO_NUM[ev.qualitative];
+      if (ev.finalScore !== null && ev.finalScore !== undefined) {
+        return numToQualitative(ev.finalScore, ev.maxPossible || 20);
+      }
+      return null;
+    }).filter(n => n && n > 0);
+    
+    if (nums.length === 0) return { grade: null, count: evs.length, evaluations: evs };
 
     const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
     return { grade: NUM_TO_GRADE(avg), count: evs.length, evaluations: evs };
@@ -371,7 +386,7 @@ export default function Grades() {
                                 {new Date(ev.date).toLocaleDateString('es-PE')}
                               </div>
                               <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '1.1rem', padding: '0.4rem 0.9rem' }}>
-                                {ev.qualitative}
+                                {ev.qualitative || ev.finalScore || '—'}
                               </span>
                             </div>
                           </div>
