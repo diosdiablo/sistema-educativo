@@ -96,8 +96,8 @@ export default function Grades() {
 
     const nums = evs.map(ev => {
       if (ev.qualitative && GRADE_TO_NUM[ev.qualitative]) return GRADE_TO_NUM[ev.qualitative];
-      if (ev.finalScore !== null && ev.finalScore !== undefined) {
-        const numGrade = numToQualitative(ev.finalScore, ev.maxPossible || 20);
+      if (ev.score !== null && ev.score !== undefined) {
+        const numGrade = numToQualitative(ev.score, ev.maxPossible || 20);
         return GRADE_TO_NUM[numGrade] || 0;
       }
       return 0;
@@ -387,7 +387,7 @@ export default function Grades() {
                                 {new Date(ev.date).toLocaleDateString('es-PE')}
                               </div>
                               <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '1.1rem', padding: '0.4rem 0.9rem' }}>
-                                {ev.qualitative || ev.finalScore || '—'}
+                                {ev.qualitative || ev.score || '—'}
                               </span>
                             </div>
                           </div>
@@ -444,7 +444,7 @@ export default function Grades() {
                                   );
                                 })}
                               </div>
-                              {(ev.finalScore !== null && ev.finalScore !== undefined) && (
+                              {(ev.score !== null && ev.score !== undefined) && (
                                 <div style={{ 
                                   marginTop: '1rem', 
                                   padding: '0.75rem',
@@ -456,7 +456,7 @@ export default function Grades() {
                                 }}>
                                   <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Puntaje Total</span>
                                   <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                                    {ev.finalScore} <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>/</span> {ev.maxPossible || totalCriteria * 4}
+                                    {ev.score} <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>/</span> {ev.maxPossible || totalCriteria * 4}
                                   </span>
                                 </div>
                               )}
@@ -474,7 +474,7 @@ export default function Grades() {
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Puntaje</span>
                                 <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                                  {ev.finalScore ?? '—'} <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>/</span> {ev.maxPossible ?? 20}
+                                  {ev.score ?? '—'} <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>/</span> {ev.maxPossible ?? 20}
                                 </span>
                               </div>
                             </div>
