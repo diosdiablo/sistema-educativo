@@ -1164,7 +1164,10 @@ export default function Instruments() {
               </thead>
               <tbody>
                 {instrumentEvaluations.slice().reverse().map(ev => {
-                  const td = typeMap[ev.instrumentType] || typeMap['checklist'];
+                  // Buscar el tipo: 1) de la evaluación guardada, 2) del instrumento original
+                  const instrument = instruments.find(i => i.id === ev.instrumentId);
+                  const evalType = ev.instrumentType || instrument?.type || 'rubric';
+                  const td = typeMap[evalType] || typeMap['rubric'];
                   return (
                     <tr key={ev.id}>
                       <td style={{ fontWeight: 600 }}>{ev.studentName}</td>
