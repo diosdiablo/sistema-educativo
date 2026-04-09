@@ -529,16 +529,25 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
         </div>
       </header>
 
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ color: 'var(--accent-primary)', margin: 0 }}>Configuración de la Evaluación</h3>
+      <div style={{ 
+        background: 'white', 
+        borderRadius: '16px', 
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ color: '#ec4899', margin: 0, fontWeight: 700 }}>Configuracion de la Evaluacion</h3>
           {selectedSubject && (
             <button 
-              className="btn-secondary" 
               onClick={() => setShowRubricModal(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: '#ec4899', color: 'white', border: 'none',
+                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+              }}
             >
-              <Settings size={16} /> Configurar Rúbrica
+              <Settings size={16} /> Configurar Rubrica
             </button>
           )}
         </div>
@@ -588,21 +597,36 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
         </div>
 
         {selectedClass && selectedSubject && (
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button className="btn-secondary" onClick={handleLoadExisting} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+            <button onClick={handleLoadExisting} style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
+              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+            }}>
               <RotateCcw size={16} /> Cargar Datos
             </button>
-            <button className="btn-secondary" onClick={handleReset} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={handleReset} style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
+              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+            }}>
               <RotateCcw size={16} /> Limpiar Todo
             </button>
-            <button className="btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: saved ? 'var(--success-color)' : undefined }}>
+            <button onClick={handleSave} style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: saved ? '#10b981' : '#ec4899', color: 'white', border: 'none',
+              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+            }}>
               {saved ? <Check size={16} /> : <Save size={16} />}
               {saved ? '¡Guardado!' : 'Guardar Progreso'}
             </button>
             <button 
-              className="btn-primary" 
               onClick={generateExcel}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#10b981' }}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px', 
+                background: '#10b981', color: 'white', border: 'none',
+                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+              }}
             >
               <Download size={16} /> Exportar Excel
             </button>
