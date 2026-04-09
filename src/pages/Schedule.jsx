@@ -297,11 +297,9 @@ export default function Schedule() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      {item ? (() => {
-                        const classColor = classes.find(c => c.id === item.classId)?.color || '#10b981';
-                        return (
+                      {item ? (
                         <div style={{ 
-                          backgroundColor: classColor, 
+                          backgroundColor: item.color || classes.find(c => c.id === item.classId)?.color || '#10b981', 
                           color: 'white',
                           padding: '8px', 
                           borderRadius: '8px',
@@ -309,8 +307,7 @@ export default function Schedule() {
                           flexDirection: 'column',
                           height: '100%',
                           justifyContent: 'center',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                          position: 'relative'
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                         }}>
                           {isAdmin && selectedUserId === 'all' && (
                             <span style={{ fontSize: '0.65rem', opacity: 0.85, fontWeight: 700, marginBottom: '2px' }}>
@@ -324,8 +321,7 @@ export default function Schedule() {
                             {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
                           </span>
                         </div>
-                        );
-                      })() : (
+                      ) : (
                         !(isAdmin && selectedUserId === 'all') && (
                           <div style={{ 
                             height: '100%', 
