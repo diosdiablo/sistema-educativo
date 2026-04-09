@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, CalendarDays } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart } from 'lucide-react';
 
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin } = useStore();
@@ -17,21 +17,6 @@ export default function Attendance() {
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('1');
-
-  // Determinar el bimestre según la fecha
-  const getPeriodFromDate = (dateStr) => {
-    const month = new Date(dateStr).getMonth() + 1;
-    if (month >= 1 && month <= 3) return '1';
-    if (month >= 4 && month <= 6) return '2';
-    if (month >= 7 && month <= 9) return '3';
-    return '4';
-  };
-
-  // Actualizar el bimestre cuando cambia la fecha
-  useEffect(() => {
-    setSelectedPeriod(getPeriodFromDate(date));
-  }, [date]);
 
   useEffect(() => {
     const classParam = searchParams.get('class');
@@ -261,55 +246,6 @@ export default function Attendance() {
             }} 
             style={{ borderColor: '#8b5cf6' }}
           />
-        </div>
-
-        {/* Tarjeta de Bimestre */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid #6366f1',
-          transition: 'all 0.3s ease',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'rgba(99, 102, 241, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <CalendarDays size={20} color="#6366f1" />
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Bimestre</label>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Periodo de consulta</div>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
-            {[1, 2, 3, 4].map(p => (
-              <button
-                key={p}
-                onClick={() => setSelectedPeriod(String(p))}
-                style={{
-                  padding: '0.5rem 0.25rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  background: selectedPeriod === String(p) ? '#6366f1' : '#f1f5f9',
-                  color: selectedPeriod === String(p) ? 'white' : 'var(--text-secondary)'
-                }}
-              >
-                B{p}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Botón Guardar */}
