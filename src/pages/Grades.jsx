@@ -321,123 +321,223 @@ export default function Grades() {
         </div>
       </div>
 
-      {/* Widgets de estadísticas */}
+      {/* Widgets de estadísticas animados */}
       {selectedClass && selectedSubjectId && gradeStats && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1.25rem',
           marginBottom: '1.5rem'
         }}>
           {/* Total de evaluaciones */}
           <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
+            background: 'linear-gradient(145deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(102, 126, 234, 0.5)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.4)'; }}
+          >
             <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <ClipboardCheck size={24} color="white" />
-            </div>
-            <div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#667eea' }}>{gradeStats.total}</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Evaluaciones</div>
+              position: 'absolute',
+              top: '-30%',
+              right: '-20%',
+              width: '120px',
+              height: '120px',
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: '50%'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-20%',
+              left: '-10%',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <ClipboardCheck size={28} color="white" />
+              </div>
+              <div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.total}</div>
+                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Evaluaciones</div>
+              </div>
             </div>
           </div>
 
           {/* Alumnos evaluados */}
           <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
+            background: 'linear-gradient(145deg, #10b981 0%, #059669 100%)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            boxShadow: '0 10px 30px rgba(16, 185, 129, 0.4)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.5)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(16, 185, 129, 0.4)'; }}
+          >
             <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Users size={24} color="white" />
-            </div>
-            <div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981' }}>{gradeStats.evaluatedStudents}</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Alumnos Evaluados</div>
+              position: 'absolute',
+              top: '-30%',
+              right: '-20%',
+              width: '120px',
+              height: '120px',
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: '50%'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-20%',
+              left: '-10%',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Users size={28} color="white" />
+              </div>
+              <div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.evaluatedStudents}</div>
+                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Alumnos Evaluados</div>
+              </div>
             </div>
           </div>
 
           {/* Tasa de éxito */}
           <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
+            background: 'linear-gradient(145deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(245, 158, 11, 0.5)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 158, 11, 0.4)'; }}
+          >
             <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <TrendingUp size={24} color="white" />
-            </div>
-            <div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f59e0b' }}>{gradeStats.successRate}%</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Tasa de Éxito</div>
+              position: 'absolute',
+              top: '-30%',
+              right: '-20%',
+              width: '120px',
+              height: '120px',
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: '50%'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-20%',
+              left: '-10%',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <TrendingUp size={28} color="white" />
+              </div>
+              <div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.successRate}%</div>
+                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Tasa de Éxito</div>
+              </div>
             </div>
           </div>
 
           {/* Nivel destacado */}
           <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
+            background: 'linear-gradient(145deg, #ec4899 0%, #db2777 100%)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            boxShadow: '0 10px 30px rgba(236, 72, 153, 0.4)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(236, 72, 153, 0.5)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(236, 72, 153, 0.4)'; }}
+          >
             <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Trophy size={24} color="white" />
-            </div>
-            <div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ec4899' }}>{gradeStats.adRate}%</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Nivel AD</div>
+              position: 'absolute',
+              top: '-30%',
+              right: '-20%',
+              width: '120px',
+              height: '120px',
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: '50%'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-20%',
+              left: '-10%',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Trophy size={28} color="white" />
+              </div>
+              <div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.adRate}%</div>
+                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Nivel AD</div>
+              </div>
             </div>
           </div>
         </div>
