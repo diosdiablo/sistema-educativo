@@ -666,243 +666,65 @@ export default function Grades() {
           </div>
 
           {/* Tabla de calificaciones */}
-          {(() => {
-            return (
-              <div className="table-container" style={{ 
-                overflowX: 'auto',
-                borderRadius: '20px',
-                border: 'none',
-                boxShadow: '0 4px 25px rgba(0,0,0,0.08)'
-              }}>
-                <table className="styled-table" style={{ tableLayout: 'auto' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ 
-                        minWidth: '200px', 
-                        position: 'sticky', 
-                        left: 0, 
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                        zIndex: 10,
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        border: 'none'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <Users size={16} />
-                          Estudiante
-                        </div>
-                      </th>
-                      {currentSubject.competencies.map((comp, idx) => {
-                        const instruments = getInstrumentsForCompetency(comp.id);
-                        const gradientColors = [
-                          ['#10b981', '#059669'],
-                          ['#3b82f6', '#2563eb'],
-                          ['#f59e0b', '#d97706'],
-                          ['#ef4444', '#dc2626'],
-                          ['#8b5cf6', '#7c3aed'],
-                          ['#ec4899', '#db2777']
-                        ];
-                        const [color1, color2] = gradientColors[idx % gradientColors.length];
-                        
-                        if (instruments.length === 0) {
-                          return (
-                            <th key={comp.id} style={{ 
-                              textAlign: 'center', 
-                              minWidth: '100px', 
-                              fontSize: '0.8rem',
-                              background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
-                              color: 'white',
-                              border: 'none'
-                            }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                                <Target size={14} />
-                                {comp.name}
-                              </div>
-                            </th>
-                          );
-                        }
-                        return (
-                          <th key={comp.id} colSpan={instruments.length} style={{ 
-                            textAlign: 'center', 
-                            minWidth: instruments.length * 80, 
-                            fontSize: '0.8rem',
-                            background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
-                            color: 'white',
-                            border: 'none'
-                          }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                              <Target size={14} />
-                              {comp.name}
-                            </div>
-                          </th>
-                        );
-                      })}
-                    </tr>
-                    <tr>
-                      <th style={{ 
-                        minWidth: '200px', 
-                        position: 'sticky', 
-                        left: 0, 
-                        background: '#f8fafc', 
-                        zIndex: 9,
-                        borderBottom: '2px solid #e2e8f0'
-                      }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Haz clic en la nota</span>
-                      </th>
-                      {currentSubject.competencies.map(comp => {
-                        const instruments = getInstrumentsForCompetency(comp.id);
-                        if (instruments.length === 0) {
-                          return (
-                            <th key={comp.id} style={{ 
-                              textAlign: 'center', 
-                              fontSize: '0.7rem', 
-                              color: 'var(--text-secondary)',
-                              background: '#f8fafc',
-                              borderBottom: '2px solid #e2e8f0'
-                            }}>
-                              —
-                            </th>
-                          );
-                        }
-                        return instruments.map(inst => (
-                          <th key={inst.id} style={{ 
-                            textAlign: 'center', 
-                            minWidth: '80px', 
-                            fontSize: '0.7rem', 
-                            color: 'var(--text-secondary)',
-                            background: '#f8fafc',
-                            borderBottom: '2px solid #e2e8f0'
-                          }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.15rem' }}>
-                              <ClipboardCheck size={12} />
-                              {inst.title.length > 12 ? inst.title.substring(0, 12) + '...' : inst.title}
-                            </div>
-                          </th>
-                        ));
-                      })}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredStudents.length === 0 && (
-                      <tr>
-                        <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                          No hay estudiantes matriculados en esta sección.
-                        </td>
-                      </tr>
-                    )}
-                    {filteredStudents.map((student, studentIdx) => {
-                      const rowColors = ['#ffffff', '#fafafa'];
-                      return (
-                        <tr key={student.id} style={{ background: rowColors[studentIdx % 2] }}>
-                          <td style={{ 
-                            fontWeight: 600, 
-                            position: 'sticky', 
-                            left: 0, 
-                            background: rowColors[studentIdx % 2],
-                            zIndex: 5,
-                            borderLeft: studentIdx === 0 ? 'none' : 'none'
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                              <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 700,
-                                fontSize: '0.75rem'
-                              }}>
-                                {student.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                              </div>
-                              <span>{student.name}</span>
-                            </div>
-                          </td>
-                          {currentSubject.competencies.map(comp => {
-                            const instruments = getInstrumentsForCompetency(comp.id);
-                            if (instruments.length === 0) {
-                              return (
-                                <td key={comp.id} style={{ textAlign: 'center', background: rowColors[studentIdx % 2] }}>
-                                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.5 }}>—</span>
-                                </td>
-                              );
-                            }
-                            return instruments.map(inst => {
-                              const activityKey = inst.activityKey || inst.id || '';
-                              
-                              const matchingEvs = instrumentEvaluations.filter(
-                                e => {
-                                  const studentMatch = e.studentId === student.id || e.student_id === student.id;
-                                  const competencyMatch = e.competencyId === comp.id || e.competency_id === comp.id;
-                                  const periodMatch = String(e.period) === String(selectedPeriod);
-                                  const activityMatch = 
-                                    e.activityName === activityKey || 
-                                    e.activity_name === activityKey ||
-                                    e.activityName === inst.id ||
-                                    e.activity_name === inst.id ||
-                                    e.instrumentId === activityKey ||
-                                    e.instrument_id === activityKey;
-                                  
-                                  return studentMatch && competencyMatch && periodMatch && activityMatch;
-                                }
-                              );
-                              const ev = matchingEvs[0];
-                              
-                              if (!ev) {
-                                return (
-                                  <td key={inst.id} style={{ textAlign: 'center', background: rowColors[studentIdx % 2] }}>
-                                    <span style={{ 
-                                      color: '#cbd5e1', 
-                                      fontSize: '0.8rem',
-                                      background: '#f1f5f9',
-                                      padding: '0.25rem 0.5rem',
-                                      borderRadius: '4px'
-                                    }}>—</span>
-                                  </td>
-                                );
-                              }
-                              
-                              const gradeColors = {
-                                'AD': { bg: '#10b98120', border: '#10b98150', text: '#10b981' },
-                                'A': { bg: '#3b82f620', border: '#3b82f650', text: '#3b82f6' },
-                                'B': { bg: '#f59e0b20', border: '#f59e0b50', text: '#f59e0b' },
-                                'C': { bg: '#ef444420', border: '#ef444450', text: '#ef4444' }
-                              };
-                              const gradeStyle = gradeColors[ev.qualitative] || gradeColors['C'];
-                              
-                              return (
-                                <td key={inst.id} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', background: rowColors[studentIdx % 2] }}
-                                  onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
-                                  onMouseLeave={handleMouseLeaveCell}
-                                  onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
-                                >
-                                  <span style={{
-                                    display: 'inline-block',
-                                    minWidth: '36px',
-                                    padding: '0.4rem 0.6rem',
-                                    borderRadius: '8px',
-                                    fontWeight: 800,
-                                    fontSize: '0.9rem',
-                                    background: gradeStyle.bg,
-                                    border: `2px solid ${gradeStyle.border}`,
-                                    color: gradeStyle.text,
-                                    boxShadow: `0 2px 8px ${gradeStyle.border}`
-                                  }}>{ev.qualitative}</span>
-                                </td>
-                              );
-                            });
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })}
+          <div style={{ 
+            overflowX: 'auto',
+            borderRadius: '20px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 25px rgba(0,0,0,0.08)',
+            background: 'white'
+          }}>
+            <table style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse',
+              tableLayout: 'auto'
+            }}>
+              <thead>
+                <tr>
+                  <th style={{ 
+                    padding: '1rem',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                    color: 'white',
+                    fontWeight: 700,
+                    textAlign: 'left'
+                  }}>
+                    Estudiante
+                  </th>
+                  {(currentSubject.competencies || []).map((comp, idx) => (
+                    <th key={comp.id} style={{ 
+                      padding: '1rem',
+                      background: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'][idx % 5],
+                      color: 'white',
+                      fontWeight: 600,
+                      textAlign: 'center'
+                    }}>
+                      {comp.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.length === 0 && (
+                  <tr>
+                    <td colSpan={100} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                      No hay estudiantes en esta sección
+                    </td>
+                  </tr>
+                )}
+                {filteredStudents.map((student, idx) => (
+                  <tr key={student.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                    <td style={{ padding: '0.75rem', fontWeight: 600, borderBottom: '1px solid #e2e8f0' }}>
+                      {student.name}
+                    </td>
+                    {(currentSubject.competencies || []).map(comp => (
+                      <td key={comp.id} style={{ padding: '0.75rem', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
+                        —
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
 
