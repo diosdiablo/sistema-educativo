@@ -464,6 +464,14 @@ export const StoreProvider = ({ children }) => {
     initialSync();
   }, [initialSync]);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.removeItem('edu_current_user');
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
   useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
   useEffect(() => { localStorage.setItem('edu_period_dates', JSON.stringify(periodDates)); }, [periodDates]);
