@@ -113,12 +113,12 @@ export const StoreProvider = ({ children }) => {
 
   // Load currentUser from localStorage AFTER mount (not during initial render)
   useEffect(() => {
-    const savedUser = localStorage.getItem('edu_current_user');
+    const savedUser = localStorage.getItem('edu_current_user_v2');
     if (savedUser) {
       try {
         setCurrentUser(JSON.parse(savedUser));
       } catch {
-        localStorage.removeItem('edu_current_user');
+        localStorage.removeItem('edu_current_user_v2');
       }
     }
   }, []);
@@ -479,6 +479,7 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     const handleBeforeUnload = () => {
       localStorage.removeItem('edu_current_user');
+      localStorage.removeItem('edu_current_user_v2');
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -496,8 +497,8 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => { localStorage.setItem('edu_schedule', JSON.stringify(schedule)); }, [schedule]);
   useEffect(() => { localStorage.setItem('edu_diagnostic_evaluations', JSON.stringify(diagnosticEvaluations)); }, [diagnosticEvaluations]);
   useEffect(() => {
-    if (currentUser) localStorage.setItem('edu_current_user', JSON.stringify(currentUser));
-    else localStorage.removeItem('edu_current_user');
+    if (currentUser) localStorage.setItem('edu_current_user_v2', JSON.stringify(currentUser));
+    else localStorage.removeItem('edu_current_user_v2');
   }, [currentUser]);
 
   const syncToSupabaseManual = useCallback(async () => {
@@ -639,6 +640,7 @@ export const StoreProvider = ({ children }) => {
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('edu_current_user');
+    localStorage.removeItem('edu_current_user_v2');
   };
 
   const importStudentsBulk = (rawAoaData) => {
