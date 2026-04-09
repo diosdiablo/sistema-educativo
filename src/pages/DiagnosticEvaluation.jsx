@@ -506,7 +506,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
 
   return (
     <div className="animate-fade-in">
-      <div style={{
+      <header style={{
         background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
         borderRadius: '20px',
         padding: '2rem',
@@ -527,17 +527,11 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
             <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Registra y genera mapas de calor</p>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div style={{ 
-        background: 'white', 
-        borderRadius: '16px', 
-        padding: '1.5rem',
-        marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-      }}>
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ color: '#ec4899', margin: 0, fontWeight: 700 }}>Configuracion de la Evaluacion</h3>
+          <h3 style={{ color: 'var(--accent-primary)', margin: 0 }}>Configuración de la Evaluación</h3>
           {selectedSubject && (
             <button 
               className="btn-secondary" 
@@ -663,13 +657,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               </p>
             </div>
           ) : (
-            <div style={{ 
-              background: 'white', 
-              borderRadius: '16px', 
-              overflow: 'hidden',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-            }}>
-              <div style={{ overflowX: 'auto' }}>
+            <div className="table-container" style={{ overflowX: 'auto' }}>
               <table className="styled-table" style={{ minWidth: '800px' }}>
                 <thead>
                   <tr>
