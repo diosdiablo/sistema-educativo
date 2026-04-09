@@ -462,8 +462,11 @@ export default function Instruments() {
 
             {/* Selector de tipo */}
             <div>
-              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600 }}>Tipo de Instrumento <span style={{ fontWeight: 400, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>(DCNEB)</span></label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '0.75rem' }}>
+              <label style={{ display: 'block', marginBottom: '1rem', fontWeight: 600, fontSize: '1rem', color: '#1e293b' }}>
+                Tipo de Instrumento 
+                <span style={{ fontWeight: 400, color: '#64748b', fontSize: '0.85rem', marginLeft: '8px' }}>(DCNEB)</span>
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                 {INSTRUMENT_TYPES.map(t => {
                   const Icon = t.icon;
                   const active = instrumentType === t.id;
@@ -472,16 +475,27 @@ export default function Instruments() {
                       key={t.id}
                       onClick={() => setInstrumentType(t.id)}
                       style={{
-                        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px',
-                        padding: '0.9rem 1rem', borderRadius: '12px', textAlign: 'left',
-                        border: `2px solid ${active ? t.color : 'var(--border-color)'}`,
-                        background: active ? `${t.color}18` : 'transparent',
-                        cursor: 'pointer', transition: 'all 0.15s'
+                        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px',
+                        padding: '1.25rem 1rem', borderRadius: '14px', textAlign: 'left',
+                        border: `2px solid ${active ? t.color : '#e2e8f0'}`,
+                        background: active ? `${t.color}12` : '#f8fafc',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                        boxShadow: active ? `0 4px 12px ${t.color}30` : 'none'
                       }}
                     >
-                      <Icon size={20} color={active ? t.color : 'var(--text-secondary)'} />
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: active ? t.color : 'var(--text-primary)' }}>{t.label}</span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', lineHeight: 1.3 }}>{t.description}</span>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
+                        background: active ? `${t.color}20` : '#e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Icon size={20} color={active ? t.color : '#94a3b8'} />
+                      </div>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: active ? t.color : '#334155' }}>{t.label}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.4 }}>{t.description}</span>
                     </button>
                   );
                 })}
@@ -490,45 +504,104 @@ export default function Instruments() {
 
             {/* Criterios — solo si el tipo los requiere */}
             {needsCriteria && (
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 600 }}>
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: `${currentTypeDef.color}15`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <CheckSquare size={18} color={currentTypeDef.color} />
+                    </span>
                     Indicadores / Criterios
-                    <span style={{ marginLeft: '8px', fontSize: '0.78rem', color: currentTypeDef.color, background: `${currentTypeDef.color}18`, padding: '2px 8px', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', color: currentTypeDef.color, background: `${currentTypeDef.color}15`, padding: '4px 10px', borderRadius: '6px', fontWeight: 600 }}>
                       {instrumentType === 'observation' ? 'Siempre / A veces / Nunca' :
                        instrumentType === 'checklist' ? 'Logrado / No Logrado' : 'AD / A / B / C'}
                     </span>
                   </h3>
-                  <button onClick={() => setCriteria([...criteria, { id: Date.now().toString(), text: '', descriptors: { AD: '', A: '', B: '', C: '' } }])} style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <PlusCircle size={18} /> Añadir
+                  <button onClick={() => setCriteria([...criteria, { id: Date.now().toString(), text: '', descriptors: { AD: '', A: '', B: '', C: '' } }])} 
+                    style={{ 
+                      color: '#8b5cf6', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      background: '#f5f3ff',
+                      border: '1px solid #8b5cf630',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}>
+                    <PlusCircle size={18} /> Añadir Criterio
                   </button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {criteria.map((c, idx) => (
-                    <div key={c.id}>
-                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600, width: '22px', flexShrink: 0 }}>{idx + 1}.</span>
+                    <div key={c.id} style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '1rem',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+                        <div style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '8px',
+                          background: currentTypeDef.color,
+                          color: 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: '0.8rem'
+                        }}>{idx + 1}</div>
                         <input
-                          className="input-field" style={{ flex: 1 }} value={c.text}
+                          className="input-field" style={{ flex: 1, borderColor: '#e2e8f0' }} value={c.text}
                           onChange={e => { const n = [...criteria]; n[idx].text = e.target.value; setCriteria(n); }}
                           placeholder="Describe el indicador o criterio..."
                         />
-                        <button onClick={() => { if (criteria.length > 1) { if (window.confirm('¿Eliminar?')) setCriteria(criteria.filter(x => x.id !== c.id)); } else alert('Mínimo 1 criterio.'); }} style={{ color: 'var(--danger-color)', flexShrink: 0 }}>
+                        <button onClick={() => { if (criteria.length > 1) { if (window.confirm('¿Eliminar?')) setCriteria(criteria.filter(x => x.id !== c.id)); } else alert('Mínimo 1 criterio.'); }} 
+                          style={{ 
+                            color: '#ef4444', 
+                            background: '#fef2f2',
+                            border: '1px solid #ef444420',
+                            padding: '8px',
+                            borderRadius: '8px',
+                            cursor: 'pointer'
+                          }}>
                           <Trash2 size={16} />
                         </button>
                       </div>
                       {/* Descriptores de rúbrica */}
                       {instrumentType === 'rubric' && (
-                        <div style={{ marginLeft: '30px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '0.5rem' }}>
+                        <div style={{ marginLeft: '38px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '0.75rem' }}>
                           {['AD', 'A', 'B', 'C'].map(level => (
                             <div key={level}>
-                              <label style={{ fontSize: '0.7rem', fontWeight: 600, color: level === 'AD' ? '#10b981' : level === 'A' ? '#3b82f6' : level === 'B' ? '#f59e0b' : '#ef4444', display: 'block', marginBottom: '4px' }}>
-                                {level}
+                              <label style={{ 
+                                fontSize: '0.75rem', 
+                                fontWeight: 700, 
+                                color: level === 'AD' ? '#10b981' : level === 'A' ? '#3b82f6' : level === 'B' ? '#f59e0b' : '#ef4444', 
+                                display: 'block', 
+                                marginBottom: '6px',
+                                textAlign: 'center'
+                              }}>
+                                {level === 'AD' ? '⭐ Destacado' : level === 'A' ? '✅ Logrado' : level === 'B' ? '🔄 En Proceso' : '🔸 En Inicio'}
                               </label>
                               <textarea
                                 className="input-field"
                                 rows={2}
-                                style={{ fontSize: '0.75rem', resize: 'none' }}
+                                style={{ 
+                                  fontSize: '0.72rem', 
+                                  resize: 'none',
+                                  borderColor: level === 'AD' ? '#10b98130' : level === 'A' ? '#3b82f630' : level === 'B' ? '#f59e0b30' : '#ef444430',
+                                  background: level === 'AD' ? '#10b98108' : level === 'A' ? '#3b82f608' : level === 'B' ? '#f59e0b08' : '#ef444408'
+                                }}
                                 value={c.descriptors?.[level] || ''}
                                 onChange={e => {
                                   const n = [...criteria];
