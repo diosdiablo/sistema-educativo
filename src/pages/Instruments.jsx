@@ -1311,41 +1311,67 @@ export default function Instruments() {
             <table className="styled-table">
               <thead>
                 <tr>
-                  <th>Estudiante</th>
-                  <th>Actividad / Instrumento</th>
-                  <th>Tipo</th>
-                  <th style={{ textAlign: 'center' }}>Resultado</th>
-                  <th>Fecha</th>
-                  <th style={{ textAlign: 'center' }}>Acciones</th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '1rem'
+                  }}>Estudiante</th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '1rem'
+                  }}>Actividad / Instrumento</th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '1rem'
+                  }}>Tipo</th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '1rem',
+                    textAlign: 'center'
+                  }}>Resultado</th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '1rem'
+                  }}>Fecha</th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '1rem',
+                    textAlign: 'center'
+                  }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {instrumentEvaluations.slice().reverse().map(ev => {
+                {instrumentEvaluations.slice().reverse().map((ev, idx) => {
                   // Buscar el tipo: 1) de la evaluación guardada, 2) del instrumento original
                   const instrument = instruments.find(i => i.id === ev.instrumentId);
                   const evalType = ev.instrumentType || instrument?.type || 'rubric';
                   const td = typeMap[evalType] || typeMap['rubric'];
                   return (
-                    <tr key={ev.id}>
-                      <td style={{ fontWeight: 600 }}>{ev.studentName}</td>
-                      <td>
-                        <div>{ev.activityName}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{ev.instrumentTitle}</div>
+                    <tr key={ev.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                      <td style={{ fontWeight: 600, padding: '1rem' }}>{ev.studentName}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ fontWeight: 500 }}>{ev.activityName}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ev.instrumentTitle}</div>
                       </td>
-                      <td>
-                        <span style={{ fontSize: '0.78rem', color: td.color, fontWeight: 600, background: `${td.color}15`, padding: '2px 8px', borderRadius: '6px' }}>
+                      <td style={{ padding: '1rem' }}>
+                        <span style={{ fontSize: '0.78rem', color: td.color, fontWeight: 600, background: `${td.color}15`, padding: '4px 10px', borderRadius: '6px' }}>
                           {td.label}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center', padding: '1rem' }}>
                         <span className={`badge ${BadgeTheme[ev.qualitative]}`}>
                           {ev.qualitative} – {GRADE_LABEL[ev.qualitative]}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      <td style={{ fontSize: '0.82rem', color: '#64748b', padding: '1rem' }}>
                         {new Date(ev.date).toLocaleDateString('es-PE')}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center', padding: '1rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                           <button 
                             className="btn-secondary" 
