@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -98,6 +98,42 @@ export default function Grades() {
   const handleMouseLeaveCell = () => {
     setHoveredEval(null);
   };
+
+  // Estadísticas para los widgets
+  const gradeStats = useMemo(() => {
+    if (!selectedClass || !selectedSubjectId) return null;
+    
+    const counts = { AD: 0, A: 0, B: 0, C: 0 };
+    let total = 0;
+    
+    filteredStudents.forEach(student => {
+      currentSubject?.competencies?.forEach(comp => {
+        const ev = instrumentEvaluations.find(
+          e => e.studentId === student.id && e.competencyId === comp.id && e.period === selectedPeriod
+        );
+        if (ev && counts[ev.qualitative] !== undefined) {
+          counts[ev.qualitative]++;
+          total++;
+        }
+      });
+    });
+
+    const adRate = total > 0 ? Math.round((counts.AD / total) * 100) : 0;
+    const successRate = total > 0 ? Math.round(((counts.AD + counts.A) / total) * 100) : 0;
+
+    return {
+      counts,
+      total,
+      adRate,
+      successRate,
+      totalStudents: filteredStudents.length,
+      evaluatedStudents: new Set(
+        instrumentEvaluations
+          .filter(e => e.period === selectedPeriod && filteredStudents.some(s => s.id === e.studentId))
+          .map(e => e.studentId)
+      ).size
+    };
+  }, [selectedClass, selectedSubjectId, selectedPeriod, filteredStudents, currentSubject, instrumentEvaluations]);
 
   return (
     <div className="animate-fade-in">
@@ -284,6 +320,128 @@ export default function Grades() {
           </select>
         </div>
       </div>
+
+      {/* Widgets de estadísticas */}
+      {selectedClass && selectedSubjectId && gradeStats && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          {/* Total de evaluaciones */}
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '1.25rem',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <ClipboardCheck size={24} color="white" />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#667eea' }}>{gradeStats.total}</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Evaluaciones</div>
+            </div>
+          </div>
+
+          {/* Alumnos evaluados */}
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '1.25rem',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Users size={24} color="white" />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981' }}>{gradeStats.evaluatedStudents}</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Alumnos Evaluados</div>
+            </div>
+          </div>
+
+          {/* Tasa de éxito */}
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '1.25rem',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <TrendingUp size={24} color="white" />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f59e0b' }}>{gradeStats.successRate}%</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Tasa de Éxito</div>
+            </div>
+          </div>
+
+          {/* Nivel destacado */}
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '1.25rem',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Trophy size={24} color="white" />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ec4899' }}>{gradeStats.adRate}%</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Nivel AD</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Empty states */}
       {!selectedClass && (
