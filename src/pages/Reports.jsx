@@ -326,24 +326,50 @@ const Reports = () => {
   };
 
   return (
-    <div className="page-container">
-      <header className="page-header">
-        <div>
-          <h2 className="page-title">Centro de Reportes</h2>
-          <p className="page-subtitle">Exporta registros de asistencia y evaluaciones en formato Excel</p>
+    <div>
+      <div style={{
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        borderRadius: '20px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        color: 'white'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '56px', height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <FileDown size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Centro de Reportes</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Exporta registros de asistencia y evaluaciones en formato Excel</p>
+            </div>
+          </div>
         </div>
-        <FileDown size={32} className="text-accent" />
-      </header>
+      </div>
 
-      <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
         
         {/* Card Asistencia */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px' }}>
-              <CalendarCheck size={24} color="var(--accent-primary)" />
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(59, 130, 246, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <CalendarCheck size={24} color="#3b82f6" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Reporte de Asistencia</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Reporte de Asistencia</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -394,12 +420,21 @@ const Reports = () => {
         </div>
 
         {/* Card Registros Auxiliares */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px' }}>
-              <GraduationCap size={24} color="var(--success-color)" />
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(16, 185, 129, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <GraduationCap size={24} color="#10b981" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Registros Auxiliares</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Registros Auxiliares</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -475,12 +510,21 @@ const Reports = () => {
         </div>
 
         {/* Card Reporte Final */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px' }}>
-              <FileDown size={24} color="var(--accent-primary)" />
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(139, 92, 246, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <FileDown size={24} color="#8b5cf6" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Reporte Final (Oficial)</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Reporte Final (Oficial)</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -556,12 +600,21 @@ const Reports = () => {
         </div>
 
         {/* Card Calificaciones por Instrumento */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '10px', background: 'rgba(249, 115, 22, 0.1)', borderRadius: '12px' }}>
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(249, 115, 22, 0.1)', 
+              borderRadius: '12px' 
+            }}>
               <FileSpreadsheet size={24} color="#f97316" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Calificaciones por Instrumento</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Calificaciones por Instrumento</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -637,12 +690,21 @@ const Reports = () => {
         </div>
 
         {/* Card Lista de Estudiantes */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '10px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '12px' }}>
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(34, 197, 94, 0.1)', 
+              borderRadius: '12px' 
+            }}>
               <Table size={24} color="#22c55e" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Lista de Estudiantes</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Lista de Estudiantes</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -688,15 +750,25 @@ const Reports = () => {
       </div>
 
       {/* Sección de ayuda para plantillas */}
-      <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+      <div style={{ 
+        background: 'white', 
+        borderRadius: '16px', 
+        padding: '2rem',
+        marginTop: '2rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px' }}>
+          <div style={{ 
+            padding: '12px', 
+            background: 'rgba(139, 92, 246, 0.1)', 
+            borderRadius: '12px' 
+          }}>
             <FolderOpen size={24} color="#8b5cf6" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '600' }}>Plantillas Personalizadas</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-              Usa las plantillas de tu institución como base
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1e293b' }}>Plantillas Personalizadas</h3>
+            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
+              Usa las plantillas de tu institucion como base
             </p>
           </div>
         </div>
