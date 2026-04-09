@@ -5,7 +5,7 @@ import {
   CheckSquare, BarChart2, Grid, ChevronLeft, 
   PlusCircle, Save, User, Activity, CheckCircle2,
   Dices, Users, Eye, BookOpen, FileText, MessageSquare, Star,
-  X, FileSearch, Edit2, CheckCircle as CheckCircleIcon
+  X, FileSearch, Edit2, CheckCircle as CheckCircleIcon, UserCheck
 } from 'lucide-react';
 
 // ─── Definición de tipos DCNEB ──────────────────────────────────────────────
@@ -1315,34 +1315,64 @@ export default function Instruments() {
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem'
-                  }}>Estudiante</th>
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <UserCheck size={16} />
+                      Estudiante
+                    </div>
+                  </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem'
-                  }}>Actividad / Instrumento</th>
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ClipboardCheck size={16} />
+                      Actividad / Instrumento
+                    </div>
+                  </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem'
-                  }}>Tipo</th>
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Grid size={16} />
+                      Tipo
+                    </div>
+                  </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem',
                     textAlign: 'center'
-                  }}>Resultado</th>
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      <BarChart2 size={16} />
+                      Resultado
+                    </div>
+                  </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem'
-                  }}>Fecha</th>
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Activity size={16} />
+                      Fecha
+                    </div>
+                  </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem',
                     textAlign: 'center'
-                  }}>Acciones</th>
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      <CheckCircle2 size={16} />
+                      Acciones
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
