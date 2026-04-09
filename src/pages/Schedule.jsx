@@ -131,42 +131,37 @@ export default function Schedule() {
 
   return (
     <div className="animate-fade-in">
-      <div style={{
-        background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-        borderRadius: '20px',
-        padding: '2rem',
-        marginBottom: '2rem',
-        color: 'white'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px', height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Clock size={28} />
+      <div className="page-header">
+        <div style={{ flex: 1 }}>
+          <h2 className="page-title">Horario Escolar</h2>
+          <p className="page-subtitle">
+            {isAdmin ? `Gestionando horario de: ${viewedUser?.name}` : 'Organiza tus sesiones de clase semanales'}
+          </p>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          {isAdmin && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <User size={18} style={{ color: 'var(--text-secondary)' }} />
+              <select 
+                value={selectedUserId} 
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none', fontWeight: 600, fontSize: '0.9rem' }}
+              >
+                <option value="all">📋 Todos los Docentes</option>
+                <option value={currentUser.id}>Mi Horario (Admin)</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
             </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Horario Escolar</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>
-                Organiza tus sesiones de clase semanales
-              </p>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            {(!isAdmin || selectedUserId !== 'all') && (
-              <button style={{ 
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'white', color: '#0ea5e9', border: 'none',
-                padding: '0.75rem 1.25rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
-              }} onClick={() => handleOpenModal()}>
-                <Plus size={18} /> Agregar Bloque
-              </button>
-            )}
-          </div>
+          )}
+          {/* Only show 'Agregar Bloque' if we're in a specific teacher/user view */}
+          {(!isAdmin || selectedUserId !== 'all') && (
+            <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => handleOpenModal()}>
+              <Plus size={18} /> Agregar Bloque
+            </button>
+          )}
         </div>
       </div>
 
