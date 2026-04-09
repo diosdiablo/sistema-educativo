@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -347,30 +347,38 @@ export default function Grades() {
       {/* Main table */}
       {selectedClass && selectedSubjectId && currentSubject && (
         <>
-          {/* Info banner */}
+          {/* Info banner moderno */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
-            borderRadius: '12px', padding: '0.75rem 1.25rem', marginBottom: '1.5rem', marginTop: '1.5rem',
-            fontSize: '0.85rem', color: 'var(--text-secondary)'
+            display: 'flex', alignItems: 'center', gap: '12px',
+            background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
+            border: '1px solid rgba(102, 126, 234, 0.2)',
+            borderRadius: '16px', padding: '1rem 1.5rem', marginBottom: '1.5rem',
+            fontSize: '0.9rem', color: 'var(--text-secondary)'
           }}>
-            <Info size={16} style={{ color: '#6366f1', flexShrink: 0 }} />
-            Cada columna representa un instrumento aplicado. Haz clic en la nota para ver el detalle.
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Info size={18} color="white" />
+            </div>
+            <span>Cada columna representa un instrumento aplicado. <strong style={{ color: '#667eea' }}>Haz clic en la nota</strong> para ver el detalle.</span>
           </div>
 
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
-            // Función para obtener instrumentos únicos aplicados a una competencia en este período
             const getInstrumentsForCompetency = (competencyId) => {
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && ev.period === selectedPeriod
               );
-              console.log('[GRADES] getInstrumentsForCompetency:', competencyId, 'evs:', evs.map(e => ({ id: e.id, activityName: e.activityName, instrumentId: e.instrumentId })));
               
-              // Agrupar por activityName en lugar de instrumentId
               const uniqueInstruments = {};
               evs.forEach(ev => {
-                // Usar activityName como clave para mostrar cada evaluación diferente
                 const key = ev.activityName || ev.instrumentId;
                 if (!uniqueInstruments[key]) {
                   uniqueInstruments[key] = {
@@ -383,38 +391,116 @@ export default function Grades() {
               return Object.values(uniqueInstruments);
             };
 
+            const gradientColors = [
+              ['#10b981', '#059669'],
+              ['#3b82f6', '#2563eb'],
+              ['#f59e0b', '#d97706'],
+              ['#ef4444', '#dc2626'],
+              ['#8b5cf6', '#7c3aed'],
+              ['#ec4899', '#db2777']
+            ];
+
             return (
-              <div className="table-container" style={{ overflowX: 'auto' }}>
+              <div className="table-container" style={{ overflowX: 'auto', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
                 <table className="styled-table" style={{ tableLayout: 'auto' }}>
                   <thead>
                     <tr>
-                      <th style={{ minWidth: '180px', position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 10 }}>Estudiante</th>
-                      {currentSubject.competencies.map(comp => {
+                      <th style={{ 
+                        minWidth: '200px', 
+                        position: 'sticky', 
+                        left: 0, 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                        zIndex: 10,
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        padding: '1rem'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Users size={16} />
+                          Estudiante
+                        </div>
+                      </th>
+                      {currentSubject.competencies.map((comp, idx) => {
                         const instruments = getInstrumentsForCompetency(comp.id);
+                        const [color1, color2] = gradientColors[idx % gradientColors.length];
                         if (instruments.length === 0) {
                           return (
-                            <th key={comp.id} style={{ textAlign: 'center', minWidth: '100px', fontSize: '0.78rem' }}>
-                              {comp.name}
+                            <th key={comp.id} style={{ 
+                              textAlign: 'center', 
+                              minWidth: '100px', 
+                              fontSize: '0.8rem',
+                              background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
+                              color: 'white',
+                              padding: '1rem'
+                            }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                <Target size={14} />
+                                {comp.name}
+                              </div>
                             </th>
                           );
                         }
                         return (
-                          <th key={comp.id} colSpan={instruments.length} style={{ textAlign: 'center', minWidth: instruments.length * 80, fontSize: '0.78rem', background: 'var(--bg-secondary)' }}>
-                            {comp.name}
+                          <th key={comp.id} colSpan={instruments.length} style={{ 
+                            textAlign: 'center', 
+                            minWidth: instruments.length * 80, 
+                            fontSize: '0.8rem',
+                            background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
+                            color: 'white',
+                            padding: '1rem'
+                          }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <Target size={14} />
+                              {comp.name}
+                            </div>
                           </th>
                         );
                       })}
                     </tr>
                     <tr>
-                      <th style={{ minWidth: '180px', position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 10 }}></th>
-                      {currentSubject.competencies.map(comp => {
+                      <th style={{ 
+                        minWidth: '200px', 
+                        position: 'sticky', 
+                        left: 0, 
+                        background: '#f8fafc', 
+                        zIndex: 10,
+                        padding: '0.75rem 1rem',
+                        borderBottom: '2px solid #e2e8f0'
+                      }}>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>Instrumentos aplicados</span>
+                      </th>
+                      {currentSubject.competencies.map((comp, idx) => {
                         const instruments = getInstrumentsForCompetency(comp.id);
+                        const [color1, color2] = gradientColors[idx % gradientColors.length];
                         if (instruments.length === 0) {
-                          return <th key={comp.id} style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>—</th>;
+                          return (
+                            <th key={comp.id} style={{ 
+                              textAlign: 'center', 
+                              fontSize: '0.7rem', 
+                              color: '#64748b',
+                              background: '#f8fafc',
+                              padding: '0.75rem',
+                              borderBottom: '2px solid #e2e8f0'
+                            }}>
+                              —
+                            </th>
+                          );
                         }
                         return instruments.map(inst => (
-                          <th key={inst.id} style={{ textAlign: 'center', minWidth: '80px', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                            {inst.title.length > 10 ? inst.title.substring(0, 10) + '...' : inst.title}
+                          <th key={inst.id} style={{ 
+                            textAlign: 'center', 
+                            minWidth: '80px', 
+                            fontSize: '0.7rem', 
+                            color: '#64748b',
+                            background: '#f8fafc',
+                            padding: '0.75rem',
+                            borderBottom: '2px solid #e2e8f0'
+                          }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                              <ClipboardCheck size={12} />
+                              {inst.title.length > 12 ? inst.title.substring(0, 12) + '...' : inst.title}
+                            </div>
                           </th>
                         ));
                       })}
