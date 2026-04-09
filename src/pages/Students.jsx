@@ -146,18 +146,38 @@ export default function Students() {
   return (
     <>
       <div className="animate-fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '2rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1 }}>
-          <h2 className="page-title">Estudiantes</h2>
-          <p className="page-subtitle">Gestiona el registro de alumnos</p>
-        </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      <div style={{
+        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+        borderRadius: '20px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        color: 'white'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '56px', height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <Filter size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Estudiantes</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona el registro de alumnos</p>
+            </div>
+          </div>
           
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           {isAdmin && students.length > 0 && (
             <button 
-              className="btn-danger" 
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }} 
               onClick={handleClearAll}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
+                padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
+              }}
             >
               <Trash2 size={18} /> Vaciar Lista
             </button>
@@ -172,16 +192,23 @@ export default function Students() {
           />
           {isAdmin && (
             <button 
-              className="btn-primary" 
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--success-color)' }} 
               onClick={() => fileInputRef.current?.click()}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'white', color: '#22c55e', border: 'none',
+                padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
+              }}
             >
               <Upload size={18} /> Subir Excel
             </button>
           )}
           
           {isAdmin && (
-            <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setShowForm(!showForm)}>
+            <button onClick={() => setShowForm(!showForm)} style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'white', color: '#22c55e', border: 'none',
+              padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
+            }}>
               <Plus size={18} /> Nuevo Alumno
             </button>
           )}
@@ -352,17 +379,38 @@ export default function Students() {
         </form>
       )}
 
-      <div className="table-container">
-        <table className="styled-table">
-          <thead>
-            <tr>
-              <th>DNI</th>
-              <th>Apellidos y Nombre</th>
-              <th>Grado y Sección</th>
-              <th>Fecha de Nacimiento</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
+      <div style={{ 
+        background: 'white', 
+        borderRadius: '16px', 
+        overflow: 'hidden',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+      }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="styled-table">
+            <thead>
+              <tr>
+                <th style={{ 
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  color: 'white', padding: '1rem'
+                }}>DNI</th>
+                <th style={{ 
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  color: 'white', padding: '1rem'
+                }}>Apellidos y Nombre</th>
+                <th style={{ 
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  color: 'white', padding: '1rem'
+                }}>Grado y Seccion</th>
+                <th style={{ 
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  color: 'white', padding: '1rem'
+                }}>Fecha de Nacimiento</th>
+                <th style={{ 
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  color: 'white', padding: '1rem'
+                }}>Acciones</th>
+              </tr>
+            </thead>
           <tbody>
             {filteredStudents.length === 0 ? (
               <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No hay estudiantes registrados.</td></tr>
