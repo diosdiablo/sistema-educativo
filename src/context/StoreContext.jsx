@@ -399,6 +399,7 @@ export const StoreProvider = ({ children }) => {
         const cloudInstruments = instrumentsData.map(i => ({
           ...i,
           title: i.title || i.name || '',
+          type: i.type || null,
           criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
         }));
         setInstruments(mergeData(loadData('edu_instruments', []), cloudInstruments));
