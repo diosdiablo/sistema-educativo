@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Plus, Trash2, Clock, X, Save, Edit3, User, Upload, CalendarDays } from 'lucide-react';
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+const DAYS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
 const TIMES = [
   '12:30 - 01:15', '01:15 - 02:00', '02:00 - 02:45', '02:45 - 03:30',
   '03:30 - 04:00 (DESCANSO)',
@@ -10,8 +10,7 @@ const TIMES = [
 ];
 
 export default function Schedule() {
-  const { classes, subjects, schedule, saveScheduleItem, deleteScheduleItem, currentUser, isAdmin, users, syncToSupabaseManual, isOnline } = useStore();
-  const [syncing, setSyncing] = useState(false);
+  const { classes, subjects, schedule, saveScheduleItem, deleteScheduleItem, currentUser, isAdmin, users } = useStore();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   
@@ -22,7 +21,8 @@ export default function Schedule() {
     day: 'Lunes',
     time: TIMES[0],
     classId: '',
-    subjectId: ''
+    subjectId: '',
+    color: '#10b981'
   });
 
   // Filter teachers only (non-admin users)
@@ -53,12 +53,11 @@ export default function Schedule() {
 
   const getAvailableSubjectsForClass = (classId) => {
     if (isAdmin || viewedUser?.role === 'admin') return subjects;
-    if (!viewedUser?.assignments || viewedUser.assignments.length === 0) return subjects;
+    if (!viewedUser?.assignments) return [];
     const subjectIds = viewedUser.assignments
       .filter(a => a.classId === classId)
       .map(a => a.subjectId);
-    const assigned = subjects.filter(s => subjectIds.includes(s.id));
-    return assigned.length > 0 ? assigned : subjects;
+    return subjects.filter(s => subjectIds.includes(s.id));
   };
 
   const handleOpenModal = (day = 'Lunes', time = TIMES[0], item = null) => {
@@ -68,7 +67,8 @@ export default function Schedule() {
         day: item.day,
         time: item.time,
         classId: item.classId,
-        subjectId: item.subjectId
+        subjectId: item.subjectId,
+        color: item.color || '#10b981'
       });
     } else {
       setEditingItem(null);
@@ -76,7 +76,8 @@ export default function Schedule() {
         day,
         time,
         classId: '',
-        subjectId: ''
+        subjectId: '',
+        color: '#10b981'
       });
     }
     setShowModal(true);
@@ -100,182 +101,93 @@ export default function Schedule() {
     return filteredSchedule.find(s => s.day === day && s.time === time);
   };
 
+  const colors = [
+    // Verdes
+    { name: 'Esmeralda',   value: '#10b981' },
+    { name: 'Verde Lima',  value: '#84cc16' },
+    { name: 'Bosque',      value: '#16a34a' },
+    { name: 'Menta',       value: '#2dd4bf' },
+    // Azules
+    { name: 'Azul',        value: '#3b82f6' },
+    { name: 'Celeste',     value: '#38bdf8' },
+    { name: 'Índigo',      value: '#6366f1' },
+    { name: 'Marino',      value: '#1d4ed8' },
+    // Morados / Rosas
+    { name: 'Violeta',     value: '#8b5cf6' },
+    { name: 'Malva',       value: '#a855f7' },
+    { name: 'Rosa',        value: '#ec4899' },
+    { name: 'Fucsia',      value: '#e879f9' },
+    // Cálidos
+    { name: 'Rojo',        value: '#ef4444' },
+    { name: 'Coral',       value: '#f97316' },
+    { name: 'Ámbar',       value: '#f59e0b' },
+    { name: 'Amarillo',    value: '#eab308' },
+    // Neutros / Especiales
+    { name: 'Slate',       value: '#64748b' },
+    { name: 'Gris Azul',   value: '#4b6a8a' },
+    { name: 'Cobre',       value: '#c2410c' },
+    { name: 'Lima Oscuro', value: '#65a30d' },
+  ];
+
   return (
     <div className="animate-fade-in">
-      {/* Header moderno */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-        borderRadius: '20px',
-        padding: '2rem',
-        marginBottom: '2rem',
-        position: 'relative',
-        overflow: 'hidden',
-        color: 'white'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: '-30%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
+      <div className="page-header">
+        <div style={{ flex: 1 }}>
+          <h2 className="page-title">Horario Escolar</h2>
+          <p className="page-subtitle">
+            {isAdmin ? `Gestionando horario de: ${viewedUser?.name}` : 'Organiza tus sesiones de clase semanales'}
+          </p>
+        </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <CalendarDays size={28} />
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          {isAdmin && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <User size={18} style={{ color: 'var(--text-secondary)' }} />
+              <select 
+                value={selectedUserId} 
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none', fontWeight: 600, fontSize: '0.9rem' }}
+              >
+                <option value="all">📋 Todos los Docentes</option>
+                <option value={currentUser.id}>Mi Horario (Admin)</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
             </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Horario Escolar</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>
-                {isAdmin ? `Gestionando horario de: ${viewedUser?.name}` : 'Organiza tus sesiones de clase semanales'}
-              </p>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            {isAdmin && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.75rem', 
-                background: 'rgba(255,255,255,0.2)', 
-                padding: '0.6rem 1rem', 
-                borderRadius: '12px',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.1)'
-              }}>
-                <User size={18} />
-                <select 
-                  value={selectedUserId} 
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  style={{ 
-                    background: 'transparent', 
-                    border: 'none', 
-                    color: 'white', 
-                    outline: 'none', 
-                    fontWeight: 600, 
-                    fontSize: '0.9rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="all" style={{ color: '#1e293b' }}>📋 Todos los Docentes</option>
-                  <option value={currentUser.id} style={{ color: '#1e293b' }}>Mi Horario (Admin)</option>
-                  {teachers.map(t => (
-                    <option key={t.id} value={t.id} style={{ color: '#1e293b' }}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {/* Only show 'Agregar Bloque' if we're in a specific teacher/user view */}
-            {(!isAdmin || selectedUserId !== 'all') && (
-              <button className="btn-primary" style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                background: 'white',
-                color: '#0ea5e9',
-                border: 'none',
-                fontWeight: 600
-              }} onClick={() => handleOpenModal()}>
-                <Plus size={18} /> Agregar Bloque
-              </button>
-            )}
-            <button 
-              className="btn-secondary" 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                background: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-              onClick={async () => {
-                if (!isOnline) { alert('Sin conexión a internet'); return; }
-                setSyncing(true);
-                await syncToSupabaseManual();
-                setSyncing(false);
-                alert('Horario guardado en Supabase');
-              }}
-              disabled={syncing}
-            >
-              <Upload size={18} /> {syncing ? 'Guardando...' : 'Guardar Horario'}
+          )}
+          {/* Only show 'Agregar Bloque' if we're in a specific teacher/user view */}
+          {(!isAdmin || selectedUserId !== 'all') && (
+            <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => handleOpenModal()}>
+              <Plus size={18} /> Agregar Bloque
             </button>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Tabla de horario */}
-      <div style={{ 
-        background: 'white', 
-        borderRadius: '20px', 
-        overflow: 'hidden',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-      }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
-            <thead>
-              <tr>
-                <th style={{ 
-                  width: '180px', 
-                  background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                  color: 'white',
-                  padding: '1.25rem'
+      <div className="table-container" style={{ overflowX: 'auto' }}>
+        <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
+          <thead>
+            <tr>
+              <th style={{ width: '150px', backgroundColor: '#f8fafc' }}>Hora</th>
+              {DAYS.map(day => (
+                <th key={day} style={{ textAlign: 'center' }}>{day}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {TIMES.map(time => (
+              <tr key={time} style={{ height: time.includes('DESCANSO') ? '40px' : '90px' }}>
+                <td style={{ 
+                  fontWeight: 600, 
+                  fontSize: '0.8rem', 
+                  backgroundColor: '#f8fafc',
+                  color: time.includes('DESCANSO') ? 'var(--text-secondary)' : 'var(--text-primary)',
+                  textAlign: 'center'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Clock size={16} />
-                    Hora
-                  </div>
-                </th>
-                {DAYS.map((day, idx) => {
-                  const dayColors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
-                  return (
-                    <th key={day} style={{ 
-                      textAlign: 'center',
-                      background: `linear-gradient(135deg, ${dayColors[idx]} 0%, ${dayColors[idx]}cc 100%)`,
-                      color: 'white',
-                      padding: '1.25rem',
-                      fontWeight: 600
-                    }}>{day}</th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {TIMES.map(time => (
-                <tr key={time} style={{ height: time.includes('DESCANSO') ? '50px' : '100px' }}>
-                  <td style={{ 
-                    fontWeight: 600, 
-                    fontSize: '0.85rem', 
-                    backgroundColor: '#f8fafc',
-                    color: time.includes('DESCANSO') ? '#64748b' : '#1e293b',
-                    textAlign: 'center',
-                    padding: '1rem'
-                  }}>
-                    {time}
-                  </td>
-                  {DAYS.map(day => {
+                  {time}
+                </td>
+                {DAYS.map(day => {
                   const item = getSlotContent(day, time);
                   const isBreak = time.includes('DESCANSO');
                   
@@ -299,26 +211,27 @@ export default function Schedule() {
                     >
                       {item ? (
                         <div style={{ 
-                          backgroundColor: classes.find(c => c.id === item.classId)?.color || '#10b981', 
-                          color: 'white',
+                          backgroundColor: item.color, 
+                          color: 'white', 
                           padding: '8px', 
                           borderRadius: '8px',
                           display: 'flex',
                           flexDirection: 'column',
                           height: '100%',
                           justifyContent: 'center',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          position: 'relative'
                         }}>
                           {isAdmin && selectedUserId === 'all' && (
                             <span style={{ fontSize: '0.65rem', opacity: 0.85, fontWeight: 700, marginBottom: '2px' }}>
-                              {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
+                              👤 {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
                             </span>
                           )}
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                            {classes.find(c => c.id === item.classId)?.name || 'Grado'}
+                            {classes.find(c => c.id === item.classId)?.name || 'Grado...'}
                           </span>
                           <span style={{ fontSize: '0.85rem' }}>
-                            {subjects.find(s => s.id === item.subjectId)?.name || 'Area'}
+                            {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
                           </span>
                         </div>
                       ) : (
@@ -352,46 +265,21 @@ export default function Schedule() {
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '4rem 1rem', zIndex: 1100
         }}>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '2rem',
-            maxWidth: '480px', 
-            width: '100%', 
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            borderTop: `6px solid ${classes.find(c => c.id === formData.classId)?.color || '#0ea5e9'}`
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+          <div className="card shadow-glass animate-fade-in" style={{ maxWidth: '450px', width: '100%', borderTop: `6px solid ${formData.color}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.25rem' }}>{editingItem ? 'Editar Bloque' : 'Asignar Bloque'}</h3>
-                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Horario para: <strong>{viewedUser?.name || currentUser?.name}</strong></p>
+                <h3 style={{ fontSize: '1.3rem' }}>{editingItem ? 'Editar Bloque' : 'Asignar Bloque'}</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Horario para: {viewedUser?.name || currentUser?.name}</p>
               </div>
-              <button 
-                onClick={() => setShowModal(false)}
-                style={{
-                  background: '#f1f5f9',
-                  border: 'none',
-                  borderRadius: '10px',
-                  padding: '8px',
-                  cursor: 'pointer',
-                  display: 'flex'
-                }}
-              >
-                <X size={20} color="#64748b" />
-              </button>
+              <button onClick={() => setShowModal(false)}><X /></button>
             </div>
 
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {/* When admin is in 'all' view and opens a block via add button, pick teacher first */}
               {isAdmin && !editingItem && (
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Docente</label>
-                  <select 
-                    className="input-field" 
-                    value={selectedUserId} 
-                    onChange={e => setSelectedUserId(e.target.value)}
-                    style={{ padding: '0.875rem', borderRadius: '10px', borderColor: '#e2e8f0' }}
-                  >
+                  <label className="input-label">Docente</label>
+                  <select className="input-field" value={selectedUserId} onChange={e => setSelectedUserId(e.target.value)}>
                     <option value={currentUser.id}>Yo (Admin)</option>
                     {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
@@ -399,79 +287,80 @@ export default function Schedule() {
               )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Día</label>
-                  <select 
-                    className="input-field" 
-                    value={formData.day} 
-                    onChange={e => setFormData({...formData, day: e.target.value})}
-                    style={{ padding: '0.875rem', borderRadius: '10px', borderColor: '#e2e8f0' }}
-                  >
+                  <label className="input-label">Día</label>
+                  <select className="input-field" value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})}>
                     {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Horario</label>
-                  <select 
-                    className="input-field" 
-                    value={formData.time} 
-                    onChange={e => setFormData({...formData, time: e.target.value})}
-                    style={{ padding: '0.875rem', borderRadius: '10px', borderColor: '#e2e8f0' }}
-                  >
+                  <label className="input-label">Horario</label>
+                  <select className="input-field" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})}>
                     {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Grado y Sección</label>
+                <label className="input-label">Grado y Sección</label>
                 <select 
                   className="input-field" 
                   value={formData.classId} 
-                  onChange={e => setFormData({ ...formData, classId: e.target.value })}
+                  onChange={e => setFormData({...formData, classId: e.target.value})}
                   required
-                  style={{ padding: '0.875rem', borderRadius: '10px', borderColor: '#e2e8f0' }}
                 >
                   <option value="">Seleccionar Grado</option>
-                  {availableClasses.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} {c.color ? '●' : ''}
-                    </option>
-                  ))}
+                  {availableClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>Área Curricular</label>
+                <label className="input-label">Área Curricular</label>
                 <select 
                   className="input-field" 
                   value={formData.subjectId} 
                   onChange={e => setFormData({...formData, subjectId: e.target.value})}
                   required
-                  style={{ padding: '0.875rem', borderRadius: '10px', borderColor: '#e2e8f0' }}
                 >
                   <option value="">Seleccionar Área</option>
                   {getAvailableSubjectsForClass(formData.classId).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
 
+              <div>
+                <label className="input-label">
+                  Color del Bloque
+                  <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>
+                    — {colors.find(c => c.value === formData.color)?.name}
+                  </span>
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 30px)', gap: '6px' }}>
+                  {colors.map(c => (
+                    <div 
+                      key={c.value}
+                      title={c.name}
+                      onClick={() => setFormData({...formData, color: c.value})}
+                      style={{ 
+                        width: '30px', height: '30px', borderRadius: '7px', 
+                        backgroundColor: c.value, cursor: 'pointer',
+                        outline: formData.color === c.value ? `3px solid ${c.value}` : '2px solid transparent',
+                        outlineOffset: '2px',
+                        boxShadow: formData.color === c.value
+                          ? `0 0 0 2px white, 0 0 0 4px ${c.value}`
+                          : '0 2px 4px rgba(0,0,0,0.15)',
+                        transform: formData.color === c.value ? 'scale(1.15)' : 'scale(1)',
+                        transition: 'transform 0.15s, box-shadow 0.15s'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
               <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
                 {editingItem && (
                   <button 
                     type="button" 
-                    style={{ 
-                      flex: 1, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      gap: '8px',
-                      background: '#fef2f2',
-                      color: '#ef4444',
-                      border: '1px solid #ef444420',
-                      padding: '1rem',
-                      borderRadius: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
+                    className="btn-danger" 
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     onClick={() => { 
                       if (window.confirm('¿Estás seguro de que deseas eliminar este bloque horario?')) {
                         deleteScheduleItem(editingItem.id); 
@@ -484,20 +373,8 @@ export default function Schedule() {
                 )}
                 <button 
                   type="submit" 
-                  style={{ 
-                    flex: 2, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    gap: '8px',
-                    background: '#0ea5e9',
-                    color: 'white',
-                    border: 'none',
-                    padding: '1rem',
-                    borderRadius: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
+                  className="btn-primary" 
+                  style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
                   <Save size={18} /> {editingItem ? 'Actualizar' : 'Guardar'}
                 </button>
