@@ -631,8 +631,12 @@ export default function Grades() {
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
             const getInstrumentsForCompetency = (competencyId) => {
+              // Solo obtener evaluaciones de estudiantes de la clase seleccionada
+              const studentIds = new Set(filteredStudents.map(s => s.id));
               const evs = instrumentEvaluations.filter(
-                ev => ev.competencyId === competencyId && ev.period === selectedPeriod
+                ev => ev.competencyId === competencyId && 
+                      ev.period === selectedPeriod &&
+                      studentIds.has(ev.studentId)
               );
               
               const uniqueInstruments = {};
