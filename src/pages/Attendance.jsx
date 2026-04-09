@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck } from 'lucide-react';
 
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin } = useStore();
@@ -783,7 +783,10 @@ export default function Attendance() {
                     color: 'white',
                     padding: '1rem'
                   }}>
-                    Estudiante
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <UserCheck size={16} />
+                      Estudiante
+                    </div>
                   </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -791,14 +794,20 @@ export default function Attendance() {
                     padding: '1rem',
                     width: '150px'
                   }}>
-                    Grado
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Users size={16} />
+                      Grado
+                    </div>
                   </th>
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     padding: '1rem'
                   }}>
-                    Estado de Asistencia
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CheckCircle size={16} />
+                      Estado de Asistencia
+                    </div>
                   </th>
                 </tr>
               </thead>
