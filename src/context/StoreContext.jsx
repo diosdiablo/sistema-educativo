@@ -305,14 +305,9 @@ export const StoreProvider = ({ children }) => {
     }
   }, [isOnline]);
 
-  const mergeData = (localData, cloudData, idField = 'id') => {
-    if (!cloudData || !localData) return cloudData || localData || [];
-    const merged = new Map();
-    (cloudData || []).forEach(item => merged.set(item[idField], item));
-    (localData || []).forEach(item => {
-      if (!merged.has(item[idField])) merged.set(item[idField], item);
-    });
-    return Array.from(merged.values());
+  const mergeData = (localData, cloudData) => {
+    if (cloudData && cloudData.length > 0) return cloudData;
+    return localData || [];
   };
 
   const initialSync = useCallback(async () => {
