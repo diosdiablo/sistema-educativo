@@ -146,7 +146,7 @@ export default function Students() {
   return (
     <>
       <div className="animate-fade-in">
-      <div style={{
+      <header style={{
         background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
         borderRadius: '20px',
         padding: '2rem',
@@ -170,14 +170,12 @@ export default function Students() {
           </div>
           
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          
           {isAdmin && students.length > 0 && (
             <button 
+              className="btn-danger" 
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }} 
               onClick={handleClearAll}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
-                padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
-              }}
             >
               <Trash2 size={18} /> Vaciar Lista
             </button>
@@ -192,23 +190,16 @@ export default function Students() {
           />
           {isAdmin && (
             <button 
+              className="btn-primary" 
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--success-color)' }} 
               onClick={() => fileInputRef.current?.click()}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'white', color: '#22c55e', border: 'none',
-                padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
-              }}
             >
               <Upload size={18} /> Subir Excel
             </button>
           )}
           
           {isAdmin && (
-            <button onClick={() => setShowForm(!showForm)} style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'white', color: '#22c55e', border: 'none',
-              padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
-            }}>
+            <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setShowForm(!showForm)}>
               <Plus size={18} /> Nuevo Alumno
             </button>
           )}
@@ -254,9 +245,8 @@ export default function Students() {
               </select>
             </div>
           </div>
-
         </div>
-      </div>
+      </header>
 
       {showForm && (
         <form className="card animate-fade-in" style={{ marginBottom: '2rem', border: isEditing ? '2px solid var(--accent-primary)' : 'none' }} onSubmit={handleSubmit}>
@@ -379,38 +369,17 @@ export default function Students() {
         </form>
       )}
 
-      <div style={{ 
-        background: 'white', 
-        borderRadius: '16px', 
-        overflow: 'hidden',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-      }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="styled-table">
-            <thead>
-              <tr>
-                <th style={{ 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  color: 'white', padding: '1rem'
-                }}>DNI</th>
-                <th style={{ 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  color: 'white', padding: '1rem'
-                }}>Apellidos y Nombre</th>
-                <th style={{ 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  color: 'white', padding: '1rem'
-                }}>Grado y Seccion</th>
-                <th style={{ 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  color: 'white', padding: '1rem'
-                }}>Fecha de Nacimiento</th>
-                <th style={{ 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  color: 'white', padding: '1rem'
-                }}>Acciones</th>
-              </tr>
-            </thead>
+      <div className="table-container">
+        <table className="styled-table">
+          <thead>
+            <tr>
+              <th>DNI</th>
+              <th>Apellidos y Nombre</th>
+              <th>Grado y Sección</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
           <tbody>
             {filteredStudents.length === 0 ? (
               <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No hay estudiantes registrados.</td></tr>
