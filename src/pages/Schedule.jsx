@@ -299,7 +299,7 @@ export default function Schedule() {
                     >
                       {item ? (
                         <div style={{ 
-                          backgroundColor: item.color || classes.find(c => c.id === item.classId)?.color || '#10b981', 
+                          backgroundColor: classes.find(c => c.id === item.classId)?.color || '#10b981', 
                           color: 'white',
                           padding: '8px', 
                           borderRadius: '8px',
@@ -311,14 +311,14 @@ export default function Schedule() {
                         }}>
                           {isAdmin && selectedUserId === 'all' && (
                             <span style={{ fontSize: '0.65rem', opacity: 0.85, fontWeight: 700, marginBottom: '2px' }}>
-                              👤 {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
+                              {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
                             </span>
                           )}
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                            {classes.find(c => c.id === item.classId)?.name || 'Grado...'}
+                            {classes.find(c => c.id === item.classId)?.name || 'Grado'}
                           </span>
                           <span style={{ fontSize: '0.85rem' }}>
-                            {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
+                            {subjects.find(s => s.id === item.subjectId)?.name || 'Area'}
                           </span>
                         </div>
                       ) : (
