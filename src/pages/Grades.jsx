@@ -435,7 +435,7 @@ export default function Grades() {
       )}
 
       {/* Panel de estadísticas */}
-      {selectedClass && selectedSubjectId && gradeDistribution && (
+      {selectedClass && selectedSubjectId && currentSubject && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -471,7 +471,7 @@ export default function Grades() {
               <ResponsiveContainer width="50%" height={140}>
                 <PieChart>
                   <Pie
-                    data={gradeDistribution.filter(g => g.value > 0)}
+                    data={gradeDistribution?.filter(g => g.value > 0) || []}
                     cx="50%"
                     cy="50%"
                     innerRadius={35}
@@ -479,14 +479,14 @@ export default function Grades() {
                     paddingAngle={3}
                     dataKey="value"
                   >
-                    {gradeDistribution.filter(g => g.value > 0).map((entry, index) => (
+                    {gradeDistribution?.filter(g => g.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {gradeDistribution.map((grade, idx) => (
+                {(gradeDistribution || [{ name: 'AD - Destacado', value: 0, color: '#10b981', percentage: 0 }, { name: 'A - Logrado', value: 0, color: '#3b82f6', percentage: 0 }, { name: 'B - En Proceso', value: 0, color: '#f59e0b', percentage: 0 }, { name: 'C - En Inicio', value: 0, color: '#ef4444', percentage: 0 }]).map((grade, idx) => (
                   <div key={idx} style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -592,9 +592,10 @@ export default function Grades() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {(() => {
-                const total = gradeDistribution.reduce((sum, g) => sum + g.value, 0);
-                const adRate = total > 0 ? Math.round((gradeDistribution[0].value / total) * 100) : 0;
-                const successRate = total > 0 ? Math.round(((gradeDistribution[0].value + gradeDistribution[1].value) / total) * 100) : 0;
+                const dist = gradeDistribution || [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }];
+                const total = dist.reduce((sum, g) => sum + g.value, 0);
+                const adRate = total > 0 ? Math.round((dist[0].value / total) * 100) : 0;
+                const successRate = total > 0 ? Math.round(((dist[0].value + dist[1].value) / total) * 100) : 0;
                 return (
                   <>
                     <div style={{
@@ -902,9 +903,11 @@ export default function Grades() {
               </div>
             );
           })}
+        </>
+      )}
 
-          {/* Modal flotante de detalle del instrumento */}
-          {tooltip && (
+      {/* Modal flotante de detalle del instrumento */}
+      {tooltip && (
             <>
               <div 
                 style={{
