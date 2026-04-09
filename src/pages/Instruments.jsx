@@ -380,17 +380,79 @@ export default function Instruments() {
 
     return (
       <div className="animate-fade-in">
-        <header className="page-header">
-          <div>
-            <button className="nav-item" onClick={() => { setView('list'); setEditingInstrument(null); resetForm(); }} style={{ marginBottom: '1rem', padding: '0.5rem' }}>
-              <ChevronLeft size={20} /> Volver
-            </button>
-            <h1 className="page-title">{editingInstrument ? 'Editar Instrumento' : 'Crear Instrumento de Evaluación'}</h1>
+        {/* Header moderno con botón de volver */}
+        <div style={{
+          background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+          borderRadius: '20px',
+          padding: '2rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          overflow: 'hidden',
+          color: 'white'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-30%',
+            right: '-10%',
+            width: '300px',
+            height: '300px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '50%'
+          }} />
+          
+          <button 
+            onClick={() => { setView('list'); setEditingInstrument(null); resetForm(); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: 'white',
+              padding: '0.75rem 1.25rem',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              marginBottom: '1rem',
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <ChevronLeft size={20} /> Volver a Instrumentos
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <ClipboardCheck size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>
+                {editingInstrument ? 'Editar Instrumento' : 'Crear Instrumento de Evaluación'}
+              </h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Define los criterios y tipo según el DCNEB</p>
+            </div>
           </div>
-        </header>
+        </div>
 
-        <div className="card shadow-glass" style={{ maxWidth: '860px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gap: '1.75rem' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '20px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          maxWidth: '900px',
+          margin: '0 auto'
+        }}>
+          <div style={{ display: 'grid', gap: '2rem' }}>
 
             {/* Título */}
             <div>
@@ -520,45 +582,68 @@ export default function Instruments() {
 
     return (
       <div className="animate-fade-in">
-        <div style={{ marginBottom: '1rem' }}>
+        {/* Header moderno */}
+        <div style={{
+          background: `linear-gradient(135deg, ${typeDef.color} 0%, ${typeDef.color}dd 100%)`,
+          borderRadius: '20px',
+          padding: '2rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          overflow: 'hidden',
+          color: 'white'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-30%',
+            right: '-10%',
+            width: '300px',
+            height: '300px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '50%'
+          }} />
+          
           <button 
             onClick={handleCancelApply} 
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '8px',
-              padding: '0.5rem 1rem',
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border-color)',
+              padding: '0.6rem 1rem',
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: 'white',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontWeight: 500,
-              fontSize: '0.9rem',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={e => {
-              e.target.style.background = 'var(--accent-primary)15';
-              e.target.style.color = 'var(--accent-primary)';
-              e.target.style.borderColor = 'var(--accent-primary)';
-            }}
-            onMouseLeave={e => {
-              e.target.style.background = 'transparent';
-              e.target.style.color = 'var(--text-secondary)';
-              e.target.style.borderColor = 'var(--border-color)';
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              marginBottom: '1rem',
+              backdropFilter: 'blur(10px)'
             }}
           >
-            <ChevronLeft size={20} /> Volver a Instrumentos
+            <ChevronLeft size={18} /> Volver a Instrumentos
           </button>
-        </div>
-        <header className="page-header">
-          <div>
-            <h1 className="page-title">
-              Aplicar: <span style={{ color: typeDef.color }}>{applyingInstrument.title}</span>
-            </h1>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{typeDef.label}</p>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <ClipboardCheck size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>
+                Aplicar: <span style={{ color: 'white' }}>{applyingInstrument.title}</span>
+              </h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>{typeDef.label}</p>
+            </div>
           </div>
-        </header>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '2rem' }}>
           {/* ── Panel lateral ── */}
