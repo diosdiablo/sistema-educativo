@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -101,44 +101,185 @@ export default function Grades() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '2rem', flexWrap: 'wrap' }}>
-        <div>
-          <h2 className="page-title">Calificaciones</h2>
-          <p className="page-subtitle">Promedio por competencia calculado desde los instrumentos aplicados</p>
+      {/* Header con gradiente */}
+      <div style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        borderRadius: '20px',
+        padding: '2rem 2.5rem',
+        marginBottom: '1.5rem',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          right: '-10%',
+          width: '300px',
+          height: '300px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%'
+        }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <GraduationCap size={28} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Calificaciones</h2>
+            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Visualiza las evaluaciones por estudiante</p>
+          </div>
         </div>
+      </div>
 
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      {/* Tarjetas de selección */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '1rem',
+        marginBottom: '1.5rem'
+      }}>
+        {/* Tarjeta de Sección */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '1.25rem',
+          border: '2px solid',
+          borderColor: selectedClass ? '#10b981' : '#e2e8f0',
+          transition: 'all 0.3s ease',
+          boxShadow: selectedClass ? '0 4px 20px rgba(16, 185, 129, 0.15)' : '0 2px 8px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: selectedClass ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Users size={20} color={selectedClass ? '#10b981' : '#6366f1'} />
+            </div>
+            <div>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Sección</label>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Grado y sección</div>
+            </div>
+          </div>
           <select
             className="input-field"
-            style={{ minWidth: '200px' }}
             value={selectedClass}
             onChange={e => { setSelectedClass(e.target.value); setSelectedSubjectId(''); }}
+            style={{ borderColor: selectedClass ? '#10b981' : '#e2e8f0' }}
           >
-            <option value="">-- Selecciona una Sección --</option>
+            <option value="">Seleccionar sección...</option>
             {availableClasses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
+        </div>
 
+        {/* Tarjeta de Bimestre */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '1.25rem',
+          border: '2px solid #e2e8f0',
+          transition: 'all 0.3s ease',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'rgba(245, 158, 11, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Calendar size={20} color="#f59e0b" />
+            </div>
+            <div>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Bimestre</label>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Periodo de evaluación</div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+            {[1, 2, 3, 4].map(p => (
+              <button
+                key={p}
+                onClick={() => setSelectedPeriod(String(p))}
+                style={{
+                  padding: '0.6rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: selectedPeriod === String(p) ? '#f59e0b' : '#f1f5f9',
+                  color: selectedPeriod === String(p) ? 'white' : 'var(--text-secondary)'
+                }}
+              >
+                B{p}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tarjeta de Materia */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '1.25rem',
+          border: '2px solid',
+          borderColor: selectedSubjectId ? '#8b5cf6' : '#e2e8f0',
+          transition: 'all 0.3s ease',
+          boxShadow: selectedSubjectId ? '0 4px 20px rgba(139, 92, 246, 0.15)' : '0 2px 8px rgba(0,0,0,0.04)',
+          opacity: !selectedClass ? 0.6 : 1
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: selectedSubjectId ? 'rgba(139, 92, 246, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <BookMarked size={20} color={selectedSubjectId ? '#8b5cf6' : '#6366f1'} />
+            </div>
+            <div>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Área Curricular</label>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Materia a evaluar</div>
+            </div>
+          </div>
           <select
             className="input-field"
-            style={{ width: 'auto' }}
-            value={selectedPeriod}
-            onChange={e => setSelectedPeriod(e.target.value)}
-          >
-            <option value="1">Bimestre 1</option>
-            <option value="2">Bimestre 2</option>
-            <option value="3">Bimestre 3</option>
-            <option value="4">Bimestre 4</option>
-          </select>
-
-          <select
-            className="input-field"
-            style={{ minWidth: '180px' }}
             value={selectedSubjectId}
             onChange={e => setSelectedSubjectId(e.target.value)}
             disabled={!selectedClass}
+            style={{ borderColor: selectedSubjectId ? '#8b5cf6' : '#e2e8f0' }}
           >
-            <option value="">-- Selecciona Materia --</option>
+            <option value="">Seleccionar materia...</option>
             {availableSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
@@ -146,14 +287,60 @@ export default function Grades() {
 
       {/* Empty states */}
       {!selectedClass && (
-        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)', border: '2px dashed var(--border-color)', borderRadius: '16px', marginTop: '2rem' }}>
-          Selecciona una sección para ver las calificaciones.
+        <div style={{
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+          borderRadius: '20px',
+          padding: '4rem 2rem',
+          textAlign: 'center',
+          border: '2px dashed #cbd5e1'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem'
+          }}>
+            <GraduationCap size={40} color="white" />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            Bienvenido al módulo de calificaciones
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+            Selecciona una sección para comenzar a visualizar las calificaciones de tus estudiantes
+          </p>
         </div>
       )}
 
       {selectedClass && !selectedSubjectId && (
-        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)', border: '2px dashed var(--border-color)', borderRadius: '16px', marginTop: '2rem' }}>
-          Selecciona una materia para ver las competencias.
+        <div style={{
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          borderRadius: '20px',
+          padding: '4rem 2rem',
+          textAlign: 'center',
+          border: '2px solid #fbbf24'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem'
+          }}>
+            <BookOpen size={40} color="white" />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            Selecciona una materia
+          </h3>
+          <p style={{ color: '#92400e', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+            Elige el área curricular para ver las competencias y evaluaciones disponibles
+          </p>
         </div>
       )}
 
@@ -176,24 +363,20 @@ export default function Grades() {
             // Función para obtener instrumentos únicos aplicados a una competencia en este período
             const getInstrumentsForCompetency = (competencyId) => {
               const evs = instrumentEvaluations.filter(
-                ev => (ev.competencyId === competencyId || ev.competency_id === competencyId) && ev.period === selectedPeriod
+                ev => ev.competencyId === competencyId && ev.period === selectedPeriod
               );
+              console.log('[GRADES] getInstrumentsForCompetency:', competencyId, 'evs:', evs.map(e => ({ id: e.id, activityName: e.activityName, instrumentId: e.instrumentId })));
               
               // Agrupar por activityName en lugar de instrumentId
               const uniqueInstruments = {};
               evs.forEach(ev => {
                 // Usar activityName como clave para mostrar cada evaluación diferente
-                const activityKey = ev.activityName || ev.activity_name || '';
-                const instrumentKey = ev.instrumentId || ev.instrument_id || '';
-                const key = activityKey || instrumentKey;
-                
+                const key = ev.activityName || ev.instrumentId;
                 if (!uniqueInstruments[key]) {
                   uniqueInstruments[key] = {
                     id: key,
-                    title: activityKey || instruments.find(i => i.id === instrumentKey)?.title || 'Sin título',
-                    instrumentType: ev.instrumentType || ev.instrument_type,
-                    activityKey,
-                    instrumentKey
+                    title: ev.activityName || instruments.find(i => i.id === ev.instrumentId)?.title || 'Sin título',
+                    instrumentType: ev.instrumentType
                   };
                 }
               });
@@ -258,45 +441,9 @@ export default function Grades() {
                             );
                           }
                           return instruments.map(inst => {
-                            const activityKey = inst.activityKey || inst.id || '';
-                            
-                            const matchingEvs = instrumentEvaluations.filter(
-                              e => {
-                                const studentMatch = e.studentId === student.id || e.student_id === student.id;
-                                const competencyMatch = e.competencyId === comp.id || e.competency_id === comp.id;
-                                const periodMatch = String(e.period) === String(selectedPeriod);
-                                const activityMatch = 
-                                  e.activityName === activityKey || 
-                                  e.activity_name === activityKey ||
-                                  e.activityName === inst.id ||
-                                  e.activity_name === inst.id ||
-                                  e.instrumentId === activityKey ||
-                                  e.instrument_id === activityKey;
-                                
-                                return studentMatch && competencyMatch && periodMatch && activityMatch;
-                              }
+                            const ev = instrumentEvaluations.find(
+                              e => e.studentId === student.id && e.competencyId === comp.id && (e.activityName || e.instrumentId) === inst.id && e.period === selectedPeriod
                             );
-                            const ev = matchingEvs[0];
-                            
-                            if (!ev && inst.id) {
-                              const studentEvs = instrumentEvaluations.filter(e => e.studentId === student.id || e.student_id === student.id);
-                              console.log('[GRADES DEBUG] No se encontró evaluación:', {
-                                studentId: student.id,
-                                studentName: student.name,
-                                compId: comp.id,
-                                instId: inst.id,
-                                activityKey,
-                                period: selectedPeriod,
-                                totalEvsForStudent: studentEvs.length,
-                                studentEvsSample: studentEvs.slice(0, 3).map(e => ({
-                                  activityName: e.activityName,
-                                  activity_name: e.activity_name,
-                                  competencyId: e.competencyId,
-                                  competency_id: e.competency_id,
-                                  period: e.period
-                                }))
-                              });
-                            }
                             if (!ev) {
                               return (
                                 <td key={inst.id} style={{ textAlign: 'center' }}>
@@ -304,11 +451,6 @@ export default function Grades() {
                                 </td>
                               );
                             }
-                            console.log('[GRADES FOUND] Evaluación encontrada:', {
-                              studentName: student.name,
-                              activityName: ev.activityName,
-                              qualitative: ev.qualitative
-                            });
                             return (
                               <td key={inst.id} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
