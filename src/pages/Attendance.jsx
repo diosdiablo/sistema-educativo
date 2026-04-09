@@ -37,8 +37,42 @@ export default function Attendance() {
     return students.filter(s => s.gradeLevel === selectedClass);
   }, [students, selectedClass]);
 
-  // Estadísticas de asistencia
+  // Estadísticas consolidadas de TODAS las fechas para el grado seleccionado
   const attendanceStats = useMemo(() => {
+    if (!selectedClass || filteredStudents.length === 0) return null;
+    
+    // Obtener TODOS los registros de asistencia para estudiantes de este grado
+    const allRecords = attendance.filter(record => {
+      return filteredStudents.some(student => record.records && record.records[student.id]);
+    });
+
+    const stats = { P: 0, T: 0, F: 0, J: 0 };
+    const datesCount = allRecords.length;
+    
+    allRecords.forEach(record => {
+      filteredStudents.forEach(student => {
+        const status = record.records?.[student.id];
+        if (status && stats[status] !== undefined) {
+          stats[status]++;
+        }
+      });
+    });
+
+    const totalMarked = stats.P + stats.T + stats.F + stats.J;
+    const presentRate = totalMarked > 0 ? Math.round(((stats.P + stats.T + stats.J) / totalMarked) * 100) : 0;
+
+    return {
+      ...stats,
+      total: filteredStudents.length,
+      marked: totalMarked,
+      presentRate,
+      datesCount,
+      dates: allRecords.map(r => r.date).sort()
+    };
+  }, [selectedClass, filteredStudents, attendance]);
+
+  // Estadísticas del día seleccionado
+  const todayStats = useMemo(() => {
     if (!selectedClass || filteredStudents.length === 0) return null;
     
     const stats = { P: 0, T: 0, F: 0, J: 0 };
@@ -246,8 +280,8 @@ export default function Attendance() {
         </div>
       </div>
 
-      {/* Widgets de estadísticas */}
-      {selectedClass && attendanceStats && (
+      {/* Widgets de estadísticas del día seleccionado */}
+      {selectedClass && todayStats && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -281,8 +315,8 @@ export default function Attendance() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
               <CheckCircle size={28} />
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{attendanceStats.P}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Presentes</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.P}</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Presentes HOY</div>
               </div>
             </div>
           </div>
@@ -314,8 +348,8 @@ export default function Attendance() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
               <Clock size={28} />
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{attendanceStats.T}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Tardanzas</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.T}</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Tardanzas HOY</div>
               </div>
             </div>
           </div>
@@ -347,8 +381,8 @@ export default function Attendance() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
               <XCircle size={28} />
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{attendanceStats.F}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Faltas</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.F}</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Faltas HOY</div>
               </div>
             </div>
           </div>
@@ -380,23 +414,23 @@ export default function Attendance() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
               <FileCheck size={28} />
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{attendanceStats.J}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Justificados</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.J}</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Justificados HOY</div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Widget consolidado */}
-      {selectedClass && attendanceStats && (
+      {/* Widget consolidado de TODAS las fechas */}
+      {selectedClass && attendanceStats && attendanceStats.datesCount > 0 && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem'
         }}>
-          {/* Resumen consolidado */}
+          {/* Resumen consolidado general */}
           <div style={{
             background: 'white',
             borderRadius: '20px',
@@ -417,28 +451,30 @@ export default function Attendance() {
                 <PieChart size={22} color="white" />
               </div>
               <div>
-                <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Resumen de Asistencia</h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>{selectedClass} · {date}</p>
+                <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Resumen Consolidado</h4>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  {selectedClass} · {attendanceStats.datesCount} días registrados
+                </p>
               </div>
             </div>
             
             {/* Barra de progreso */}
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia General</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981' }}>{attendanceStats.presentRate}%</span>
               </div>
               <div style={{
-                height: '12px',
+                height: '14px',
                 background: '#f1f5f9',
-                borderRadius: '6px',
+                borderRadius: '7px',
                 overflow: 'hidden'
               }}>
                 <div style={{
                   height: '100%',
                   width: `${attendanceStats.presentRate}%`,
                   background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '6px',
+                  borderRadius: '7px',
                   transition: 'width 0.5s ease'
                 }} />
               </div>
@@ -452,32 +488,10 @@ export default function Attendance() {
                 background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>
-                  {attendanceStats.P + attendanceStats.T + attendanceStats.J}
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981' }}>
+                  {attendanceStats.P}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Asistieron</div>
-              </div>
-              <div style={{
-                padding: '1rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>
-                  {attendanceStats.F}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Faltaron</div>
-              </div>
-              <div style={{
-                padding: '1rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3b82f6' }}>
-                  {attendanceStats.total}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Total</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Presentes</div>
               </div>
               <div style={{
                 padding: '1rem',
@@ -485,15 +499,61 @@ export default function Attendance() {
                 background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b' }}>
-                  {attendanceStats.marked}
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f59e0b' }}>
+                  {attendanceStats.T}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Registrados</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Tardanzas</div>
+              </div>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ef4444' }}>
+                  {attendanceStats.F}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Faltas</div>
+              </div>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#8b5cf6' }}>
+                  {attendanceStats.J}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Justificados</div>
+              </div>
+            </div>
+
+            {/* Información adicional */}
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              background: '#f8fafc',
+              borderRadius: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Calendar size={16} color="#64748b" />
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  {attendanceStats.datesCount} días con registro
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Users size={16} color="#64748b" />
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  {attendanceStats.total} alumnos
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Distribución visual */}
+          {/* Distribución visual consolidada */}
           <div style={{
             background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
             borderRadius: '20px',
@@ -522,7 +582,7 @@ export default function Attendance() {
             }} />
             
             <h4 style={{ fontWeight: 700, margin: '0 0 1.25rem 0', fontSize: '1.1rem', position: 'relative', zIndex: 1 }}>
-              Distribución del Día
+              Distribución Consolidada
             </h4>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
@@ -532,7 +592,7 @@ export default function Attendance() {
                 <span style={{ flex: 1, fontSize: '0.85rem' }}>Presentes</span>
                 <span style={{ fontWeight: 700 }}>{attendanceStats.P}</span>
                 <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.P / attendanceStats.total) * 100) : 0}%)
+                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.P / attendanceStats.marked) * 100) : 0}%)
                 </span>
               </div>
               
@@ -542,7 +602,7 @@ export default function Attendance() {
                 <span style={{ flex: 1, fontSize: '0.85rem' }}>Tardanzas</span>
                 <span style={{ fontWeight: 700 }}>{attendanceStats.T}</span>
                 <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.T / attendanceStats.total) * 100) : 0}%)
+                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.T / attendanceStats.marked) * 100) : 0}%)
                 </span>
               </div>
               
@@ -552,7 +612,7 @@ export default function Attendance() {
                 <span style={{ flex: 1, fontSize: '0.85rem' }}>Faltas</span>
                 <span style={{ fontWeight: 700 }}>{attendanceStats.F}</span>
                 <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.F / attendanceStats.total) * 100) : 0}%)
+                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.F / attendanceStats.marked) * 100) : 0}%)
                 </span>
               </div>
               
@@ -562,7 +622,7 @@ export default function Attendance() {
                 <span style={{ flex: 1, fontSize: '0.85rem' }}>Justificados</span>
                 <span style={{ fontWeight: 700 }}>{attendanceStats.J}</span>
                 <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.J / attendanceStats.total) * 100) : 0}%)
+                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.J / attendanceStats.marked) * 100) : 0}%)
                 </span>
               </div>
             </div>
@@ -570,32 +630,33 @@ export default function Attendance() {
             {/* Barra de distribución */}
             <div style={{ 
               display: 'flex', 
-              height: '24px', 
-              borderRadius: '12px', 
+              height: '28px', 
+              borderRadius: '14px', 
               overflow: 'hidden', 
               marginTop: '1.5rem',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              background: '#334155'
             }}>
-              {attendanceStats.total > 0 ? (
+              {attendanceStats.marked > 0 ? (
                 <>
                   <div style={{ 
-                    width: `${(attendanceStats.P / attendanceStats.total) * 100}%`, 
+                    width: `${(attendanceStats.P / attendanceStats.marked) * 100}%`, 
                     background: '#10b981',
                     transition: 'width 0.5s ease'
                   }} />
                   <div style={{ 
-                    width: `${(attendanceStats.T / attendanceStats.total) * 100}%`, 
+                    width: `${(attendanceStats.T / attendanceStats.marked) * 100}%`, 
                     background: '#f59e0b',
                     transition: 'width 0.5s ease'
                   }} />
                   <div style={{ 
-                    width: `${(attendanceStats.F / attendanceStats.total) * 100}%`, 
+                    width: `${(attendanceStats.F / attendanceStats.marked) * 100}%`, 
                     background: '#ef4444',
                     transition: 'width 0.5s ease'
                   }} />
                   <div style={{ 
-                    width: `${(attendanceStats.J / attendanceStats.total) * 100}%`, 
+                    width: `${(attendanceStats.J / attendanceStats.marked) * 100}%`, 
                     background: '#8b5cf6',
                     transition: 'width 0.5s ease'
                   }} />
@@ -604,7 +665,71 @@ export default function Attendance() {
                 <div style={{ width: '100%', background: '#334155' }} />
               )}
             </div>
+
+            {/* Lista de fechas */}
+            {attendanceStats.dates && attendanceStats.dates.length > 0 && (
+              <div style={{ marginTop: '1rem', position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
+                  Fechas registradas:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {attendanceStats.dates.slice(-5).map(d => (
+                    <span key={d} style={{
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.5rem',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      color: 'rgba(255,255,255,0.8)'
+                    }}>
+                      {new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
+                    </span>
+                  ))}
+                  {attendanceStats.dates.length > 5 && (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.5rem',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      color: 'rgba(255,255,255,0.6)'
+                    }}>
+                      +{attendanceStats.dates.length - 5} más
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Mensaje si no hay registros */}
+      {selectedClass && attendanceStats && attendanceStats.datesCount === 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          borderRadius: '16px',
+          padding: '2rem',
+          textAlign: 'center',
+          border: '2px solid #fbbf24',
+          marginBottom: '1.5rem'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1rem'
+          }}>
+            <Calendar size={28} color="white" />
+          </div>
+          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#92400e' }}>
+            Sin registros de asistencia
+          </h4>
+          <p style={{ fontSize: '0.9rem', color: '#92400e', margin: 0 }}>
+            No hay días registrados para {selectedClass}. ¡Comienza a registrar la asistencia!
+          </p>
         </div>
       )}
 
