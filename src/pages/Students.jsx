@@ -146,36 +146,32 @@ export default function Students() {
   return (
     <>
       <div className="animate-fade-in">
-      <header style={{
+      <div style={{
         background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
         borderRadius: '20px',
         padding: '2rem',
         marginBottom: '2rem',
-        color: 'white'
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        gap: '2rem',
+        flexWrap: 'wrap'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px', height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Filter size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Estudiantes</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona el registro de alumnos</p>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Estudiantes</h2>
+          <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona el registro de alumnos</p>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           
           {isAdmin && students.length > 0 && (
             <button 
-              className="btn-danger" 
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }} 
               onClick={handleClearAll}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
+                padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer'
+              }}
             >
               <Trash2 size={18} /> Vaciar Lista
             </button>
@@ -245,8 +241,9 @@ export default function Students() {
               </select>
             </div>
           </div>
+
         </div>
-      </header>
+      </div>
 
       {showForm && (
         <form className="card animate-fade-in" style={{ marginBottom: '2rem', border: isEditing ? '2px solid var(--accent-primary)' : 'none' }} onSubmit={handleSubmit}>
