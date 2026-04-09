@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart } from 'lucide-react';
 
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin } = useStore();
@@ -250,7 +250,7 @@ export default function Attendance() {
       {selectedClass && attendanceStats && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem'
         }}>
@@ -385,37 +385,224 @@ export default function Attendance() {
               </div>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Total alumnos */}
+      {/* Widget consolidado */}
+      {selectedClass && attendanceStats && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          {/* Resumen consolidado */}
           <div style={{
-            background: 'linear-gradient(145deg, #6366f1 0%, #4f46e5 100%)',
-            borderRadius: '16px',
-            padding: '1.25rem',
+            background: 'white',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <PieChart size={22} color="white" />
+              </div>
+              <div>
+                <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Resumen de Asistencia</h4>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>{selectedClass} · {date}</p>
+              </div>
+            </div>
+            
+            {/* Barra de progreso */}
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981' }}>{attendanceStats.presentRate}%</span>
+              </div>
+              <div style={{
+                height: '12px',
+                background: '#f1f5f9',
+                borderRadius: '6px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${attendanceStats.presentRate}%`,
+                  background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '6px',
+                  transition: 'width 0.5s ease'
+                }} />
+              </div>
+            </div>
+
+            {/* Detalle consolidado */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>
+                  {attendanceStats.P + attendanceStats.T + attendanceStats.J}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Asistieron</div>
+              </div>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>
+                  {attendanceStats.F}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Faltaron</div>
+              </div>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3b82f6' }}>
+                  {attendanceStats.total}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Total</div>
+              </div>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b' }}>
+                  {attendanceStats.marked}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Registrados</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Distribución visual */}
+          <div style={{
+            background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+            borderRadius: '20px',
+            padding: '1.5rem',
             color: 'white',
             position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.35)',
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
-          >
+            overflow: 'hidden'
+          }}>
             <div style={{
               position: 'absolute',
-              top: '-40%',
-              right: '-20%',
-              width: '100px',
-              height: '100px',
-              background: 'rgba(255,255,255,0.15)',
+              top: '-50%',
+              right: '-30%',
+              width: '200px',
+              height: '200px',
+              background: 'rgba(99, 102, 241, 0.2)',
               borderRadius: '50%'
             }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
-              <Users size={28} />
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{attendanceStats.total}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Total Alumnos</div>
+            <div style={{
+              position: 'absolute',
+              bottom: '-30%',
+              left: '-20%',
+              width: '150px',
+              height: '150px',
+              background: 'rgba(16, 185, 129, 0.15)',
+              borderRadius: '50%'
+            }} />
+            
+            <h4 style={{ fontWeight: 700, margin: '0 0 1.25rem 0', fontSize: '1.1rem', position: 'relative', zIndex: 1 }}>
+              Distribución del Día
+            </h4>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
+              {/* Presentes */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10b981' }} />
+                <span style={{ flex: 1, fontSize: '0.85rem' }}>Presentes</span>
+                <span style={{ fontWeight: 700 }}>{attendanceStats.P}</span>
+                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
+                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.P / attendanceStats.total) * 100) : 0}%)
+                </span>
               </div>
+              
+              {/* Tardanzas */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#f59e0b' }} />
+                <span style={{ flex: 1, fontSize: '0.85rem' }}>Tardanzas</span>
+                <span style={{ fontWeight: 700 }}>{attendanceStats.T}</span>
+                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
+                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.T / attendanceStats.total) * 100) : 0}%)
+                </span>
+              </div>
+              
+              {/* Faltas */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }} />
+                <span style={{ flex: 1, fontSize: '0.85rem' }}>Faltas</span>
+                <span style={{ fontWeight: 700 }}>{attendanceStats.F}</span>
+                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
+                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.F / attendanceStats.total) * 100) : 0}%)
+                </span>
+              </div>
+              
+              {/* Justificados */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8b5cf6' }} />
+                <span style={{ flex: 1, fontSize: '0.85rem' }}>Justificados</span>
+                <span style={{ fontWeight: 700 }}>{attendanceStats.J}</span>
+                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
+                  ({attendanceStats.total > 0 ? Math.round((attendanceStats.J / attendanceStats.total) * 100) : 0}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Barra de distribución */}
+            <div style={{ 
+              display: 'flex', 
+              height: '24px', 
+              borderRadius: '12px', 
+              overflow: 'hidden', 
+              marginTop: '1.5rem',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              {attendanceStats.total > 0 ? (
+                <>
+                  <div style={{ 
+                    width: `${(attendanceStats.P / attendanceStats.total) * 100}%`, 
+                    background: '#10b981',
+                    transition: 'width 0.5s ease'
+                  }} />
+                  <div style={{ 
+                    width: `${(attendanceStats.T / attendanceStats.total) * 100}%`, 
+                    background: '#f59e0b',
+                    transition: 'width 0.5s ease'
+                  }} />
+                  <div style={{ 
+                    width: `${(attendanceStats.F / attendanceStats.total) * 100}%`, 
+                    background: '#ef4444',
+                    transition: 'width 0.5s ease'
+                  }} />
+                  <div style={{ 
+                    width: `${(attendanceStats.J / attendanceStats.total) * 100}%`, 
+                    background: '#8b5cf6',
+                    transition: 'width 0.5s ease'
+                  }} />
+                </>
+              ) : (
+                <div style={{ width: '100%', background: '#334155' }} />
+              )}
             </div>
           </div>
         </div>
