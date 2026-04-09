@@ -100,6 +100,30 @@ export default function Grades() {
     setHoveredEval(null);
   };
 
+  const getInstrumentsForCompetency = (competencyId) => {
+    const evs = instrumentEvaluations.filter(
+      ev => (ev.competencyId === competencyId || ev.competency_id === competencyId) && ev.period === selectedPeriod
+    );
+    
+    const uniqueInstruments = {};
+    evs.forEach(ev => {
+      const activityKey = ev.activityName || ev.activity_name || '';
+      const instrumentKey = ev.instrumentId || ev.instrument_id || '';
+      const key = activityKey || instrumentKey;
+      
+      if (!uniqueInstruments[key]) {
+        uniqueInstruments[key] = {
+          id: key,
+          title: activityKey || instruments.find(i => i.id === instrumentKey)?.title || 'Sin título',
+          instrumentType: ev.instrumentType || ev.instrument_type,
+          activityKey,
+          instrumentKey
+        };
+      }
+    });
+    return Object.values(uniqueInstruments);
+  };
+
   const gradeDistribution = useMemo(() => {
     if (!selectedClass || !selectedSubjectId) return null;
     const counts = { AD: 0, A: 0, B: 0, C: 0 };
@@ -640,35 +664,8 @@ export default function Grades() {
             <span>Cada columna representa un instrumento aplicado. <strong style={{ color: '#667eea' }}>Haz clic en la nota</strong> para ver el detalle completo.</span>
           </div>
 
-          {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
+          {/* Tabla de calificaciones */}
           {(() => {
-            // Función para obtener instrumentos únicos aplicados a una competencia en este período
-            const getInstrumentsForCompetency = (competencyId) => {
-              const evs = instrumentEvaluations.filter(
-                ev => (ev.competencyId === competencyId || ev.competency_id === competencyId) && ev.period === selectedPeriod
-              );
-              
-              // Agrupar por activityName en lugar de instrumentId
-              const uniqueInstruments = {};
-              evs.forEach(ev => {
-                // Usar activityName como clave para mostrar cada evaluación diferente
-                const activityKey = ev.activityName || ev.activity_name || '';
-                const instrumentKey = ev.instrumentId || ev.instrument_id || '';
-                const key = activityKey || instrumentKey;
-                
-                if (!uniqueInstruments[key]) {
-                  uniqueInstruments[key] = {
-                    id: key,
-                    title: activityKey || instruments.find(i => i.id === instrumentKey)?.title || 'Sin título',
-                    instrumentType: ev.instrumentType || ev.instrument_type,
-                    activityKey,
-                    instrumentKey
-                  };
-                }
-              });
-              return Object.values(uniqueInstruments);
-            };
-
             return (
               <div className="table-container" style={{ 
                 overflowX: 'auto',
@@ -904,7 +901,7 @@ export default function Grades() {
                 </table>
               </div>
             );
-          })()}
+          })}
 
           {/* Modal flotante de detalle del instrumento */}
           {tooltip && (
