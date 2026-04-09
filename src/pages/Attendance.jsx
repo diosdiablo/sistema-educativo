@@ -52,20 +52,19 @@ export default function Attendance() {
     return students.filter(s => s.gradeLevel === selectedClass);
   }, [students, selectedClass]);
 
-  // Estadísticas consolidadas por BIMESTRE para el grado seleccionado
+  // Estadísticas consolidadas de TODAS las fechas para el grado seleccionado
   const attendanceStats = useMemo(() => {
     if (!selectedClass || filteredStudents.length === 0) return null;
     
-    // Filtrar registros por bimestre
-    const periodRecords = attendance.filter(record => {
-      const recordPeriod = getPeriodFromDate(record.date);
-      return recordPeriod === selectedPeriod && filteredStudents.some(student => record.records && record.records[student.id]);
+    // Obtener TODOS los registros de asistencia para estudiantes de este grado
+    const allRecords = attendance.filter(record => {
+      return filteredStudents.some(student => record.records && record.records[student.id]);
     });
 
     const stats = { P: 0, T: 0, F: 0, J: 0 };
-    const datesCount = periodRecords.length;
+    const datesCount = allRecords.length;
     
-    periodRecords.forEach(record => {
+    allRecords.forEach(record => {
       filteredStudents.forEach(student => {
         const status = record.records?.[student.id];
         if (status && stats[status] !== undefined) {
@@ -83,10 +82,9 @@ export default function Attendance() {
       marked: totalMarked,
       presentRate,
       datesCount,
-      dates: periodRecords.map(r => r.date).sort(),
-      period: selectedPeriod
+      dates: allRecords.map(r => r.date).sort()
     };
-  }, [selectedClass, filteredStudents, attendance, selectedPeriod]);
+  }, [selectedClass, filteredStudents, attendance]);
 
   // Estadísticas del día seleccionado
   const todayStats = useMemo(() => {
@@ -518,7 +516,7 @@ export default function Attendance() {
               </div>
               <div>
                 <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>
-                  Resumen Bimestre {attendanceStats.period}
+                  Resumen Consolidado
                 </h4>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
                   {selectedClass} · {attendanceStats.datesCount} días con registro
@@ -650,7 +648,7 @@ export default function Attendance() {
             }} />
             
             <h4 style={{ fontWeight: 700, margin: '0 0 1.25rem 0', fontSize: '1.1rem', position: 'relative', zIndex: 1 }}>
-              Distribución Bimestre {attendanceStats.period}
+              Distribución General
             </h4>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
@@ -738,7 +736,7 @@ export default function Attendance() {
             {attendanceStats.dates && attendanceStats.dates.length > 0 && (
               <div style={{ marginTop: '1rem', position: 'relative', zIndex: 1 }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
-                  Fechas registradas en Bimestre {attendanceStats.period}:
+                  Fechas registradas:
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {attendanceStats.dates.slice(-6).map(d => (
@@ -793,10 +791,10 @@ export default function Attendance() {
             <Calendar size={28} color="white" />
           </div>
           <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#92400e' }}>
-            Sin registros en Bimestre {selectedPeriod}
+            Sin registros de asistencia
           </h4>
           <p style={{ fontSize: '0.9rem', color: '#92400e', margin: 0 }}>
-            No hay días registrados para {selectedClass} en el Bimestre {selectedPeriod}. 
+            No hay días registrados para {selectedClass}. 
             ¡Comienza a registrar la asistencia!
           </p>
         </div>
