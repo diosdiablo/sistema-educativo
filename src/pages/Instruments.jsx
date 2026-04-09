@@ -1091,55 +1091,179 @@ export default function Instruments() {
   // ═══════════════════════════════════════════
   return (
     <div className="animate-fade-in">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Instrumentos de Evaluación</h1>
-          <p className="page-subtitle">Crea y aplica herramientas de evaluación según el DCNEB</p>
+      {/* Header moderno */}
+      <div style={{
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+        borderRadius: '20px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        position: 'relative',
+        overflow: 'hidden',
+        color: 'white'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '-30%',
+          right: '-10%',
+          width: '300px',
+          height: '300px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%'
+        }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <ClipboardCheck size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Instrumentos de Evaluación</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Crea y aplica herramientas según el DCNEB</p>
+            </div>
+          </div>
+          <button className="btn-primary" onClick={() => setView('create')} style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            background: 'white',
+            color: '#8b5cf6',
+            border: 'none',
+            fontWeight: 600
+          }}>
+            <Plus size={18} /> Nuevo Instrumento
+          </button>
         </div>
-        <button className="btn-primary" onClick={() => setView('create')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={18} /> Nuevo Instrumento
-        </button>
-      </header>
+      </div>
 
       {/* Grid de instrumentos */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
         {instruments.map(ins => {
           const typeDef = typeMap[ins.type] || INSTRUMENT_TYPES[0];
           const Icon = typeDef.icon;
           const evCount = instrumentEvaluations.filter(e => e.instrumentId === ins.id).length;
           return (
-            <div key={ins.id} className="card shadow-glass" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: `4px solid ${typeDef.color}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ padding: '0.55rem', borderRadius: '10px', background: `${typeDef.color}18` }}>
-                  <Icon size={22} color={typeDef.color} />
+            <div key={ins.id} style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '1.5rem',
+              border: '1px solid #e2e8f0',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              ':hover': { boxShadow: '0 8px 25px rgba(0,0,0,0.08)', transform: 'translateY(-2px)' }
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  borderRadius: '14px', 
+                  background: `${typeDef.color}18`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Icon size={24} color={typeDef.color} />
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => handleEditInstrument(ins)} style={{ color: 'var(--accent-primary)', opacity: 0.7, background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <button onClick={() => handleEditInstrument(ins)} style={{ 
+                    color: '#6366f1', 
+                    background: '#f1f5f9', 
+                    border: 'none', 
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     <Edit2 size={16} />
                   </button>
-                  <button onClick={() => { if (window.confirm('¿Eliminar instrumento?')) deleteInstrument(ins.id); }} style={{ color: 'var(--danger-color)', opacity: 0.7, background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <button onClick={() => { if (window.confirm('¿Eliminar instrumento?')) deleteInstrument(ins.id); }} style={{ 
+                    color: '#ef4444', 
+                    background: '#fef2f2', 
+                    border: 'none', 
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '4px' }}>{ins.title}</h3>
-                <p style={{ fontSize: '0.8rem', color: typeDef.color, fontWeight: 600 }}>{typeDef.label}</p>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px', color: '#1e293b' }}>{ins.title}</h3>
+                <span style={{ 
+                  fontSize: '0.78rem', 
+                  color: typeDef.color, 
+                  fontWeight: 600, 
+                  background: `${typeDef.color}15`, 
+                  padding: '4px 10px', 
+                  borderRadius: '6px',
+                  display: 'inline-block'
+                }}>
+                  {typeDef.label}
+                </span>
+                <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '8px' }}>
                   {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
                 </p>
               </div>
-              <button className="btn-primary" style={{ padding: '0.55rem', fontSize: '0.88rem', gap: '6px' }} onClick={() => handleStartApply(ins)}>
-                <Play size={15} /> Aplicar
+              <button className="btn-primary" style={{ 
+                width: '100%', 
+                padding: '0.75rem', 
+                fontSize: '0.9rem', 
+                gap: '8px',
+                background: typeDef.color,
+                border: 'none'
+              }} onClick={() => handleStartApply(ins)}>
+                <Play size={16} /> Aplicar Evaluación
               </button>
             </div>
           );
         })}
 
         {instruments.length === 0 && (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)', border: '2px dashed var(--border-color)', borderRadius: '16px' }}>
-            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Aún no tienes instrumentos creados.</p>
-            <p style={{ fontSize: '0.85rem' }}>Haz clic en <strong>Nuevo Instrumento</strong> para comenzar.</p>
+          <div style={{ 
+            gridColumn: '1/-1', 
+            textAlign: 'center', 
+            padding: '4rem', 
+            background: '#f8fafc',
+            border: '2px dashed #e2e8f0', 
+            borderRadius: '16px' 
+          }}>
+            <div style={{ 
+              width: '80px', 
+              height: '80px', 
+              margin: '0 auto 1.5rem',
+              background: '#f1f5f9',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <ClipboardCheck size={36} color="#94a3b8" />
+            </div>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Aún no tienes instrumentos creados</p>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Haz clic en <strong style={{ color: '#8b5cf6' }}>Nuevo Instrumento</strong> para comenzar</p>
           </div>
         )}
       </div>
@@ -1147,10 +1271,43 @@ export default function Instruments() {
       {/* Evaluaciones recientes */}
       {instrumentEvaluations.length > 0 && (
         <div style={{ marginTop: '3rem' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Activity size={22} color="var(--accent-primary)" /> Evaluaciones Recientes
-          </h2>
-          <div className="table-container shadow-glass">
+          <div style={{
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            marginBottom: '1.5rem',
+            position: 'relative',
+            overflow: 'hidden',
+            color: 'white'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20%',
+              right: '-5%',
+              width: '150px',
+              height: '150px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Activity size={24} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Evaluaciones Recientes</h2>
+                <p style={{ opacity: 0.9, fontSize: '0.85rem', margin: 0 }}>{instrumentEvaluations.length} evaluación(es) registrada(s)</p>
+              </div>
+            </div>
+          </div>
+          <div className="table-container shadow-glass" style={{ borderRadius: '16px', overflow: 'hidden' }}>
             <table className="styled-table">
               <thead>
                 <tr>
