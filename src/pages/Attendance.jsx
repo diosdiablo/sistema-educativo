@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, CalendarDays } from 'lucide-react';
 
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin } = useStore();
@@ -17,6 +17,21 @@ export default function Attendance() {
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
   const [selectedClass, setSelectedClass] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('1');
+
+  // Determinar el bimestre según la fecha
+  const getPeriodFromDate = (dateStr) => {
+    const month = new Date(dateStr).getMonth() + 1;
+    if (month >= 1 && month <= 3) return '1';
+    if (month >= 4 && month <= 6) return '2';
+    if (month >= 7 && month <= 9) return '3';
+    return '4';
+  };
+
+  // Actualizar el bimestre cuando cambia la fecha
+  useEffect(() => {
+    setSelectedPeriod(getPeriodFromDate(date));
+  }, [date]);
 
   useEffect(() => {
     const classParam = searchParams.get('class');
@@ -37,19 +52,20 @@ export default function Attendance() {
     return students.filter(s => s.gradeLevel === selectedClass);
   }, [students, selectedClass]);
 
-  // Estadísticas consolidadas de TODAS las fechas para el grado seleccionado
+  // Estadísticas consolidadas por BIMESTRE para el grado seleccionado
   const attendanceStats = useMemo(() => {
     if (!selectedClass || filteredStudents.length === 0) return null;
     
-    // Obtener TODOS los registros de asistencia para estudiantes de este grado
-    const allRecords = attendance.filter(record => {
-      return filteredStudents.some(student => record.records && record.records[student.id]);
+    // Filtrar registros por bimestre
+    const periodRecords = attendance.filter(record => {
+      const recordPeriod = getPeriodFromDate(record.date);
+      return recordPeriod === selectedPeriod && filteredStudents.some(student => record.records && record.records[student.id]);
     });
 
     const stats = { P: 0, T: 0, F: 0, J: 0 };
-    const datesCount = allRecords.length;
+    const datesCount = periodRecords.length;
     
-    allRecords.forEach(record => {
+    periodRecords.forEach(record => {
       filteredStudents.forEach(student => {
         const status = record.records?.[student.id];
         if (status && stats[status] !== undefined) {
@@ -67,9 +83,10 @@ export default function Attendance() {
       marked: totalMarked,
       presentRate,
       datesCount,
-      dates: allRecords.map(r => r.date).sort()
+      dates: periodRecords.map(r => r.date).sort(),
+      period: selectedPeriod
     };
-  }, [selectedClass, filteredStudents, attendance]);
+  }, [selectedClass, filteredStudents, attendance, selectedPeriod]);
 
   // Estadísticas del día seleccionado
   const todayStats = useMemo(() => {
@@ -248,6 +265,55 @@ export default function Attendance() {
           />
         </div>
 
+        {/* Tarjeta de Bimestre */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '1.25rem',
+          border: '2px solid #6366f1',
+          transition: 'all 0.3s ease',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'rgba(99, 102, 241, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <CalendarDays size={20} color="#6366f1" />
+            </div>
+            <div>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Bimestre</label>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Periodo de consulta</div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+            {[1, 2, 3, 4].map(p => (
+              <button
+                key={p}
+                onClick={() => setSelectedPeriod(String(p))}
+                style={{
+                  padding: '0.5rem 0.25rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: selectedPeriod === String(p) ? '#6366f1' : '#f1f5f9',
+                  color: selectedPeriod === String(p) ? 'white' : 'var(--text-secondary)'
+                }}
+              >
+                B{p}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Botón Guardar */}
         <div style={{
           background: 'white',
@@ -422,15 +488,15 @@ export default function Attendance() {
         </div>
       )}
 
-      {/* Widget consolidado de TODAS las fechas */}
-      {selectedClass && attendanceStats && attendanceStats.datesCount > 0 && (
+      {/* Widget consolidado por BIMESTRE */}
+      {selectedClass && attendanceStats && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem'
         }}>
-          {/* Resumen consolidado general */}
+          {/* Resumen consolidado del bimestre */}
           <div style={{
             background: 'white',
             borderRadius: '20px',
@@ -451,9 +517,11 @@ export default function Attendance() {
                 <PieChart size={22} color="white" />
               </div>
               <div>
-                <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Resumen Consolidado</h4>
+                <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>
+                  Resumen Bimestre {attendanceStats.period}
+                </h4>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  {selectedClass} · {attendanceStats.datesCount} días registrados
+                  {selectedClass} · {attendanceStats.datesCount} días con registro
                 </p>
               </div>
             </div>
@@ -461,7 +529,7 @@ export default function Attendance() {
             {/* Barra de progreso */}
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia General</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981' }}>{attendanceStats.presentRate}%</span>
               </div>
               <div style={{
@@ -541,7 +609,7 @@ export default function Attendance() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Calendar size={16} color="#64748b" />
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  {attendanceStats.datesCount} días con registro
+                  {attendanceStats.datesCount} días
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -553,7 +621,7 @@ export default function Attendance() {
             </div>
           </div>
 
-          {/* Distribución visual consolidada */}
+          {/* Distribución visual del bimestre */}
           <div style={{
             background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
             borderRadius: '20px',
@@ -582,7 +650,7 @@ export default function Attendance() {
             }} />
             
             <h4 style={{ fontWeight: 700, margin: '0 0 1.25rem 0', fontSize: '1.1rem', position: 'relative', zIndex: 1 }}>
-              Distribución Consolidada
+              Distribución Bimestre {attendanceStats.period}
             </h4>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
@@ -664,6 +732,75 @@ export default function Attendance() {
               ) : (
                 <div style={{ width: '100%', background: '#334155' }} />
               )}
+            </div>
+
+            {/* Lista de fechas del bimestre */}
+            {attendanceStats.dates && attendanceStats.dates.length > 0 && (
+              <div style={{ marginTop: '1rem', position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
+                  Fechas registradas en Bimestre {attendanceStats.period}:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {attendanceStats.dates.slice(-6).map(d => (
+                    <span key={d} style={{
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.5rem',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      color: 'rgba(255,255,255,0.8)'
+                    }}>
+                      {new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
+                    </span>
+                  ))}
+                  {attendanceStats.dates.length > 6 && (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.5rem',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      color: 'rgba(255,255,255,0.6)'
+                    }}>
+                      +{attendanceStats.dates.length - 6} más
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Mensaje si no hay registros en el bimestre */}
+      {selectedClass && attendanceStats && attendanceStats.datesCount === 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          borderRadius: '16px',
+          padding: '2rem',
+          textAlign: 'center',
+          border: '2px solid #fbbf24',
+          marginBottom: '1.5rem'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1rem'
+          }}>
+            <Calendar size={28} color="white" />
+          </div>
+          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#92400e' }}>
+            Sin registros en Bimestre {selectedPeriod}
+          </h4>
+          <p style={{ fontSize: '0.9rem', color: '#92400e', margin: 0 }}>
+            No hay días registrados para {selectedClass} en el Bimestre {selectedPeriod}. 
+            ¡Comienza a registrar la asistencia!
+          </p>
+        </div>
+      )}
             </div>
 
             {/* Lista de fechas */}
