@@ -106,10 +106,22 @@ export const StoreProvider = ({ children }) => {
   const [syncStatus, setSyncStatus] = useState('checking');
 
   const [users, setUsers] = useState(() => loadData('edu_users', []));
-  const [currentUser, setCurrentUser] = useState(() => loadData('edu_current_user', null));
+  const [currentUser, setCurrentUser] = useState(null); // Always start as null (show login first)
   const [students, setStudents] = useState(() => loadData('edu_students', []));
   const [attendance, setAttendance] = useState(() => loadData('edu_attendance', []));
   const [grades, setGrades] = useState(() => loadData('edu_grades', []));
+
+  // Load currentUser from localStorage AFTER mount (not during initial render)
+  useEffect(() => {
+    const savedUser = localStorage.getItem('edu_current_user');
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem('edu_current_user');
+      }
+    }
+  }, []);
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
     if (loaded.length < 5) return DEFAULT_SUBJECTS;
@@ -624,7 +636,10 @@ export const StoreProvider = ({ children }) => {
     deleteFromSupabase('users', id);
     return true;
   };
-  const logout = () => setCurrentUser(null);
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('edu_current_user');
+  };
 
   const importStudentsBulk = (rawAoaData) => {
     const currentClasses = [...classes];
