@@ -9,8 +9,11 @@ const TIMES = [
   '04:00 - 04:40', '04:40 - 05:20', '05:20 - 06:00 (TURNO TARDE)'
 ];
 
+const DAY_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+
 export default function Schedule() {
-  const { classes, subjects, schedule, saveScheduleItem, deleteScheduleItem, currentUser, isAdmin, users } = useStore();
+  const { classes, subjects, schedule, saveScheduleItem, deleteScheduleItem, currentUser, isAdmin, users, syncToSupabaseManual, isOnline } = useStore();
+  const [syncing, setSyncing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   
@@ -131,50 +134,168 @@ export default function Schedule() {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <div style={{ flex: 1 }}>
-          <h2 className="page-title">Horario Escolar</h2>
-          <p className="page-subtitle">
-            {isAdmin ? `Gestionando horario de: ${viewedUser?.name}` : 'Organiza tus sesiones de clase semanales'}
-          </p>
-        </div>
+      {/* Header moderno */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+        borderRadius: '20px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        position: 'relative',
+        overflow: 'hidden',
+        color: 'white'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '-30%',
+          right: '-10%',
+          width: '300px',
+          height: '300px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%'
+        }} />
         
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          {isAdmin && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-              <User size={18} style={{ color: 'var(--text-secondary)' }} />
-              <select 
-                value={selectedUserId} 
-                onChange={(e) => setSelectedUserId(e.target.value)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none', fontWeight: 600, fontSize: '0.9rem' }}
-              >
-                <option value="all">📋 Todos los Docentes</option>
-                <option value={currentUser.id}>Mi Horario (Admin)</option>
-                {teachers.map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <CalendarDays size={28} />
             </div>
-          )}
-          {/* Only show 'Agregar Bloque' if we're in a specific teacher/user view */}
-          {(!isAdmin || selectedUserId !== 'all') && (
-            <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => handleOpenModal()}>
-              <Plus size={18} /> Agregar Bloque
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Horario Escolar</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>
+                {isAdmin ? `Gestionando horario de: ${viewedUser?.name}` : 'Organiza tus sesiones de clase semanales'}
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {isAdmin && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.75rem', 
+                background: 'rgba(255,255,255,0.2)', 
+                padding: '0.6rem 1rem', 
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <User size={18} />
+                <select 
+                  value={selectedUserId} 
+                  onChange={(e) => setSelectedUserId(e.target.value)}
+                  style={{ 
+                    background: 'transparent', 
+                    border: 'none', 
+                    color: 'white', 
+                    outline: 'none', 
+                    fontWeight: 600, 
+                    fontSize: '0.9rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="all" style={{ color: '#1e293b' }}>Todos los Docentes</option>
+                  <option value={currentUser.id} style={{ color: '#1e293b' }}>Mi Horario (Admin)</option>
+                  {teachers.map(t => (
+                    <option key={t.id} value={t.id} style={{ color: '#1e293b' }}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {(!isAdmin || selectedUserId !== 'all') && (
+              <button style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                background: 'white',
+                color: '#0ea5e9',
+                border: 'none',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }} onClick={() => handleOpenModal()}>
+                <Plus size={18} /> Agregar Bloque
+              </button>
+            )}
+            <button 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                background: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.2)',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+              onClick={async () => {
+                if (!isOnline) { alert('Sin conexion a internet'); return; }
+                setSyncing(true);
+                await syncToSupabaseManual();
+                setSyncing(false);
+                alert('Horario guardado en Supabase');
+              }}
+              disabled={syncing}
+            >
+              <Upload size={18} /> {syncing ? 'Guardando...' : 'Guardar Horario'}
             </button>
-          )}
+          </div>
         </div>
       </div>
 
-      <div className="table-container" style={{ overflowX: 'auto' }}>
-        <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
-          <thead>
-            <tr>
-              <th style={{ width: '150px', backgroundColor: '#f8fafc' }}>Hora</th>
-              {DAYS.map(day => (
-                <th key={day} style={{ textAlign: 'center' }}>{day}</th>
-              ))}
-            </tr>
-          </thead>
+      {/* Tabla de horario */}
+      <div style={{ 
+        background: 'white', 
+        borderRadius: '20px', 
+        overflow: 'hidden',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+      }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
+            <thead>
+              <tr>
+                <th style={{ 
+                  width: '180px', 
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                  color: 'white',
+                  padding: '1.25rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Clock size={16} />
+                    Hora
+                  </div>
+                </th>
+                {DAYS.map((day, idx) => (
+                  <th key={day} style={{ 
+                    textAlign: 'center',
+                    background: `linear-gradient(135deg, ${DAY_COLORS[idx]} 0%, ${DAY_COLORS[idx]}cc 100%)`,
+                    color: 'white',
+                    padding: '1.25rem',
+                    fontWeight: 600
+                  }}>{day}</th>
+                ))}
+              </tr>
+            </thead>
           <tbody>
             {TIMES.map(time => (
               <tr key={time} style={{ height: time.includes('DESCANSO') ? '40px' : '90px' }}>
