@@ -170,16 +170,28 @@ export default function Schedule() {
         </div>
       </div>
 
-      <div className="table-container" style={{ overflowX: 'auto' }}>
-        <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
-          <thead>
-            <tr>
-              <th style={{ width: '150px', backgroundColor: '#f8fafc' }}>Hora</th>
-              {DAYS.map(day => (
-                <th key={day} style={{ textAlign: 'center' }}>{day}</th>
-              ))}
-            </tr>
-          </thead>
+      <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
+            <thead>
+              <tr>
+                <th style={{ 
+                  width: '180px', 
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                  color: 'white', padding: '1rem'
+                }}>Hora</th>
+                {DAYS.map((day, idx) => {
+                  const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+                  return (
+                    <th key={day} style={{ 
+                      textAlign: 'center',
+                      background: 'linear-gradient(135deg, ' + colors[idx] + ' 0%, ' + colors[idx] + 'cc 100%)',
+                      color: 'white', padding: '1rem', fontWeight: 600
+                    }}>{day}</th>
+                  );
+                })}
+              </tr>
+            </thead>
           <tbody>
             {TIMES.map(time => (
               <tr key={time} style={{ height: time.includes('DESCANSO') ? '40px' : '90px' }}>
