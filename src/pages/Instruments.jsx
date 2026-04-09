@@ -456,8 +456,22 @@ export default function Instruments() {
 
             {/* Título */}
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Título del Instrumento</label>
-              <input className="input-field" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej. Exposición oral sobre la Independencia del Perú" />
+              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem', color: '#1e293b' }}>
+                Título del Instrumento
+              </label>
+              <input 
+                className="input-field" 
+                value={title} 
+                onChange={e => setTitle(e.target.value)} 
+                placeholder="Ej. Exposición oral sobre la Independencia del Perú"
+                style={{
+                  padding: '1rem',
+                  fontSize: '1rem',
+                  borderColor: '#e2e8f0',
+                  borderRadius: '12px',
+                  background: '#f8fafc'
+                }}
+              />
             </div>
 
             {/* Selector de tipo */}
@@ -623,22 +637,77 @@ export default function Instruments() {
 
             {/* Prueba escrita — no necesita lista de criterios */}
             {instrumentType === 'numeric' && (
-              <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '1rem 1.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                📝 Al aplicar esta prueba ingresarás un puntaje de <strong>0 a 20</strong> que se convertirá automáticamente a la escala cualitativa AD / A / B / C.
+              <div style={{ 
+                background: 'linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%)', 
+                border: '1px solid #ef444420', 
+                borderRadius: '12px', 
+                padding: '1.25rem', 
+                fontSize: '0.9rem', 
+                color: '#991b1b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: '#ef444415',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <FileText size={20} color="#ef4444" />
+                </div>
+                <div>
+                  <strong>Prueba Escrita:</strong> Al aplicar esta prueba ingresarás un puntaje de <strong>0 a 20</strong> que se convertirá automáticamente a la escala cualitativa AD / A / B / C.
+                </div>
               </div>
             )}
 
             {/* Portafolio / Registro anecdótico */}
             {(instrumentType === 'portfolio' || instrumentType === 'anecdotal') && (
-              <div style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '12px', padding: '1rem 1.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {instrumentType === 'portfolio'
-                  ? '📁 El portafolio se evalúa holísticamente. Al aplicarlo asignarás directamente una calificación AD / A / B / C.'
-                  : '📋 El registro anecdótico describe situaciones significativas. Al aplicarlo asignarás directamente AD / A / B / C con una nota descriptiva.'}
+              <div style={{ 
+                background: 'linear-gradient(135deg, #eef2ff 0%, #f0f9ff 100%)', 
+                border: '1px solid #6366f120', 
+                borderRadius: '12px', 
+                padding: '1.25rem', 
+                fontSize: '0.9rem', 
+                color: '#4338ca',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: '#6366f115',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {instrumentType === 'portfolio' ? <BookOpen size={20} color="#6366f1" /> : <MessageSquare size={20} color="#6366f1" />}
+                </div>
+                <div>
+                  {instrumentType === 'portfolio'
+                    ? <><strong>Portafolio:</strong> Se evalúa holísticamente. Al aplicarlo asignarás directamente una calificación AD / A / B / C.</>
+                    : <><strong>Registro Anecdótico:</strong> Describe situaciones significativas. Al aplicarlo asignarás directamente AD / A / B / C con una nota descriptiva.</>}
+                </div>
               </div>
             )}
 
-            <button className="btn-primary" style={{ marginTop: '0.5rem' }} onClick={handleSaveInstrument}>
-              <Save size={18} /> {editingInstrument ? 'Actualizar' : 'Guardar Instrumento'}
+            <button className="btn-primary" style={{ 
+              marginTop: '1rem', 
+              padding: '1rem 2rem',
+              fontSize: '1rem',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              width: 'fit-content'
+            }} onClick={handleSaveInstrument}>
+              <Save size={20} /> {editingInstrument ? 'Actualizar Instrumento' : 'Guardar Instrumento'}
             </button>
           </div>
         </div>
