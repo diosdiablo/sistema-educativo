@@ -111,14 +111,15 @@ export const StoreProvider = ({ children }) => {
   const [attendance, setAttendance] = useState(() => loadData('edu_attendance', []));
   const [grades, setGrades] = useState(() => loadData('edu_grades', []));
 
-  // Load currentUser from localStorage AFTER mount (not during initial render)
+  // Load currentUser from sessionStorage AFTER mount (not during initial render)
+  // sessionStorage se limpia automáticamente al cerrar la ventana
   useEffect(() => {
-    const savedUser = localStorage.getItem('edu_current_user_v2');
+    const savedUser = sessionStorage.getItem('edu_current_user_session');
     if (savedUser) {
       try {
         setCurrentUser(JSON.parse(savedUser));
       } catch {
-        localStorage.removeItem('edu_current_user_v2');
+        sessionStorage.removeItem('edu_current_user_session');
       }
     }
   }, []);
@@ -476,14 +477,7 @@ export const StoreProvider = ({ children }) => {
     initialSync();
   }, [initialSync]);
 
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      localStorage.removeItem('edu_current_user');
-      localStorage.removeItem('edu_current_user_v2');
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
+  // sessionStorage se limpia automáticamente al cerrar la ventana del navegador
 
   useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
   useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
@@ -497,8 +491,8 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => { localStorage.setItem('edu_schedule', JSON.stringify(schedule)); }, [schedule]);
   useEffect(() => { localStorage.setItem('edu_diagnostic_evaluations', JSON.stringify(diagnosticEvaluations)); }, [diagnosticEvaluations]);
   useEffect(() => {
-    if (currentUser) localStorage.setItem('edu_current_user_v2', JSON.stringify(currentUser));
-    else localStorage.removeItem('edu_current_user_v2');
+    if (currentUser) sessionStorage.setItem('edu_current_user_session', JSON.stringify(currentUser));
+    else sessionStorage.removeItem('edu_current_user_session');
   }, [currentUser]);
 
   const syncToSupabaseManual = useCallback(async () => {
@@ -641,6 +635,7 @@ export const StoreProvider = ({ children }) => {
     setCurrentUser(null);
     localStorage.removeItem('edu_current_user');
     localStorage.removeItem('edu_current_user_v2');
+    sessionStorage.removeItem('edu_current_user_session');
   };
 
   const importStudentsBulk = (rawAoaData) => {
