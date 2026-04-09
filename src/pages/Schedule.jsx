@@ -6,7 +6,7 @@ const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 const TIMES = [
   '12:30 - 01:15', '01:15 - 02:00', '02:00 - 02:45', '02:45 - 03:30',
   '03:30 - 04:00 (DESCANSO)',
-  '04:00 - 04:40', '04:40 - '05:20', '05:20 - 06:00 (TURNO TARDE)'
+  '04:00 - 04:40', '04:40 - 05:20', '05:20 - 06:00 (TURNO TARDE)'
 ];
 
 export default function Schedule() {
