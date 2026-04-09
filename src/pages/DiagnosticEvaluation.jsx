@@ -524,20 +524,14 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           </div>
           <div>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Evaluacion Diagnostica</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Registra y genera mapas de calor de la evaluacion diagnostica</p>
+            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Registra y genera mapas de calor</p>
           </div>
         </div>
       </div>
 
-      <div style={{ 
-        background: 'white', 
-        borderRadius: '16px', 
-        padding: '1.5rem',
-        marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-      }}>
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ color: '#ec4899', margin: 0, fontWeight: 700 }}>Configuracion de la Evaluacion</h3>
+          <h3 style={{ color: 'var(--accent-primary)', margin: 0 }}>Configuración de la Evaluación</h3>
           {selectedSubject && (
             <button 
               className="btn-secondary" 
@@ -663,49 +657,23 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               </p>
             </div>
           ) : (
-            <div style={{ 
-              background: 'white', 
-              borderRadius: '16px', 
-              overflow: 'hidden',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-            }}>
-              <div style={{ overflowX: 'auto' }}>
-                <table className="styled-table" style={{ minWidth: '800px' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ 
-                        width: '60px', 
-                        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
-                        color: 'white',
-                        padding: '1rem'
-                      }}>N</th>
-                      <th style={{ 
-                        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
-                        color: 'white',
-                        padding: '1rem'
-                      }}>Apellidos y Nombre</th>
-                      {rubricConfig.competencies.map((comp, idx) => (
-                        <th key={comp.id || idx} style={{ 
-                          minWidth: '180px', 
-                          textAlign: 'center',
-                          background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
-                          color: 'white',
-                          padding: '1rem'
-                        }}>
-                          <div>{comp.name.substring(0, 20)}...</div>
-                          <div style={{ fontSize: '0.7rem', fontWeight: 400, opacity: 0.9 }}>
-                            {rubricConfig.mode === 'rubrica' ? 'Rubrica' : 'Total: ' + comp.totalQuestions + ' preg.'}
-                          </div>
-                        </th>
-                      ))}
-                      <th style={{ 
-                        width: '80px',
-                        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
-                        color: 'white',
-                        padding: '1rem'
-                      }}>Acciones</th>
-                    </tr>
-                  </thead>
+            <div className="table-container" style={{ overflowX: 'auto' }}>
+              <table className="styled-table" style={{ minWidth: '800px' }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: '50px' }}>N°</th>
+                    <th>Apellidos y Nombre</th>
+                    {rubricConfig.competencies.map((comp, idx) => (
+                      <th key={comp.id || idx} style={{ minWidth: '180px', textAlign: 'center' }}>
+                        <div>{comp.name.substring(0, 20)}...</div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 400, color: 'var(--text-secondary)' }}>
+                          {rubricConfig.mode === 'rubrica' ? 'Rúbrica' : `Total: ${comp.totalQuestions} preg.`}
+                        </div>
+                      </th>
+                    ))}
+                    <th style={{ width: '80px' }}>Acciones</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {filteredStudents.map((student, idx) => {
                     const studentGrades = evaluations[student.id] || {};
