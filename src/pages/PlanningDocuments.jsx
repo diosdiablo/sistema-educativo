@@ -10,6 +10,22 @@ export default function PlanningDocuments() {
   const [filterGrade, setFilterGrade] = useState('Todos');
   const [filterSubject, setFilterSubject] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [uploadData, setUploadData] = useState({
+    gradeLevel: '',
+    sections: [],
+    subjectId: '',
+    title: '',
+    description: '',
+    period: '2026',
+    file: null,
+    fileName: ''
+  });
+
+  const handleDelete = (docId) => {
+    if (window.confirm('¿Estás seguro de eliminar este documento?')) {
+      deletePlanningDocument(docId);
+    }
+  };
   
   const filteredDocuments = useMemo(() => {
     let docs = planningDocuments || [];
@@ -46,6 +62,52 @@ export default function PlanningDocuments() {
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        alert('Solo se permiten archivos PDF');
+        return;
+      }
+      setUploadData({ ...uploadData, file, fileName: file.name });
+    }
+  };
+
+  const handleUpload = () => {
+    if (!uploadData.gradeLevel || uploadData.sections.length === 0 || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
+      alert('Por favor completa todos los campos requeridos (mínimo una sección)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      addPlanningDocument({
+        gradeLevel: uploadData.gradeLevel,
+        sections: uploadData.sections,
+        subjectId: uploadData.subjectId,
+        title: uploadData.title,
+        description: uploadData.description,
+        period: uploadData.period,
+        fileData: base64,
+        fileName: uploadData.fileName
+      });
+      setShowUploadModal(false);
+      setUploadData({
+        gradeLevel: '',
+        sections: [],
+        subjectId: '',
+        title: '',
+        description: '',
+        period: '2026',
+        file: null,
+        fileName: ''
+      });
+      alert('Documento subido exitosamente');
+    };
+    reader.readAsDataURL(uploadData.file);
   };
 
   const gradientColors = [
