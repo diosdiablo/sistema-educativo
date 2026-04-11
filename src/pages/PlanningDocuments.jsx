@@ -76,10 +76,13 @@ export default function PlanningDocuments() {
   };
 
   const handleUpload = () => {
-    if (!uploadData.gradeLevel || uploadData.sections.length === 0 || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
-      alert('Por favor completa todos los campos requeridos (mínimo una sección)');
+    if (uploadData.sections.length === 0 || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
+      alert('Por favor completa todos los campos requeridos (selecciona al menos una sección)');
       return;
     }
+
+    const firstClass = classes.find(c => uploadData.sections.includes(c.id));
+    const gradeLevel = firstClass ? firstClass.name.split(' - ')[0] : '';
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -471,93 +474,80 @@ export default function PlanningDocuments() {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Grado *</label>
-                <select 
-                  className="input-field"
-                  value={uploadData.gradeLevel}
-                  onChange={e => setUploadData({ ...uploadData, gradeLevel: e.target.value, sections: [] })}
-                >
-                  <option value="">Seleccionar Grado</option>
-                  {[...new Set(classes.map(c => c.name.split(' - ')[0]))].sort().map(grade => (
-                    <option key={grade} value={grade}>{grade}</option>
-                  ))}
-                </select>
-              </div>
-
-              {uploadData.gradeLevel && (
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                    Secciones * (selecciona una o varias)
-                  </label>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
-                    gap: '0.75rem',
-                    marginBottom: '0.75rem'
-                  }}>
-                    {classes
-                      .filter(c => c.name.startsWith(uploadData.gradeLevel))
-                      .map(cls => {
-                        const section = cls.name.split(' - ')[1];
-                        const isSelected = uploadData.sections.includes(cls.id);
-                        return (
-                          <button
-                            key={cls.id}
-                            type="button"
-                            onClick={() => {
-                              const newSections = isSelected
-                                ? uploadData.sections.filter(s => s !== cls.id)
-                                : [...uploadData.sections, cls.id];
-                              setUploadData({ ...uploadData, sections: newSections });
-                            }}
-                            style={{
-                              padding: '0.75rem',
-                              borderRadius: '12px',
-                              border: isSelected ? '2px solid #f59e0b' : '2px solid #e2e8f0',
-                              background: isSelected ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'white',
-                              color: isSelected ? '#d97706' : 'var(--text-primary)',
-                              fontWeight: 600,
-                              fontSize: '0.9rem',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.5rem',
-                              boxShadow: isSelected ? '0 2px 8px rgba(245, 158, 11, 0.3)' : 'none'
-                            }}
-                          >
-                            <div style={{
-                              width: '18px',
-                              height: '18px',
-                              borderRadius: '4px',
-                              border: isSelected ? '2px solid #f59e0b' : '2px solid #cbd5e1',
-                              background: isSelected ? '#f59e0b' : 'white',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0
-                            }}>
-                              {isSelected && <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>✓</span>}
-                            </div>
-                            {section}
-                          </button>
-                        );
-                      })
-                    }
-                  </div>
-                  {uploadData.sections.length === 0 && (
-                    <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>
-                      ⚠️ Selecciona al menos una sección
-                    </p>
-                  )}
-                  {uploadData.sections.length > 0 && (
-                    <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
-                      ✓ {uploadData.sections.length} sección(es) seleccionada(s)
-                    </p>
-                  )}
+                <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  Selecciona las secciones * (clic para seleccionar varias)
+                </label>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+                  gap: '0.5rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  {classes.sort((a, b) => {
+                    const gradeA = a.name.split(' - ')[0];
+                    const gradeB = b.name.split(' - ')[0];
+                    return gradeA.localeCompare(gradeB, undefined, { numeric: true });
+                  }).map(cls => {
+                    const gradeName = cls.name.split(' - ')[0];
+                    const sectionName = cls.name.split(' - ')[1];
+                    const isSelected = uploadData.sections.includes(cls.id);
+                    return (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        onClick={() => {
+                          const newSections = isSelected
+                            ? uploadData.sections.filter(s => s !== cls.id)
+                            : [...uploadData.sections, cls.id];
+                          setUploadData({ ...uploadData, sections: newSections, gradeLevel: gradeName });
+                        }}
+                        style={{
+                          padding: '0.6rem 0.75rem',
+                          borderRadius: '10px',
+                          border: isSelected ? '2px solid #f59e0b' : '2px solid #e2e8f0',
+                          background: isSelected ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'white',
+                          color: isSelected ? '#d97706' : 'var(--text-primary)',
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          boxShadow: isSelected ? '0 2px 8px rgba(245, 158, 11, 0.3)' : 'none'
+                        }}
+                      >
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '4px',
+                          border: isSelected ? '2px solid #f59e0b' : '2px solid #cbd5e1',
+                          background: isSelected ? '#f59e0b' : 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          {isSelected && <span style={{ color: 'white', fontSize: '10px', fontWeight: 'bold' }}>✓</span>}
+                        </div>
+                        <span>{gradeName}</span>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{sectionName}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+                {uploadData.sections.length === 0 && (
+                  <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>
+                    ⚠️ Selecciona al menos una sección
+                  </p>
+                )}
+                {uploadData.sections.length > 0 && (
+                  <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
+                    ✓ {uploadData.sections.length} sección(es) seleccionada(s)
+                  </p>
+                )}
+              </div>
 
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Área Curricular *</label>
