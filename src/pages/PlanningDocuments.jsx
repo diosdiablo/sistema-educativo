@@ -478,18 +478,18 @@ export default function PlanningDocuments() {
                   Selecciona las secciones * (clic para seleccionar varias)
                 </label>
                 <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
-                  gap: '0.5rem',
-                  marginBottom: '0.5rem'
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '0.4rem',
+                  marginBottom: '0.5rem',
+                  maxHeight: '180px',
+                  overflowY: 'auto',
+                  padding: '0.5rem',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  background: '#f8fafc'
                 }}>
-                  {classes.sort((a, b) => {
-                    const gradeA = a.name.split(' - ')[0];
-                    const gradeB = b.name.split(' - ')[0];
-                    return gradeA.localeCompare(gradeB, undefined, { numeric: true });
-                  }).map(cls => {
-                    const gradeName = cls.name.split(' - ')[0];
-                    const sectionName = cls.name.split(' - ')[1];
+                  {classes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map(cls => {
                     const isSelected = uploadData.sections.includes(cls.id);
                     return (
                       <button
@@ -499,40 +499,23 @@ export default function PlanningDocuments() {
                           const newSections = isSelected
                             ? uploadData.sections.filter(s => s !== cls.id)
                             : [...uploadData.sections, cls.id];
-                          setUploadData({ ...uploadData, sections: newSections, gradeLevel: gradeName });
+                          setUploadData({ ...uploadData, sections: newSections });
                         }}
                         style={{
-                          padding: '0.6rem 0.75rem',
-                          borderRadius: '10px',
-                          border: isSelected ? '2px solid #f59e0b' : '2px solid #e2e8f0',
-                          background: isSelected ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'white',
-                          color: isSelected ? '#d97706' : 'var(--text-primary)',
-                          fontWeight: 600,
-                          fontSize: '0.8rem',
+                          padding: '0.35rem 0.6rem',
+                          borderRadius: '20px',
+                          border: isSelected ? 'none' : '1px solid #cbd5e1',
+                          background: isSelected ? cls.color : 'white',
+                          color: isSelected ? 'white' : 'var(--text-primary)',
+                          fontWeight: 500,
+                          fontSize: '0.7rem',
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.25rem',
-                          boxShadow: isSelected ? '0 2px 8px rgba(245, 158, 11, 0.3)' : 'none'
+                          transition: 'all 0.15s ease',
+                          boxShadow: isSelected ? `0 2px 6px ${cls.color}40` : 'none',
+                          outline: isSelected ? `2px solid ${cls.color}80` : 'none'
                         }}
                       >
-                        <div style={{
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '4px',
-                          border: isSelected ? '2px solid #f59e0b' : '2px solid #cbd5e1',
-                          background: isSelected ? '#f59e0b' : 'white',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
-                          {isSelected && <span style={{ color: 'white', fontSize: '10px', fontWeight: 'bold' }}>✓</span>}
-                        </div>
-                        <span>{gradeName}</span>
-                        <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{sectionName}</span>
+                        {cls.name}
                       </button>
                     );
                   })}
