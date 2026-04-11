@@ -12,7 +12,7 @@ export default function PlanningDocuments() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const filteredDocuments = useMemo(() => {
-    let docs = planningDocuments;
+    let docs = planningDocuments || [];
     
     if (filterGrade !== 'Todos') {
       docs = docs.filter(d => d.gradeLevel === filterGrade);
@@ -31,7 +31,7 @@ export default function PlanningDocuments() {
     }
     
     return docs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-  }, [planningDocuments, filterGrade, filterSubject, searchTerm]);
+  }, [planningDocuments || [], filterGrade, filterSubject, searchTerm]);
 
   const getGradeDisplay = (doc) => {
     const gradeName = doc.gradeLevel || 'Grado';
