@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Download, Save, RotateCcw, Check, Plus, Trash2, Edit2, X, Settings } from 'lucide-react';
+import { Download, Save, RotateCcw, Check, Plus, Trash2, Edit2, X, Settings, ClipboardCheck, Users, BookOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const NIVEL_COLORS = {
@@ -389,7 +389,6 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
   </tr>
 `;
 
-    // Filas de estudiantes
     filteredStudents.forEach((student, idx) => {
       const studentGrades = evaluations[student.id] || {};
       const g0 = studentGrades[0]?.nivel || '';
@@ -405,11 +404,10 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
     <td class="${g1 ? 'grade-' + g1.toLowerCase() : ''}">${g1}</td>
     <td class="${g2 ? 'grade-' + g2.toLowerCase() : ''}">${g2}</td>
     <td class="${g3 ? 'grade-' + g3.toLowerCase() : ''}">${g3}</td>
-  </tr>
+</tr>
 `;
     });
 
-    // Relleno vacío
     for (let i = filteredStudents.length; i < 40; i++) {
       html += `
   <tr>
@@ -419,7 +417,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
     <td></td>
     <td></td>
     <td></td>
-  </tr>
+</tr>
 `;
     }
 
@@ -504,53 +502,105 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
     }));
   };
 
+  const gradientColors = [
+    ['#ec4899', '#db2777'],
+    ['#8b5cf6', '#7c3aed'],
+    ['#06b6d4', '#0891b2'],
+    ['#f59e0b', '#d97706']
+  ];
+
   return (
     <div className="animate-fade-in">
-      <header style={{
-        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+      {/* Header con gradiente */}
+      <div style={{
+        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 50%, #f472b6 100%)',
         borderRadius: '20px',
-        padding: '2rem',
-        marginBottom: '2rem',
-        color: 'white'
+        padding: '2rem 2.5rem',
+        marginBottom: '1.5rem',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          right: '-10%',
+          width: '300px',
+          height: '300px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%'
+        }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
           <div style={{
-            width: '56px', height: '56px',
+            width: '56px',
+            height: '56px',
             background: 'rgba(255,255,255,0.2)',
             borderRadius: '14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(10px)'
           }}>
-            <Settings size={28} />
+            <ClipboardCheck size={28} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Evaluacion Diagnostica</h2>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Evaluación Diagnóstica</h2>
             <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Registra y genera mapas de calor</p>
           </div>
         </div>
-      </header>
+      </div>
 
+      {/* Tarjeta de configuración */}
       <div style={{ 
         background: 'white', 
-        borderRadius: '16px', 
+        borderRadius: '20px', 
         padding: '1.5rem',
         marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(236, 72, 153, 0.2)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#ec4899', margin: 0, fontWeight: 700 }}>Configuracion de la Evaluacion</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #ec4899, #db2777)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Settings size={20} color="white" />
+            </div>
+            <h3 style={{ color: '#ec4899', margin: 0, fontWeight: 700, fontSize: '1.1rem' }}>Configuración de Evaluación</h3>
+          </div>
           {selectedSubject && (
             <button 
               onClick={() => setShowRubricModal(true)}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#ec4899', color: 'white', border: 'none',
-                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+                background: 'linear-gradient(135deg, #ec4899, #db2777)', color: 'white', border: 'none',
+                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+                transition: 'all 0.3s ease'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(236, 72, 153, 0.4)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <Settings size={16} /> Configurar Rubrica
+              <Settings size={16} /> Configurar Rúbrica
             </button>
           )}
         </div>
+        
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
           <div>
             <label className="input-label">Grado y Sección</label>
@@ -601,72 +651,119 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
             <button onClick={handleLoadExisting} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
               background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
-              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
-            }}>
+              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+            >
               <RotateCcw size={16} /> Cargar Datos
             </button>
             <button onClick={handleReset} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
               background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
-              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
-            }}>
+              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#fee2e2'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
+            >
               <RotateCcw size={16} /> Limpiar Todo
             </button>
             <button onClick={handleSave} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: saved ? '#10b981' : '#ec4899', color: 'white', border: 'none',
-              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
-            }}>
+              background: saved ? '#10b981' : 'linear-gradient(135deg, #ec4899, #db2777)', color: 'white', border: 'none',
+              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(236, 72, 153, 0.4)'; } }}
+            onMouseLeave={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; } }}
+            >
               {saved ? <Check size={16} /> : <Save size={16} />}
-              {saved ? '¡Guardado!' : 'Guardar Progreso'}
+              {saved ? '¡Guardado!' : 'Guardar'}
             </button>
             <button 
               onClick={generateExcel}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px', 
-                background: '#10b981', color: 'white', border: 'none',
-                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer'
+                background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none',
+                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+                transition: 'all 0.3s ease'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <Download size={16} /> Exportar Excel
+              <Download size={16} /> Exportar
             </button>
           </div>
         )}
       </div>
 
+      {/* Info de clase y estudiante */}
       {selectedClass && selectedSubject && (
         <>
-          <div className="card" style={{ marginBottom: '1rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
-              <div>
-                <h4 style={{ margin: 0 }}>{selectedClass}</h4>
-                <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9 }}>{selectedSubjectData?.name}</p>
+          <div style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            marginBottom: '1.5rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-30%',
+              right: '-10%',
+              width: '150px',
+              height: '150px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <BookOpen size={24} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>{selectedClass}</h4>
+                  <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>{selectedSubjectData?.name}</p>
+                </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{filteredStudents.length}</div>
+                <div style={{ fontSize: '2rem', fontWeight: 900 }}>{filteredStudents.length}</div>
                 <div style={{ opacity: 0.8, fontSize: '0.85rem' }}>estudiantes</div>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          {/* Leyenda de niveles */}
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
             {NIVELES_LOGRO.map(nivel => (
               <div key={nivel.code} style={{ 
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                 padding: '0.5rem 1rem',
                 background: `${nivel.color}15`,
-                borderRadius: '8px',
+                borderRadius: '10px',
                 border: `1px solid ${nivel.color}30`
               }}>
                 <div style={{ 
-                  width: '24px', height: '24px', borderRadius: '6px',
+                  width: '28px', height: '28px', borderRadius: '8px',
                   background: nivel.color, color: 'white',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 700, fontSize: '0.8rem'
+                  fontWeight: 700, fontSize: '0.85rem'
                 }}>
                   {nivel.code}
                 </div>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                   {nivel.label}
                 </span>
               </div>
@@ -674,28 +771,89 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           </div>
 
           {filteredStudents.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p style={{ color: 'var(--text-secondary)' }}>
-                No hay estudiantes registrados en {selectedClass}. 
-                Importa estudiantes desde la sección de Alumnos.
+            <div style={{
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+              borderRadius: '20px',
+              padding: '4rem 2rem',
+              textAlign: 'center',
+              border: '2px dashed #cbd5e1'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1.5rem'
+              }}>
+                <Users size={40} color="white" />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                No hay estudiantes
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                No hay estudiantes registrados en {selectedClass}.
               </p>
             </div>
           ) : (
-            <div className="table-container" style={{ overflowX: 'auto' }}>
-              <table className="styled-table" style={{ minWidth: '800px' }}>
+            <div className="table-container" style={{ overflowX: 'auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+              <table className="styled-table" style={{ minWidth: '800px', tableLayout: 'auto' }}>
                 <thead>
                   <tr>
-                    <th style={{ width: '50px' }}>N°</th>
-                    <th>Apellidos y Nombre</th>
-                    {rubricConfig.competencies.map((comp, idx) => (
-                      <th key={comp.id || idx} style={{ minWidth: '180px', textAlign: 'center' }}>
-                        <div>{comp.name.substring(0, 20)}...</div>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 400, color: 'var(--text-secondary)' }}>
-                          {rubricConfig.mode === 'rubrica' ? 'Rúbrica' : `Total: ${comp.totalQuestions} preg.`}
-                        </div>
-                      </th>
-                    ))}
-                    <th style={{ width: '80px' }}>Acciones</th>
+                    <th style={{ 
+                      width: '60px', 
+                      background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      padding: '1rem',
+                      textAlign: 'center'
+                    }}>N°</th>
+                    <th style={{ 
+                      minWidth: '180px', 
+                      background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      padding: '1rem'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Users size={16} />
+                        Apellidos y Nombre
+                      </div>
+                    </th>
+                    {rubricConfig.competencies.map((comp, idx) => {
+                      const [color1, color2] = gradientColors[idx % gradientColors.length];
+                      return (
+                        <th key={comp.id || idx} style={{ 
+                          minWidth: '200px', 
+                          textAlign: 'center',
+                          background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                          padding: '1rem'
+                        }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <span>{comp.name.substring(0, 18)}{comp.name.length > 18 ? '...' : ''}</span>
+                            <span style={{ fontSize: '0.65rem', fontWeight: 400, opacity: 0.9 }}>
+                              {rubricConfig.mode === 'rubrica' ? 'Rúbrica' : `Total: ${comp.totalQuestions}`}
+                            </span>
+                          </div>
+                        </th>
+                      );
+                    })}
+                    <th style={{ 
+                      width: '80px', 
+                      background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      padding: '1rem',
+                      textAlign: 'center'
+                    }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -703,8 +861,8 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                     const studentGrades = evaluations[student.id] || {};
                     return (
                       <tr key={student.id}>
-                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>{idx + 1}</td>
-                        <td style={{ fontWeight: 500 }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 600 }}>{idx + 1}</td>
+                        <td style={{ fontWeight: 600 }}>{student.name}</td>
                         {rubricConfig.competencies.map((comp, compIdx) => {
                           const grade = studentGrades[compIdx];
                           const nivel = rubricConfig.mode === 'rubrica' 
@@ -737,16 +895,16 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                                           }}
                                           onMouseLeave={() => setTooltipInfo(prev => ({ ...prev, show: false }))}
                                           style={{
-                                            padding: '6px 8px',
-                                            borderRadius: '4px',
-                                            border: isSelected ? `2px solid ${getGradeColor(nivelCode)}` : '1px solid var(--border-color)',
+                                            padding: '6px 10px',
+                                            borderRadius: '8px',
+                                            border: isSelected ? `2px solid ${getGradeColor(nivelCode)}` : '1px solid #e2e8f0',
                                             background: isSelected ? getGradeColor(nivelCode) : 'white',
                                             color: isSelected ? 'white' : getGradeColor(nivelCode),
                                             fontWeight: 700,
                                             fontSize: '0.85rem',
                                             cursor: 'pointer',
                                             transition: 'all 0.15s ease',
-                                            minWidth: '32px'
+                                            minWidth: '36px'
                                           }}
                                         >
                                           {nivelCode}
@@ -763,15 +921,15 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                                     onChange={e => handleCorrectChange(student.id, compIdx, e.target.value)}
                                     placeholder="0"
                                     style={{
-                                      width: '60px',
-                                      padding: '0.4rem',
-                                      borderRadius: '6px',
-                                      border: `2px solid ${nivel ? getGradeColor(nivel) : 'var(--border-color)'}`,
-                                      background: nivel ? `${getGradeColor(nivel)}15` : 'white',
-                                      color: nivel ? getGradeColor(nivel) : 'var(--text-primary)',
+                                      width: '70px',
+                                      padding: '0.5rem',
+                                      borderRadius: '8px',
+                                      border: `2px solid ${nivel ? getGradeColor(nivel) : '#e2e8f0'}`,
+                                      background: nivel ? `${getGradeColor(nivel)}10` : 'white',
+                                      color: 'var(--text-primary)',
                                       fontWeight: 600,
                                       textAlign: 'center',
-                                      fontSize: '1rem'
+                                      fontSize: '0.95rem'
                                     }}
                                   />
                                 )}
@@ -781,8 +939,19 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                         })}
                         <td style={{ textAlign: 'center' }}>
                           <button
-                            className="btn-secondary"
-                            style={{ padding: '0.3rem', border: 'none' }}
+                            style={{ 
+                              padding: '0.5rem', 
+                              borderRadius: '8px',
+                              background: '#f1f5f9',
+                              border: '1px solid #e2e8f0',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
                             onClick={() => {
                               const newGrades = {};
                               for (let i = 0; i < rubricConfig.competencies.length; i++) {
@@ -793,7 +962,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                             }}
                             title="Limpiar"
                           >
-                            <RotateCcw size={14} color="var(--text-secondary)" />
+                            <RotateCcw size={14} color="#64748b" />
                           </button>
                         </td>
                       </tr>
@@ -806,155 +975,216 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
         </>
       )}
 
+      {/* Empty state */}
       {(!selectedClass || !selectedSubject) && (
-        <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-          <h3 style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-            Selecciona un Grado y un Área Curricular
+        <div style={{
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+          borderRadius: '20px',
+          padding: '4rem 2rem',
+          textAlign: 'center',
+          border: '2px dashed #cbd5e1'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem'
+          }}>
+            <ClipboardCheck size={40} color="white" />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            Selecciona un Grado y un Área
           </h3>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Para comenzar a registrar la evaluación diagnóstica, primero selecciona el grado/sección 
-            y el área curricular que deseas evaluar.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+            Para comenzar a registrar la evaluación diagnóstica, primero selecciona el grado/sección y el área curricular.
           </p>
         </div>
       )}
 
+      {/* Modal de Rúbrica */}
       {showRubricModal && (
-        <div className="modal-overlay animate-fade-in" style={{
+        <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
         }}>
-          <div className="card shadow-glass" style={{ maxWidth: '900px', width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ color: 'var(--accent-primary)' }}>Configurar Rúbrica</h3>
-              <button onClick={() => setShowRubricModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <div style={{ 
+            maxWidth: '900px', width: '100%', 
+            background: 'white', borderRadius: '24px', padding: '2rem',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            position: 'relative'
+          }} className="animate-fade-in">
+            <div style={{ 
+              position: 'absolute', top: '-30%', right: '-10%',
+              width: '150px', height: '150px',
+              background: 'linear-gradient(135deg, #ec489920, #db277720)',
+              borderRadius: '50%'
+            }} />
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #ec4899, #db2777)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Settings size={24} color="white" />
+                </div>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Configurar Rúbrica</h3>
+              </div>
+              <button onClick={() => setShowRubricModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
                 <X size={24} color="var(--text-secondary)" />
               </button>
             </div>
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f0f9ff', borderRadius: '8px' }}>
-              <label className="input-label">Modo de Evaluación</label>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fdf2f8', borderRadius: '12px', border: '1px solid #fce7f3' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#be185d' }}>Modo de Evaluación</label>
+              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 500 }}>
                   <input
                     type="radio"
                     name="evalMode"
                     checked={rubricConfig.mode === 'preguntas'}
                     onChange={() => updateCompetencyConfig(0, 'mode', 'preguntas')}
                   />
-                  <span>Por Preguntas</span>
+                  Por Preguntas
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 500 }}>
                   <input
                     type="radio"
                     name="evalMode"
                     checked={rubricConfig.mode === 'rubrica'}
                     onChange={() => updateCompetencyConfig(0, 'mode', 'rubrica')}
                   />
-                  <span>Rúbrica (seleccionar nivel)</span>
+                  Rúbrica (seleccionar nivel)
                 </label>
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.8rem', color: '#9d174d', marginTop: '0.5rem' }}>
                 {rubricConfig.mode === 'rubrica' 
                   ? 'Para Matemática: el docente selecciona directamente el nivel AD, A, B o C basado en una rúbrica con descriptores por cada competencia.'
                   : 'Ingresa el número de respuestas correctas y el sistema calcula el nivel automáticamente.'}
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {rubricConfig.competencies.map((comp, compIdx) => (
-                <div key={comp.id || compIdx} style={{ 
-                  border: '1px solid var(--border-color)', 
-                  borderRadius: '12px', 
-                  padding: '1rem',
-                  background: '#f8fafc'
-                }}>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <label className="input-label">Nombre de Competencia</label>
-                    <input
-                      type="text"
-                      className="input-field"
-                      value={comp.name}
-                      onChange={e => updateCompetencyConfig(compIdx, 'name', e.target.value)}
-                    />
-                  </div>
-                  
-                  {rubricConfig.mode === 'preguntas' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+              {rubricConfig.competencies.map((comp, compIdx) => {
+                const [color1, color2] = gradientColors[compIdx % gradientColors.length];
+                return (
+                  <div key={comp.id || compIdx} style={{ 
+                    border: `1px solid ${color1}30`, 
+                    borderRadius: '16px', 
+                    padding: '1.25rem',
+                    background: `linear-gradient(135deg, ${color1}08, ${color2}08)`
+                  }}>
                     <div style={{ marginBottom: '1rem' }}>
-                      <label className="input-label">Total de Preguntas</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Nombre de Competencia</label>
                       <input
-                        type="number"
+                        type="text"
                         className="input-field"
-                        style={{ width: '100px' }}
-                        value={comp.totalQuestions}
-                        min="1"
-                        max="100"
-                        onChange={e => updateCompetencyConfig(compIdx, 'totalQuestions', parseInt(e.target.value) || 10)}
+                        value={comp.name}
+                        onChange={e => updateCompetencyConfig(compIdx, 'name', e.target.value)}
                       />
                     </div>
-                  ) : null}
+                    
+                    {rubricConfig.mode === 'preguntas' ? (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Total de Preguntas</label>
+                        <input
+                          type="number"
+                          className="input-field"
+                          style={{ width: '100px' }}
+                          value={comp.totalQuestions}
+                          min="1"
+                          max="100"
+                          onChange={e => updateCompetencyConfig(compIdx, 'totalQuestions', parseInt(e.target.value) || 10)}
+                        />
+                      </div>
+                    ) : null}
 
-                  <div>
-                    <label className="input-label">
-                      {rubricConfig.mode === 'rubrica' ? 'Descriptores por Nivel de Logro' : 'Niveles de Logro (puntaje mínimo para aprobar)'}
-                    </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginTop: '0.5rem' }}>
-                      {comp.levels.map((level, levelIdx) => (
-                        <div key={level.code} style={{
-                          padding: '0.75rem',
-                          borderRadius: '8px',
-                          border: `2px solid ${getGradeColor(level.code)}`,
-                          background: 'white'
-                        }}>
-                          <div style={{ 
-                            display: 'flex', alignItems: 'center', gap: '0.5rem',
-                            marginBottom: '0.5rem',
-                            fontWeight: 700,
-                            color: getGradeColor(level.code)
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                        {rubricConfig.mode === 'rubrica' ? 'Descriptores por Nivel de Logro' : 'Niveles de Logro'}
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                        {comp.levels.map((level, levelIdx) => (
+                          <div key={level.code} style={{
+                            padding: '0.75rem',
+                            borderRadius: '10px',
+                            border: `2px solid ${getGradeColor(level.code)}`,
+                            background: 'white'
                           }}>
-                            {level.code}
+                            <div style={{ 
+                              display: 'flex', alignItems: 'center', gap: '0.5rem',
+                              marginBottom: '0.5rem',
+                              fontWeight: 700,
+                              color: getGradeColor(level.code)
+                            }}>
+                              {level.code}
+                            </div>
+                            {rubricConfig.mode === 'rubrica' ? (
+                              <textarea
+                                className="input-field"
+                                style={{ fontSize: '0.75rem', minHeight: '80px', resize: 'vertical' }}
+                                value={level.descriptor || ''}
+                                placeholder="Descriptor para este nivel..."
+                                onChange={e => updateLevelConfig(compIdx, levelIdx, 'descriptor', e.target.value)}
+                              />
+                            ) : (
+                              <>
+                                <input
+                                  type="number"
+                                  className="input-field"
+                                  style={{ marginBottom: '0.25rem', fontSize: '0.85rem' }}
+                                  value={level.minCorrect}
+                                  min="0"
+                                  onChange={e => updateLevelConfig(compIdx, levelIdx, 'minCorrect', e.target.value)}
+                                />
+                                <input
+                                  type="text"
+                                  className="input-field"
+                                  style={{ fontSize: '0.75rem' }}
+                                  value={level.description}
+                                  onChange={e => updateLevelConfig(compIdx, levelIdx, 'description', e.target.value)}
+                                />
+                              </>
+                            )}
                           </div>
-                          {rubricConfig.mode === 'rubrica' ? (
-                            <textarea
-                              className="input-field"
-                              style={{ fontSize: '0.75rem', minHeight: '80px', resize: 'vertical' }}
-                              value={level.descriptor || ''}
-                              placeholder="Descriptor para este nivel..."
-                              onChange={e => updateLevelConfig(compIdx, levelIdx, 'descriptor', e.target.value)}
-                            />
-                          ) : (
-                            <>
-                              <input
-                                type="number"
-                                className="input-field"
-                                style={{ marginBottom: '0.25rem', fontSize: '0.85rem' }}
-                                value={level.minCorrect}
-                                min="0"
-                                onChange={e => updateLevelConfig(compIdx, levelIdx, 'minCorrect', e.target.value)}
-                              />
-                              <input
-                                type="text"
-                                className="input-field"
-                                style={{ fontSize: '0.75rem' }}
-                                value={level.description}
-                                onChange={e => updateLevelConfig(compIdx, levelIdx, 'description', e.target.value)}
-                              />
-                            </>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-              <button className="btn-secondary" onClick={() => setShowRubricModal(false)}>
+              <button 
+                onClick={() => setShowRubricModal(false)}
+                style={{ 
+                  padding: '0.75rem 1.5rem', borderRadius: '12px',
+                  background: '#f1f5f9', color: 'var(--text-secondary)',
+                  border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600
+                }}
+              >
                 Cancelar
               </button>
-              <button className="btn-primary" onClick={saveRubric} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                onClick={saveRubric} 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: 'linear-gradient(135deg, #ec4899, #db2777)', color: 'white', border: 'none',
+                  padding: '0.75rem 1.5rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 600
+                }}
+              >
                 <Save size={16} /> Guardar Rúbrica
               </button>
             </div>
@@ -962,13 +1192,14 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
         </div>
       )}
 
+      {/* Tooltip */}
       {tooltipInfo.show && tooltipInfo.text && (
         <div style={{
           position: 'fixed',
           left: tooltipInfo.x,
           top: tooltipInfo.y,
           transform: 'translate(-50%, 0)',
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(10px)',
           color: '#1e293b',
           padding: '14px 18px',
