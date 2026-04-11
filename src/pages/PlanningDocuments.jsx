@@ -30,11 +30,11 @@ export default function PlanningDocuments() {
   const filteredDocuments = useMemo(() => {
     let docs = planningDocuments || [];
     
-    if (filterGrade !== 'Todos') {
+    if (filterGrade !== 'Todos' && filterGrade) {
       docs = docs.filter(d => d.gradeLevel === filterGrade);
     }
     
-    if (filterSubject !== 'Todos') {
+    if (filterSubject !== 'Todos' && filterSubject) {
       docs = docs.filter(d => d.subjectId === filterSubject);
     }
     
@@ -47,7 +47,7 @@ export default function PlanningDocuments() {
     }
     
     return docs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-  }, [planningDocuments || [], filterGrade, filterSubject, searchTerm]);
+  }, [planningDocuments, filterGrade, filterSubject, searchTerm]);
 
   const getGradeDisplay = (doc) => {
     const gradeName = doc.gradeLevel || 'Grado';
@@ -88,7 +88,7 @@ export default function PlanningDocuments() {
     reader.onload = (e) => {
       const base64 = e.target.result;
       addPlanningDocument({
-        gradeLevel: uploadData.gradeLevel,
+        gradeLevel: gradeLevel,
         sections: uploadData.sections,
         subjectId: uploadData.subjectId,
         title: uploadData.title,
