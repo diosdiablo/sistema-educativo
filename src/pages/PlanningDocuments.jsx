@@ -489,7 +489,12 @@ export default function PlanningDocuments() {
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                     Secciones * (selecciona una o varias)
                   </label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem'
+                  }}>
                     {classes
                       .filter(c => c.name.startsWith(uploadData.gradeLevel))
                       .map(cls => {
@@ -506,26 +511,49 @@ export default function PlanningDocuments() {
                               setUploadData({ ...uploadData, sections: newSections });
                             }}
                             style={{
-                              padding: '0.5rem 1rem',
-                              borderRadius: '8px',
-                              border: isSelected ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-                              background: isSelected ? '#fef3c7' : 'white',
+                              padding: '0.75rem',
+                              borderRadius: '12px',
+                              border: isSelected ? '2px solid #f59e0b' : '2px solid #e2e8f0',
+                              background: isSelected ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'white',
                               color: isSelected ? '#d97706' : 'var(--text-primary)',
                               fontWeight: 600,
-                              fontSize: '0.85rem',
+                              fontSize: '0.9rem',
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease'
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.5rem',
+                              boxShadow: isSelected ? '0 2px 8px rgba(245, 158, 11, 0.3)' : 'none'
                             }}
                           >
+                            <div style={{
+                              width: '18px',
+                              height: '18px',
+                              borderRadius: '4px',
+                              border: isSelected ? '2px solid #f59e0b' : '2px solid #cbd5e1',
+                              background: isSelected ? '#f59e0b' : 'white',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0
+                            }}>
+                              {isSelected && <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>✓</span>}
+                            </div>
                             {section}
                           </button>
                         );
                       })
                     }
                   </div>
+                  {uploadData.sections.length === 0 && (
+                    <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>
+                      ⚠️ Selecciona al menos una sección
+                    </p>
+                  )}
                   {uploadData.sections.length > 0 && (
-                    <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.5rem' }}>
-                      ✓ Seleccionadas: {uploadData.sections.length} sección(es)
+                    <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
+                      ✓ {uploadData.sections.length} sección(es) seleccionada(s)
                     </p>
                   )}
                 </div>
