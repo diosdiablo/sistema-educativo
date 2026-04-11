@@ -174,6 +174,26 @@ CREATE TABLE IF NOT EXISTS period_dates (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Tabla de documentos de planificación
+CREATE TABLE IF NOT EXISTS planning_documents (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  sections JSONB DEFAULT '[]',
+  subject_id TEXT NOT NULL,
+  period TEXT,
+  grade_level TEXT,
+  file_data TEXT,
+  file_name TEXT,
+  uploaded_by TEXT,
+  uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Política RLS para planning_documents
+CREATE POLICY "Enable all for planning_documents" ON planning_documents FOR ALL USING (true) WITH CHECK (true);
+);
+
 -- ============================================
 -- HABILITAR RLS (Row Level Security)
 -- ============================================
