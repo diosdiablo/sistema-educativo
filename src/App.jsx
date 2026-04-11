@@ -51,8 +51,23 @@ function Sidebar({ isOpen, onClose }) {
       <div className={`sidebar-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
-          <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-          <h1 className="sidebar-title">Portal Agro 110</h1>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+          }}>
+            <img src={Logo} alt="Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          </div>
+          <div>
+            <h1 className="sidebar-title">Portal Agro</h1>
+            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>I.E.P. 110</span>
+          </div>
           <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', marginLeft: 'auto', background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
             <X size={24} />
           </button>
@@ -71,17 +86,34 @@ function Sidebar({ isOpen, onClose }) {
           ))}
         </div>
         
-        <div style={{ marginTop: 'auto', padding: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(0,0,0,0.1)' }}>
-          <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column' }}>
-            <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
-            </span>
-            <strong style={{color: '#ffffff', fontSize: '0.95rem'}}>{currentUser?.name}</strong>
+        <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(0,0,0,0.15)', borderRadius: '16px', margin: '0.5rem' }}>
+          <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ 
+              width: '40px', height: '40px', 
+              borderRadius: '12px', 
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+              <Users size={20} color="white" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
+              </span>
+              <strong style={{color: '#ffffff', fontSize: '0.9rem', fontWeight: 600}}>{currentUser?.name}</strong>
+            </div>
           </div>
           <button 
             onClick={() => { logout(); onClose(); }}
-            className="btn-primary" 
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef4444' }}
+            style={{ 
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)',
+              padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'; e.currentTarget.style.transform = 'scale(1.02)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <LogOut size={18} /> Cerrar Sesión
           </button>
