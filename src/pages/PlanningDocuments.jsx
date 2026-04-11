@@ -7,25 +7,13 @@ export default function PlanningDocuments() {
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
-  const [filterClass, setFilterClass] = useState('Todos');
-  const [filterSubject, setFilterSubject] = useState('Todos');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filterGrade, setFilterGrade] = useState('Todos');
   
-  const [uploadData, setUploadData] = useState({
-    classId: '',
-    subjectId: '',
-    title: '',
-    description: '',
-    period: '2026',
-    file: null,
-    fileName: ''
-  });
-
   const filteredDocuments = useMemo(() => {
     let docs = planningDocuments;
     
-    if (filterClass !== 'Todos') {
-      docs = docs.filter(d => d.classId === filterClass);
+    if (filterGrade !== 'Todos') {
+      docs = docs.filter(d => d.gradeLevel === filterGrade);
     }
     
     if (filterSubject !== 'Todos') {
@@ -41,59 +29,16 @@ export default function PlanningDocuments() {
     }
     
     return docs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-  }, [planningDocuments, filterClass, filterSubject, searchTerm]);
+  }, [planningDocuments, filterGrade, filterSubject, searchTerm]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        alert('Solo se permiten archivos PDF');
-        return;
-      }
-      setUploadData({ ...uploadData, file, fileName: file.name });
-    }
+  const getGradeDisplay = (doc) => {
+    const gradeName = doc.gradeLevel || 'Grado';
+    const sectionNames = doc.sections?.map(sid => {
+      const cls = classes.find(c => c.id === sid);
+      return cls?.name?.split(' - ')[1] || sid;
+    }).join(', ') || '';
+    return sectionNames ? `${gradeName} (${sectionNames})` : gradeName;
   };
-
-  const handleUpload = () => {
-    if (!uploadData.classId || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
-      alert('Por favor completa todos los campos requeridos');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target.result;
-      addPlanningDocument({
-        classId: uploadData.classId,
-        subjectId: uploadData.subjectId,
-        title: uploadData.title,
-        description: uploadData.description,
-        period: uploadData.period,
-        fileData: base64,
-        fileName: uploadData.fileName
-      });
-      setShowUploadModal(false);
-      setUploadData({
-        classId: '',
-        subjectId: '',
-        title: '',
-        description: '',
-        period: '2026',
-        file: null,
-        fileName: ''
-      });
-      alert('Documento subido exitosamente');
-    };
-    reader.readAsDataURL(uploadData.file);
-  };
-
-  const handleDelete = (docId) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
-      deletePlanningDocument(docId);
-    }
-  };
-
-  const getClassName = (classId) => classes.find(c => c.id === classId)?.name || 'Grado no encontrado';
   const getSubjectName = (subjectId) => subjects.find(s => s.id === subjectId)?.name || 'Área no encontrada';
 
   const formatDate = (dateStr) => {
@@ -213,12 +158,14 @@ export default function PlanningDocuments() {
         
         <select 
           className="input-field"
-          value={filterClass}
-          onChange={e => setFilterClass(e.target.value)}
+          value={filterGrade}
+          onChange={e => setFilterGrade(e.target.value)}
           style={{ minWidth: '180px' }}
         >
           <option value="Todos">Todos los Grados</option>
-          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {[...new Set(classes.map(c => c.name.split(' - ')[0]))].map(grade => (
+            <option key={grade} value={grade}>{grade}</option>
+          ))}
         </select>
         
         <select 
@@ -334,7 +281,7 @@ export default function PlanningDocuments() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                     <GraduationCap size={14} color={color1} />
-                    <span>{getClassName(doc.classId)}</span>
+                    <span>{getGradeDisplay(doc)}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                     <BookOpen size={14} color={color1} />
@@ -459,56 +406,92 @@ export default function PlanningDocuments() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Grado *</label>
-                  <select 
-                    className="input-field"
-                    value={uploadData.classId}
-                    onChange={e => setUploadData({ ...uploadData, classId: e.target.value })}
-                  >
-                    <option value="">Seleccionar</option>
-                    {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Área *</label>
-                  <select 
-                    className="input-field"
-                    value={uploadData.subjectId}
-                    onChange={e => setUploadData({ ...uploadData, subjectId: e.target.value })}
-                  >
-                    <option value="">Seleccionar</option>
-                    {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Grado *</label>
+                <select 
+                  className="input-field"
+                  value={uploadData.gradeLevel}
+                  onChange={e => setUploadData({ ...uploadData, gradeLevel: e.target.value, sections: [] })}
+                >
+                  <option value="">Seleccionar Grado</option>
+                  {[...new Set(classes.map(c => c.name.split(' - ')[0]))].sort().map(grade => (
+                    <option key={grade} value={grade}>{grade}</option>
+                  ))}
+                </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {uploadData.gradeLevel && (
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Periodo</label>
-                  <input 
-                    type="text"
-                    className="input-field"
-                    placeholder="Ej. 2026, Bimestre 1"
-                    value={uploadData.period}
-                    onChange={e => setUploadData({ ...uploadData, period: e.target.value })}
-                  />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    Secciones * (selecciona una o varias)
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {classes
+                      .filter(c => c.name.startsWith(uploadData.gradeLevel))
+                      .map(cls => {
+                        const section = cls.name.split(' - ')[1];
+                        const isSelected = uploadData.sections.includes(cls.id);
+                        return (
+                          <button
+                            key={cls.id}
+                            type="button"
+                            onClick={() => {
+                              const newSections = isSelected
+                                ? uploadData.sections.filter(s => s !== cls.id)
+                                : [...uploadData.sections, cls.id];
+                              setUploadData({ ...uploadData, sections: newSections });
+                            }}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              borderRadius: '8px',
+                              border: isSelected ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+                              background: isSelected ? '#fef3c7' : 'white',
+                              color: isSelected ? '#d97706' : 'var(--text-primary)',
+                              fontWeight: 600,
+                              fontSize: '0.85rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            {section}
+                          </button>
+                        );
+                      })
+                    }
+                  </div>
+                  {uploadData.sections.length > 0 && (
+                    <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.5rem' }}>
+                      ✓ Seleccionadas: {uploadData.sections.length} sección(es)
+                    </p>
+                  )}
                 </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Archivo PDF *</label>
-                  <input 
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    style={{ 
-                      padding: '0.6rem', 
-                      border: '1px dashed #cbd5e1', 
-                      borderRadius: '8px',
-                      width: '100%'
-                    }}
-                  />
-                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Área Curricular *</label>
+                <select 
+                  className="input-field"
+                  value={uploadData.subjectId}
+                  onChange={e => setUploadData({ ...uploadData, subjectId: e.target.value })}
+                >
+                  <option value="">Seleccionar Área</option>
+                  {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Archivo PDF *</label>
+                <input 
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  style={{ 
+                    padding: '0.6rem', 
+                    border: '1px dashed #cbd5e1', 
+                    borderRadius: '8px',
+                    width: '100%'
+                  }}
+                />
               </div>
 
               <div>
@@ -584,7 +567,7 @@ export default function PlanningDocuments() {
               <div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{viewingDoc.title}</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
-                  {getClassName(viewingDoc.classId)} - {getSubjectName(viewingDoc.subjectId)}
+                  {getGradeDisplay(viewingDoc)} - {getSubjectName(viewingDoc.subjectId)}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
