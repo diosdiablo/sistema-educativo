@@ -134,6 +134,30 @@ export const StoreProvider = ({ children }) => {
   const [schedule, setSchedule] = useState(() => loadData('edu_schedule', []));
   const [diagnosticEvaluations, setDiagnosticEvaluations] = useState(() => loadData('edu_diagnostic_evaluations', []));
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
+  const [planningDocuments, setPlanningDocuments] = useState(() => loadData('edu_planning_documents', []));
+
+  const addPlanningDocument = useCallback((doc) => {
+    const newDoc = { 
+      ...doc, 
+      id: generateId(), 
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: currentUser?.name || 'Admin'
+    };
+    setPlanningDocuments(prev => {
+      const updated = [...prev, newDoc];
+      localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      return updated;
+    });
+    return newDoc;
+  }, [currentUser]);
+
+  const deletePlanningDocument = useCallback((docId) => {
+    setPlanningDocuments(prev => {
+      const updated = prev.filter(d => d.id !== docId);
+      localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const syncToSupabase = useCallback(async (table, data) => {
     console.log(`[Sync] Attempting to sync ${table} with ${Array.isArray(data) ? data.length : 1} records`);
@@ -959,6 +983,7 @@ export const StoreProvider = ({ children }) => {
       schedule, saveScheduleItem, deleteScheduleItem,
       periodDates, updatePeriodDates,
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
+      planningDocuments, addPlanningDocument, deletePlanningDocument,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,
