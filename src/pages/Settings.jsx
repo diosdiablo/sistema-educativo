@@ -25,10 +25,16 @@ export default function Settings() {
   if (!isAdmin) {
     return (
       <div className="animate-fade-in" style={{ textAlign: 'center', marginTop: '5rem' }}>
-        <div style={{ display: 'inline-flex', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '50%', marginBottom: '1.5rem' }}>
-          <AlertCircle size={48} color="var(--danger-color)" />
+        <div style={{ 
+          display: 'inline-flex', 
+          padding: '1.5rem', 
+          background: 'rgba(239, 68, 68, 0.1)', 
+          borderRadius: '50%', 
+          marginBottom: '1.5rem' 
+        }}>
+          <AlertCircle size={48} color="#ef4444" />
         </div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Acceso Restringido</h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Acceso Restringido</h2>
         <p style={{ color: 'var(--text-secondary)' }}>Solo los administradores pueden configurar los periodos académicos.</p>
       </div>
     );
@@ -182,103 +188,228 @@ export default function Settings() {
     setTimeout(() => setClearMsg(''), 3000);
   };
 
+  const gradientColors = [
+    ['#6366f1', '#8b5cf6'],
+    ['#10b981', '#059669'],
+    ['#f59e0b', '#d97706'],
+    ['#ef4444', '#dc2626']
+  ];
+
   return (
     <div className="animate-fade-in">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Configuración del Sistema</h1>
-          <p className="page-subtitle">Sincronización de periodos académicos (Bimestres)</p>
-        </div>
-        <SettingsIcon size={32} className="text-accent" />
-      </header>
-
-      <div className="card shadow-glass" style={{ maxWidth: '800px', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
-          <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px' }}>
-            <Calendar size={24} color="var(--accent-primary)" />
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Fechas de Bimestres</h3>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {['1', '2', '3', '4'].map((id) => (
-            <div key={id} style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr 1fr', 
-              gap: '1.5rem', 
+      {/* Header con gradiente */}
+      <div style={{
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)',
+        borderRadius: '20px',
+        padding: '2rem 2.5rem',
+        marginBottom: '1.5rem',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          right: '-10%',
+          width: '300px',
+          height: '300px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%'
+        }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex',
               alignItems: 'center',
-              padding: '1.5rem',
-              background: 'rgba(255, 255, 255, 0.02)',
-              borderRadius: '12px',
-              border: '1px solid var(--border-color)'
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)'
             }}>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Bimestre {id}</div>
-              
-              <div>
-                <label className="input-label" style={{ fontSize: '0.75rem', marginBottom: '0.4rem' }}>Fecha de Inicio</label>
-                <div style={{ position: 'relative' }}>
+              <SettingsIcon size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Configuración del Sistema</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Administra periodos académicos y datos</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección Fechas de Bimestres */}
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(99, 102, 241, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Calendar size={24} color="white" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Fechas de Bimestres</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Configura los periodos académicos</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {['1', '2', '3', '4'].map((id, idx) => {
+            const [color1, color2] = gradientColors[idx % gradientColors.length];
+            return (
+              <div key={id} style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '1fr 1fr 1fr', 
+                gap: '1.5rem', 
+                alignItems: 'center',
+                padding: '1.25rem',
+                background: `linear-gradient(135deg, ${color1}08, ${color2}08)`,
+                borderRadius: '14px',
+                border: `1px solid ${color1}30`
+              }}>
+                <div style={{ fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '0.85rem',
+                    fontWeight: 700
+                  }}>
+                    {id}
+                  </div>
+                  <span style={{ color: color1 }}>Bimestre {id}</span>
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha de Inicio</label>
                   <input 
                     type="date" 
                     className="input-field" 
                     value={localDates[id]?.start || ''} 
                     onChange={(e) => handleChange(id, 'start', e.target.value)}
+                    style={{ borderColor: color1 }}
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="input-label" style={{ fontSize: '0.75rem', marginBottom: '0.4rem' }}>Fecha de Finalización</label>
-                <div style={{ position: 'relative' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha de Finalización</label>
                   <input 
                     type="date" 
                     className="input-field" 
                     value={localDates[id]?.end || ''} 
                     onChange={(e) => handleChange(id, 'end', e.target.value)}
+                    style={{ borderColor: color1 }}
                   />
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1.5rem' }}>
+        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem' }}>
           {saved && (
-            <span style={{ color: 'var(--success-color)', fontWeight: 600, fontSize: '0.9rem' }} className="animate-fade-in">
-              ¡Configuración guardada exitosamente!
+            <span style={{ color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }} className="animate-fade-in">
+              ✓ ¡Configuración guardada!
             </span>
           )}
           <button 
-            className="btn-primary" 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem 2rem' }}
             onClick={handleSave}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1.5rem',
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
+              fontWeight: 600, transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.4)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
             <Save size={20} /> Guardar Cambios
           </button>
         </div>
       </div>
 
-      <div className="card shadow-glass" style={{ maxWidth: '800px', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.2)' }}>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Clock size={20} color="var(--accent-primary)" />
-          <div>
-            <h4 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Información Importante</h4>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-              Estas fechas se utilizan para filtrar la asistencia en los reportes de Excel. 
-              Asegúrate de que no haya solapamientos entre bimestres para garantizar la exactitud de los datos.
-            </p>
-          </div>
+      {/* Info importante */}
+      <div style={{
+        background: 'linear-gradient(135deg, #f59e0b15, #fcd34d15)',
+        borderRadius: '16px',
+        padding: '1.25rem',
+        marginBottom: '1.5rem',
+        border: '1px solid #f59e0b40',
+        display: 'flex',
+        gap: '1rem'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '10px',
+          background: 'rgba(245, 158, 11, 0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <Clock size={20} color="#f59e0b" />
+        </div>
+        <div>
+          <h4 style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#b45309' }}>Información Importante</h4>
+          <p style={{ fontSize: '0.85rem', color: '#92400e', lineHeight: 1.5, margin: 0 }}>
+            Estas fechas se utilizan para filtrar la asistencia en los reportes de Excel. 
+            Asegúrate de que no haya solapamientos entre bimestres para garantizar la exactitud de los datos.
+          </p>
         </div>
       </div>
 
       {/* Sección de Respaldos */}
-      <div className="card shadow-glass" style={{ maxWidth: '800px', marginTop: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <div style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px' }}>
-            <Database size={24} color="#10b981" />
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(16, 185, 129, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Database size={24} color="white" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Respaldos de Datos</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Exporta e importa todos los datos del sistema</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Respaldos de Datos</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Exporta e importa todos los datos del sistema</p>
           </div>
         </div>
 
@@ -286,12 +417,12 @@ export default function Settings() {
           display: 'flex', alignItems: 'center', gap: '0.75rem',
           padding: '1rem', 
           background: 'rgba(245, 158, 11, 0.1)', 
-          borderRadius: '8px', 
+          borderRadius: '12px', 
           border: '1px solid rgba(245, 158, 11, 0.3)',
           marginBottom: '1.5rem'
         }}>
           <AlertTriangle size={20} color="#f59e0b" />
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', margin: 0 }}>
+          <p style={{ fontSize: '0.85rem', color: '#92400e', margin: 0 }}>
             <strong>Importante:</strong> Haz clic en "Exportar Respaldo" periódicamente para no perder tus datos. Si restauras un respaldo, los datos actuales serán reemplazados.
           </p>
         </div>
@@ -300,35 +431,41 @@ export default function Settings() {
           {/* Exportar */}
           <div style={{ 
             padding: '1.5rem', 
-            background: 'rgba(16, 185, 129, 0.05)', 
-            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #10b98110, #05966910)', 
+            borderRadius: '16px',
             border: '1px solid rgba(16, 185, 129, 0.2)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            textAlign: 'center'
+            textAlign: 'center',
+            transition: 'all 0.3s ease'
           }}>
             <div style={{ 
-              width: '60px', height: '60px', borderRadius: '50%',
-              background: '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: '1rem'
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #10b981, #059669)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: '1rem',
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
             }}>
-              <Download size={28} color="#10b981" />
+              <Download size={28} color="white" />
             </div>
-            <h4 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Exportar Respaldo</h4>
+            <h4 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Exportar Respaldo</h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
               Descarga un archivo JSON con todos los datos del sistema
             </p>
             <button 
-              className="btn-primary"
               onClick={exportBackup}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#10b981',
-                padding: '0.75rem 1.5rem'
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
+                padding: '0.75rem 1.5rem', fontWeight: 600,
+                transition: 'all 0.3s ease'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <Download size={18} /> Exportar Respaldo
+              <Download size={18} /> Exportar
             </button>
             {backupMsg && (
               <p style={{ 
@@ -341,35 +478,41 @@ export default function Settings() {
           {/* Importar */}
           <div style={{ 
             padding: '1.5rem', 
-            background: 'rgba(59, 130, 246, 0.05)', 
-            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #3b82f610, #2563eb10)', 
+            borderRadius: '16px',
             border: '1px solid rgba(59, 130, 246, 0.2)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            textAlign: 'center'
+            textAlign: 'center',
+            transition: 'all 0.3s ease'
           }}>
             <div style={{ 
-              width: '60px', height: '60px', borderRadius: '50%',
-              background: '#3b82f615', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: '1rem'
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: '1rem',
+              boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'
             }}>
-              <Upload size={28} color="#3b82f6" />
+              <Upload size={28} color="white" />
             </div>
-            <h4 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Restaurar Respaldo</h4>
+            <h4 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Restaurar Respaldo</h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
               Restaura los datos desde un archivo JSON de respaldo
             </p>
             <button 
-              className="btn-primary"
               onClick={() => fileInputRef.current?.click()}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#3b82f6',
-                padding: '0.75rem 1.5rem'
+                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
+                padding: '0.75rem 1.5rem', fontWeight: 600,
+                transition: 'all 0.3s ease'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <Upload size={18} /> Importar Respaldo
+              <Upload size={18} /> Importar
             </button>
             <input 
               ref={fileInputRef}
@@ -389,28 +532,27 @@ export default function Settings() {
           </div>
         </div>
 
-        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-            <strong>Datos incluidos en el respaldo:</strong> Usuarios, Estudiantes, Asistencia, Calificaciones, 
+            <strong>Datos incluidos:</strong> Usuarios, Estudiantes, Asistencia, Calificaciones, 
             Grados/Secciones, Áreas Curriculares, Instrumentos, Evaluaciones, Horario y Evaluación Diagnóstica.
           </p>
         </div>
 
         <div style={{ marginTop: '1.5rem' }}>
           <button 
-            className="btn-primary"
             onClick={syncToCloud}
             disabled={isSyncing}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: '#8b5cf6',
-              padding: '0.75rem 1.5rem',
-              width: '100%',
-              justifyContent: 'center'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              background: isSyncing ? '#94a3b8' : 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+              color: 'white', border: 'none', borderRadius: '12px', cursor: isSyncing ? 'not-allowed' : 'pointer',
+              padding: '0.75rem 1.5rem', fontWeight: 600, width: '100%',
+              transition: 'all 0.3s ease'
             }}
           >
-            <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} /> 
-            {isSyncing ? 'Sincronizando...' : 'Sincronizar Datos a la Nube'}
+            <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+            {isSyncing ? 'Sincronizando...' : 'Sincronizar a la Nube'}
           </button>
           {syncMsg && (
             <p style={{ 
@@ -425,14 +567,29 @@ export default function Settings() {
       </div>
 
       {/* Sección de Limpiar Datos */}
-      <div className="card shadow-glass" style={{ maxWidth: '800px', marginTop: '2rem', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <div style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px' }}>
-            <Trash2 size={24} color="#ef4444" />
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(239, 68, 68, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Trash2 size={24} color="white" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#ef4444' }}>Limpiar/Borrar Datos</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Elimina datos de Supabase y localStorage para comenzar desde cero</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#ef4444' }}>Limpiar/Borrar Datos</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Elimina datos para comenzar desde cero</p>
           </div>
         </div>
 
@@ -440,80 +597,88 @@ export default function Settings() {
           display: 'flex', alignItems: 'center', gap: '0.75rem',
           padding: '1rem', 
           background: 'rgba(239, 68, 68, 0.1)', 
-          borderRadius: '8px', 
+          borderRadius: '12px', 
           border: '1px solid rgba(239, 68, 68, 0.3)',
           marginBottom: '1.5rem'
         }}>
           <AlertTriangle size={20} color="#ef4444" />
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', margin: 0 }}>
+          <p style={{ fontSize: '0.85rem', color: '#991b1b', margin: 0 }}>
             <strong>Peligro:</strong> Esta acción elimina datos de Supabase y es IRREVERSIBLE. Asegúrate de tener un respaldo antes de continuar.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
           <button 
             onClick={() => handleClearData('students')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
               background: 'rgba(239, 68, 68, 0.1)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
+              borderRadius: '12px',
               color: '#ef4444',
               cursor: 'pointer',
               fontWeight: 600,
-              transition: 'all 0.2s'
+              transition: 'all 0.2s ease'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
           >
-            <Trash2 size={16} /> Borrar Estudiantes ({students.length})
+            <Trash2 size={16} /> Estudiantes ({students.length})
           </button>
           <button 
             onClick={() => handleClearData('attendance')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
               background: 'rgba(239, 68, 68, 0.1)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
+              borderRadius: '12px',
               color: '#ef4444',
               cursor: 'pointer',
               fontWeight: 600,
-              transition: 'all 0.2s'
+              transition: 'all 0.2s ease'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
           >
-            <Trash2 size={16} /> Borrar Asistencia ({attendance.length})
+            <Trash2 size={16} /> Asistencia ({attendance.length})
           </button>
           <button 
             onClick={() => handleClearData('grades')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
               background: 'rgba(239, 68, 68, 0.1)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
+              borderRadius: '12px',
               color: '#ef4444',
               cursor: 'pointer',
               fontWeight: 600,
-              transition: 'all 0.2s'
+              transition: 'all 0.2s ease'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
           >
-            <Trash2 size={16} /> Borrar Calificaciones ({grades.length})
+            <Trash2 size={16} /> Notas ({grades.length})
           </button>
           <button 
             onClick={() => handleClearData('instruments')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
               background: 'rgba(239, 68, 68, 0.1)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
+              borderRadius: '12px',
               color: '#ef4444',
               cursor: 'pointer',
               fontWeight: 600,
-              transition: 'all 0.2s'
+              transition: 'all 0.2s ease'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
           >
-            <Trash2 size={16} /> Borrar Instrumentos ({instruments.length})
+            <Trash2 size={16} /> Instrumentos ({instruments.length})
           </button>
         </div>
 
@@ -521,20 +686,22 @@ export default function Settings() {
           <button 
             onClick={() => handleClearData('all')}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1.5rem',
-              background: '#ef4444',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '12px',
               color: 'white',
               cursor: 'pointer',
               fontWeight: 600,
               width: '100%',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)'; }}
           >
-            <Trash2 size={18} /> Borrar TODOS los Datos (Estudiantes, Asistencia, Calificaciones, Instrumentos)
+            <Trash2 size={18} /> Borrar TODOS los Datos
           </button>
         </div>
 
@@ -553,24 +720,34 @@ export default function Settings() {
       {clearType && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)', 
+          background: 'rgba(0,0,0,0.6)', 
           backdropFilter: 'blur(4px)',
           display: 'flex', justifyContent: 'center',
           alignItems: 'flex-start',
           zIndex: 1000,
           padding: '4rem 1rem'
         }}>
-          <div className="card shadow-glass" style={{ 
-            maxWidth: '400px', 
+          <div style={{ 
+            maxWidth: '420px', 
             width: '100%', 
             textAlign: 'center', 
             padding: '2rem',
-            borderTop: '6px solid #ef4444'
-          }}>
+            background: 'white',
+            borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            position: 'relative'
+          }} className="animate-fade-in">
+            <div style={{ 
+              position: 'absolute', top: '-30%', right: '-10%',
+              width: '120px', height: '120px',
+              background: 'linear-gradient(135deg, #ef444420, #dc262620)',
+              borderRadius: '50%'
+            }} />
+            
             <div style={{ 
               width: '64px', 
               height: '64px', 
-              backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+              background: 'rgba(239, 68, 68, 0.1)', 
               borderRadius: '50%', 
               display: 'flex', 
               alignItems: 'center', 
@@ -580,20 +757,23 @@ export default function Settings() {
               <AlertTriangle size={32} color="#ef4444" />
             </div>
             
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
               ¿Confirmar eliminación?
             </h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
               {clearType === 'all' 
                 ? 'Estás a punto de eliminar TODOS los datos: estudiantes, asistencia, calificaciones e instrumentos. Esta acción es IRREVERSIBLE.'
                 : `Estás a punto de eliminar todos los registros de ${clearType === 'students' ? 'estudiantes' : clearType === 'attendance' ? 'asistencia' : clearType === 'grades' ? 'calificaciones' : 'instrumentos'}. Esta acción es IRREVERSIBLE.`
               }
             </p>
             
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button 
-                className="btn-secondary" 
-                style={{ flex: 1, padding: '0.8rem', border: '1px solid var(--border-color)' }}
+                style={{ 
+                  flex: 1, padding: '0.8rem', borderRadius: '12px',
+                  background: '#f1f5f9', color: 'var(--text-secondary)',
+                  border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600
+                }}
                 onClick={() => setClearType(null)}
               >
                 Cancelar
@@ -602,9 +782,9 @@ export default function Settings() {
                 style={{ 
                   flex: 1, 
                   padding: '0.8rem', 
-                  background: '#ef4444',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   color: 'white',
                   cursor: 'pointer',
                   fontWeight: 600,
