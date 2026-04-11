@@ -146,6 +146,7 @@ export const StoreProvider = ({ children }) => {
     setPlanningDocuments(prev => {
       const updated = [...prev, newDoc];
       localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      syncToSupabase('planning_documents', [newDoc]);
       return updated;
     });
     return newDoc;
@@ -155,6 +156,7 @@ export const StoreProvider = ({ children }) => {
     setPlanningDocuments(prev => {
       const updated = prev.filter(d => d.id !== docId);
       localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      deleteFromSupabase('planning_documents', docId);
       return updated;
     });
   }, []);
@@ -303,6 +305,22 @@ export const StoreProvider = ({ children }) => {
           }));
           break;
           
+        case 'planning_documents':
+          mappedData = dataArray.map(d => ({ 
+            id: d.id, 
+            title: d.title || '', 
+            description: d.description || null, 
+            sections: d.sections || [],
+            subject_id: d.subjectId || d.subject_id || '', 
+            period: d.period || null,
+            grade_level: d.gradeLevel || null,
+            file_data: d.fileData || null,
+            file_name: d.fileName || null,
+            uploaded_by: d.uploadedBy || null,
+            uploaded_at: d.uploadedAt || null
+          }));
+          break;
+          
         default:
           mappedData = dataArray;
       }
@@ -359,7 +377,7 @@ export const StoreProvider = ({ children }) => {
       const [
         usersData, studentsData, subjectsData, classesData, gradesData,
         attendanceData, instrumentsData, evalData, scheduleData,
-        diagnosticData, periodData
+        diagnosticData, periodData, planningData
       ] = await Promise.all([
         fetchFromSupabase('users'),
         fetchFromSupabase('students'),
@@ -371,7 +389,8 @@ export const StoreProvider = ({ children }) => {
         fetchFromSupabase('instrument_evaluations'),
         fetchFromSupabase('schedule'),
         fetchFromSupabase('diagnostic_evaluations'),
-        fetchFromSupabase('period_dates')
+        fetchFromSupabase('period_dates'),
+        fetchFromSupabase('planning_documents')
       ]);
 
       if (usersData?.length > 0) setUsers(mergeData(loadData('edu_users', []), usersData));
@@ -489,6 +508,19 @@ export const StoreProvider = ({ children }) => {
         periodData.forEach(p => { pDates[p.id] = { start: p.start_date, end: p.end_date }; });
         setPeriodDates(pDates);
       }
+      if (planningData?.length > 0) {
+        const cloudPlanning = planningData.map(d => ({
+          ...d,
+          sections: d.sections || [],
+          subjectId: d.subject_id || d.subjectId,
+          gradeLevel: d.grade_level || d.gradeLevel,
+          fileData: d.file_data || d.fileData,
+          fileName: d.file_name || d.fileName,
+          uploadedBy: d.uploaded_by || d.uploadedBy,
+          uploadedAt: d.uploaded_at || d.uploadedAt
+        }));
+        setPlanningDocuments(mergeData(loadData('edu_planning_documents', []), cloudPlanning));
+      }
       setSyncStatus('online');
     } catch (err) {
       console.error('Initial sync error:', err);
@@ -515,6 +547,7 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => { localStorage.setItem('edu_instrument_evaluations', JSON.stringify(instrumentEvaluations)); }, [instrumentEvaluations]);
   useEffect(() => { localStorage.setItem('edu_schedule', JSON.stringify(schedule)); }, [schedule]);
   useEffect(() => { localStorage.setItem('edu_diagnostic_evaluations', JSON.stringify(diagnosticEvaluations)); }, [diagnosticEvaluations]);
+  useEffect(() => { localStorage.setItem('edu_planning_documents', JSON.stringify(planningDocuments)); }, [planningDocuments]);
   useEffect(() => {
     if (currentUser) sessionStorage.setItem('edu_current_user_session', JSON.stringify(currentUser));
     else sessionStorage.removeItem('edu_current_user_session');
@@ -534,7 +567,8 @@ export const StoreProvider = ({ children }) => {
         syncToSupabase('instrument_evaluations', instrumentEvaluations),
         syncToSupabase('schedule', schedule),
         syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
-        syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end })))
+        syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end }))),
+        syncToSupabase('planning_documents', planningDocuments)
       ]);
       alert('Datos sincronizados a la nube');
     } catch (err) {
