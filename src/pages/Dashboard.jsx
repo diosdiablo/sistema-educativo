@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck, BarChart3, Award } from 'lucide-react';
+import { Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck, BarChart3, Award, Clock, Calendar, ArrowRight, GraduationCap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
@@ -191,39 +191,135 @@ export default function Dashboard() {
   };
   const nextClass = getNextClass();
 
+  const statCards = [
+    { icon: <Users size={24} />, title: "Total Estudiantes", value: totalStudents, color: "#3b82f6", gradient: ['#3b82f6', '#2563eb'] },
+    { icon: <CheckCircle size={24} />, title: "Asistencia Promedio", value: avgAttendance, color: "#10b981", gradient: ['#10b981', '#059669'] },
+    { icon: <TrendingUp size={24} />, title: "Calif. Registradas", value: grades.length + diagnosticEvaluations.length + instrumentEvaluations.length, color: "#8b5cf6", gradient: ['#8b5cf6', '#7c3aed'] },
+    { icon: <ClipboardCheck size={24} />, title: "Instrumentos", value: instruments.length, color: "#f59e0b", gradient: ['#f59e0b', '#d97706'] },
+  ];
+
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Header con gradiente */}
+      <div style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        borderRadius: '20px',
+        padding: '2rem 2.5rem',
+        marginBottom: '1.5rem',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          right: '-10%',
+          width: '300px',
+          height: '300px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '50%'
+        }} />
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
-            <h2 className="page-title">{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{formattedDate}</p>
-            <p style={{ color: '#8b5cf6', fontSize: '0.9rem', fontWeight: 500, marginTop: '0.5rem' }}>{dayMessage}</p>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
+            <p style={{ opacity: 0.9, fontSize: '0.9rem', marginTop: '0.25rem' }}>{formattedDate}</p>
+            <p style={{ opacity: 0.9, fontSize: '0.9rem', fontWeight: 500, marginTop: '0.5rem', fontStyle: 'italic' }}>"{dayMessage}"</p>
           </div>
           {nextClass && (
-            <div style={{ background: '#10b98115', padding: '0.75rem 1rem', borderRadius: '10px', borderLeft: '4px solid #10b981' }}>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Próxima clase</p>
-              <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{nextClass.subjectName}</p>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{nextClass.className} • {nextClass.time}</p>
+            <div style={{ 
+              background: 'rgba(255,255,255,0.2)', 
+              padding: '1rem 1.5rem', 
+              borderRadius: '16px', 
+              borderLeft: '4px solid #10b981',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <p style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Clock size={14} /> Próxima clase
+              </p>
+              <p style={{ fontWeight: 700, fontSize: '1rem' }}>{nextClass.subjectName}</p>
+              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>{nextClass.className} • {nextClass.time}</p>
             </div>
           )}
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-        <StatCard icon={<Users />} title="Total Estudiantes" value={totalStudents} color="#3b82f6" />
-        <StatCard icon={<CheckCircle />} title="Asistencia Promedio" value={avgAttendance} color="#10b981" />
-        <StatCard icon={<TrendingUp />} title="Calif. Registradas" value={grades.length + diagnosticEvaluations.length + instrumentEvaluations.length} color="#8b5cf6" />
-        <StatCard icon={<ClipboardCheck />} title="Instrumentos" value={instruments.length} color="#f59e0b" />
+      {/* Tarjetas de estadísticas */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
+        {statCards.map((stat, idx) => (
+          <div 
+            key={idx}
+            style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '1.25rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              border: '1px solid rgba(0,0,0,0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; }}
+          >
+            <div style={{ 
+              width: '56px', height: '56px', borderRadius: '14px', 
+              background: `linear-gradient(135deg, ${stat.gradient[0]}, ${stat.gradient[1]})`,
+              color: 'white',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: `0 4px 15px ${stat.color}40`
+            }}>
+              {stat.icon}
+            </div>
+            <div>
+              <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, margin: 0 }}>{stat.title}</h4>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>{stat.value}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
+      {/* Secciones de horario e instrumentos */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-        <div className="card">
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CalendarCheck size={18} /> Horario de Hoy ({todayName})
+        {/* Horario de hoy */}
+        <div style={{
+          background: 'white',
+          borderRadius: '20px',
+          padding: '1.5rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          border: '1px solid rgba(16, 185, 129, 0.2)'
+        }}>
+          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <CalendarCheck size={18} color="white" />
+            </div>
+            Horario de Hoy
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 400, marginLeft: 'auto' }}>({todayName})</span>
           </h3>
           {todaySchedule.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>No tienes clases programadas para hoy.</p>
+            <div style={{ 
+              textAlign: 'center', padding: '2rem', 
+              background: '#f8fafc', borderRadius: '12px',
+              border: '2px dashed #e2e8f0'
+            }}>
+              <Calendar size={32} color="#cbd5e1" style={{ margin: '0 auto 0.75rem' }} />
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No tienes clases programadas para hoy.</p>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {todaySchedule.map((item, idx) => {
@@ -233,11 +329,18 @@ export default function Dashboard() {
                 return (
                   <div key={idx} style={{ 
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                    padding: '0.75rem', background: '#f8fafc', borderRadius: '10px',
-                    borderLeft: `4px solid ${item.color || '#10b981'}`
-                  }}>
+                    padding: '1rem', background: '#f8fafc', borderRadius: '12px',
+                    borderLeft: `4px solid ${item.color || '#10b981'}`,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#f8fafc'; }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ fontWeight: 700, minWidth: '130px', fontSize: '0.85rem' }}>{timesDisplay}</div>
+                      <div style={{ 
+                        fontWeight: 700, minWidth: '130px', fontSize: '0.85rem',
+                        color: 'var(--text-secondary)'
+                      }}>{timesDisplay}</div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{className}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{subjectName}</div>
@@ -246,18 +349,21 @@ export default function Dashboard() {
                     <button 
                       onClick={() => navigate(`/attendance?class=${encodeURIComponent(className)}`)}
                       style={{
-                        padding: '0.4rem 0.75rem',
-                        background: '#10b98115',
-                        border: '1px solid #10b981',
-                        borderRadius: '6px',
-                        color: '#10b981',
+                        padding: '0.5rem 1rem',
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: 'white',
                         fontSize: '0.75rem',
                         fontWeight: 600,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        gap: '6px',
+                        transition: 'all 0.2s ease'
                       }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                     >
                       <CalendarCheck size={14} /> Asistencia
                     </button>
@@ -268,25 +374,53 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="card">
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ClipboardCheck size={18} /> Instrumentos Más Usados
+        {/* Instrumentos más usados */}
+        <div style={{
+          background: 'white',
+          borderRadius: '20px',
+          padding: '1.5rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          border: '1px solid rgba(245, 158, 11, 0.2)'
+        }}>
+          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <ClipboardCheck size={18} color="white" />
+            </div>
+            Instrumentos Más Usados
           </h3>
           {topInstruments.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-              No hay evaluaciones registradas. Aplica instrumentos para ver estadísticas aquí.
-            </p>
+            <div style={{ 
+              textAlign: 'center', padding: '2rem', 
+              background: '#f8fafc', borderRadius: '12px',
+              border: '2px dashed #e2e8f0'
+            }}>
+              <Award size={32} color="#cbd5e1" style={{ margin: '0 auto 0.75rem' }} />
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                No hay evaluaciones registradas.
+              </p>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {topInstruments.map((item, idx) => (
                 <div key={idx} style={{ 
                   display: 'flex', alignItems: 'center', gap: '1rem', 
-                  padding: '0.75rem', background: '#f8fafc', borderRadius: '8px'
-                }}>
+                  padding: '0.875rem', background: '#f8fafc', borderRadius: '12px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f8fafc'; }}
+                >
                   <div style={{
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: 'var(--accent-primary)',
-                    color: 'white', display: 'flex', alignItems: 'center',
+                    width: '32px', height: '32px', borderRadius: '10px',
+                    background: idx === 0 ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                               idx === 1 ? 'linear-gradient(135deg, #64748b, #475569)' :
+                               idx === 2 ? 'linear-gradient(135deg, #c2410c, #9a3412)' : '#f1f5f9',
+                    color: idx < 3 ? 'white' : '#64748b',
+                    display: 'flex', alignItems: 'center',
                     justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem'
                   }}>
                     {idx + 1}
@@ -297,7 +431,7 @@ export default function Dashboard() {
                       {item.count} evaluación{item.count > 1 ? 'es' : ''}
                     </div>
                   </div>
-                  <Award size={18} color="var(--warning-color)" />
+                  <Award size={18} color={idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : '#c2410c'} />
                 </div>
               ))}
             </div>
@@ -305,23 +439,36 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Gráficos de estadísticas */}
       {(grades.length > 0 || diagnosticEvaluations.length > 0 || instrumentEvaluations.length > 0) && (
         <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BarChart3 size={20} /> Estadísticas de Calificaciones
+          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <BarChart3 size={18} color="white" />
+            </div>
+            Estadísticas de Calificaciones
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
             
-            <div className="card">
-              <h4 style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontSize: '1rem' }}>Niveles de Logro (General)</h4>
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '1.5rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}>
+              <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '1rem', fontWeight: 700 }}>Niveles de Logro (General)</h4>
               {gradesByLevel.some(g => g.value > 0) ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={gradesByLevel.filter(g => g.value > 0)} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis type="number" tick={{ fontSize: 12 }} />
-                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11 }} />
                     <Tooltip />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="value" radius={[0, 6, 6, 0]}>
                       {gradesByLevel.filter(g => g.value > 0).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
@@ -335,8 +482,13 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="card">
-              <h4 style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontSize: '1rem' }}>Calificaciones por Grado</h4>
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '1.5rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}>
+              <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '1rem', fontWeight: 700 }}>Calificaciones por Grado</h4>
               {gradesByClass.some(g => g.ad + g.a + g.b + g.c > 0) ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={gradesByClass}>
@@ -344,10 +496,10 @@ export default function Dashboard() {
                     <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
-                    <Bar dataKey="ad" stackId="a" fill="#10b981" name="AD" />
+                    <Bar dataKey="ad" stackId="a" fill="#10b981" name="AD" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="a" stackId="a" fill="#3b82f6" name="A" />
                     <Bar dataKey="b" stackId="a" fill="#f59e0b" name="B" />
-                    <Bar dataKey="c" stackId="a" fill="#ef4444" name="C" />
+                    <Bar dataKey="c" stackId="a" fill="#ef4444" name="C" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -358,17 +510,22 @@ export default function Dashboard() {
             </div>
 
             {diagnosticStats.length > 0 && (
-              <div className="card">
-                <h4 style={{ marginBottom: '1rem', color: 'var(--accent-primary)', fontSize: '1rem' }}>Evaluación Diagnóstica</h4>
+              <div style={{
+                background: 'white',
+                borderRadius: '20px',
+                padding: '1.5rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '1rem', fontWeight: 700 }}>Evaluación Diagnóstica</h4>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
                       data={diagnosticStats}
                       cx="50%"
                       cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
-                      paddingAngle={2}
+                      innerRadius={50}
+                      outerRadius={90}
+                      paddingAngle={3}
                       dataKey="value"
                     >
                       {diagnosticStats.map((entry, index) => (
@@ -380,8 +537,8 @@ export default function Dashboard() {
                 </ResponsiveContainer>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
                   {diagnosticStats.map((d, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem' }}>
-                      <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: d.fill }} />
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '4px', background: d.fill }} />
                       {d.name}: {d.value}
                     </div>
                   ))}
@@ -393,35 +550,35 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Empty state */}
       {(grades.length === 0 && diagnosticEvaluations.length === 0 && instrumentEvaluations.length === 0) && (
-        <div className="card" style={{ textAlign: 'center', padding: '3rem', marginTop: '1rem' }}>
-          <BarChart3 size={48} color="var(--text-secondary)" style={{ margin: '0 auto 1rem' }} />
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+          borderRadius: '20px',
+          padding: '4rem 2rem',
+          textAlign: 'center',
+          border: '2px dashed #cbd5e1'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem'
+          }}>
+            <BarChart3 size={40} color="white" />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
             Comienza a registrar calificaciones
-          </p>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
             Los gráficos aparecerán aquí cuando registres calificaciones en instrumentos o evaluaciones diagnósticas.
           </p>
         </div>
       )}
-    </div>
-  );
-}
-
-function StatCard({ icon, title, value, color }) {
-  return (
-    <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-      <div style={{ 
-        width: '48px', height: '48px', borderRadius: '12px', 
-        backgroundColor: `${color}20`, color: color,
-        display: 'flex', alignItems: 'center', justifyContent: 'center'
-      }}>
-        {icon}
-      </div>
-      <div>
-        <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>{title}</h4>
-        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div>
-      </div>
     </div>
   );
 }
