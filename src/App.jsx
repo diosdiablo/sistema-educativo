@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -18,6 +18,7 @@ import Reports from './pages/Reports';
 import Schedule from './pages/Schedule';
 import Settings from './pages/Settings';
 import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
+import PlanningDocuments from './pages/PlanningDocuments';
 
 function Sidebar({ isOpen, onClose }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -34,6 +35,7 @@ function Sidebar({ isOpen, onClose }) {
     { name: 'Calificaciones', path: '/grades', icon: <GraduationCap size={20} /> },
     { name: 'Instrumentos', path: '/instruments', icon: <ClipboardCheck size={20} /> },
     { name: 'Horario', path: '/schedule', icon: <Clock size={20} /> },
+    { name: 'Planificación', path: '/planning', icon: <FolderOpen size={20} /> },
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
   ];
 
@@ -154,6 +156,7 @@ function AppContent() {
           <Route path="/users" element={<AdminOnlyRoute><UsersPage /></AdminOnlyRoute>} />
           <Route path="/instruments" element={<Instruments />} />
           <Route path="/schedule" element={<Schedule />} />
+          <Route path="/planning" element={<PlanningDocuments />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
