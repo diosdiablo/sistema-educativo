@@ -8,6 +8,8 @@ export default function PlanningDocuments() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
   const [filterGrade, setFilterGrade] = useState('Todos');
+  const [filterSubject, setFilterSubject] = useState('Todos');
+  const [searchTerm, setSearchTerm] = useState('');
   
   const filteredDocuments = useMemo(() => {
     let docs = planningDocuments;
