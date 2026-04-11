@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { UserCog, Trash2, Edit2, UserPlus, X, Save, Shield, User, BookOpen, Plus, Users, LayoutGrid } from 'lucide-react';
+import { UserCog, Trash2, Edit2, UserPlus, X, Save, Shield, User, BookOpen, Plus, LayoutGrid, Users as UsersIcon } from 'lucide-react';
 
 export default function Users() {
   const { users, currentUser, updateUser, deleteUser, register, classes, subjects } = useStore();
@@ -241,7 +241,7 @@ export default function Users() {
                 textAlign: 'center'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <Users size={16} />
+                  <UsersIcon size={16} />
                   Acciones
                 </div>
               </th>
