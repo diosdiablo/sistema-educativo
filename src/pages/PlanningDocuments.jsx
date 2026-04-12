@@ -341,7 +341,7 @@ export default function PlanningDocuments() {
         </div>
 
         {/* Botón agregar */}
-        {isAdmin && (
+        {currentUser && (
           <button 
             onClick={() => setShowUploadModal(true)}
             style={{
