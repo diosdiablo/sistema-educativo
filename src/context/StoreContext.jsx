@@ -135,6 +135,32 @@ export const StoreProvider = ({ children }) => {
   const [diagnosticEvaluations, setDiagnosticEvaluations] = useState(() => loadData('edu_diagnostic_evaluations', []));
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
   const [planningDocuments, setPlanningDocuments] = useState(() => loadData('edu_planning_documents', []));
+  const [learningSessions, setLearningSessions] = useState(() => loadData('edu_learning_sessions', []));
+
+  const addLearningSession = useCallback((doc) => {
+    const newDoc = { 
+      ...doc, 
+      id: generateId(), 
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: currentUser?.name || 'Admin'
+    };
+    setLearningSessions(prev => {
+      const updated = [...prev, newDoc];
+      localStorage.setItem('edu_learning_sessions', JSON.stringify(updated));
+      syncToSupabase('learning_sessions', [newDoc]);
+      return updated;
+    });
+    return newDoc;
+  }, [currentUser]);
+
+  const deleteLearningSession = useCallback((docId) => {
+    setLearningSessions(prev => {
+      const updated = prev.filter(d => d.id !== docId);
+      localStorage.setItem('edu_learning_sessions', JSON.stringify(updated));
+      deleteFromSupabase('learning_sessions', docId);
+      return updated;
+    });
+  }, []);
 
   const addPlanningDocument = useCallback((doc) => {
     const newDoc = { 
@@ -306,6 +332,22 @@ export const StoreProvider = ({ children }) => {
           break;
           
         case 'planning_documents':
+          mappedData = dataArray.map(d => ({ 
+            id: d.id, 
+            title: d.title || '', 
+            description: d.description || null, 
+            sections: d.sections || [],
+            subject_id: d.subjectId || d.subject_id || '', 
+            period: d.period || null,
+            grade_level: d.gradeLevel || null,
+            file_data: d.fileData || null,
+            file_name: d.fileName || null,
+            uploaded_by: d.uploadedBy || null,
+            uploaded_at: d.uploadedAt || null
+          }));
+          break;
+          
+        case 'learning_sessions':
           mappedData = dataArray.map(d => ({ 
             id: d.id, 
             title: d.title || '', 
@@ -1018,6 +1060,7 @@ export const StoreProvider = ({ children }) => {
       periodDates, updatePeriodDates,
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
       planningDocuments, addPlanningDocument, deletePlanningDocument,
+      learningSessions, addLearningSession, deleteLearningSession,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,
