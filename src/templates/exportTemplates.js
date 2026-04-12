@@ -177,9 +177,9 @@ export const buildAuxiliaryRegisterData = (students, instrumentEvaluations, subj
     
     // Para cada competencia, buscar las calificaciones
     subject.competencies.forEach(comp => {
-      // Buscar evaluaciones que incluyan esta competencia
+      // Buscar evaluaciones que coincidan con esta competencia
       const compEvals = studentEvals.filter(ev => 
-        ev.criteria && ev.criteria.includes(comp.id)
+        ev.competencyId === comp.id
       );
       
       // Obtener las calificaciones (scores)
