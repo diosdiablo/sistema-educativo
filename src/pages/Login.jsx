@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Lock, Mail, ArrowRight, Eye, EyeOff, School } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Logo from '../assets/logo.png';
 
 export default function Login() {
-  const { login, users, setUsers, setCurrentUser } = useStore();
+  const { login } = useStore();
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
@@ -18,14 +18,6 @@ export default function Login() {
     const success = login(username, password);
     if (!success) {
       setError('Usuario o contraseña incorrectos.');
-    }
-  };
-
-  const handleResetUsers = () => {
-    if (window.confirm('¿Crear usuario admin por defecto?\nUsuario: admin\nContraseña: admin123')) {
-      const adminUser = { id: '1', name: 'Administrador', username: 'admin', password: 'admin123', role: 'admin', assignments: [] };
-      setUsers([adminUser]);
-      setCurrentUser(adminUser);
     }
   };
 
@@ -169,32 +161,6 @@ export default function Login() {
             <ArrowRight size={18} />
           </button>
         </form>
-
-        {users.length === 0 && (
-          <div style={{ 
-            marginTop: '2rem', paddingTop: '1.5rem', 
-            borderTop: '1px solid #e2e8f0',
-            textAlign: 'center'
-          }}>
-            <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-              No hay usuarios registrados
-            </p>
-            <button 
-              type="button" 
-              onClick={handleResetUsers}
-              style={{
-                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                border: 'none', color: 'white',
-                fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem',
-                padding: '0.75rem 1.5rem', borderRadius: '10px',
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                margin: '0 auto'
-              }}
-            >
-              <School size={18} /> Crear usuario admin
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
