@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { GraduationCap, User, Lock, Mail, ArrowRight, UserPlus, RefreshCw } from 'lucide-react';
+import { Lock, Mail, ArrowRight, RefreshCw, Eye, EyeOff, School } from 'lucide-react';
 import Logo from '../assets/logo.png';
 
 export default function Login() {
   const { login, register, users, setUsers, setCurrentUser } = useStore();
   const [isLoginView, setIsLoginView] = useState(true);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
-  // Form State
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -43,118 +43,220 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container animate-fade-in" style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center', 
-      minHeight: '100vh', width: '100vw', background: 'var(--bg-color-main)',
-      position: 'fixed', top: 0, left: 0, zIndex: 9999
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', width: '100vw',
+      background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1e3a5f 100%)',
+      position: 'fixed', top: 0, left: 0, zIndex: 9999,
+      padding: '1rem'
     }}>
-      <div className="card login-card" style={{
-        maxWidth: '420px', width: '90%', padding: '2.5rem',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        background: '#ffffff', border: '1px solid var(--border-color)', 
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)'
+      {/* Decorative elements */}
+      <div style={{
+        position: 'absolute', top: '10%', left: '5%',
+        width: '300px', height: '300px',
+        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.05))',
+        borderRadius: '50%', filter: 'blur(80px)'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '10%', right: '5%',
+        width: '250px', height: '250px',
+        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05))',
+        borderRadius: '50%', filter: 'blur(60px)'
+      }} />
+
+      <div style={{
+        maxWidth: '440px', width: '100%',
+        background: 'rgba(255, 255, 255, 0.98)',
+        borderRadius: '24px',
+        padding: '2.5rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+        position: 'relative',
+        backdropFilter: 'blur(10px)'
       }}>
-        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-          <div style={{ 
-            display: 'inline-flex', padding: '1rem', borderRadius: '50%',
-            background: '#ffffff', marginBottom: '1rem',
-            border: '2px solid var(--sidebar-bg)'
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{
+            display: 'inline-flex',
+            padding: '1rem',
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            marginBottom: '1rem',
+            boxShadow: '0 8px 20px rgba(245, 158, 11, 0.3)'
           }}>
-            <img src={Logo} alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+            <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--sidebar-bg)', marginBottom: '0.5rem' }}>
+          <h1 style={{ 
+            fontSize: '1.75rem', 
+            fontWeight: 800, 
+            color: '#1e293b',
+            marginBottom: '0.25rem',
+            letterSpacing: '-0.025em'
+          }}>
             Portal Agro 110
           </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            {isLoginView ? 'Inicia sesión para continuar' : 'Crea una cuenta para administrar'}
+          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+            {isLoginView ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
           </p>
         </div>
 
         {error && (
           <div style={{
-            width: '100%', padding: '0.75rem', marginBottom: '1.5rem',
-            background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
-            borderLeft: '4px solid #ef4444', borderRadius: '4px', fontSize: '0.875rem'
+            padding: '0.875rem 1rem', marginBottom: '1.5rem',
+            background: '#fef2f2', color: '#dc2626',
+            borderRadius: '12px', fontSize: '0.875rem',
+            border: '1px solid #fecaca',
+            display: 'flex', alignItems: 'center', gap: '0.5rem'
           }}>
+            <Lock size={16} />
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           {!isLoginView && (
-            <div className="input-group" style={{ position: 'relative' }}>
-              <User style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} size={20} />
+            <div style={{ position: 'relative' }}>
               <input 
                 type="text" 
-                className="input-field" 
-                placeholder="Nombre Completo" 
-                style={{ width: '100%', paddingLeft: '3rem' }}
+                placeholder="Nombre completo"
                 value={name}
                 onChange={e => setName(e.target.value)}
+                style={{
+                  width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
+                  borderRadius: '12px', border: '1px solid #e2e8f0',
+                  fontSize: '0.95rem', outline: 'none',
+                  transition: 'all 0.2s',
+                  background: '#f8fafc'
+                }}
               />
+              <School style={{ 
+                position: 'absolute', left: '0.875rem', top: '50%', 
+                transform: 'translateY(-50%)', color: '#94a3b8' 
+              }} size={18} />
             </div>
           )}
 
-          <div className="input-group" style={{ position: 'relative' }}>
-            <Mail style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} size={20} />
+          <div style={{ position: 'relative' }}>
             <input 
               type="text" 
-              className="input-field" 
-              placeholder="Nombre de Usuario" 
-              style={{ width: '100%', paddingLeft: '3rem' }}
+              placeholder="Usuario"
               value={username}
               onChange={e => setUsername(e.target.value)}
+              style={{
+                width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
+                borderRadius: '12px', border: '1px solid #e2e8f0',
+                fontSize: '0.95rem', outline: 'none',
+                transition: 'all 0.2s',
+                background: '#f8fafc'
+              }}
             />
+            <Mail style={{ 
+              position: 'absolute', left: '0.875rem', top: '50%', 
+              transform: 'translateY(-50%)', color: '#94a3b8' 
+            }} size={18} />
           </div>
 
-          <div className="input-group" style={{ position: 'relative' }}>
-            <Lock style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} size={20} />
+          <div style={{ position: 'relative' }}>
             <input 
-              type="password" 
-              className="input-field" 
-              placeholder="Contraseña" 
-              style={{ width: '100%', paddingLeft: '3rem' }}
+              type={showPassword ? 'text' : 'password'} 
+              placeholder="Contraseña"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              style={{
+                width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
+                borderRadius: '12px', border: '1px solid #e2e8f0',
+                fontSize: '0.95rem', outline: 'none',
+                transition: 'all 0.2s',
+                background: '#f8fafc'
+              }}
             />
+            <Lock style={{ 
+              position: 'absolute', left: '0.875rem', top: '50%', 
+              transform: 'translateY(-50%)', color: '#94a3b8' 
+            }} size={18} />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute', right: '0.75rem', top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none', border: 'none',
+                cursor: 'pointer', color: '#94a3b8',
+                padding: '0.25rem'
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
-          <button type="submit" className="btn-primary" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.875rem', marginTop: '0.5rem' }}>
-            {isLoginView ? 'Ingresar' : 'Registrarse'} 
-            {isLoginView ? <ArrowRight size={20} /> : <UserPlus size={20} />}
+          {isLoginView && (
+            <button
+              type="button"
+              style={{
+                background: 'none', border: 'none',
+                color: '#f59e0b', fontSize: '0.85rem',
+                fontWeight: 600, cursor: 'pointer',
+                alignSelf: 'flex-end', marginTop: '-0.5rem'
+              }}
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          )}
+
+          <button 
+            type="submit" 
+            style={{
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              gap: '0.5rem', width: '100%', padding: '0.875rem',
+              marginTop: '0.5rem',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white', border: 'none', borderRadius: '12px',
+              fontWeight: 600, fontSize: '1rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            {isLoginView ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            <ArrowRight size={18} />
           </button>
         </form>
 
+        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+            {isLoginView ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
+          </p>
+          <button 
+            type="button" 
+            onClick={() => { setIsLoginView(!isLoginView); setError(''); }}
+            style={{
+              background: 'none', border: 'none', color: '#f59e0b',
+              fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem',
+              marginTop: '0.25rem'
+            }}
+          >
+            {isLoginView ? 'Regístrate aquí' : 'Inicia sesión'}
+          </button>
+        </div>
+
         {users.length === 0 && (
-          <div style={{ marginTop: '2rem', textAlign: 'center', width: '100%', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              {isLoginView ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
-            </p>
+          <div style={{ 
+            marginTop: '1.5rem', paddingTop: '1.5rem', 
+            borderTop: '1px solid #e2e8f0',
+            textAlign: 'center'
+          }}>
             <button 
               type="button" 
-              onClick={() => { setIsLoginView(!isLoginView); setError(''); }}
-              style={{ 
-                background: 'none', border: 'none', color: 'var(--accent-primary)', 
-                fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem', fontSize: '0.875rem' 
+              onClick={handleResetUsers}
+              style={{
+                background: 'none', border: 'none', color: '#94a3b8',
+                fontWeight: 500, cursor: 'pointer', fontSize: '0.8rem',
+                display: 'flex', alignItems: 'center', gap: '0.35rem',
+                margin: '0 auto', padding: '0.5rem'
               }}
             >
-              {isLoginView ? 'Crear una cuenta nueva' : 'Iniciar sesión aquí'}
+              <RefreshCw size={14} /> Crear usuario admin
             </button>
-            <div style={{ marginTop: '1rem' }}>
-              <button 
-                type="button" 
-                onClick={handleResetUsers}
-                style={{ 
-                  background: 'none', border: 'none', color: 'var(--text-secondary)', 
-                  fontWeight: 500, cursor: 'pointer', fontSize: '0.75rem',
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  margin: '0 auto'
-                }}
-              >
-                <RefreshCw size={12} /> Crear usuario admin
-              </button>
-            </div>
           </div>
         )}
       </div>
