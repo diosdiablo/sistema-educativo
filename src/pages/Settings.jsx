@@ -12,7 +12,7 @@ export default function Settings() {
     setCurrentUser, syncToSupabaseManual, isOnline,
     clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData
   } = useStore();
-  const [localDates, setLocalDates] = useState(periodDates);
+  const [localDates, setLocalDates] = useState(periodDates || {});
   const [saved, setSaved] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
