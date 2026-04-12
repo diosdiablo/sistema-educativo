@@ -89,22 +89,45 @@ const Reports = () => {
 
     const data = buildAuxiliaryRegisterData(classStudents, grades, subject, selectedPeriod);
 
-    const template = await loadTemplate('registro_auxiliar.xlsx');
+    const template = await loadTemplate('REGISTRO AUXILIAR 2026.xlsx');
     let workbook;
     
     if (template) {
       const sheetName = template.SheetNames[0];
       const worksheet = template.Sheets[sheetName];
       
+      // Llenar datos del área y docente en las filas de encabezado
+      // Fila 2 (índice 2): IEP
+      // Fila 3: ÁREA
+      // Fila 4: DOCENTE
+      worksheet['D2'] = { t: 's', v: 'I.E.P. AGROPECUARIO 110' };
+      worksheet['D4'] = { t: 's', v: subject.name };
+      if (currentUser) {
+        worksheet['D6'] = { t: 's', v: currentUser.name };
+      }
+      
+      // Llenar estudiantes desde fila 10 (índice 10)
       data.forEach((row, rowIndex) => {
+        const excelRow = 10 + rowIndex;
+        
+        // Columna 0: N° de orden
+        worksheet[`A${excelRow}`] = { t: 'n', v: rowIndex + 1 };
+        
+        // Columna 1: Apellidos y nombres
+        worksheet[`B${excelRow}`] = { t: 's', v: row.Estudiante };
+        
+        // Llenar competencias (empezando desde columna 3)
         Object.entries(row).forEach(([key, value]) => {
+          if (key === 'Estudiante') return;
+          
+          // Buscar la columna de la competencia
           const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-          for (let col = 0; col <= range.e.c; col++) {
-            const cellRef = XLSX.utils.encode_cell({ r: 2, c: col });
-            const header = worksheet[cellRef]?.v;
-            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
-              const targetCell = XLSX.utils.encode_cell({ r: 3 + rowIndex, c: col });
-              worksheet[targetCell] = { t: 's', v: String(value) };
+          for (let col = 3; col <= range.e.c; col++) {
+            const headerCell = XLSX.utils.encode_cell({ r: 9, c: col });
+            const header = worksheet[headerCell]?.v;
+            if (header && String(header).trim().includes(key)) {
+              const targetCell = XLSX.utils.encode_cell({ r: excelRow, c: col });
+              worksheet[targetCell] = { t: 'n', v: value === '-' ? '' : value };
               break;
             }
           }
