@@ -12,12 +12,11 @@ export const TEMPLATE_CONFIG = {
   
   auxiliaryRegister: {
     id: 'auxiliaryRegister',
-    name: 'Registro Auxiliar 2026',
-    description: 'Plantilla oficial de evaluación 2026 - SECUNDARIA',
-    templateFile: 'REGISTRO AUXILIAR 2026.xlsx',
-    requiredColumns: ['N° DE ORDEN'],
-    dataStartRow: 10,
-    headerRows: 9
+    name: 'Registro de Calificaciones',
+    description: 'Plantilla simple con estudiantes, competencias y promedio',
+    templateFile: 'calificaciones_simple.xlsx',
+    requiredColumns: ['N°'],
+    dataStartRow: 3
   },
   
   finalReport: {
@@ -46,6 +45,29 @@ export const TEMPLATE_CONFIG = {
     requiredColumns: ['Estudiante'],
     dataStartRow: 2
   }
+};
+
+export const createSimpleGradesTemplate = (subject, period, className) => {
+  const wb = XLSX.utils.book_new();
+  
+  // Crear hoja
+  const ws = XLSX.utils.aoa_to_sheet([
+    [`REGISTRO DE CALIFICACIONES - ${subject.name}`],
+    [`Grado: ${className}`],
+    [`Bimestre: ${period}`],
+    [],
+    ['N°', 'Estudiante', ...subject.competencies.map(c => c.name), 'PROMEDIO']
+  ]);
+  
+  ws['!cols'] = [
+    { wch: 5 },  // N°
+    { wch: 30 }, // Estudiante
+    ...subject.competencies.map(() => ({ wch: 15 })), // Competencias
+    { wch: 10 }  // Promedio
+  ];
+  
+  XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones');
+  return wb;
 };
 
 export const loadTemplate = async (templateFileName) => {
@@ -79,30 +101,16 @@ export const fillTemplateWithData = (workbook, data, config) => {
       for (let col = 0; col <= range.e.c; col++) {
         const cellRef = XLSX.utils.encode_cell({ r: dataStartRow - 1, c: col });
         const cellValue = worksheet[cellRef]?.v;
+        
         if (cellValue && String(cellValue).toLowerCase().trim() === String(key).toLowerCase().trim()) {
           colIndex = col;
           break;
         }
       }
       
-      if (colIndex === -1) {
-        for (let col = 0; col <= range.e.c; col++) {
-          const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-          const cellValue = worksheet[cellRef]?.v;
-          if (cellValue && String(cellValue).toLowerCase().trim() === String(key).toLowerCase().trim()) {
-            colIndex = col;
-            break;
-          }
-        }
-      }
-      
-      if (colIndex === -1) {
-        colIndex = Object.keys(rowData).indexOf(key);
-      }
-      
-      if (colIndex >= 0) {
-        const cellRef = XLSX.utils.encode_cell({ r: excelRow, c: colIndex });
-        worksheet[cellRef] = { t: 's', v: String(value) };
+      if (colIndex !== -1) {
+        const targetCell = XLSX.utils.encode_cell({ r: excelRow, c: colIndex });
+        worksheet[targetCell] = { t: typeof value === 'number' ? 'n' : 's', v: value };
       }
     });
   });
@@ -110,62 +118,50 @@ export const fillTemplateWithData = (workbook, data, config) => {
   return workbook;
 };
 
-export const createWorkbookFromData = (data, options = {}) => {
-  const { 
-    sheetName = 'Datos',
-    columnWidths = {},
-    headerRow = 0 
-  } = options;
-  
+export const createWorkbookFromData = (data, sheetName = 'Sheet1') => {
   const worksheet = XLSX.utils.json_to_sheet(data);
-  
-  if (Object.keys(columnWidths).length > 0) {
-    worksheet['!cols'] = Object.keys(data[0] || {}).map(key => ({
-      wch: columnWidths[key] || 15
-    }));
-  }
-  
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-  
   return workbook;
 };
 
-export const buildAttendanceData = (students, attendanceRecords, dates) => {
-  return students.map(student => {
-    const row = { 'Estudiante': student.name };
+export const buildAttendanceData = (students, attendance, dates) => {
+  const rows = [];
+  
+  students.forEach(student => {
+    const row = { Estudiante: student.name };
     
     dates.forEach(date => {
-      const dayRecord = attendanceRecords.find(a => a.date === date);
-      const status = dayRecord?.records?.[student.id] || '-';
-      const formattedDate = new Date(date).toLocaleDateString('es-PE', { 
-        day: '2-digit', 
-        month: '2-digit' 
-      });
-      row[formattedDate] = status;
+      const record = attendance.find(a => a.date === date);
+      const status = record?.records?.[student.id] || '-';
+      row[date] = status;
     });
-
-    let totals = { P: 0, F: 0, T: 0, J: 0 };
-    attendanceRecords.forEach(dayRecord => {
-      const status = dayRecord.records?.[student.id];
-      if (status === 'P') totals.P++;
-      if (status === 'F') totals.F++;
-      if (status === 'T') totals.T++;
-      if (status === 'J') totals.J++;
-    });
-
-    row['Total P'] = totals.P;
-    row['Total F'] = totals.F;
-    row['Total T'] = totals.T;
-    row['Total J'] = totals.J;
-
-    return row;
+    
+    rows.push(row);
   });
+  
+  return rows;
+};
+
+export const getQualitativeGrade = (score, maxScore = 20) => {
+  if (score === null || score === undefined || score === '-') return '-';
+  if (maxScore === 0) return 'C';
+  const percentage = (score / maxScore) * 100;
+  if (percentage >= 90) return 'AD';
+  if (percentage >= 70) return 'A';
+  if (percentage >= 50) return 'B';
+  return 'C';
 };
 
 export const buildAuxiliaryRegisterData = (students, grades, subject, period) => {
-  return students.map(student => {
-    const row = { 'Estudiante': student.name };
+  return students.map((student, idx) => {
+    const row = { 
+      'N°': idx + 1,
+      'Estudiante': student.name 
+    };
+    
+    let totalScore = 0;
+    let countScores = 0;
     
     subject.competencies.forEach(comp => {
       const grade = grades.find(g => 
@@ -174,9 +170,22 @@ export const buildAuxiliaryRegisterData = (students, grades, subject, period) =>
         g.competencyId === comp.id && 
         g.period === period
       );
-      row[comp.name] = grade?.score ?? '-';
+      
+      const score = grade?.score ?? '-';
+      // Convertir a calificación cualitativa
+      row[comp.name] = getQualitativeGrade(score);
+      
+      if (typeof score === 'number') {
+        totalScore += score;
+        countScores++;
+      }
     });
-
+    
+    // Agregar promedio numérico
+    const avgNum = countScores > 0 ? Math.round((totalScore / countScores) * 10) / 10 : '-';
+    // Convertir promedio a cualitativo
+    row['PROMEDIO'] = getQualitativeGrade(avgNum);
+    
     return row;
   });
 };
@@ -224,52 +233,14 @@ export const buildInstrumentGradesData = (students, evaluations, instruments, pe
         data.push({
           'N°': idx + 1,
           'Estudiante': student.name,
-          'Instrumento': instruments.find(i => i.id === ev.instrumentId)?.title || ev.activityName || '-',
-          'Actividad': ev.activityName || '-',
-          'Puntaje': ev.score ?? '-',
-          'Nivel': ev.qualitative || '-',
-          'Bimestre': ev.period
+          'Instrumento': ev.activityName || ev.instrumentName || '-',
+          'Puntaje': ev.score,
+          'Máximo': ev.maxPossible || 20,
+          'Fecha': ev.date || '-'
         });
-      });
-    } else {
-      data.push({
-        'N°': idx + 1,
-        'Estudiante': student.name,
-        'Instrumento': '-',
-        'Actividad': '-',
-        'Puntaje': '-',
-        'Nivel': '-',
-        'Bimestre': period
       });
     }
   });
-
+  
   return data;
 };
-
-export const TEMPLATE_INSTRUCTIONS = `
-INSTRUCCIONES PARA PLANTILLAS PERSONALIZADAS
-============================================
-
-Ubicación de plantillas:
-Coloca tus archivos .xlsx en: /public/templates/
-
-Nombres de archivos aceptados:
-- asistencia.xlsx
-- registro_auxiliar.xlsx
-- reporte_final.xlsx
-- instrumentos.xlsx
-- lista_estudiantes.xlsx
-
-Estructura requerida:
-- La primera fila debe contener los encabezados de columna
-- Los encabezados deben coincidir con los nombres de datos:
-  * "Estudiante" - Nombre del estudiante
-  * "N°" - Número de orden
-  * "DNI" - Número de documento
-  * etc.
-
-- A partir de la segunda/tercera fila se llenarán los datos automáticamente
-
-Si no hay plantilla, el sistema generará el formato automáticamente.
-`;
