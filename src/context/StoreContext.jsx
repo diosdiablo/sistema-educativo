@@ -145,8 +145,15 @@ export const StoreProvider = ({ children }) => {
       uploadedBy: currentUser?.name || 'Admin'
     };
     setLearningSessions(prev => {
-      const updated = [...prev, newDoc];
-      localStorage.setItem('edu_learning_sessions', JSON.stringify(updated));
+      const metadata = newDoc.fileData 
+        ? { ...newDoc, fileData: null, fileSize: doc.fileData?.length || 0 }
+        : newDoc;
+      const updated = [...prev, metadata];
+      try {
+        localStorage.setItem('edu_learning_sessions', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('localStorage quota exceeded for learning sessions');
+      }
       syncToSupabase('learning_sessions', [newDoc]);
       return updated;
     });
@@ -156,7 +163,11 @@ export const StoreProvider = ({ children }) => {
   const deleteLearningSession = useCallback((docId) => {
     setLearningSessions(prev => {
       const updated = prev.filter(d => d.id !== docId);
-      localStorage.setItem('edu_learning_sessions', JSON.stringify(updated));
+      try {
+        localStorage.setItem('edu_learning_sessions', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('localStorage quota exceeded');
+      }
       deleteFromSupabase('learning_sessions', docId);
       return updated;
     });
@@ -170,8 +181,15 @@ export const StoreProvider = ({ children }) => {
       uploadedBy: currentUser?.name || 'Admin'
     };
     setPlanningDocuments(prev => {
-      const updated = [...prev, newDoc];
-      localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      const metadata = newDoc.fileData 
+        ? { ...newDoc, fileData: null, fileSize: doc.fileData?.length || 0 }
+        : newDoc;
+      const updated = [...prev, metadata];
+      try {
+        localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('localStorage quota exceeded, saving without file data');
+      }
       syncToSupabase('planning_documents', [newDoc]);
       return updated;
     });
@@ -181,7 +199,11 @@ export const StoreProvider = ({ children }) => {
   const deletePlanningDocument = useCallback((docId) => {
     setPlanningDocuments(prev => {
       const updated = prev.filter(d => d.id !== docId);
-      localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      try {
+        localStorage.setItem('edu_planning_documents', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('localStorage quota exceeded');
+      }
       deleteFromSupabase('planning_documents', docId);
       return updated;
     });
@@ -589,7 +611,14 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => { localStorage.setItem('edu_instrument_evaluations', JSON.stringify(instrumentEvaluations)); }, [instrumentEvaluations]);
   useEffect(() => { localStorage.setItem('edu_schedule', JSON.stringify(schedule)); }, [schedule]);
   useEffect(() => { localStorage.setItem('edu_diagnostic_evaluations', JSON.stringify(diagnosticEvaluations)); }, [diagnosticEvaluations]);
-  useEffect(() => { localStorage.setItem('edu_planning_documents', JSON.stringify(planningDocuments)); }, [planningDocuments]);
+  useEffect(() => { 
+    try { localStorage.setItem('edu_planning_documents', JSON.stringify(planningDocuments)); } 
+    catch (e) { console.warn('localStorage quota exceeded for planningDocuments'); }
+  }, [planningDocuments]);
+  useEffect(() => { 
+    try { localStorage.setItem('edu_learning_sessions', JSON.stringify(learningSessions)); } 
+    catch (e) { console.warn('localStorage quota exceeded for learningSessions'); }
+  }, [learningSessions]);
   useEffect(() => {
     if (currentUser) sessionStorage.setItem('edu_current_user_session', JSON.stringify(currentUser));
     else sessionStorage.removeItem('edu_current_user_session');
