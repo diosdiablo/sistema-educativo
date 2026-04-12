@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download, FileSpreadsheet, Table, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { loadTemplate, createWorkbookFromData, buildAttendanceData, buildAuxiliaryRegisterData, buildFinalReportData, buildStudentListData, buildInstrumentGradesData } from '../templates/exportTemplates';
+import { loadTemplate, createWorkbookFromData, buildAttendanceData, buildAuxiliaryRegisterData, buildFinalReportData, buildStudentListData, buildInstrumentGradesData, createSimpleGradesTemplate } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
@@ -88,66 +88,40 @@ const Reports = () => {
     if (!subject) return;
 
     const data = buildAuxiliaryRegisterData(classStudents, grades, subject, selectedPeriod);
-
-    const template = await loadTemplate('REGISTRO AUXILIAR 2026.xlsx');
-    let workbook;
     
-    if (template) {
-      const sheetName = template.SheetNames[0];
-      const worksheet = template.Sheets[sheetName];
+    // Crear plantilla simple con promedio
+    const workbook = createSimpleGradesTemplate(subject, selectedPeriod, selectedClass);
+    
+    // Agregar los datos a partir de la fila 5 (índice 4 en Excel)
+    const ws = workbook.Sheets[workbook.SheetNames[0]];
+    const startRow = 5;
+    
+    data.forEach((row, rowIndex) => {
+      const excelRow = startRow + rowIndex;
+      ws[`A${excelRow}`] = { t: 'n', v: row['N°'] };
+      ws[`B${excelRow}`] = { t: 's', v: row['Estudiante'] };
       
-      // Llenar datos del área y docente en las filas de encabezado
-      // Fila 2 (índice 2): IEP
-      // Fila 3: ÁREA
-      // Fila 4: DOCENTE
-      worksheet['D2'] = { t: 's', v: 'I.E.P. AGROPECUARIO 110' };
-      worksheet['D4'] = { t: 's', v: subject.name };
-      if (currentUser) {
-        worksheet['D6'] = { t: 's', v: currentUser.name };
-      }
-      
-      // Llenar estudiantes desde fila 10 (índice 10)
-      data.forEach((row, rowIndex) => {
-        const excelRow = 10 + rowIndex;
-        
-        // Columna 0: N° de orden
-        worksheet[`A${excelRow}`] = { t: 'n', v: rowIndex + 1 };
-        
-        // Columna 1: Apellidos y nombres
-        worksheet[`B${excelRow}`] = { t: 's', v: row.Estudiante };
-        
-        // Llenar competencias (empezando desde columna 3)
-        Object.entries(row).forEach(([key, value]) => {
-          if (key === 'Estudiante') return;
-          
-          // Buscar la columna de la competencia
-          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-          for (let col = 3; col <= range.e.c; col++) {
-            const headerCell = XLSX.utils.encode_cell({ r: 9, c: col });
-            const header = worksheet[headerCell]?.v;
-            if (header && String(header).trim().includes(key)) {
-              const targetCell = XLSX.utils.encode_cell({ r: excelRow, c: col });
-              worksheet[targetCell] = { t: 'n', v: value === '-' ? '' : value };
-              break;
-            }
-          }
-        });
+      let colIndex = 2; // Empezar en columna C
+      subject.competencies.forEach((comp, idx) => {
+        const cellRef = XLSX.utils.encode_cell({ r: excelRow, c: colIndex + idx });
+        const value = row[comp.name];
+        ws[cellRef] = { 
+          t: typeof value === 'number' ? 'n' : 's', 
+          v: value === '-' ? '' : value 
+        };
       });
       
-      workbook = template;
-    } else {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, `Bimestre ${selectedPeriod}`);
+      // Promedio en la última columna
+      const avgCol = 2 + subject.competencies.length;
+      const avgCellRef = XLSX.utils.encode_cell({ r: excelRow, c: avgCol });
+      const avgValue = row['PROMEDIO'];
+      ws[avgCellRef] = { 
+        t: typeof avgValue === 'number' ? 'n' : 's', 
+        v: avgValue === '-' ? '' : avgValue 
+      };
+    });
 
-      const wscols = [
-        { wch: 40 },
-        ...subject.competencies.map(() => ({ wch: 50 }))
-      ];
-      worksheet['!cols'] = wscols;
-    }
-
-    XLSX.writeFile(workbook, `Registro_Auxiliar_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
+    XLSX.writeFile(workbook, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
   const exportFinalReport = async () => {
