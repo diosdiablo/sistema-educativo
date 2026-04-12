@@ -1,18 +1,20 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, User, BookOpen, GraduationCap } from 'lucide-react';
+import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked } from 'lucide-react';
 
 export default function PlanningDocuments() {
-  const { classes, subjects, planningDocuments, addPlanningDocument, deletePlanningDocument, isAdmin, currentUser } = useStore();
+  const { classes, subjects, planningDocuments, learningSessions, addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser } = useStore();
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
-  const [filterGrade, setFilterGrade] = useState('Todos');
-  const [filterSubject, setFilterSubject] = useState('Todos');
+  const [selectedGrade, setSelectedGrade] = useState(null);
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [contentType, setContentType] = useState('planifications'); // 'planifications' or 'sessions'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadData, setUploadData] = useState({
     gradeLevel: '',
-    sections: [],
+    sectionId: '',
     subjectId: '',
     title: '',
     description: '',
@@ -21,47 +23,64 @@ export default function PlanningDocuments() {
     fileName: ''
   });
 
-  const handleDelete = (docId) => {
-    if (window.confirm('¿Estás seguro de eliminar este documento?')) {
-      deletePlanningDocument(docId);
-    }
-  };
-  
+  const grades = useMemo(() => {
+    const gradeMap = new Map();
+    classes.forEach(cls => {
+      const grade = cls.name.split(' - ')[0];
+      if (!gradeMap.has(grade)) {
+        gradeMap.set(grade, {
+          name: grade,
+          sections: []
+        });
+      }
+      gradeMap.get(grade).sections.push(cls);
+    });
+    return Array.from(gradeMap.values()).sort((a, b) => {
+      const aNum = parseInt(a.name.replace(/\D/g, '')) || 0;
+      const bNum = parseInt(b.name.replace(/\D/g, '')) || 0;
+      return aNum - bNum;
+    });
+  }, [classes]);
+
   const filteredDocuments = useMemo(() => {
-    let docs = planningDocuments || [];
+    const docs = contentType === 'planifications' ? planningDocuments : learningSessions;
+    let filtered = docs || [];
     
-    if (filterGrade !== 'Todos' && filterGrade) {
-      docs = docs.filter(d => d.gradeLevel === filterGrade);
-    }
-    
-    if (filterSubject !== 'Todos' && filterSubject) {
-      docs = docs.filter(d => d.subjectId === filterSubject);
+    if (selectedSection) {
+      filtered = filtered.filter(d => d.sections?.includes(selectedSection));
     }
     
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      docs = docs.filter(d => 
+      filtered = filtered.filter(d => 
         d.title?.toLowerCase().includes(term) || 
         d.description?.toLowerCase().includes(term)
       );
     }
     
-    return docs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-  }, [planningDocuments, filterGrade, filterSubject, searchTerm]);
+    return filtered.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  }, [planningDocuments, learningSessions, selectedSection, searchTerm, contentType]);
 
-  const getGradeDisplay = (doc) => {
-    const gradeName = doc.gradeLevel || 'Grado';
-    const sectionNames = doc.sections?.map(sid => {
-      const cls = classes.find(c => c.id === sid);
-      return cls?.name?.split(' - ')[1] || sid;
-    }).join(', ') || '';
-    return sectionNames ? `${gradeName} (${sectionNames})` : gradeName;
+  const getSectionName = (sectionId) => {
+    const cls = classes.find(c => c.id === sectionId);
+    return cls?.name || 'Sección';
   };
+
   const getSubjectName = (subjectId) => subjects.find(s => s.id === subjectId)?.name || 'Área no encontrada';
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const handleDelete = (docId) => {
+    if (window.confirm('¿Estás seguro de eliminar este documento?')) {
+      if (contentType === 'planifications') {
+        deletePlanningDocument(docId);
+      } else {
+        deleteLearningSession(docId);
+      }
+    }
   };
 
   const handleFileChange = (e) => {
@@ -76,31 +95,38 @@ export default function PlanningDocuments() {
   };
 
   const handleUpload = () => {
-    if (uploadData.sections.length === 0 || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
-      alert('Por favor completa todos los campos requeridos (selecciona al menos una sección)');
+    if (!uploadData.sectionId || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
+      alert('Por favor completa todos los campos requeridos');
       return;
     }
 
-    const firstClass = classes.find(c => uploadData.sections.includes(c.id));
-    const gradeLevel = firstClass ? firstClass.name.split(' - ')[0] : '';
+    const selectedClass = classes.find(c => c.id === uploadData.sectionId);
+    const gradeLevel = selectedClass ? selectedClass.name.split(' - ')[0] : '';
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target.result;
-      addPlanningDocument({
-        gradeLevel: gradeLevel,
-        sections: uploadData.sections,
+      const docData = {
+        gradeLevel,
+        sections: [uploadData.sectionId],
         subjectId: uploadData.subjectId,
         title: uploadData.title,
         description: uploadData.description,
         period: uploadData.period,
         fileData: base64,
         fileName: uploadData.fileName
-      });
+      };
+
+      if (contentType === 'planifications') {
+        addPlanningDocument(docData);
+      } else {
+        addLearningSession(docData);
+      }
+      
       setShowUploadModal(false);
       setUploadData({
         gradeLevel: '',
-        sections: [],
+        sectionId: '',
         subjectId: '',
         title: '',
         description: '',
@@ -108,7 +134,7 @@ export default function PlanningDocuments() {
         file: null,
         fileName: ''
       });
-      alert('Documento subido exitosamente');
+      alert(`${contentType === 'planifications' ? 'Planificación' : 'Sesión de Aprendizaje'} subida exitosamente`);
     };
     reader.readAsDataURL(uploadData.file);
   };
@@ -122,303 +148,580 @@ export default function PlanningDocuments() {
     ['#ec4899', '#db2777']
   ];
 
-  return (
-    <div className="animate-fade-in">
-      {/* Header con gradiente */}
-      <div style={{
-        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
-        marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <FolderOpen size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Planificación Docente</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona los documentos de planificación por grado y área</p>
-            </div>
-          </div>
-          
-          {isAdmin && (
-            <button 
-              style={{
-                background: 'white',
-                color: '#d97706',
-                border: 'none',
-                padding: '0.75rem 1.25rem',
-                borderRadius: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
-              onClick={() => setShowUploadModal(true)}
-            >
-              <Plus size={18} /> Subir Documento
-            </button>
-          )}
-        </div>
-      </div>
+  const getDocIcon = () => {
+    if (contentType === 'sessions') return BookMarked;
+    return FileText;
+  };
 
-      {/* Filtros */}
+  const DocIcon = getDocIcon();
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', gap: '1.5rem', minHeight: 'calc(100vh - 140px)' }}>
+      {/* Sidebar de navegación */}
       <div style={{
+        width: '280px',
+        flexShrink: 0,
         background: 'white',
         borderRadius: '20px',
         padding: '1.25rem',
-        marginBottom: '1.5rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         display: 'flex',
-        gap: '1rem',
-        flexWrap: 'wrap',
-        alignItems: 'center'
+        flexDirection: 'column',
+        overflow: 'hidden'
       }}>
-        <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-          <input 
-            type="text"
-            placeholder="Buscar documentos..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="input-field"
-            style={{ paddingLeft: '2.5rem' }}
-          />
-        </div>
-        
-        <select 
-          className="input-field"
-          value={filterGrade}
-          onChange={e => setFilterGrade(e.target.value)}
-          style={{ minWidth: '180px' }}
-        >
-          <option value="Todos">Todos los Grados</option>
-          {[...new Set(classes.map(c => c.name.split(' - ')[0]))].map(grade => (
-            <option key={grade} value={grade}>{grade}</option>
-          ))}
-        </select>
-        
-        <select 
-          className="input-field"
-          value={filterSubject}
-          onChange={e => setFilterSubject(e.target.value)}
-          style={{ minWidth: '180px' }}
-        >
-          <option value="Todos">Todas las Áreas</option>
-          {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-
         <div style={{ 
-          padding: '0.5rem 1rem', 
-          background: 'linear-gradient(135deg, #f59e0b15, #fbbf2415)',
-          borderRadius: '10px',
-          border: '1px solid #f59e0b30',
-          fontWeight: 600,
-          color: '#d97706',
-          fontSize: '0.85rem'
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.75rem', 
+          padding: '0.75rem',
+          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+          borderRadius: '14px',
+          color: 'white',
+          marginBottom: '1rem'
         }}>
-          {filteredDocuments.length} documento{filteredDocuments.length !== 1 ? 's' : ''}
+          <FolderOpen size={22} />
+          <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Navegador</span>
         </div>
-      </div>
 
-      {/* Grid de documentos */}
-      {filteredDocuments.length === 0 ? (
-        <div style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
-          borderRadius: '20px',
-          padding: '4rem 2rem',
-          textAlign: 'center',
-          border: '2px dashed #cbd5e1'
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-            borderRadius: '50%',
+        {/* Tipo de contenido */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            onClick={() => { setContentType('planifications'); setSelectedSection(null); }}
+            style={{
+              flex: 1,
+              padding: '0.6rem 0.5rem',
+              borderRadius: '10px',
+              border: 'none',
+              background: contentType === 'planifications' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#f1f5f9',
+              color: contentType === 'planifications' ? 'white' : 'var(--text-secondary)',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}
+          >
+            <FileText size={16} />
+            Planificaciones
+          </button>
+          <button
+            onClick={() => { setContentType('sessions'); setSelectedSection(null); }}
+            style={{
+              flex: 1,
+              padding: '0.6rem 0.5rem',
+              borderRadius: '10px',
+              border: 'none',
+              background: contentType === 'sessions' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#f1f5f9',
+              color: contentType === 'sessions' ? 'white' : 'var(--text-secondary)',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}
+          >
+            <BookMarked size={16} />
+            Sesiones
+          </button>
+        </div>
+
+        {/* Ver todo */}
+        <button
+          onClick={() => setSelectedSection(null)}
+          style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 1.5rem'
-          }}>
-            <FileText size={40} color="white" />
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-            No hay documentos de planificación
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
-            {isAdmin ? 'Sube el primer documento de planificación para comenzar.' : 'No hay documentos cargados aún.'}
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-          {filteredDocuments.map((doc, idx) => {
-            const [color1, color2] = gradientColors[idx % gradientColors.length];
+            gap: '0.75rem',
+            padding: '0.75rem',
+            borderRadius: '12px',
+            border: !selectedSection ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+            background: !selectedSection ? '#fef3c7' : 'white',
+            cursor: 'pointer',
+            width: '100%',
+            textAlign: 'left',
+            marginBottom: '0.75rem'
+          }}
+        >
+          <LayoutGrid size={18} color={!selectedSection ? '#d97706' : '#64748b'} />
+          <span style={{ fontWeight: !selectedSection ? 700 : 500, color: !selectedSection ? '#d97706' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+            Ver Todo
+          </span>
+        </button>
+
+        {/* Lista de grados y secciones */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {grades.map((grade, idx) => {
+            const gradeColor = gradientColors[idx % gradientColors.length];
+            const isGradeExpanded = selectedGrade === grade.name;
+            const hasSelectedChild = grade.sections.some(s => s.id === selectedSection);
+            
             return (
-              <div key={doc.id} style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '1.25rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                border: `1px solid ${color1}20`,
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: `linear-gradient(135deg, ${color1}, ${color2})`,
+              <div key={grade.name} style={{ marginBottom: '0.5rem' }}>
+                <button
+                  onClick={() => setSelectedGrade(isGradeExpanded ? null : grade.name)}
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: `0 4px 15px ${color1}40`
-                  }}>
-                    <FileText size={24} color="white" />
-                  </div>
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleDelete(doc.id)}
-                      style={{
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        borderRadius: '8px',
-                        padding: '0.5rem',
-                        cursor: 'pointer',
-                        color: '#ef4444',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    gap: '0.6rem',
+                    padding: '0.6rem 0.75rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: hasSelectedChild || isGradeExpanded ? `${gradeColor[0]}15` : 'transparent',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                >
+                  {isGradeExpanded ? (
+                    <ChevronDown size={16} color={gradeColor[0]} />
+                  ) : (
+                    <ChevronRight size={16} color={gradeColor[0]} />
                   )}
-                </div>
+                  <Folder size={18} color={gradeColor[0]} />
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
+                    {grade.name}
+                  </span>
+                  <span style={{ 
+                    marginLeft: 'auto', 
+                    background: gradeColor[0], 
+                    color: 'white', 
+                    fontSize: '0.7rem', 
+                    padding: '0.15rem 0.4rem', 
+                    borderRadius: '6px',
+                    fontWeight: 600
+                  }}>
+                    {grade.sections.length}
+                  </span>
+                </button>
                 
-                <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-                  {doc.title}
-                </h3>
-                
-                {doc.description && (
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.4 }}>
-                    {doc.description}
-                  </p>
+                {isGradeExpanded && (
+                  <div style={{ paddingLeft: '1.5rem', marginTop: '0.25rem' }}>
+                    {grade.sections.map(section => (
+                      <button
+                        key={section.id}
+                        onClick={() => setSelectedSection(section.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 0.6rem',
+                          borderRadius: '8px',
+                          border: selectedSection === section.id ? `2px solid ${section.color}` : '1px solid transparent',
+                          background: selectedSection === section.id ? `${section.color}15` : 'transparent',
+                          cursor: 'pointer',
+                          width: '100%',
+                          textAlign: 'left',
+                          marginBottom: '0.25rem'
+                        }}
+                      >
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: section.color
+                        }} />
+                        <span style={{ 
+                          fontWeight: selectedSection === section.id ? 600 : 400, 
+                          color: 'var(--text-secondary)',
+                          fontSize: '0.8rem'
+                        }}>
+                          {section.name.split(' - ')[1] || section.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 )}
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <GraduationCap size={14} color={color1} />
-                    <span>{getGradeDisplay(doc)}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <BookOpen size={14} color={color1} />
-                    <span>{getSubjectName(doc.subjectId)}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <Calendar size={14} color={color1} />
-                    <span>{doc.period}</span>
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
-                  <button
-                    onClick={() => setViewingDoc(doc)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      padding: '0.6rem',
-                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
-                      border: 'none',
-                      borderRadius: '10px',
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                  >
-                    <Eye size={16} /> Ver
-                  </button>
-                  <a
-                    href={doc.fileData}
-                    download={doc.fileName || 'documento.pdf'}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      padding: '0.6rem',
-                      background: 'white',
-                      border: `1px solid ${color1}`,
-                      borderRadius: '10px',
-                      color: color1,
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = `${color1}10`; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; }}
-                  >
-                    <Download size={16} /> Descargar
-                  </a>
-                </div>
-                
-                <div style={{ marginTop: '0.75rem', fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'right' }}>
-                  Subido por {doc.uploadedBy} el {formatDate(doc.uploadedAt)}
-                </div>
               </div>
             );
           })}
         </div>
-      )}
+
+        {/* Botón agregar */}
+        {isAdmin && (
+          <button 
+            onClick={() => setShowUploadModal(true)}
+            style={{
+              marginTop: 'auto',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white',
+              border: 'none',
+              padding: '0.9rem',
+              borderRadius: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+            }}
+          >
+            <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : 'Sesión'}
+          </button>
+        )}
+      </div>
+
+      {/* Contenido principal */}
+      <div style={{ flex: 1 }}>
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
+          borderRadius: '20px',
+          padding: '1.5rem 2rem',
+          marginBottom: '1.5rem',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-50%',
+            right: '-10%',
+            width: '300px',
+            height: '300px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '50%'
+          }} />
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: '50px',
+                height: '50px',
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backdropFilter: 'blur(10px)'
+              }}>
+                {contentType === 'planifications' ? <FileText size={24} /> : <BookMarked size={24} />}
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
+                  {contentType === 'planifications' ? 'Planificaciones' : 'Sesiones de Aprendizaje'}
+                </h2>
+                <p style={{ opacity: 0.9, fontSize: '0.85rem', margin: 0 }}>
+                  {selectedSection 
+                    ? `Ver documentos de ${getSectionName(selectedSection)}` 
+                    : 'Gestiona los documentos de planificación y sesiones'}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <div style={{ position: 'relative' }}>
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <input 
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{
+                    padding: '0.6rem 1rem 0.6rem 2.5rem',
+                    borderRadius: '10px',
+                    border: '1px solid #e2e8f0',
+                    fontSize: '0.9rem',
+                    width: '180px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.25rem' }}>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: viewMode === 'grid' ? 'white' : 'transparent',
+                    color: viewMode === 'grid' ? '#d97706' : 'rgba(255,255,255,0.8)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: viewMode === 'list' ? 'white' : 'transparent',
+                    color: viewMode === 'list' ? '#d97706' : 'rgba(255,255,255,0.8)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <List size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contenido */}
+        {filteredDocuments.length === 0 ? (
+          <div style={{
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+            borderRadius: '20px',
+            padding: '4rem 2rem',
+            textAlign: 'center',
+            border: '2px dashed #cbd5e1'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem'
+            }}>
+              <DocIcon size={40} color="white" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+              {searchTerm ? 'No se encontraron resultados' : `No hay ${contentType === 'planifications' ? 'planificaciones' : 'sesiones de aprendizaje'} yet`}
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+              {isAdmin 
+                ? `Sube la primera ${contentType === 'planifications' ? 'planificación' : 'sesión de aprendizaje'} para este grado.`
+                : `No hay documentos cargados aún.`}
+            </p>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+            {filteredDocuments.map((doc, idx) => {
+              const [color1, color2] = gradientColors[idx % gradientColors.length];
+              const sectionId = doc.sections?.[0];
+              const section = classes.find(c => c.id === sectionId);
+              
+              return (
+                <div key={doc.id} style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  padding: '1.25rem',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  border: `1px solid ${color1}20`,
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 4px 15px ${color1}40`
+                    }}>
+                      <DocIcon size={24} color="white" />
+                    </div>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(doc.id)}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '8px',
+                          padding: '0.5rem',
+                          cursor: 'pointer',
+                          color: '#ef4444',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+                    {doc.title}
+                  </h3>
+                  
+                  {doc.description && (
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.4 }}>
+                      {doc.description}
+                    </p>
+                  )}
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <GraduationCap size={14} color={color1} />
+                      <span>{section?.name || doc.gradeLevel || 'Grado'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <BookOpen size={14} color={color1} />
+                      <span>{getSubjectName(doc.subjectId)}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <Calendar size={14} color={color1} />
+                      <span>{doc.period}</span>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => setViewingDoc(doc)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '0.6rem',
+                        background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                        border: 'none',
+                        borderRadius: '10px',
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Eye size={16} /> Ver
+                    </button>
+                    <a
+                      href={doc.fileData}
+                      download={doc.fileName || 'documento.pdf'}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '0.6rem',
+                        background: 'white',
+                        border: `1px solid ${color1}`,
+                        borderRadius: '10px',
+                        color: color1,
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        textDecoration: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Download size={16} /> Descargar
+                    </a>
+                  </div>
+                  
+                  <div style={{ marginTop: '0.75rem', fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'right' }}>
+                    {formatDate(doc.uploadedAt)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {filteredDocuments.map((doc, idx) => {
+              const [color1, color2] = gradientColors[idx % gradientColors.length];
+              const sectionId = doc.sections?.[0];
+              const section = classes.find(c => c.id === sectionId);
+              
+              return (
+                <div key={doc.id} style={{
+                  background: 'white',
+                  borderRadius: '14px',
+                  padding: '1rem 1.25rem',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+                  border: '1px solid #f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = color1; e.currentTarget.style.boxShadow = `0 4px 15px ${color1}20`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)'; }}
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <DocIcon size={20} color="white" />
+                  </div>
+                  
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h3 style={{ fontWeight: 600, fontSize: '0.95rem', margin: 0, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {doc.title}
+                    </h3>
+                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                      <span>{section?.name || doc.gradeLevel}</span>
+                      <span>{getSubjectName(doc.subjectId)}</span>
+                      <span>{doc.period}</span>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                    <button
+                      onClick={() => setViewingDoc(doc)}
+                      style={{
+                        padding: '0.5rem',
+                        background: `${color1}15`,
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        color: color1
+                      }}
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <a
+                      href={doc.fileData}
+                      download={doc.fileName || 'documento.pdf'}
+                      style={{
+                        padding: '0.5rem',
+                        background: 'white',
+                        border: `1px solid ${color1}`,
+                        borderRadius: '8px',
+                        color: color1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <Download size={16} />
+                    </a>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(doc.id)}
+                        style={{
+                          padding: '0.5rem',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          color: '#ef4444'
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Modal de subida */}
       {showUploadModal && (
@@ -454,7 +757,9 @@ export default function PlanningDocuments() {
                 }}>
                   <Upload size={24} color="white" />
                 </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Subir Documento</h3>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                  Subir {contentType === 'planifications' ? 'Planificación' : 'Sesión'}
+                </h3>
               </div>
               <button onClick={() => setShowUploadModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
                 <X size={24} color="var(--text-secondary)" />
@@ -463,73 +768,28 @@ export default function PlanningDocuments() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Título del Documento *</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Título *</label>
                 <input 
                   type="text"
                   className="input-field"
-                  placeholder="Ej. Planificación Mensual - Marzo 2026"
+                  placeholder={contentType === 'planifications' ? "Ej. Planificación Mensual - Marzo 2026" : "Ej. Sesión 1: Introducción a..."}
                   value={uploadData.title}
                   onChange={e => setUploadData({ ...uploadData, title: e.target.value })}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  Selecciona las secciones * (clic para seleccionar varias)
-                </label>
-                <div style={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: '0.4rem',
-                  marginBottom: '0.5rem',
-                  maxHeight: '180px',
-                  overflowY: 'auto',
-                  padding: '0.5rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '10px',
-                  background: '#f8fafc'
-                }}>
-                  {classes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map(cls => {
-                    const isSelected = uploadData.sections.includes(cls.id);
-                    return (
-                      <button
-                        key={cls.id}
-                        type="button"
-                        onClick={() => {
-                          const newSections = isSelected
-                            ? uploadData.sections.filter(s => s !== cls.id)
-                            : [...uploadData.sections, cls.id];
-                          setUploadData({ ...uploadData, sections: newSections });
-                        }}
-                        style={{
-                          padding: '0.35rem 0.6rem',
-                          borderRadius: '20px',
-                          border: isSelected ? 'none' : '1px solid #cbd5e1',
-                          background: isSelected ? cls.color : 'white',
-                          color: isSelected ? 'white' : 'var(--text-primary)',
-                          fontWeight: 500,
-                          fontSize: '0.7rem',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          boxShadow: isSelected ? `0 2px 6px ${cls.color}40` : 'none',
-                          outline: isSelected ? `2px solid ${cls.color}80` : 'none'
-                        }}
-                      >
-                        {cls.name}
-                      </button>
-                    );
-                  })}
-                </div>
-                {uploadData.sections.length === 0 && (
-                  <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>
-                    ⚠️ Selecciona al menos una sección
-                  </p>
-                )}
-                {uploadData.sections.length > 0 && (
-                  <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
-                    ✓ {uploadData.sections.length} sección(es) seleccionada(s)
-                  </p>
-                )}
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Sección *</label>
+                <select 
+                  className="input-field"
+                  value={uploadData.sectionId}
+                  onChange={e => setUploadData({ ...uploadData, sectionId: e.target.value })}
+                >
+                  <option value="">Seleccionar Sección</option>
+                  {classes.map(cls => (
+                    <option key={cls.id} value={cls.id}>{cls.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -563,8 +823,8 @@ export default function PlanningDocuments() {
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Descripción (opcional)</label>
                 <textarea
                   className="input-field"
-                  rows={3}
-                  placeholder="Descripción breve del contenido del documento..."
+                  rows={2}
+                  placeholder="Descripción breve del contenido..."
                   value={uploadData.description}
                   onChange={e => setUploadData({ ...uploadData, description: e.target.value })}
                 />
@@ -603,7 +863,7 @@ export default function PlanningDocuments() {
                     border: 'none', borderRadius: '12px', padding: '0.75rem', cursor: 'pointer', fontWeight: 600
                   }}
                 >
-                  <Upload size={18} /> Subir Documento
+                  <Upload size={18} /> Subir
                 </button>
               </div>
             </div>
@@ -632,7 +892,7 @@ export default function PlanningDocuments() {
               <div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{viewingDoc.title}</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
-                  {getGradeDisplay(viewingDoc)} - {getSubjectName(viewingDoc.subjectId)}
+                  {getSectionName(viewingDoc.sections?.[0])} - {getSubjectName(viewingDoc.subjectId)}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
