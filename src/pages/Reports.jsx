@@ -91,11 +91,7 @@ const exportAuxiliaryRegister = async () => {
       return;
     }
 
-    const data = buildAuxiliaryRegisterData(classStudents, grades, subject, selectedPeriod);
-    
-    console.log('Estudiantes:', classStudents.length);
-    console.log('Data:', data);
-    console.log('Competencias:', subject.competencies);
+    const data = buildAuxiliaryRegisterData(classStudents, instrumentEvaluations, subject, selectedPeriod);
     
     // Crear libro nuevo
     const wb = XLSX.utils.book_new();
