@@ -30,10 +30,10 @@ function Sidebar({ isOpen, onClose }) {
   const allMenuItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Alumnos', path: '/students', icon: <Users size={20} /> },
-    { name: 'Evaluación Diagnóstica', path: '/diagnostic-evaluation', icon: <ClipboardList size={20} /> },
     { name: 'Asistencia', path: '/attendance', icon: <CalendarCheck size={20} /> },
     { name: 'Calificaciones', path: '/grades', icon: <GraduationCap size={20} /> },
     { name: 'Instrumentos', path: '/instruments', icon: <ClipboardCheck size={20} /> },
+    { name: 'Evaluación Diagnóstica', path: '/diagnostic-evaluation', icon: <ClipboardList size={20} /> },
     { name: 'Horario', path: '/schedule', icon: <Clock size={20} /> },
     { name: 'Planificación', path: '/planning', icon: <FolderOpen size={20} /> },
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
@@ -46,7 +46,7 @@ function Sidebar({ isOpen, onClose }) {
     { name: 'Configuración', path: '/settings', icon: <SettingsIcon size={20} /> },
   ];
 
-  const menuItems = isAdmin ? [...allMenuItems.slice(0, 2), ...adminItems, ...allMenuItems.slice(2)] : allMenuItems;
+  const menuItems = isAdmin ? [...allMenuItems, ...adminItems] : allMenuItems;
 
   return (
     <>
