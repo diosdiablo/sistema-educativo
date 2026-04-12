@@ -76,7 +76,7 @@ const Reports = () => {
     XLSX.writeFile(workbook, `Asistencia_${selectedClass.replace(/ /g, '_')}_Bimestre_${selectedPeriod}.xlsx`);
   };
 
-  const exportAuxiliaryRegister = async () => {
+const exportAuxiliaryRegister = async () => {
     if (!selectedClass || !selectedSubject) {
       alert('Por favor selecciona un grado/sección y un área');
       return;
@@ -86,42 +86,54 @@ const Reports = () => {
     const subject = subjects.find(s => s.id === selectedSubject);
     
     if (!subject) return;
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
+    }
 
     const data = buildAuxiliaryRegisterData(classStudents, grades, subject, selectedPeriod);
     
-    // Crear plantilla simple con promedio
-    const workbook = createSimpleGradesTemplate(subject, selectedPeriod, selectedClass);
+    console.log('Estudiantes:', classStudents.length);
+    console.log('Data:', data);
+    console.log('Competencias:', subject.competencies);
     
-    // Agregar los datos a partir de la fila 5 (índice 4 en Excel)
-    const ws = workbook.Sheets[workbook.SheetNames[0]];
-    const startRow = 5;
+    // Crear libro nuevo
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      [`REGISTRO DE CALIFICACIONES - ${subject.name}`],
+      [`Grado: ${selectedClass}`],
+      [`Bimestre: ${selectedPeriod}`],
+      [],
+      ['N°', 'Estudiante', ...subject.competencies.map(c => c.name), 'PROMEDIO']
+    ]);
     
-    data.forEach((row, rowIndex) => {
-      const excelRow = startRow + rowIndex;
-      ws[`A${excelRow}`] = { t: 'n', v: row['N°'] };
-      ws[`B${excelRow}`] = { t: 's', v: row['Estudiante'] };
+    // Agregar estudiantes
+    data.forEach((row, idx) => {
+      const excelRow = 5 + idx;
+      const rowData = [
+        idx + 1,
+        row['Estudiante'],
+        ...subject.competencies.map(comp => row[comp.name] || '-'),
+        row['PROMEDIO']
+      ];
       
-      let colIndex = 2; // Empezar en columna C
-      subject.competencies.forEach((comp, idx) => {
-        const cellRef = XLSX.utils.encode_cell({ r: excelRow, c: colIndex + idx });
-        const value = row[comp.name];
-        ws[cellRef] = { 
-          t: typeof value === 'number' ? 'n' : 's', 
-          v: value === '-' ? '' : value 
-        };
+      // Escribir cada celda
+      rowData.forEach((val, colIdx) => {
+        const cellRef = XLSX.utils.encode_cell({ r: excelRow, c: colIdx });
+        ws[cellRef] = { t: 's', v: String(val) };
       });
-      
-      // Promedio en la última columna
-      const avgCol = 2 + subject.competencies.length;
-      const avgCellRef = XLSX.utils.encode_cell({ r: excelRow, c: avgCol });
-      const avgValue = row['PROMEDIO'];
-      ws[avgCellRef] = { 
-        t: typeof avgValue === 'number' ? 'n' : 's', 
-        v: avgValue === '-' ? '' : avgValue 
-      };
     });
-
-    XLSX.writeFile(workbook, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
+    
+    // Ajustar anchos
+    ws['!cols'] = [
+      { wch: 5 },
+      { wch: 30 },
+      ...subject.competencies.map(() => ({ wch: 15 })),
+      { wch: 10 }
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones');
+    XLSX.writeFile(wb, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
   const exportFinalReport = async () => {
