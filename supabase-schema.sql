@@ -192,7 +192,25 @@ CREATE TABLE IF NOT EXISTS planning_documents (
 
 -- Política RLS para planning_documents
 CREATE POLICY "Enable all for planning_documents" ON planning_documents FOR ALL USING (true) WITH CHECK (true);
+
+-- Tabla de sesiones de aprendizaje
+CREATE TABLE IF NOT EXISTS learning_sessions (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  sections JSONB DEFAULT '[]',
+  subject_id TEXT NOT NULL,
+  period TEXT,
+  grade_level TEXT,
+  file_data TEXT,
+  file_name TEXT,
+  uploaded_by TEXT,
+  uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Política RLS para learning_sessions
+CREATE POLICY "Enable all for learning_sessions" ON learning_sessions FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
 -- HABILITAR RLS (Row Level Security)
@@ -209,6 +227,8 @@ ALTER TABLE instrument_evaluations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE schedule ENABLE ROW LEVEL SECURITY;
 ALTER TABLE diagnostic_evaluations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE period_dates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE planning_documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE learning_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para permitir acceso total (en desarrollo)
 CREATE POLICY "Enable all for users" ON users FOR ALL USING (true) WITH CHECK (true);
@@ -222,6 +242,7 @@ CREATE POLICY "Enable all for instrument_evaluations" ON instrument_evaluations 
 CREATE POLICY "Enable all for schedule" ON schedule FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all for diagnostic_evaluations" ON diagnostic_evaluations FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all for period_dates" ON period_dates FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all for learning_sessions" ON learning_sessions FOR ALL USING (true) WITH CHECK (true);
 
 -- ══════════════════════════════════════════════════════════════
 -- MIGRACIONES ADICIONALES (ejecutar si ya existen las tablas)
