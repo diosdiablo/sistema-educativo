@@ -1,16 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked } from 'lucide-react';
+import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle } from 'lucide-react';
 
 export default function PlanningDocuments() {
-  const { classes, subjects, planningDocuments, learningSessions, addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser } = useStore();
+  const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser } = useStore();
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
-  const [contentType, setContentType] = useState('planifications'); // 'planifications' or 'sessions'
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [contentType, setContentType] = useState('planifications');
+  const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadData, setUploadData] = useState({
     gradeLevel: '',
@@ -24,22 +24,29 @@ export default function PlanningDocuments() {
   });
 
   const grades = useMemo(() => {
-    const gradeMap = new Map();
-    classes.forEach(cls => {
-      const grade = cls.name.split(' - ')[0];
-      if (!gradeMap.has(grade)) {
-        gradeMap.set(grade, {
-          name: grade,
-          sections: []
-        });
-      }
-      gradeMap.get(grade).sections.push(cls);
-    });
-    return Array.from(gradeMap.values()).sort((a, b) => {
-      const aNum = parseInt(a.name.replace(/\D/g, '')) || 0;
-      const bNum = parseInt(b.name.replace(/\D/g, '')) || 0;
-      return aNum - bNum;
-    });
+    try {
+      if (!classes || classes.length === 0) return [];
+      const gradeMap = new Map();
+      classes.forEach(cls => {
+        if (!cls || !cls.name) return;
+        const grade = cls.name.split(' - ')[0];
+        if (!gradeMap.has(grade)) {
+          gradeMap.set(grade, {
+            name: grade,
+            sections: []
+          });
+        }
+        gradeMap.get(grade).sections.push(cls);
+      });
+      return Array.from(gradeMap.values()).sort((a, b) => {
+        const aNum = parseInt(a.name.replace(/\D/g, '')) || 0;
+        const bNum = parseInt(b.name.replace(/\D/g, '')) || 0;
+        return aNum - bNum;
+      });
+    } catch (e) {
+      console.error('Error calculating grades:', e);
+      return [];
+    }
   }, [classes]);
 
   const filteredDocuments = useMemo(() => {
