@@ -3,7 +3,8 @@ import { useStore } from '../context/StoreContext';
 import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle } from 'lucide-react';
 
 export default function PlanningDocuments() {
-  const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser } = useStore();
+  try {
+    const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser } = useStore();
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
@@ -1026,4 +1027,12 @@ export default function PlanningDocuments() {
       )}
     </div>
   );
+  } catch (err) {
+    console.error('PlanningDocuments error:', err);
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>Error al cargar planificación: {err.message}</p>
+      </div>
+    );
+  }
 }
