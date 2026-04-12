@@ -82,7 +82,12 @@ const exportAuxiliaryRegister = async () => {
       return;
     }
 
-    const classStudents = students.filter(s => s.gradeLevel === selectedClass);
+    // Buscar el classId basado en el nombre seleccionado
+    const selectedClassObj = classes.find(c => c.name === selectedClass);
+    const classId = selectedClassObj?.id;
+    
+    // Filtrar estudiantes por class_id
+    const classStudents = students.filter(s => s.classId === classId);
     const subject = subjects.find(s => s.id === selectedSubject);
     
     if (!subject) return;
