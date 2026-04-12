@@ -153,38 +153,45 @@ export const getQualitativeGrade = (score, maxScore = 20) => {
   return 'C';
 };
 
-export const buildAuxiliaryRegisterData = (students, grades, subject, period) => {
+// Calcular promedio cualitativo de varias calificaciones
+const getAverageQualitative = (scores) => {
+  const validScores = scores.filter(s => typeof s === 'number');
+  if (validScores.length === 0) return '-';
+  
+  const avg = validScores.reduce((a, b) => a + b, 0) / validScores.length;
+  return getQualitativeGrade(avg);
+};
+
+export const buildAuxiliaryRegisterData = (students, instrumentEvaluations, subject, period) => {
   return students.map((student, idx) => {
+    // Filtrar evaluaciones de este estudiante para este período
+    const studentEvals = instrumentEvaluations.filter(ev => 
+      ev.studentId === student.id && 
+      ev.period === period
+    );
+    
     const row = { 
       'N°': idx + 1,
       'Estudiante': student.name 
     };
     
-    let totalScore = 0;
-    let countScores = 0;
-    
+    // Para cada competencia, buscar las calificaciones
     subject.competencies.forEach(comp => {
-      const grade = grades.find(g => 
-        g.studentId === student.id && 
-        g.subject === subject.name && 
-        g.competencyId === comp.id && 
-        g.period === period
+      // Buscar evaluaciones que incluyan esta competencia
+      const compEvals = studentEvals.filter(ev => 
+        ev.criteria && ev.criteria.includes(comp.id)
       );
       
-      const score = grade?.score ?? '-';
-      // Convertir a calificación cualitativa
-      row[comp.name] = getQualitativeGrade(score);
+      // Obtener las calificaciones (scores)
+      const scores = compEvals.map(ev => ev.score);
       
-      if (typeof score === 'number') {
-        totalScore += score;
-        countScores++;
-      }
+      // Calcular promedio cualitativo
+      row[comp.name] = getAverageQualitative(scores);
     });
     
-    // Agregar promedio numérico
-    const avgNum = countScores > 0 ? Math.round((totalScore / countScores) * 10) / 10 : '-';
-    // Convertir promedio a cualitativo
-    row['PROMEDIO'] = getQualitativeGrade(avgNum);
+    // Promedio general
+    const allScores = studentEvals.map(ev => ev.score).filter(s => typeof s === 'number');
+    row['PROMEDIO'] = getAverageQualitative(allScores);
     
     return row;
   });
