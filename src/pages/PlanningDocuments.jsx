@@ -66,6 +66,15 @@ export default function PlanningDocuments() {
     return cls?.name || 'Sección';
   };
 
+  const getGradeDisplay = (doc) => {
+    const gradeName = doc.gradeLevel || 'Grado';
+    const sectionNames = doc.sections?.map(sid => {
+      const cls = classes.find(c => c.id === sid);
+      return cls?.name?.split(' - ')[1] || sid;
+    }).join(', ') || '';
+    return sectionNames ? `${gradeName} (${sectionNames})` : gradeName;
+  };
+
   const getSubjectName = (subjectId) => subjects.find(s => s.id === subjectId)?.name || 'Área no encontrada';
 
   const formatDate = (dateStr) => {
@@ -105,36 +114,44 @@ export default function PlanningDocuments() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const base64 = e.target.result;
-      const docData = {
-        gradeLevel,
-        sections: uploadData.sections,
-        subjectId: uploadData.subjectId,
-        title: uploadData.title,
-        description: uploadData.description,
-        period: uploadData.period,
-        fileData: base64,
-        fileName: uploadData.fileName
-      };
+      try {
+        const base64 = e.target.result;
+        const docData = {
+          gradeLevel,
+          sections: uploadData.sections,
+          subjectId: uploadData.subjectId,
+          title: uploadData.title,
+          description: uploadData.description,
+          period: uploadData.period,
+          fileData: base64,
+          fileName: uploadData.fileName
+        };
 
-      if (contentType === 'planifications') {
-        addPlanningDocument(docData);
-      } else {
-        addLearningSession(docData);
+        if (contentType === 'planifications') {
+          addPlanningDocument(docData);
+        } else {
+          addLearningSession(docData);
+        }
+        
+        setShowUploadModal(false);
+        setUploadData({
+          gradeLevel: '',
+          sections: [],
+          subjectId: '',
+          title: '',
+          description: '',
+          period: '2026',
+          file: null,
+          fileName: ''
+        });
+        alert(`${contentType === 'planifications' ? 'Planificación' : 'Sesión de Aprendizaje'} subida exitosamente`);
+      } catch (err) {
+        console.error('Error uploading:', err);
+        alert('Error al subir el documento');
       }
-      
-      setShowUploadModal(false);
-      setUploadData({
-        gradeLevel: '',
-        sections: [],
-        subjectId: '',
-        title: '',
-        description: '',
-        period: '2026',
-        file: null,
-        fileName: ''
-      });
-      alert(`${contentType === 'planifications' ? 'Planificación' : 'Sesión de Aprendizaje'} subida exitosamente`);
+    };
+    reader.onerror = () => {
+      alert('Error al leer el archivo');
     };
     reader.readAsDataURL(uploadData.file);
   };
@@ -559,7 +576,7 @@ export default function PlanningDocuments() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                       <GraduationCap size={14} color={color1} />
-                      <span>{section?.name || doc.gradeLevel || 'Grado'}</span>
+                      <span>{getGradeDisplay(doc)}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                       <BookOpen size={14} color={color1} />
@@ -663,7 +680,7 @@ export default function PlanningDocuments() {
                       {doc.title}
                     </h3>
                     <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                      <span>{section?.name || doc.gradeLevel}</span>
+                      <span>{getGradeDisplay(doc)}</span>
                       <span>{getSubjectName(doc.subjectId)}</span>
                       <span>{doc.period}</span>
                     </div>
