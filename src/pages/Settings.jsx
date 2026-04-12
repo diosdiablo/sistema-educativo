@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
   try {
