@@ -86,8 +86,16 @@ const exportAuxiliaryRegister = async () => {
     const selectedClassObj = classes.find(c => c.name === selectedClass);
     const classId = selectedClassObj?.id;
     
+    console.log('selectedClass:', selectedClass);
+    console.log('selectedClassObj:', selectedClassObj);
+    console.log('classId:', classId);
+    console.log('students:', students);
+    console.log('classes:', classes);
+    
     // Filtrar estudiantes por class_id
     const classStudents = students.filter(s => s.classId === classId);
+    console.log('classStudents:', classStudents);
+    
     const subject = subjects.find(s => s.id === selectedSubject);
     
     if (!subject) return;
