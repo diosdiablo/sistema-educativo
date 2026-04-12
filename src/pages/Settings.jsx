@@ -3,21 +3,31 @@ import { useStore } from '../context/StoreContext';
 import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
-  const { 
-    periodDates, updatePeriodDates, isAdmin,
-    users, students, attendance, grades, classes, subjects,
-    instruments, instrumentEvaluations, schedule, diagnosticEvaluations,
-    setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
-    setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
-    setCurrentUser, syncToSupabaseManual, isOnline,
-    clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData
-  } = useStore();
-  const [localDates, setLocalDates] = useState(periodDates || {});
-  const [saved, setSaved] = useState(false);
-  const [syncMsg, setSyncMsg] = useState('');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [clearMsg, setClearMsg] = useState('');
-  const [clearType, setClearType] = useState(null);
+  try {
+    const { 
+      periodDates, updatePeriodDates, isAdmin,
+      users, students, attendance, grades, classes, subjects,
+      instruments, instrumentEvaluations, schedule, diagnosticEvaluations,
+      setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
+      setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
+      setCurrentUser, syncToSupabaseManual, isOnline,
+      clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData
+    } = useStore();
+    
+    if (!periodDates) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>Cargando configuración...</p>
+        </div>
+      );
+    }
+    
+    const [localDates, setLocalDates] = useState(periodDates || {});
+    const [saved, setSaved] = useState(false);
+    const [syncMsg, setSyncMsg] = useState('');
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [clearMsg, setClearMsg] = useState('');
+    const [clearType, setClearType] = useState(null);
 
   if (!isAdmin) {
     return (
@@ -540,4 +550,12 @@ export default function Settings() {
       )}
     </div>
   );
+  } catch (err) {
+    console.error('Settings page error:', err);
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>Error al cargar configuración: {err.message}</p>
+      </div>
+    );
+  }
 }
