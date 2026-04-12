@@ -82,21 +82,8 @@ const exportAuxiliaryRegister = async () => {
       return;
     }
 
-    // Buscar el classId basado en el nombre seleccionado
-    const selectedClassObj = classes.find(c => c.name === selectedClass);
-    const classId = selectedClassObj?.id;
-    
-    console.log('selectedClass:', selectedClass);
-    console.log('selectedClassObj:', selectedClassObj);
-    console.log('classId:', classId);
-    console.log('students:', students);
-    console.log('classes:', classes);
-    
-    // Filtrar estudiantes por class_id
-    const classStudents = students.filter(s => s.classId === classId);
-    console.log('classStudents:', classStudents);
-    console.log('Primer estudiante:', students[0]);
-    
+    // Los estudiantes tienen class_id como nombre (ej: '1° GRADO B')
+    const classStudents = students.filter(s => s.class_id === selectedClass);
     const subject = subjects.find(s => s.id === selectedSubject);
     
     if (!subject) return;
