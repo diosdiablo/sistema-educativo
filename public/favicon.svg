@@ -1,12 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f59e0b"/>
-      <stop offset="100%" style="stop-color:#d97706"/>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="6" fill="url(#bg)"/>
-  <rect x="4" y="4" width="24" height="24" rx="3" fill="#fbbf24"/>
-  <text x="16" y="21" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#92400e">AGRO</text>
-  <text x="16" y="27" text-anchor="middle" font-family="Arial" font-size="6" font-weight="bold" fill="#92400e">110</text>
+  <!-- Escudo amarillo -->
+  <path d="M16 2 L28 6 L28 16 Q28 26 16 30 Q4 26 4 16 L4 6 Z" fill="url(#shieldGrad)" stroke="#d97706" stroke-width="1"/>
+  <!-- Borde verde interno -->
+  <path d="M16 4 L26 7.5 L26 16 Q26 24 16 27.5 Q6 24 6 16 L6 7.5 Z" fill="none" stroke="#059669" stroke-width="0.5"/>
+  <!-- I.E.P. 110 -->
+  <text x="16" y="9" text-anchor="middle" font-family="Arial" font-size="4.5" font-weight="bold" fill="#059669">I.E.P. 110</text>
+  <!-- AGROPECUARIO -->
+  <text x="16" y="17" text-anchor="middle" font-family="Arial" font-size="5" font-weight="bold" fill="#059669">AGRO-</text>
+  <text x="16" y="21" text-anchor="middle" font-family="Arial" font-size="4" font-weight="bold" fill="#059669">PECUARIO</text>
+  <!-- Árbol pequeño -->
+  <rect x="15" y="23" width="2" height="3" fill="#059669"/>
+  <circle cx="16" cy="23" r="1.5" fill="#059669"/>
 </svg>
