@@ -49,15 +49,21 @@ export default function PlanningDocuments() {
     }
   }, [classes]);
 
-  const docCountByGrade = useMemo(() => {
+  const docCountBySection = useMemo(() => {
     const counts = {};
     const docs = contentType === 'planifications' ? planningDocuments : learningSessions;
     (docs || []).forEach(doc => {
-      const grade = doc.gradeLevel || 'Grado';
-      counts[grade] = (counts[grade] || 0) + 1;
+      (doc.sections || []).forEach(sectionId => {
+        counts[sectionId] = (counts[sectionId] || 0) + 1;
+      });
     });
     return counts;
   }, [planningDocuments, learningSessions, contentType]);
+
+  const getDocCountForGrade = (gradeName) => {
+    const gradeSections = grade.sections.map(s => s.id);
+    return gradeSections.reduce((sum, sectionId) => sum + (docCountBySection[sectionId] || 0), 0);
+  };
 
   const filteredDocuments = useMemo(() => {
     const docs = contentType === 'planifications' ? planningDocuments : learningSessions;
@@ -325,7 +331,7 @@ export default function PlanningDocuments() {
                     borderRadius: '6px',
                     fontWeight: 600
                   }}>
-                    {docCountByGrade[grade.name] || 0}
+                    {getDocCountForGrade(grade.name)}
                   </span>
                 </button>
                 
