@@ -14,7 +14,7 @@ export default function PlanningDocuments() {
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadData, setUploadData] = useState({
     gradeLevel: '',
-    sectionId: '',
+    sections: [],
     subjectId: '',
     title: '',
     description: '',
@@ -95,20 +95,20 @@ export default function PlanningDocuments() {
   };
 
   const handleUpload = () => {
-    if (!uploadData.sectionId || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
-      alert('Por favor completa todos los campos requeridos');
+    if (uploadData.sections.length === 0 || !uploadData.subjectId || !uploadData.title || !uploadData.file) {
+      alert('Por favor completa todos los campos requeridos (selecciona al menos una sección)');
       return;
     }
 
-    const selectedClass = classes.find(c => c.id === uploadData.sectionId);
-    const gradeLevel = selectedClass ? selectedClass.name.split(' - ')[0] : '';
+    const firstClass = classes.find(c => uploadData.sections.includes(c.id));
+    const gradeLevel = firstClass ? firstClass.name.split(' - ')[0] : '';
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target.result;
       const docData = {
         gradeLevel,
-        sections: [uploadData.sectionId],
+        sections: uploadData.sections,
         subjectId: uploadData.subjectId,
         title: uploadData.title,
         description: uploadData.description,
@@ -126,7 +126,7 @@ export default function PlanningDocuments() {
       setShowUploadModal(false);
       setUploadData({
         gradeLevel: '',
-        sectionId: '',
+        sections: [],
         subjectId: '',
         title: '',
         description: '',
@@ -779,17 +779,62 @@ export default function PlanningDocuments() {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Sección *</label>
-                <select 
-                  className="input-field"
-                  value={uploadData.sectionId}
-                  onChange={e => setUploadData({ ...uploadData, sectionId: e.target.value })}
-                >
-                  <option value="">Seleccionar Sección</option>
-                  {classes.map(cls => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
+                <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  Selecciona las secciones * (clic para seleccionar varias)
+                </label>
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '0.4rem',
+                  marginBottom: '0.5rem',
+                  maxHeight: '180px',
+                  overflowY: 'auto',
+                  padding: '0.5rem',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  background: '#f8fafc'
+                }}>
+                  {classes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map(cls => {
+                    const isSelected = uploadData.sections.includes(cls.id);
+                    return (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        onClick={() => {
+                          const newSections = isSelected
+                            ? uploadData.sections.filter(s => s !== cls.id)
+                            : [...uploadData.sections, cls.id];
+                          setUploadData({ ...uploadData, sections: newSections });
+                        }}
+                        style={{
+                          padding: '0.35rem 0.6rem',
+                          borderRadius: '20px',
+                          border: isSelected ? 'none' : '1px solid #cbd5e1',
+                          background: isSelected ? cls.color : 'white',
+                          color: isSelected ? 'white' : 'var(--text-primary)',
+                          fontWeight: 500,
+                          fontSize: '0.7rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isSelected ? `0 2px 6px ${cls.color}40` : 'none',
+                          outline: isSelected ? `2px solid ${cls.color}80` : 'none'
+                        }}
+                      >
+                        {cls.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                {uploadData.sections.length === 0 && (
+                  <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>
+                    ⚠️ Selecciona al menos una sección
+                  </p>
+                )}
+                {uploadData.sections.length > 0 && (
+                  <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
+                    ✓ {uploadData.sections.length} sección(es) seleccionada(s)
+                  </p>
+                )}
               </div>
 
               <div>
