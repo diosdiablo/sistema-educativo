@@ -12,11 +12,12 @@ export const TEMPLATE_CONFIG = {
   
   auxiliaryRegister: {
     id: 'auxiliaryRegister',
-    name: 'Registro Auxiliar',
-    description: 'Plantilla para exportar calificaciones por competencia',
-    templateFile: 'registro_auxiliar.xlsx',
-    requiredColumns: ['Estudiante'],
-    dataStartRow: 3
+    name: 'Registro Auxiliar 2026',
+    description: 'Plantilla oficial de evaluación 2026 - SECUNDARIA',
+    templateFile: 'REGISTRO AUXILIAR 2026.xlsx',
+    requiredColumns: ['N° DE ORDEN'],
+    dataStartRow: 10,
+    headerRows: 9
   },
   
   finalReport: {
