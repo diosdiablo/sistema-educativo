@@ -172,12 +172,9 @@ export default function PlanningDocuments() {
     ['#ec4899', '#db2777']
   ];
 
-  const getDocIcon = () => {
-    if (contentType === 'sessions') return BookMarked;
-    return FileText;
-  };
-
-  const DocIcon = getDocIcon();
+  const DocIcon = useMemo(() => {
+    return contentType === 'sessions' ? BookMarked : FileText;
+  }, [contentType]);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', gap: '1.5rem', minHeight: 'calc(100vh - 140px)' }}>
