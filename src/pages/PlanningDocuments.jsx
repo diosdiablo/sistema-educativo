@@ -62,7 +62,9 @@ export default function PlanningDocuments() {
   }, [planningDocuments, learningSessions, contentType]);
 
   const getDocCountForGrade = (gradeName) => {
-    const gradeSections = grade.sections.map(s => s.id);
+    const gradeData = grades.find(g => g.name === gradeName);
+    if (!gradeData) return 0;
+    const gradeSections = gradeData.sections.map(s => s.id);
     return gradeSections.reduce((sum, sectionId) => sum + (docCountBySection[sectionId] || 0), 0);
   };
 
