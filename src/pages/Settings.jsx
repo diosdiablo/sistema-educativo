@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, Download, Upload, Database, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
   const { 
@@ -14,13 +14,10 @@ export default function Settings() {
   } = useStore();
   const [localDates, setLocalDates] = useState(periodDates);
   const [saved, setSaved] = useState(false);
-  const [backupMsg, setBackupMsg] = useState('');
-  const [restoreMsg, setRestoreMsg] = useState('');
   const [syncMsg, setSyncMsg] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [clearMsg, setClearMsg] = useState('');
   const [clearType, setClearType] = useState(null);
-  const fileInputRef = useRef(null);
 
   if (!isAdmin) {
     return (
@@ -39,83 +36,6 @@ export default function Settings() {
       </div>
     );
   }
-
-  const exportBackup = () => {
-    const backupData = {
-      version: '1.0',
-      exportDate: new Date().toISOString(),
-      data: {
-        users,
-        students,
-        attendance,
-        grades,
-        classes,
-        subjects,
-        instruments,
-        instrumentEvaluations,
-        schedule,
-        diagnosticEvaluations
-      }
-    };
-    
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup_agrop110_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    setBackupMsg('✓ Respaldo descargado exitosamente');
-    setTimeout(() => setBackupMsg(''), 3000);
-  };
-
-  const importBackup = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    if (!window.confirm('⚠️ ADVERTENCIA: Los datos actuales serán reemplazados. ¿Estás seguro?')) {
-      event.target.value = '';
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result;
-        const backupData = JSON.parse(content);
-        
-        if (!backupData.data || !backupData.version) {
-          throw new Error('Archivo de respaldo inválido');
-        }
-        
-        const { data } = backupData;
-        
-        if (data.users) setUsers(data.users);
-        if (data.students) setStudents(data.students);
-        if (data.attendance) setAttendance(data.attendance);
-        if (data.grades) setGrades(data.grades);
-        if (data.classes) setClasses(data.classes);
-        if (data.subjects) setSubjects(data.subjects);
-        if (data.instruments) setInstruments(data.instruments);
-        if (data.instrumentEvaluations) setInstrumentEvaluations(data.instrumentEvaluations);
-        if (data.schedule) setSchedule(data.schedule);
-        if (data.diagnosticEvaluations) setDiagnosticEvaluations(data.diagnosticEvaluations);
-        
-        setCurrentUser(null);
-        
-        setRestoreMsg('✓ Respaldo restaurado exitosamente. Inicia sesión de nuevo.');
-        setTimeout(() => setRestoreMsg(''), 5000);
-      } catch (err) {
-        setRestoreMsg('✗ Error al restaurar: Archivo corrupto o inválido');
-        setTimeout(() => setRestoreMsg(''), 5000);
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-  };
 
   const handleChange = (id, field, value) => {
     setSaved(false);
@@ -383,186 +303,6 @@ export default function Settings() {
             Estas fechas se utilizan para filtrar la asistencia en los reportes de Excel. 
             Asegúrate de que no haya solapamientos entre bimestres para garantizar la exactitud de los datos.
           </p>
-        </div>
-      </div>
-
-      {/* Sección de Respaldos */}
-      <div style={{
-        background: 'white',
-        borderRadius: '20px',
-        padding: '1.5rem',
-        marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(16, 185, 129, 0.2)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Database size={24} color="white" />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Respaldos de Datos</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Exporta e importa todos los datos del sistema</p>
-          </div>
-        </div>
-
-        <div style={{ 
-          display: 'flex', alignItems: 'center', gap: '0.75rem',
-          padding: '1rem', 
-          background: 'rgba(245, 158, 11, 0.1)', 
-          borderRadius: '12px', 
-          border: '1px solid rgba(245, 158, 11, 0.3)',
-          marginBottom: '1.5rem'
-        }}>
-          <AlertTriangle size={20} color="#f59e0b" />
-          <p style={{ fontSize: '0.85rem', color: '#92400e', margin: 0 }}>
-            <strong>Importante:</strong> Haz clic en "Exportar Respaldo" periódicamente para no perder tus datos. Si restauras un respaldo, los datos actuales serán reemplazados.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          {/* Exportar */}
-          <div style={{ 
-            padding: '1.5rem', 
-            background: 'linear-gradient(135deg, #10b98110, #05966910)', 
-            borderRadius: '16px',
-            border: '1px solid rgba(16, 185, 129, 0.2)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            transition: 'all 0.3s ease'
-          }}>
-            <div style={{ 
-              width: '64px', height: '64px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #10b981, #059669)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: '1rem',
-              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
-            }}>
-              <Download size={28} color="white" />
-            </div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Exportar Respaldo</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              Descarga un archivo JSON con todos los datos del sistema
-            </p>
-            <button 
-              onClick={exportBackup}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
-                padding: '0.75rem 1.5rem', fontWeight: 600,
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              <Download size={18} /> Exportar
-            </button>
-            {backupMsg && (
-              <p style={{ 
-                color: '#10b981', fontSize: '0.85rem', marginTop: '0.75rem',
-                fontWeight: 600
-              }}>{backupMsg}</p>
-            )}
-          </div>
-
-          {/* Importar */}
-          <div style={{ 
-            padding: '1.5rem', 
-            background: 'linear-gradient(135deg, #3b82f610, #2563eb10)', 
-            borderRadius: '16px',
-            border: '1px solid rgba(59, 130, 246, 0.2)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            transition: 'all 0.3s ease'
-          }}>
-            <div style={{ 
-              width: '64px', height: '64px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #3b82f6, #2563eb)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: '1rem',
-              boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'
-            }}>
-              <Upload size={28} color="white" />
-            </div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Restaurar Respaldo</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              Restaura los datos desde un archivo JSON de respaldo
-            </p>
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
-                padding: '0.75rem 1.5rem', fontWeight: 600,
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              <Upload size={18} /> Importar
-            </button>
-            <input 
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={importBackup}
-              style={{ display: 'none' }}
-            />
-            {restoreMsg && (
-              <p style={{ 
-                color: restoreMsg.includes('✓') ? '#10b981' : '#ef4444', 
-                fontSize: '0.85rem', 
-                marginTop: '0.75rem',
-                fontWeight: 600
-              }}>{restoreMsg}</p>
-            )}
-          </div>
-        </div>
-
-        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px' }}>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-            <strong>Datos incluidos:</strong> Usuarios, Estudiantes, Asistencia, Calificaciones, 
-            Grados/Secciones, Áreas Curriculares, Instrumentos, Evaluaciones, Horario y Evaluación Diagnóstica.
-          </p>
-        </div>
-
-        <div style={{ marginTop: '1.5rem' }}>
-          <button 
-            onClick={syncToCloud}
-            disabled={isSyncing}
-            style={{ 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: isSyncing ? '#94a3b8' : 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-              color: 'white', border: 'none', borderRadius: '12px', cursor: isSyncing ? 'not-allowed' : 'pointer',
-              padding: '0.75rem 1.5rem', fontWeight: 600, width: '100%',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
-            {isSyncing ? 'Sincronizando...' : 'Sincronizar a la Nube'}
-          </button>
-          {syncMsg && (
-            <p style={{ 
-              color: syncMsg.includes('✓') ? '#10b981' : '#ef4444', 
-              fontSize: '0.85rem', 
-              marginTop: '0.75rem',
-              fontWeight: 600,
-              textAlign: 'center'
-            }}>{syncMsg}</p>
-          )}
         </div>
       </div>
 
