@@ -49,6 +49,16 @@ export default function PlanningDocuments() {
     }
   }, [classes]);
 
+  const docCountByGrade = useMemo(() => {
+    const counts = {};
+    const docs = contentType === 'planifications' ? planningDocuments : learningSessions;
+    (docs || []).forEach(doc => {
+      const grade = doc.gradeLevel || 'Grado';
+      counts[grade] = (counts[grade] || 0) + 1;
+    });
+    return counts;
+  }, [planningDocuments, learningSessions, contentType]);
+
   const filteredDocuments = useMemo(() => {
     const docs = contentType === 'planifications' ? planningDocuments : learningSessions;
     let filtered = docs || [];
@@ -315,7 +325,7 @@ export default function PlanningDocuments() {
                     borderRadius: '6px',
                     fontWeight: 600
                   }}>
-                    {grade.sections.length}
+                    {docCountByGrade[grade.name] || 0}
                   </span>
                 </button>
                 
