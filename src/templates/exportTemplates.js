@@ -155,11 +155,27 @@ export const getQualitativeGrade = (score, maxScore = 20) => {
 
 // Calcular promedio cualitativo de varias calificaciones
 const getAverageQualitative = (scores) => {
-  const validScores = scores.filter(s => typeof s === 'number');
-  if (validScores.length === 0) return '-';
+  if (!scores || scores.length === 0) return '-';
   
-  const avg = validScores.reduce((a, b) => a + b, 0) / validScores.length;
-  return getQualitativeGrade(avg);
+  const validScores = scores.filter(s => typeof s === 'number');
+  if (validScores.length > 0) {
+    const avg = validScores.reduce((a, b) => a + b, 0) / validScores.length;
+    return getQualitativeGrade(avg);
+  }
+  
+  const validQual = scores.filter(s => typeof s === 'string' && s !== '-' && s !== undefined);
+  if (validQual.length === 0) return '-';
+  
+  if (validQual.length === 1) return validQual[0];
+  
+  const qualMap = { 'AD': 4, 'A': 3, 'B': 2, 'C': 1 };
+  const numValues = validQual.map(q => qualMap[q] || 0);
+  const avgNum = numValues.reduce((a, b) => a + b, 0) / numValues.length;
+  
+  if (avgNum >= 3.5) return 'AD';
+  if (avgNum >= 2.5) return 'A';
+  if (avgNum >= 1.5) return 'B';
+  return 'C';
 };
 
 export const buildAuxiliaryRegisterData = (students, instrumentEvaluations, subject, period) => {
@@ -252,8 +268,10 @@ export const buildInstrumentGradesData = (students, evaluations, instruments, pe
   return data;
 };
 
-export const buildDetailedGradesReport = (students, instrumentEvaluations, subject, period) => {
+export const buildDetailedGradesReport = (students, instrumentEvaluations, subjects, subjectId, period) => {
   const maxGradesPerCompetency = {};
+  const subject = subjects.find(s => s.id === subjectId);
+  if (!subject) return { headerRow1: [], headerRow2: [], data: [], maxGradesPerCompetency: {} };
   
   students.forEach(student => {
     const studentEvals = instrumentEvaluations.filter(ev => 
@@ -273,16 +291,15 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
   
   subject.competencies.forEach(comp => {
     const numCols = maxGradesPerCompetency[comp.id] || 1;
-    headerRow1.push(comp.name);
-    for (let i = 1; i < numCols; i++) {
-      headerRow1.push('');
+    for (let i = 0; i < numCols; i++) {
+      headerRow1.push(comp.name);
     }
+    headerRow1.push('PROM');
     for (let i = 0; i < numCols; i++) {
       headerRow2.push(`c${i + 1}`);
     }
+    headerRow2.push('PROM');
   });
-  headerRow1.push('PROMEDIO');
-  headerRow2.push('PROM');
   
   const data = [];
   
@@ -296,30 +313,35 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
     subject.competencies.forEach(comp => {
       const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
       const numCols = maxGradesPerCompetency[comp.id] || 1;
+      const compQualitatives = [];
       
       for (let i = 0; i < numCols; i++) {
         if (i < compEvals.length) {
-          row.push(compEvals[i].score ?? '-');
+          const qual = compEvals[i].qualitative || '-';
+          compQualitatives.push(qual);
+          row.push(qual);
         } else {
+          compQualitatives.push(null);
           row.push('-');
         }
       }
+      
+      const validQual = compQualitatives.filter(q => q !== null && q !== '-' && q !== undefined);
+      const avgQual = getAverageQualitative(validQual);
+      row.push(avgQual);
     });
-    
-    const allScores = studentEvals.map(ev => ev.score).filter(s => typeof s === 'number');
-    const avg = allScores.length > 0 
-      ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1)
-      : '-';
-    row.push(avg);
     
     data.push({ _row: row });
   });
   
-  return { headerRow1, headerRow2, data, maxGradesPerCompetency };
+  return { headerRow1, headerRow2, data, maxGradesPerCompetency, subject };
 };
 
-export const exportDetailedGradesToExcel = (students, instrumentEvaluations, subject, period, className, periodName) => {
-  const { headerRow1, headerRow2, data, maxGradesPerCompetency } = buildDetailedGradesReport(students, instrumentEvaluations, subject, period);
+export const exportDetailedGradesToExcel = (students, instrumentEvaluations, subjects, subjectId, period, className, periodName) => {
+  const result = buildDetailedGradesReport(students, instrumentEvaluations, subjects, subjectId, period);
+  if (!result.subject) return null;
+  
+  const { headerRow1, headerRow2, data, maxGradesPerCompetency, subject } = result;
   
   const wb = XLSX.utils.book_new();
   
@@ -329,8 +351,8 @@ export const exportDetailedGradesToExcel = (students, instrumentEvaluations, sub
     for (let i = 0; i < numCols; i++) {
       cols.push({ wch: 10 });
     }
+    cols.push({ wch: 10 });
   });
-  cols.push({ wch: 12 });
   
   const rows = [
     [`REGISTRO DE CALIFICACIONES DETALLADO - ${subject.name}`],
