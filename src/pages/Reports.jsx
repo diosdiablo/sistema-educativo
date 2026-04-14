@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { FileDown, CalendarCheck, Download, Table, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { loadTemplate, buildAttendanceData, buildFinalReportData, exportDetailedGradesToExcel } from '../templates/exportTemplates';
+import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
@@ -112,15 +112,21 @@ const Reports = () => {
 
     const studentData = classStudents.map((student, index) => {
       const row = [index + 1, student.name];
+      
+      const studentEvals = instrumentEvaluations.filter(ev => 
+        ev.studentId === student.id && ev.period === selectedPeriodFinal
+      );
+      
       subject.competencies.forEach(comp => {
-        const grade = grades.find(g => 
-          g.studentId === student.id && 
-          g.subject === subject.name && 
-          g.competencyId === comp.id && 
-          g.period === selectedPeriodFinal
-        );
-        row.push(grade ? (grade.score || '-') : '-');
-        row.push(grade ? (grade.conclusion || '-') : '-');
+        const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
+        const scores = compEvals.map(ev => ev.qualitative).filter(q => q);
+        
+        const grade = scores.length > 0 
+          ? (scores.length === 1 ? scores[0] : getAverageQualitative(scores)) 
+          : '-';
+        
+        row.push(grade);
+        row.push('-');
       });
       return row;
     });
@@ -151,7 +157,7 @@ const Reports = () => {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
 
       const wscols = [{ wch: 5 }, { wch: 40 }];
-      subject.competencies.forEach(() => {
+      subject.competencias.forEach(() => {
         wscols.push({ wch: 15 });
         wscols.push({ wch: 50 });
       });
