@@ -115,14 +115,15 @@ export default function Dashboard() {
   const topInstruments = useMemo(() => {
     const counts = {};
     instrumentEvaluations.forEach(ev => {
-      const key = ev.instrumentTitle || ev.instrumentId;
+      const instrument = instruments.find(i => i.id === ev.instrumentId);
+      const key = instrument?.title || instrument?.name || ev.instrumentTitle || ev.instrumentId;
       counts[key] = (counts[key] || 0) + 1;
     });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([name, count]) => ({ name, count }));
-  }, [instrumentEvaluations]);
+  }, [instrumentEvaluations, instruments]);
 
   const diagnosticStats = useMemo(() => {
     const counts = { AD: 0, A: 0, B: 0, C: 0 };
