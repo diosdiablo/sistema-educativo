@@ -28,6 +28,39 @@ const loadData = (key, defaultValue) => {
 
 const DEFAULT_SUBJECTS = [
   { id: 'cneb-mat', name: 'Matemática', competencies: [
+    { id: 'c1', name: 'Resolución de problemas' },
+    { id: 'c2', name: 'Razonamiento lógico' }
+  ]},
+  { id: 'cneb-com', name: 'Comunicación', competencies: [
+    { id: 'c1', name: 'Comprensión lectora' },
+    { id: 'c2', name: 'Expresión oral' }
+  ]},
+  { id: 'cneb-cta', name: 'Ciencia y Tecnología', competencies: [
+    { id: 'c1', name: 'Investitación científica' },
+    { id: 'c2', name: 'Uso de Tecnología' }
+  ]},
+  { id: 'cneb-per', name: 'Personal Social', competencies: [
+    { id: 'c1', name: 'Identidad personal' },
+    { id: 'c2', name: 'Relaciones interpersonales' }
+  ]},
+  { id: 'cneb-arte', name: 'Arte y Cultura', competencies: [
+    { id: 'c1', name: 'Apreciación artística' },
+    { id: 'c2', name: 'Expresión creativa' }
+  ]}
+];
+
+const DEFAULT_CLASSES = [
+  { id: '1a', name: '1° GRADO A', color: '#10b981' },
+  { id: '1b', name: '1° GRADO B', color: '#3b82f6' },
+  { id: '2a', name: '2° GRADO A', color: '#8b5cf6' },
+  { id: '2b', name: '2° GRADO B', color: '#f59e0b' },
+  { id: '3a', name: '3° GRADO A', color: '#ef4444' },
+  { id: '3b', name: '3° GRADO B', color: '#06b6d4' },
+  { id: '4a', name: '4° GRADO A', color: '#84cc16' },
+  { id: '4b', name: '4° GRADO B', color: '#f97316' },
+  { id: '5a', name: '5° GRADO A', color: '#ec4899' }
+];
+  { id: 'cneb-mat', name: 'Matemática', competencies: [
     { id: 'mat-c1', name: 'Resuelve problemas de cantidad' },
     { id: 'mat-c2', name: 'Resuelve problemas de regularidad, equivalencia y cambio' },
     { id: 'mat-c3', name: 'Resuelve problemas de forma, movimiento y localización' },
