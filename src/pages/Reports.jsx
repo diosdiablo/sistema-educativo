@@ -266,8 +266,6 @@ const exportAuxiliaryRegister = async () => {
         </div>
       </div>
 
-      <div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
         
         {/* Card Asistencia */}
