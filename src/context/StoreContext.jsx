@@ -90,19 +90,6 @@ export const StoreProvider = ({ children }) => {
     }
   }, []);
 
-  // Cleanup huérfanos al cargar
-  useEffect(() => {
-    if (users.length > 0 && schedule.length > 0) {
-      const validUserIds = users.map(u => u.id);
-      const validClassIds = classes.map(c => c.id);
-      const validSubjectIds = subjects.map(s => s.id);
-      const validSchedule = schedule.filter(s => validUserIds.includes(s.userId) && validClassIds.includes(s.classId) && validSubjectIds.includes(s.subjectId));
-      if (validSchedule.length !== schedule.length) {
-        setSchedule(validSchedule);
-      }
-    }
-  }, [users.length, schedule.length, classes.length, subjects.length]);
-
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
     if (loaded.length < 5) return DEFAULT_SUBJECTS;
@@ -365,6 +352,16 @@ export const StoreProvider = ({ children }) => {
     deleteFromSupabase('learning_sessions', id);
   };
 
+  const cleanupOrphanedSchedule = () => {
+    const validUserIds = users.map(u => u.id);
+    const validClassIds = classes.map(c => c.id);
+    const validSubjectIds = subjects.map(s => s.id);
+    const validSchedule = schedule.filter(s => validUserIds.includes(s.userId) && validClassIds.includes(s.classId) && validSubjectIds.includes(s.subjectId));
+    const removed = schedule.length - validSchedule.length;
+    setSchedule(validSchedule);
+    return removed;
+  };
+
   const syncToSupabaseManual = useCallback(async () => {
     if (!isOnline) return;
     try {
@@ -513,7 +510,7 @@ export const StoreProvider = ({ children }) => {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
-      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser,
+      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedSchedule,
       saveAttendanceDate, saveGrade,
       calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
       schedule, saveScheduleItem, deleteScheduleItem,
