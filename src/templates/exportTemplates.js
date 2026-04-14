@@ -286,15 +286,16 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
     });
   });
   
-  const headerRow1 = [];
+  const headerRow1 = ['ESTUDIANTE'];
   const headerRow2 = ['Estudiante'];
   
   subject.competencies.forEach(comp => {
     const numCols = maxGradesPerCompetency[comp.id] || 1;
-    for (let i = 0; i < numCols; i++) {
-      headerRow1.push(comp.name);
+    headerRow1.push(comp.name);
+    for (let i = 1; i < numCols; i++) {
+      headerRow1.push('');
     }
-    headerRow1.push('PROM');
+    headerRow1.push('PROMEDIO');
     for (let i = 0; i < numCols; i++) {
       headerRow2.push(`c${i + 1}`);
     }
