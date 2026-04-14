@@ -349,7 +349,11 @@ const exportAuxiliaryRegister = async () => {
       return;
     }
 
-    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subject, selectedPeriod, selectedClass, selectedPeriod);
+    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subjects, selectedSubject, selectedPeriod, selectedClass, selectedPeriod);
+    if (!workbook) {
+      alert('No se pudo generar el reporte');
+      return;
+    }
     XLSX.writeFile(workbook, `Calificaciones_Detallado_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
