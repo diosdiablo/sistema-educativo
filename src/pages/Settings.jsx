@@ -11,7 +11,7 @@ export default function Settings() {
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
       setCurrentUser, syncToSupabaseManual, isOnline,
-      clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData
+      clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData, cleanupOrphanedSchedule
     } = useStore();
     
     if (!periodDates) {
@@ -429,6 +429,32 @@ export default function Settings() {
             onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
           >
             <Trash2 size={16} /> Instrumentos ({instruments.length})
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <button 
+            onClick={() => {
+              if (window.confirm('¿Limpiar datos huérfanos? Esto eliminará horarios de docentes eliminados.')) {
+                const removed = cleanupOrphanedSchedule();
+                alert(`Se eliminaron ${removed} registros huérfanos`);
+              }
+            }}
+            style={{ 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              padding: '0.75rem 1.5rem',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              border: 'none',
+              borderRadius: '12px',
+              color: 'white',
+              cursor: 'pointer',
+              fontWeight: 600,
+              width: '100%',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+            }}
+          >
+            <Trash2 size={18} /> Limpiar Datos Huérfanos
           </button>
         </div>
 
