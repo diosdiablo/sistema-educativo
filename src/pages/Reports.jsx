@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { FileDown, CalendarCheck, Download, FolderOpen, Table } from 'lucide-react';
+import { FileDown, CalendarCheck, Download, Table, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { loadTemplate, buildAttendanceData, buildFinalReportData, exportDetailedGradesToExcel } from '../templates/exportTemplates';
 
@@ -74,63 +74,6 @@ const Reports = () => {
     }
 
     XLSX.writeFile(workbook, `Asistencia_${selectedClass.replace(/ /g, '_')}_Bimestre_${selectedPeriod}.xlsx`);
-  };
-
-const exportAuxiliaryRegister = async () => {
-    if (!selectedClass || !selectedSubject) {
-      alert('Por favor selecciona un grado/sección y un área');
-      return;
-    }
-
-    // Los estudiantes tienen class_id como nombre (ej: '1° GRADO B')
-    const classStudents = students.filter(s => s.class_id === selectedClass);
-    const subject = subjects.find(s => s.id === selectedSubject);
-    
-    if (!subject) return;
-    if (classStudents.length === 0) {
-      alert('No hay estudiantes en esta sección');
-      return;
-    }
-
-    const data = buildAuxiliaryRegisterData(classStudents, instrumentEvaluations, subject, selectedPeriod);
-    
-    // Crear libro nuevo
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([
-      [`REGISTRO DE CALIFICACIONES - ${subject.name}`],
-      [`Grado: ${selectedClass}`],
-      [`Bimestre: ${selectedPeriod}`],
-      [],
-      ['N°', 'Estudiante', ...subject.competencies.map(c => c.name), 'PROMEDIO']
-    ]);
-    
-    // Agregar estudiantes
-    data.forEach((row, idx) => {
-      const excelRow = 5 + idx;
-      const rowData = [
-        idx + 1,
-        row['Estudiante'],
-        ...subject.competencies.map(comp => row[comp.name] || '-'),
-        row['PROMEDIO']
-      ];
-      
-      // Escribir cada celda
-      rowData.forEach((val, colIdx) => {
-        const cellRef = XLSX.utils.encode_cell({ r: excelRow, c: colIdx });
-        ws[cellRef] = { t: 's', v: String(val) };
-      });
-    });
-    
-    // Ajustar anchos
-    ws['!cols'] = [
-      { wch: 5 },
-      { wch: 30 },
-      ...subject.competencies.map(() => ({ wch: 15 })),
-      { wch: 10 }
-    ];
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones');
-    XLSX.writeFile(wb, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
   const exportFinalReport = async () => {
@@ -268,7 +211,6 @@ const exportAuxiliaryRegister = async () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
         
-        {/* Card Asistencia */}
         <div style={{ 
           background: 'white', 
           borderRadius: '16px', 
@@ -333,7 +275,6 @@ const exportAuxiliaryRegister = async () => {
           </div>
         </div>
 
-        {/* Card Registro Auxiliar */}
         <div style={{ 
           background: 'white', 
           borderRadius: '16px', 
@@ -423,7 +364,6 @@ const exportAuxiliaryRegister = async () => {
           </div>
         </div>
 
-        {/* Card Reporte Final */}
         <div style={{ 
           background: 'white', 
           borderRadius: '16px', 
@@ -513,7 +453,8 @@ const exportAuxiliaryRegister = async () => {
           </div>
         </div>
 
-      {/* Sección de ayuda para plantillas */}
+      </div>
+
       <div style={{ 
         background: 'white', 
         borderRadius: '16px', 
@@ -532,7 +473,7 @@ const exportAuxiliaryRegister = async () => {
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1e293b' }}>Plantillas Personalizadas</h3>
             <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
-              Usa las plantillas de tu institucion como base
+              Usa las plantillas de tu institución como base
             </p>
           </div>
         </div>
@@ -550,23 +491,19 @@ const exportAuxiliaryRegister = async () => {
             <li><code>asistencia.xlsx</code> - Para exportar asistencia</li>
             <li><code>registro_auxiliar.xlsx</code> - Para registros de calificaciones</li>
             <li><code>reporte_final.xlsx</code> - Para reporte final oficial</li>
-            <li><code>instrumentos.xlsx</code> - Para calificaciones por instrumento</li>
-            <li><code>lista_estudiantes.xlsx</code> - Para lista de estudiantes</li>
           </ul>
 
           <p style={{ marginBottom: '0.75rem' }}><strong>Cómo usar:</strong></p>
           <ol style={{ marginLeft: '1.5rem' }}>
             <li>Copia tus plantillas de Excel en la carpeta <code>public/templates/</code></li>
-            <li>Asegúrate de que los encabezados de columna coincidan con los datos esperados:<br />
-              <code>Estudiante</code>, <code>N°</code>, <code>DNI</code>, <code>Instrumento</code>, etc.
-            </li>
+            <li>Asegúrate de que los encabezados de columna coincidan con los datos esperados</li>
             <li>Al exportar, el sistema usará tu plantilla y llenará los datos automáticamente</li>
             <li>Si no hay plantilla, se generará el formato predeterminado</li>
           </ol>
 
           <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
             <p style={{ margin: 0, fontSize: '0.8rem' }}>
-              💡 <strong>Tip:</strong> Los encabezados deben estar en la primera fila de datos para que el sistema pueda identificarlos correctamente.
+              <strong>Tip:</strong> Los encabezados deben estar en la primera fila de datos para que el sistema pueda identificarlos correctamente.
             </p>
           </div>
         </div>
