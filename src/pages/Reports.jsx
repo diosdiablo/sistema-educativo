@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download, FileSpreadsheet, Table, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { loadTemplate, createWorkbookFromData, buildAttendanceData, buildAuxiliaryRegisterData, buildFinalReportData, buildStudentListData, buildInstrumentGradesData, createSimpleGradesTemplate } from '../templates/exportTemplates';
+import { loadTemplate, createWorkbookFromData, buildAttendanceData, buildAuxiliaryRegisterData, buildFinalReportData, buildStudentListData, buildInstrumentGradesData, createSimpleGradesTemplate, exportDetailedGradesToExcel } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
@@ -329,6 +329,28 @@ const exportAuxiliaryRegister = async () => {
     }
 
     XLSX.writeFile(workbook, `Lista_Estudiantes_${selectedClass.replace(/ /g, '_')}.xlsx`);
+  };
+
+  const exportDetailedGrades = async () => {
+    if (!selectedClass || !selectedSubject) {
+      alert('Por favor selecciona un grado/sección y un área');
+      return;
+    }
+
+    const classStudents = students
+      .filter(s => s.gradeLevel === selectedClass)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const subject = subjects.find(s => s.id === selectedSubject);
+    if (!subject) return;
+
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
+    }
+
+    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subject, selectedPeriod, selectedClass, selectedPeriod);
+    XLSX.writeFile(workbook, `Calificaciones_Detallado_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
   return (
@@ -692,6 +714,96 @@ const exportAuxiliaryRegister = async () => {
 
           <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
             <p><strong>Nota:</strong> Este reporte lista todas las evaluaciones por instrumento, incluyendo puntaje y nivel cualitativo.</p>
+          </div>
+        </div>
+
+        {/* Card Calificaciones Detallado */}
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(34, 197, 94, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <Table size={24} color="#22c55e" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Calificaciones Detallado</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Sección
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                >
+                  <option value="">-- Sección --</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Periodo
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                >
+                  {periods.map(p => (
+                    <option key={p} value={p}>Bimestre {p}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Área Curricular
+              </label>
+              <select 
+                className="input-field"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
+                <option value="">-- Selecciona el Área --</option>
+                {subjects.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={exportDetailedGrades}
+              className="btn-primary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '1rem',
+                backgroundColor: '#22c55e',
+                boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.39)'
+              }}
+            >
+              <Download size={20} />
+              Exportar Calificaciones Detallado
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            <p><strong>Nota:</strong> Este reporte muestra cada evaluación por competencia en columnas separadas (c1, c2, c3).</p>
           </div>
         </div>
 
