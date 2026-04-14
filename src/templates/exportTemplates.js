@@ -154,7 +154,7 @@ export const getQualitativeGrade = (score, maxScore = 20) => {
 };
 
 // Calcular promedio cualitativo de varias calificaciones
-const getAverageQualitative = (scores) => {
+export const getAverageQualitative = (scores) => {
   if (!scores || scores.length === 0) return '-';
   
   const validScores = scores.filter(s => typeof s === 'number');
