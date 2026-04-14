@@ -157,14 +157,14 @@ const Reports = () => {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
 
       const wscols = [{ wch: 5 }, { wch: 40 }];
-      subject.competencias.forEach(() => {
+      subject.competencies.forEach(() => {
         wscols.push({ wch: 15 });
         wscols.push({ wch: 50 });
       });
       worksheet['!cols'] = wscols;
     }
 
-    XLSX.writeFile(workbook, `Reporte_Final_${subject.name}_${selectedClassFinal.replace(/ /g, '_')}_B${selectedPeriodFinal}.xlsx`);
+    XLSX.writeFile(workbook, `Reporte_Final_${subject.name.replace(/ /g, '_')}_${selectedClassFinal.replace(/ /g, '_')}_B${selectedPeriodFinal}.xlsx`);
   };
 
   const exportDetailedGrades = async () => {
