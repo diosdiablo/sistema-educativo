@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { FileDown, FileText, CalendarCheck, GraduationCap, ChevronRight, Download, FileSpreadsheet, Table, FolderOpen } from 'lucide-react';
+import { FileDown, FileText, CalendarCheck, ChevronRight, Download, Table, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { loadTemplate, createWorkbookFromData, buildAttendanceData, buildAuxiliaryRegisterData, buildFinalReportData, buildStudentListData, buildInstrumentGradesData, createSimpleGradesTemplate, exportDetailedGradesToExcel } from '../templates/exportTemplates';
+import { loadTemplate, buildAttendanceData, buildFinalReportData, buildStudentListData, exportDetailedGradesToExcel } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
@@ -211,68 +211,6 @@ const exportAuxiliaryRegister = async () => {
     }
 
     XLSX.writeFile(workbook, `Reporte_Final_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
-  };
-
-  const exportInstrumentGrades = async () => {
-    if (!selectedClass || !selectedSubject) {
-      alert('Por favor selecciona un grado/sección y un área');
-      return;
-    }
-
-    const classStudents = students
-      .filter(s => s.gradeLevel === selectedClass)
-      .sort((a, b) => a.name.localeCompare(b.name));
-    
-    const subject = subjects.find(s => s.id === selectedSubject);
-    if (!subject) return;
-
-    const data = buildInstrumentGradesData(classStudents, instrumentEvaluations, instruments, selectedPeriod);
-
-    if (data.every(row => row['Puntaje'] === '-')) {
-      alert('No hay evaluaciones registradas para este período');
-      return;
-    }
-
-    const template = await loadTemplate('instrumentos.xlsx');
-    let workbook;
-    
-    if (template) {
-      const sheetName = template.SheetNames[0];
-      const worksheet = template.Sheets[sheetName];
-      
-      data.forEach((row, rowIndex) => {
-        Object.entries(row).forEach(([key, value]) => {
-          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-          for (let col = 0; col <= range.e.c; col++) {
-            const cellRef = XLSX.utils.encode_cell({ r: 3, c: col });
-            const header = worksheet[cellRef]?.v;
-            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
-              const targetCell = XLSX.utils.encode_cell({ r: 4 + rowIndex, c: col });
-              worksheet[targetCell] = { t: 's', v: String(value) };
-              break;
-            }
-          }
-        });
-      });
-      
-      workbook = template;
-    } else {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Calificaciones');
-
-      worksheet['!cols'] = [
-        { wch: 5 },
-        { wch: 40 },
-        { wch: 30 },
-        { wch: 25 },
-        { wch: 10 },
-        { wch: 10 },
-        { wch: 10 }
-      ];
-    }
-
-    XLSX.writeFile(workbook, `Calificaciones_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
   };
 
   const exportStudentList = async () => {
@@ -543,95 +481,7 @@ const exportAuxiliaryRegister = async () => {
           </div>
         </div>
 
-        {/* Card Calificaciones por Instrumento */}
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '16px', 
-          padding: '2rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ 
-              padding: '12px', 
-              background: 'rgba(249, 115, 22, 0.1)', 
-              borderRadius: '12px' 
-            }}>
-              <FileSpreadsheet size={24} color="#f97316" />
-            </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Calificaciones por Instrumento</h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  Sección
-                </label>
-                <select 
-                  className="input-field"
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                >
-                  <option value="">-- Sección --</option>
-                  {classes.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  Periodo
-                </label>
-                <select 
-                  className="input-field"
-                  value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
-                >
-                  {periods.map(p => (
-                    <option key={p} value={p}>Bimestre {p}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                Área Curricular
-              </label>
-              <select 
-                className="input-field"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-              >
-                <option value="">-- Selecciona el Área --</option>
-                {subjects.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <button 
-              onClick={exportInstrumentGrades}
-              className="btn-primary"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: '8px', 
-                padding: '1rem',
-                backgroundColor: '#f97316',
-                boxShadow: '0 4px 14px 0 rgba(249, 115, 22, 0.39)'
-              }}
-            >
-              <Download size={20} />
-              Exportar Calificaciones por Instrumento
-            </button>
-          </div>
-
-          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-            <p><strong>Nota:</strong> Este reporte lista todas las evaluaciones por instrumento, incluyendo puntaje y nivel cualitativo.</p>
-          </div>
-        </div>
+        
 
         {/* Card Registro Auxiliar */}
         <div style={{ 
