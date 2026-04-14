@@ -451,95 +451,7 @@ const exportAuxiliaryRegister = async () => {
           </div>
         </div>
 
-        {/* Card Registros Auxiliares */}
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '16px', 
-          padding: '2rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ 
-              padding: '12px', 
-              background: 'rgba(16, 185, 129, 0.1)', 
-              borderRadius: '12px' 
-            }}>
-              <GraduationCap size={24} color="#10b981" />
-            </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Registros Auxiliares</h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  Sección
-                </label>
-                <select 
-                  className="input-field"
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                >
-                  <option value="">-- Sección --</option>
-                  {classes.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  Periodo
-                </label>
-                <select 
-                  className="input-field"
-                  value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
-                >
-                  {periods.map(p => (
-                    <option key={p} value={p}>Bimestre {p}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                Área Curricular
-              </label>
-              <select 
-                className="input-field"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-              >
-                <option value="">-- Selecciona el Área --</option>
-                {subjects.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <button 
-              onClick={exportAuxiliaryRegister}
-              className="btn-primary"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: '8px', 
-                padding: '1rem',
-                backgroundColor: 'var(--success-color)',
-                boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)'
-              }}
-            >
-              <FileText size={20} />
-              Generar Registro Auxiliar
-            </button>
-          </div>
-
-          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-            <p><strong>Nota:</strong> Este reporte unifica todas las notas registradas por competencia para el área y periodo seleccionados.</p>
-          </div>
-        </div>
+        
 
         {/* Card Reporte Final */}
         <div style={{ 
@@ -721,7 +633,7 @@ const exportAuxiliaryRegister = async () => {
           </div>
         </div>
 
-        {/* Card Calificaciones Detallado */}
+        {/* Card Registro Auxiliar */}
         <div style={{ 
           background: 'white', 
           borderRadius: '16px', 
@@ -736,7 +648,7 @@ const exportAuxiliaryRegister = async () => {
             }}>
               <Table size={24} color="#22c55e" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Calificaciones Detallado</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Registro Auxiliar</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -802,12 +714,12 @@ const exportAuxiliaryRegister = async () => {
               }}
             >
               <Download size={20} />
-              Exportar Calificaciones Detallado
+              Exportar Registro Auxiliar
             </button>
           </div>
 
           <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-            <p><strong>Nota:</strong> Este reporte muestra cada evaluación por competencia en columnas separadas (c1, c2, c3).</p>
+            <p><strong>Nota:</strong> Este reporte muestra cada evaluación por competencia con notas literales y promedio.</p>
           </div>
         </div>
 
