@@ -123,6 +123,25 @@ export const StoreProvider = ({ children }) => {
       }
     }
   }, []);
+  
+  // Cleanup huérfanos al cargar la app
+  useEffect(() => {
+    if (users.length > 0 && schedule.length > 0) {
+      const validUserIds = users.map(u => u.id);
+      const validClassIds = classes.map(c => c.id);
+      const validSubjectIds = subjects.map(s => s.id);
+      
+      const validSchedule = schedule.filter(s => 
+        validUserIds.includes(s.userId) &&
+        validClassIds.includes(s.classId) &&
+        validSubjectIds.includes(s.subjectId)
+      );
+      
+      if (validSchedule.length !== schedule.length) {
+        setSchedule(validSchedule);
+      }
+    }
+  }, [users.length, schedule.length]);
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
     if (loaded.length < 5) return DEFAULT_SUBJECTS;
@@ -766,6 +785,38 @@ export const StoreProvider = ({ children }) => {
     syncToSupabase('instrument_evaluations', instrumentEvaluations.filter(e => e.userId !== id));
     return true;
   };
+
+  const cleanupOrphanedSchedule = () => {
+    const validUserIds = users.map(u => u.id);
+    const validClassIds = classes.map(c => c.id);
+    const validSubjectIds = subjects.map(s => s.id);
+    
+    const validSchedule = schedule.filter(s => 
+      validUserIds.includes(s.userId) &&
+      validClassIds.includes(s.classId) &&
+      validSubjectIds.includes(s.subjectId)
+    );
+    
+    const removed = schedule.length - validSchedule.length;
+    setSchedule(validSchedule);
+    syncToSupabase('schedule', validSchedule);
+    return removed;
+  };
+
+  const cleanupOrphanedEvaluations = () => {
+    const validInstrumentIds = instruments.map(i => i.id);
+    const validStudentIds = students.map(s => s.id);
+    
+    const validEvals = instrumentEvaluations.filter(e => 
+      validInstrumentIds.includes(e.instrumentId) &&
+      validStudentIds.includes(e.studentId)
+    );
+    
+    const removed = instrumentEvaluations.length - validEvals.length;
+    setInstrumentEvaluations(validEvals);
+    syncToSupabase('instrument_evaluations', validEvals);
+    return removed;
+  };
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('edu_current_user');
@@ -1087,7 +1138,7 @@ export const StoreProvider = ({ children }) => {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
-      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser,
+      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedSchedule, cleanupOrphanedEvaluations,
       saveAttendanceDate, saveGrade,
       calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
       schedule, saveScheduleItem, deleteScheduleItem,
