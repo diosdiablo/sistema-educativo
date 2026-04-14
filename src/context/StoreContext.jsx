@@ -756,9 +756,14 @@ export const StoreProvider = ({ children }) => {
   };
   const deleteUser = (id) => {
     if (users.length <= 1) return false;
+    
     setUsers(users.filter(u => u.id !== id));
+    setSchedule(schedule.filter(s => s.userId !== id));
+    setInstrumentEvaluations(instrumentEvaluations.filter(e => e.userId !== id));
     if (currentUser?.id === id) setCurrentUser(null);
     deleteFromSupabase('users', id);
+    syncToSupabase('schedule', schedule.filter(s => s.userId !== id));
+    syncToSupabase('instrument_evaluations', instrumentEvaluations.filter(e => e.userId !== id));
     return true;
   };
   const logout = () => {
