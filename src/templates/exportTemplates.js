@@ -251,3 +251,100 @@ export const buildInstrumentGradesData = (students, evaluations, instruments, pe
   
   return data;
 };
+
+export const buildDetailedGradesReport = (students, instrumentEvaluations, subject, period) => {
+  const maxGradesPerCompetency = {};
+  
+  students.forEach(student => {
+    const studentEvals = instrumentEvaluations.filter(ev => 
+      ev.studentId === student.id && ev.period === period
+    );
+    
+    subject.competencies.forEach(comp => {
+      const compCount = studentEvals.filter(ev => ev.competencyId === comp.id).length;
+      if (!maxGradesPerCompetency[comp.id] || compCount > maxGradesPerCompetency[comp.id]) {
+        maxGradesPerCompetency[comp.id] = compCount;
+      }
+    });
+  });
+  
+  const headerRow1 = [];
+  const headerRow2 = ['Estudiante'];
+  
+  subject.competencies.forEach(comp => {
+    const numCols = maxGradesPerCompetency[comp.id] || 1;
+    headerRow1.push(comp.name);
+    for (let i = 1; i < numCols; i++) {
+      headerRow1.push('');
+    }
+    for (let i = 0; i < numCols; i++) {
+      headerRow2.push(`c${i + 1}`);
+    }
+  });
+  headerRow1.push('PROMEDIO');
+  headerRow2.push('PROM');
+  
+  const data = [];
+  
+  students.forEach((student) => {
+    const studentEvals = instrumentEvaluations.filter(ev => 
+      ev.studentId === student.id && ev.period === period
+    );
+    
+    const row = [student.name];
+    
+    subject.competencies.forEach(comp => {
+      const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
+      const numCols = maxGradesPerCompetency[comp.id] || 1;
+      
+      for (let i = 0; i < numCols; i++) {
+        if (i < compEvals.length) {
+          row.push(compEvals[i].score ?? '-');
+        } else {
+          row.push('-');
+        }
+      }
+    });
+    
+    const allScores = studentEvals.map(ev => ev.score).filter(s => typeof s === 'number');
+    const avg = allScores.length > 0 
+      ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1)
+      : '-';
+    row.push(avg);
+    
+    data.push({ _row: row });
+  });
+  
+  return { headerRow1, headerRow2, data, maxGradesPerCompetency };
+};
+
+export const exportDetailedGradesToExcel = (students, instrumentEvaluations, subject, period, className, periodName) => {
+  const { headerRow1, headerRow2, data, maxGradesPerCompetency } = buildDetailedGradesReport(students, instrumentEvaluations, subject, period);
+  
+  const wb = XLSX.utils.book_new();
+  
+  const cols = [{ wch: 30 }];
+  subject.competencies.forEach(comp => {
+    const numCols = maxGradesPerCompetency[comp.id] || 1;
+    for (let i = 0; i < numCols; i++) {
+      cols.push({ wch: 10 });
+    }
+  });
+  cols.push({ wch: 12 });
+  
+  const rows = [
+    [`REGISTRO DE CALIFICACIONES DETALLADO - ${subject.name}`],
+    [`Grado: ${className}`],
+    [`Bimestre: ${periodName}`],
+    [],
+    headerRow1,
+    headerRow2,
+    ...data.map(d => d._row)
+  ];
+  
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = cols;
+  
+  XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones Detallado');
+  return wb;
+};
