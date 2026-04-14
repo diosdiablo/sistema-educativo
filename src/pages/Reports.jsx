@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { FileDown, CalendarCheck, Download, Table, FolderOpen } from 'lucide-react';
+import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative } from '../templates/exportTemplates';
 
@@ -464,61 +464,7 @@ const Reports = () => {
           </div>
         </div>
 
-      </div>
-
-      <div style={{ 
-        background: 'white', 
-        borderRadius: '16px', 
-        padding: '2rem',
-        marginTop: '2rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <div style={{ 
-            padding: '12px', 
-            background: 'rgba(139, 92, 246, 0.1)', 
-            borderRadius: '12px' 
-          }}>
-            <FolderOpen size={24} color="#8b5cf6" />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1e293b' }}>Plantillas Personalizadas</h3>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
-              Usa las plantillas de tu institución como base
-            </p>
-          </div>
-        </div>
-
-        <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-          <p style={{ marginBottom: '1rem' }}>
-            <strong>Ubicación de plantillas:</strong><br />
-            <code style={{ background: '#e2e8f0', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem' }}>
-              public/templates/
-            </code>
-          </p>
-
-          <p style={{ marginBottom: '0.75rem' }}><strong>Archivos de plantilla que puedes usar:</strong></p>
-          <ul style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
-            <li><code>asistencia.xlsx</code> - Para exportar asistencia</li>
-            <li><code>registro_auxiliar.xlsx</code> - Para registros de calificaciones</li>
-            <li><code>reporte_final.xlsx</code> - Para reporte final oficial</li>
-          </ul>
-
-          <p style={{ marginBottom: '0.75rem' }}><strong>Cómo usar:</strong></p>
-          <ol style={{ marginLeft: '1.5rem' }}>
-            <li>Copia tus plantillas de Excel en la carpeta <code>public/templates/</code></li>
-            <li>Asegúrate de que los encabezados de columna coincidan con los datos esperados</li>
-            <li>Al exportar, el sistema usará tu plantilla y llenará los datos automáticamente</li>
-            <li>Si no hay plantilla, se generará el formato predeterminado</li>
-          </ol>
-
-          <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-            <p style={{ margin: 0, fontSize: '0.8rem' }}>
-              <strong>Tip:</strong> Los encabezados deben estar en la primera fila de datos para que el sistema pueda identificarlos correctamente.
-            </p>
-          </div>
-        </div>
-      </div>
+</div>
     </div>
   );
 };
