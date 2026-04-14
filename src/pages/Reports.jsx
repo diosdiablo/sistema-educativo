@@ -6,31 +6,36 @@ import { loadTemplate, buildAttendanceData, buildFinalReportData, exportDetailed
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('1');
+  const [selectedClassAttendance, setSelectedClassAttendance] = useState('');
+  const [selectedPeriodAttendance, setSelectedPeriodAttendance] = useState('1');
+  const [selectedClassAux, setSelectedClassAux] = useState('');
+  const [selectedSubjectAux, setSelectedSubjectAux] = useState('');
+  const [selectedPeriodAux, setSelectedPeriodAux] = useState('1');
+  const [selectedClassFinal, setSelectedClassFinal] = useState('');
+  const [selectedSubjectFinal, setSelectedSubjectFinal] = useState('');
+  const [selectedPeriodFinal, setSelectedPeriodFinal] = useState('1');
 
   const periods = ['1', '2', '3', '4'];
 
   const exportAttendance = async () => {
-    if (!selectedClass) {
+    if (!selectedClassAttendance) {
       alert('Por favor selecciona un grado/sección');
       return;
     }
 
-    const classStudents = students.filter(s => s.gradeLevel === selectedClass);
+    const classStudents = students.filter(s => s.gradeLevel === selectedClassAttendance);
     if (classStudents.length === 0) {
       alert('No hay estudiantes en esta sección');
       return;
     }
 
-    const period = periodDates[selectedPeriod];
+    const period = periodDates[selectedPeriodAttendance];
     const allDates = [...new Set(attendance.map(a => a.date))]
       .filter(date => date >= period.start && date <= period.end)
       .sort();
     
     if (allDates.length === 0) {
-      alert(`No hay registros de asistencia para el Bimestre ${selectedPeriod} en las fechas configuradas (${period.start} a ${period.end}).`);
+      alert(`No hay registros de asistencia para el Bimestre ${selectedPeriodAttendance} en las fechas configuradas (${period.start} a ${period.end}).`);
       return;
     }
     
@@ -73,29 +78,29 @@ const Reports = () => {
       worksheet['!cols'] = wscols;
     }
 
-    XLSX.writeFile(workbook, `Asistencia_${selectedClass.replace(/ /g, '_')}_Bimestre_${selectedPeriod}.xlsx`);
+    XLSX.writeFile(workbook, `Asistencia_${selectedClassAttendance.replace(/ /g, '_')}_Bimestre_${selectedPeriodAttendance}.xlsx`);
   };
 
   const exportFinalReport = async () => {
-    if (!selectedClass || !selectedSubject) {
+    if (!selectedClassFinal || !selectedSubjectFinal) {
       alert('Por favor selecciona un grado/sección y un área');
       return;
     }
 
     const classStudents = students
-      .filter(s => s.gradeLevel === selectedClass)
+      .filter(s => s.gradeLevel === selectedClassFinal)
       .sort((a, b) => a.name.localeCompare(b.name));
     
-    const subject = subjects.find(s => s.id === selectedSubject);
+    const subject = subjects.find(s => s.id === selectedSubjectFinal);
     if (!subject) return;
 
     const headerRows = [
       ['REGISTRO FINAL'],
       [''],
       ['Área:', subject.name],
-      ['Grado y Sección:', selectedClass],
+      ['Grado y Sección:', selectedClassFinal],
       ['Docente:', currentUser?.name || 'Administrador'],
-      ['Periodo:', `Bimestre ${selectedPeriod}`],
+      ['Periodo:', `Bimestre ${selectedPeriodFinal}`],
       ['']
     ];
 
@@ -112,7 +117,7 @@ const Reports = () => {
           g.studentId === student.id && 
           g.subject === subject.name && 
           g.competencyId === comp.id && 
-          g.period === selectedPeriod
+          g.period === selectedPeriodFinal
         );
         row.push(grade ? (grade.score || '-') : '-');
         row.push(grade ? (grade.conclusion || '-') : '-');
@@ -153,20 +158,20 @@ const Reports = () => {
       worksheet['!cols'] = wscols;
     }
 
-    XLSX.writeFile(workbook, `Reporte_Final_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
+    XLSX.writeFile(workbook, `Reporte_Final_${subject.name}_${selectedClassFinal.replace(/ /g, '_')}_B${selectedPeriodFinal}.xlsx`);
   };
 
   const exportDetailedGrades = async () => {
-    if (!selectedClass || !selectedSubject) {
+    if (!selectedClassAux || !selectedSubjectAux) {
       alert('Por favor selecciona un grado/sección y un área');
       return;
     }
 
     const classStudents = students
-      .filter(s => s.gradeLevel === selectedClass)
+      .filter(s => s.gradeLevel === selectedClassAux)
       .sort((a, b) => a.name.localeCompare(b.name));
     
-    const subject = subjects.find(s => s.id === selectedSubject);
+    const subject = subjects.find(s => s.id === selectedSubjectAux);
     if (!subject) return;
 
     if (classStudents.length === 0) {
@@ -174,12 +179,12 @@ const Reports = () => {
       return;
     }
 
-    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subjects, selectedSubject, selectedPeriod, selectedClass, selectedPeriod);
+    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subjects, selectedSubjectAux, selectedPeriodAux, selectedClassAux, selectedPeriodAux);
     if (!workbook) {
       alert('No se pudo generar el reporte');
       return;
     }
-    XLSX.writeFile(workbook, `Calificaciones_Detallado_${subject.name}_${selectedClass.replace(/ /g, '_')}_B${selectedPeriod}.xlsx`);
+    XLSX.writeFile(workbook, `Calificaciones_Detallado_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`);
   };
 
   return (
@@ -235,8 +240,8 @@ const Reports = () => {
               </label>
               <select 
                 className="input-field"
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
+                value={selectedClassAttendance}
+                onChange={(e) => setSelectedClassAttendance(e.target.value)}
               >
                 <option value="">-- Elige una sección --</option>
                 {classes.map(c => (
@@ -251,8 +256,8 @@ const Reports = () => {
               </label>
               <select 
                 className="input-field"
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
+                value={selectedPeriodAttendance}
+                onChange={(e) => setSelectedPeriodAttendance(e.target.value)}
               >
                 {periods.map(p => (
                   <option key={p} value={p}>Bimestre {p}</option>
@@ -266,7 +271,7 @@ const Reports = () => {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '1rem' }}
             >
               <Download size={20} />
-              Exportar Asistencia de Bimestre {selectedPeriod}
+              Exportar Asistencia de Bimestre {selectedPeriodAttendance}
             </button>
           </div>
 
@@ -300,8 +305,8 @@ const Reports = () => {
                 </label>
                 <select 
                   className="input-field"
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
+                  value={selectedClassAux}
+                  onChange={(e) => setSelectedClassAux(e.target.value)}
                 >
                   <option value="">-- Sección --</option>
                   {classes.map(c => (
@@ -315,8 +320,8 @@ const Reports = () => {
                 </label>
                 <select 
                   className="input-field"
-                  value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  value={selectedPeriodAux}
+                  onChange={(e) => setSelectedPeriodAux(e.target.value)}
                 >
                   {periods.map(p => (
                     <option key={p} value={p}>Bimestre {p}</option>
@@ -331,8 +336,8 @@ const Reports = () => {
               </label>
               <select 
                 className="input-field"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                value={selectedSubjectAux}
+                onChange={(e) => setSelectedSubjectAux(e.target.value)}
               >
                 <option value="">-- Selecciona el Área --</option>
                 {subjects.map(s => (
@@ -389,8 +394,8 @@ const Reports = () => {
                 </label>
                 <select 
                   className="input-field"
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
+                  value={selectedClassFinal}
+                  onChange={(e) => setSelectedClassFinal(e.target.value)}
                 >
                   <option value="">-- Sección --</option>
                   {classes.map(c => (
@@ -404,8 +409,8 @@ const Reports = () => {
                 </label>
                 <select 
                   className="input-field"
-                  value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  value={selectedPeriodFinal}
+                  onChange={(e) => setSelectedPeriodFinal(e.target.value)}
                 >
                   {periods.map(p => (
                     <option key={p} value={p}>Bimestre {p}</option>
@@ -420,8 +425,8 @@ const Reports = () => {
               </label>
               <select 
                 className="input-field"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                value={selectedSubjectFinal}
+                onChange={(e) => setSelectedSubjectFinal(e.target.value)}
               >
                 <option value="">-- Selecciona el Área --</option>
                 {subjects.map(s => (
