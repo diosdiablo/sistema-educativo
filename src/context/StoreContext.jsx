@@ -142,10 +142,29 @@ export const StoreProvider = ({ children }) => {
             ...s,
             competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
           })));
-          if (gradesData?.length > 0) setGrades(gradesData);
+          if (gradesData?.length > 0) setGrades(gradesData.map(g => ({
+            ...g,
+            studentId: g.student_id,
+            competencyId: g.competency_id
+          })));
           if (attendanceData?.length > 0) setAttendance(attendanceData);
-          if (instrumentsData?.length > 0) setInstruments(instrumentsData);
-          if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData);
+          if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
+            ...i,
+            instrumentId: i.instrument_id,
+            subjectId: i.subject_id,
+            classId: i.class_id
+          })));
+          if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
+            ...ev,
+            instrumentId: ev.instrument_id,
+            studentId: ev.student_id,
+            competencyId: ev.competency_id,
+            subjectId: ev.subject_id,
+            classId: ev.class_id,
+            maxPossible: ev.max_possible,
+            studentName: ev.student_name,
+            instrumentType: ev.instrument_type
+          })));
           if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
             ...s,
             userId: s.user_id,
@@ -195,7 +214,22 @@ export const StoreProvider = ({ children }) => {
         supabase.from('diagnostic_evaluations').select('*')
       ]);
       
-      if (studentsData?.length > 0) setStudents(studentsData);
+      if (studentsData?.length > 0) {
+        const normalizedStudents = studentsData.map(s => ({
+          ...s,
+          name: s.name,
+          dni: s.dni,
+          gradeLevel: s.grade_level || s.gradeLevel || s.grade,
+          classId: s.class_id || s.classId,
+          guardianName: s.guardian_name || s.guardianName,
+          guardianDni: s.guardian_dni || s.guardianDni,
+          guardianPhone: s.guardian_phone || s.guardianPhone,
+          birthDate: s.birth_date || s.birthDate,
+          address: s.address,
+          phone: s.phone
+        }));
+        setStudents(normalizedStudents);
+      }
       if (classesData?.length > 0) {
         console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
         setClasses(classesData);
@@ -204,10 +238,29 @@ export const StoreProvider = ({ children }) => {
         ...s,
         competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
       })));
-      if (gradesData?.length > 0) setGrades(gradesData);
+      if (gradesData?.length > 0) setGrades(gradesData.map(g => ({
+        ...g,
+        studentId: g.student_id,
+        competencyId: g.competency_id
+      })));
       if (attendanceData?.length > 0) setAttendance(attendanceData);
-      if (instrumentsData?.length > 0) setInstruments(instrumentsData);
-      if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData);
+      if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
+        ...i,
+        instrumentId: i.instrument_id,
+        subjectId: i.subject_id,
+        classId: i.class_id
+      })));
+      if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
+        ...ev,
+        instrumentId: ev.instrument_id,
+        studentId: ev.student_id,
+        competencyId: ev.competency_id,
+        subjectId: ev.subject_id,
+        classId: ev.class_id,
+        maxPossible: ev.max_possible,
+        studentName: ev.student_name,
+        instrumentType: ev.instrument_type
+      })));
       if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
         ...s,
         userId: s.user_id,
