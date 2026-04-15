@@ -273,13 +273,26 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
   const subject = subjects.find(s => s.id === subjectId);
   if (!subject) return { headerRow1: [], headerRow2: [], data: [], maxGradesPerCompetency: {} };
   
+  console.log('Building report for period:', period, '| subjectId:', subjectId);
+  console.log('Total evaluations:', instrumentEvaluations.length);
+  console.log('Students:', students.length);
+  
   students.forEach(student => {
     const studentEvals = instrumentEvaluations.filter(ev => 
       ev.studentId === student.id && ev.period === period
     );
     
+    if (studentEvals.length > 0) {
+      console.log('Student:', student.name, '| id:', student.id, '| evals:', studentEvals.length);
+      studentEvals.forEach(ev => {
+        console.log('  - eval period:', ev.period, '| competencyId:', ev.competencyId, '| studentId:', ev.studentId);
+      });
+    }
+    
     subject.competencies.forEach(comp => {
-      const compCount = studentEvals.filter(ev => ev.competencyId === comp.id).length;
+      const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
+      const compCount = compEvals.length;
+      console.log('Competency:', comp.name, '| id:', comp.id, '| count:', compCount);
       if (!maxGradesPerCompetency[comp.id] || compCount > maxGradesPerCompetency[comp.id]) {
         maxGradesPerCompetency[comp.id] = compCount;
       }
