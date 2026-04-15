@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Sparkles, Loader2, Copy, Download, X, ChevronDown, ChevronRight, BookOpen, Clock, Target, Package, PlayCircle, CheckCircle, Lightbulb, Save } from 'lucide-react';
-import { generateLessonPlan, formatLessonPlanAsText } from '../lib/deepseek';
+import { generateLessonPlan, formatLessonPlanAsText } from '../lib/gemini';
 
 export default function AIPlanningGenerator() {
   const { classes = [], subjects = [], addPlanningDocument, currentUser } = useStore();
@@ -158,7 +158,7 @@ export default function AIPlanningGenerator() {
                   Generador de Planes con IA
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  DeepSeek · Modelo gratuito
+                  Google Gemini · 100 solicitudes/min gratis
                 </p>
               </div>
             </div>
