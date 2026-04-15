@@ -277,12 +277,16 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
   students.forEach(s => { studentsByName[s.name] = s; });
 
   const getStudentEvals = (student) => {
-    return instrumentEvaluations.filter(ev => {
+    const evals = instrumentEvaluations.filter(ev => {
       if (ev.period !== period) return false;
       const idMatch = ev.studentId === student.id || ev.student_id === student.id;
       const nameMatch = ev.student_name && ev.student_name === student.name;
       return idMatch || nameMatch;
     });
+    if (evals.length > 0) {
+      console.log('getStudentEvals:', student.name, '| found:', evals.length, '| evals:', evals.map(e => ({ id: e.id, studentName: e.studentName, student_name: e.student_name })));
+    }
+    return evals;
   };
   
   students.forEach(student => {
