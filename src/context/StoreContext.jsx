@@ -169,7 +169,10 @@ export const StoreProvider = ({ children }) => {
       ]);
       
       if (studentsData?.length > 0) setStudents(studentsData);
-      if (classesData?.length > 0) setClasses(classesData);
+      if (classesData?.length > 0) {
+        console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
+        setClasses(classesData);
+      }
       if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
         ...s,
         competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
@@ -251,9 +254,9 @@ export const StoreProvider = ({ children }) => {
           .single();
         
         if (data) {
+          console.log('User logged in:', data.name, 'role:', data.role, 'assignments:', data.assignments);
           setCurrentUser(data);
           sessionStorage.setItem('edu_current_user_session', JSON.stringify(data));
-          fetchFromSupabase();
           return true;
         }
       } catch (err) {
