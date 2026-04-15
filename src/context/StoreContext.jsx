@@ -146,7 +146,12 @@ export const StoreProvider = ({ children }) => {
           if (attendanceData?.length > 0) setAttendance(attendanceData);
           if (instrumentsData?.length > 0) setInstruments(instrumentsData);
           if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData);
-          if (scheduleData?.length > 0) setSchedule(scheduleData);
+          if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
+            ...s,
+            userId: s.user_id,
+            classId: s.class_id,
+            subjectId: s.subject_id
+          })));
           if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
           
           console.log('Loaded:', studentsData?.length, 'students');
@@ -203,7 +208,12 @@ export const StoreProvider = ({ children }) => {
       if (attendanceData?.length > 0) setAttendance(attendanceData);
       if (instrumentsData?.length > 0) setInstruments(instrumentsData);
       if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData);
-      if (scheduleData?.length > 0) setSchedule(scheduleData);
+      if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
+        ...s,
+        userId: s.user_id,
+        classId: s.class_id,
+        subjectId: s.subject_id
+      })));
       if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       
       console.log('Loaded:', studentsData?.length, 'students');
@@ -442,7 +452,7 @@ export const StoreProvider = ({ children }) => {
     setInstrumentEvaluations(prev => [...prev, newEvaluation]);
   };
 
-  const saveScheduleItem = (item) => {
+  const saveScheduleItem = async (item) => {
     const newItem = { ...item, id: item.id || generateId() };
     setSchedule(prev => {
       if (prev.find(s => s.id === newItem.id)) {
@@ -450,11 +460,24 @@ export const StoreProvider = ({ children }) => {
       }
       return [...prev, newItem];
     });
+    if (isOnline) {
+      const supabaseItem = {
+        id: newItem.id,
+        user_id: newItem.userId,
+        class_id: newItem.classId,
+        subject_id: newItem.subjectId,
+        day: newItem.day,
+        time: newItem.time,
+        color: newItem.color
+      };
+      await supabase.from('schedule').upsert(supabaseItem, { onConflict: 'id' });
+    }
     return newItem;
   };
 
   const deleteScheduleItem = (id) => {
     setSchedule(prev => prev.filter(s => s.id !== id));
+    deleteFromSupabase('schedule', id);
   };
 
   const updatePeriodDates = (periodId, dates) => {
