@@ -175,7 +175,27 @@ export const StoreProvider = ({ children }) => {
     }
   }, [isOnline]);
 
-  const login = (username, password) => {
+  const login = async (username, password) => {
+    if (isOnline) {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('username', username)
+          .eq('password', password)
+          .single();
+        
+        if (data) {
+          setCurrentUser(data);
+          sessionStorage.setItem('edu_current_user_session', JSON.stringify(data));
+          fetchFromSupabase();
+          return true;
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+      }
+    }
+    
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
       setCurrentUser(user);
