@@ -118,7 +118,14 @@ export const StoreProvider = ({ children }) => {
             supabase.from('diagnostic_evaluations').select('*')
           ]);
           
-          if (studentsData?.length > 0) setStudents(studentsData);
+      if (studentsData?.length > 0) {
+        const normalizedStudents = studentsData.map(s => ({
+          ...s,
+          gradeLevel: s.grade_level || s.gradeLevel || s.grade,
+          classId: s.class_id || s.classId
+        }));
+        setStudents(normalizedStudents);
+      }
           if (classesData?.length > 0) {
             console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
             setClasses(classesData);
