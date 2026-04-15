@@ -7,15 +7,18 @@ export default function Login() {
   const { login } = useStore();
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    const success = login(username, password);
+    const success = await login(username, password);
+    setLoading(false);
     if (!success) {
       setError('Usuario o contraseña incorrectos.');
     }
