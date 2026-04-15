@@ -91,6 +91,14 @@ export const StoreProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    if (currentUser && isOnline) {
+      fetchFromSupabase();
+    }
+  }, [currentUser, isOnline]);
+
+  const fetchFromSupabase = useCallback(async () => {
+
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
     if (loaded.length < 5) return DEFAULT_SUBJECTS;
@@ -386,55 +394,6 @@ export const StoreProvider = ({ children }) => {
       alert('Error al sincronizar');
     }
   }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, syncToSupabase]);
-
-  const fetchFromSupabase = useCallback(async () => {
-    if (!isOnline) return;
-    setSyncStatus('syncing');
-    try {
-      const [{ data: usersData }, { data: studentsData }, { data: subjectsData }, { data: classesData }, { data: gradesData }, { data: attendanceData }, { data: instrumentsData }, { data: instrumentEvalsData }, { data: scheduleData }, { data: diagnosticData }] = await Promise.all([
-        supabase.from('users').select('*'),
-        supabase.from('students').select('*'),
-        supabase.from('subjects').select('*'),
-        supabase.from('classes').select('*'),
-        supabase.from('grades').select('*'),
-        supabase.from('attendance').select('*'),
-        supabase.from('instruments').select('*'),
-        supabase.from('instrument_evaluations').select('*'),
-        supabase.from('schedule').select('*'),
-        supabase.from('diagnostic_evaluations').select('*')
-      ]);
-
-      if (usersData?.length > 0) setUsers(mergeData(loadData('edu_users', []), usersData));
-      if (studentsData?.length > 0) setStudents(mergeData(loadData('edu_students', []), studentsData));
-      if (subjectsData?.length > 0) setSubjects(mergeData(loadData('edu_subjects', DEFAULT_SUBJECTS), subjectsData));
-      if (classesData?.length > 0) setClasses(mergeData(loadData('edu_classes', DEFAULT_CLASSES), classesData));
-      if (gradesData?.length > 0) setGrades(mergeData(loadData('edu_grades', []), gradesData));
-      if (attendanceData?.length > 0) setAttendance(mergeData(loadData('edu_attendance', []), attendanceData));
-      if (instrumentsData?.length > 0) setInstruments(mergeData(loadData('edu_instruments', []), instrumentsData));
-
-      const cloudInstrumentEvals = instrumentEvalsData?.map(e => ({
-        ...e,
-        createdAt: e.created_at,
-        period: e.period?.toString() || '1'
-      })) || [];
-      if (cloudInstrumentEvals.length > 0) setInstrumentEvaluations(mergeData(loadData('edu_instrument_evaluations', []), cloudInstrumentEvals));
-
-      if (scheduleData?.length > 0) {
-        const cloudSchedule = scheduleData.map(s => ({
-          ...s,
-          times: s.times ? (typeof s.times === 'string' ? JSON.parse(s.times) : s.times) : [s.time]
-        }));
-        setSchedule(mergeData(loadData('edu_schedule', []), cloudSchedule));
-      }
-
-      if (diagnosticData?.length > 0) setDiagnosticEvaluations(mergeData(loadData('edu_diagnostic_evaluations', []), diagnosticData));
-
-      setSyncStatus('synced');
-    } catch (err) {
-      console.error('Fetch error:', err);
-      setSyncStatus('error');
-    }
-  }, [isOnline]);
 
   const clearAllGrades = () => {
     setGrades([]);
