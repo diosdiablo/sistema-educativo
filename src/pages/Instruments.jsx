@@ -344,10 +344,12 @@ export default function Instruments() {
     } else if (selectedGroupIdx !== null && tempGroups[selectedGroupIdx]?.members.length > 0) {
       const membersToSave = tempGroups[selectedGroupIdx].members;
       console.log('[SAVE GROUP] Guardando evaluaciones para grupo:', tempGroups[selectedGroupIdx].name, '| miembros:', membersToSave.length);
+      console.log('[SAVE GROUP] Members:', JSON.stringify(membersToSave));
       
       membersToSave.forEach((member, idx) => {
+        console.log('[SAVE GROUP] Processing member:', idx, member);
         const evalData = buildEvaluationData(member);
-        console.log('[SAVE GROUP]', idx + 1, '/', membersToSave.length, ':', member.name, '| score:', evalData.score, '| qualitative:', evalData.qualitative);
+        console.log('[SAVE GROUP] EvalData:', JSON.stringify({ studentId: evalData.studentId, studentName: evalData.studentName, score: evalData.score }));
         saveInstrumentEvaluation(evalData);
       });
       const newMemberIds = new Set(membersToSave.map(m => m.id));
