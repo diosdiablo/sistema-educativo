@@ -92,12 +92,57 @@ export const StoreProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (currentUser && isOnline) {
-      fetchFromSupabase();
+    if (isOnline) {
+      const loadData = async () => {
+        setSyncStatus('syncing');
+        try {
+          const [
+            { data: studentsData },
+            { data: classesData },
+            { data: subjectsData },
+            { data: gradesData },
+            { data: attendanceData },
+            { data: instrumentsData },
+            { data: instrumentEvalsData },
+            { data: scheduleData },
+            { data: diagnosticData }
+          ] = await Promise.all([
+            supabase.from('students').select('*'),
+            supabase.from('classes').select('*'),
+            supabase.from('subjects').select('*'),
+            supabase.from('grades').select('*'),
+            supabase.from('attendance').select('*'),
+            supabase.from('instruments').select('*'),
+            supabase.from('instrument_evaluations').select('*'),
+            supabase.from('schedule').select('*'),
+            supabase.from('diagnostic_evaluations').select('*')
+          ]);
+          
+          if (studentsData?.length > 0) setStudents(studentsData);
+          if (classesData?.length > 0) setClasses(classesData);
+          if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
+            ...s,
+            competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
+          })));
+          if (gradesData?.length > 0) setGrades(gradesData);
+          if (attendanceData?.length > 0) setAttendance(attendanceData);
+          if (instrumentsData?.length > 0) setInstruments(instrumentsData);
+          if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData);
+          if (scheduleData?.length > 0) setSchedule(scheduleData);
+          if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+          
+          console.log('Loaded:', studentsData?.length, 'students');
+          setSyncStatus('synced');
+        } catch (err) {
+          console.error('Fetch error:', err);
+          setSyncStatus('error');
+        }
+      };
+      loadData();
     }
-  }, [currentUser, isOnline]);
+  }, [isOnline]);
 
-  const fetchFromSupabase = useCallback(async () => {
+  const fetchFromSupabase = async () => {
     if (!isOnline) return;
     setSyncStatus('syncing');
     try {
@@ -142,7 +187,7 @@ export const StoreProvider = ({ children }) => {
       console.error('Fetch error:', err);
       setSyncStatus('error');
     }
-  }, [isOnline]);
+  };
 
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
