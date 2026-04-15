@@ -512,9 +512,34 @@ export const StoreProvider = ({ children }) => {
     deleteFromSupabase('instrument_evaluations', id);
   };
 
-  const saveInstrumentEvaluation = (evaluation) => {
-    const newEvaluation = { ...evaluation, id: generateId(), createdAt: new Date().toISOString() };
+  const saveInstrumentEvaluation = async (evaluation) => {
+    const newEvaluation = { ...evaluation, id: evaluation.id || generateId(), createdAt: new Date().toISOString() };
     setInstrumentEvaluations(prev => [...prev, newEvaluation]);
+    
+    if (isOnline) {
+      const supabaseData = {
+        id: newEvaluation.id,
+        instrument_id: newEvaluation.instrumentId,
+        student_id: newEvaluation.studentId,
+        competency_id: newEvaluation.competencyId,
+        subject_id: newEvaluation.subjectId,
+        class_id: newEvaluation.classId,
+        score: newEvaluation.score,
+        max_possible: newEvaluation.maxPossible,
+        qualitative: newEvaluation.qualitative,
+        period: newEvaluation.period,
+        activity_name: newEvaluation.activityName,
+        instrument_title: newEvaluation.instrumentTitle,
+        instrument_type: newEvaluation.instrumentType,
+        student_name: newEvaluation.studentName,
+        subject_name: newEvaluation.subjectName,
+        competency_name: newEvaluation.competencyName,
+        scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
+        criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
+        date: newEvaluation.date || new Date().toISOString().split('T')[0]
+      };
+      await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
+    }
   };
 
   const saveScheduleItem = async (item) => {
