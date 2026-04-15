@@ -273,26 +273,24 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
   const subject = subjects.find(s => s.id === subjectId);
   if (!subject) return { headerRow1: [], headerRow2: [], data: [], maxGradesPerCompetency: {} };
   
-  console.log('Building report for period:', period, '| subjectId:', subjectId);
-  console.log('Total evaluations:', instrumentEvaluations.length);
-  console.log('Students:', students.length);
+  const studentsByName = {};
+  students.forEach(s => { studentsByName[s.name] = s; });
+
+  const getStudentEvals = (student) => {
+    return instrumentEvaluations.filter(ev => {
+      if (ev.period !== period) return false;
+      const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+      const nameMatch = ev.student_name && ev.student_name === student.name;
+      return idMatch || nameMatch;
+    });
+  };
   
   students.forEach(student => {
-    const studentEvals = instrumentEvaluations.filter(ev => 
-      ev.studentId === student.id && ev.period === period
-    );
-    
-    if (studentEvals.length > 0) {
-      console.log('Student:', student.name, '| id:', student.id, '| evals:', studentEvals.length);
-      studentEvals.forEach(ev => {
-        console.log('  - eval period:', ev.period, '| competencyId:', ev.competencyId, '| studentId:', ev.studentId);
-      });
-    }
+    const studentEvals = getStudentEvals(student);
     
     subject.competencies.forEach(comp => {
       const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
       const compCount = compEvals.length;
-      console.log('Competency:', comp.name, '| id:', comp.id, '| count:', compCount);
       if (!maxGradesPerCompetency[comp.id] || compCount > maxGradesPerCompetency[comp.id]) {
         maxGradesPerCompetency[comp.id] = compCount;
       }
@@ -318,9 +316,7 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
   const data = [];
   
   students.forEach((student) => {
-    const studentEvals = instrumentEvaluations.filter(ev => 
-      ev.studentId === student.id && ev.period === period
-    );
+    const studentEvals = getStudentEvals(student);
     
     const row = [student.name];
     
