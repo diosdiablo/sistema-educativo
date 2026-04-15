@@ -121,8 +121,16 @@ export const StoreProvider = ({ children }) => {
       if (studentsData?.length > 0) {
         const normalizedStudents = studentsData.map(s => ({
           ...s,
+          name: s.name,
+          dni: s.dni,
           gradeLevel: s.grade_level || s.gradeLevel || s.grade,
-          classId: s.class_id || s.classId
+          classId: s.class_id || s.classId,
+          guardianName: s.guardian_name || s.guardianName,
+          guardianDni: s.guardian_dni || s.guardianDni,
+          guardianPhone: s.guardian_phone || s.guardianPhone,
+          birthDate: s.birth_date || s.birthDate,
+          address: s.address,
+          phone: s.phone
         }));
         setStudents(normalizedStudents);
       }
