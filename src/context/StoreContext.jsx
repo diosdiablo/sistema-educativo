@@ -101,22 +101,42 @@ export const StoreProvider = ({ children }) => {
     if (!isOnline) return;
     setSyncStatus('syncing');
     try {
-      const { data: studentsData, error: studentsError } = await supabase.from('students').select('*');
-      console.log('Students fetch:', studentsData?.length, studentsError);
+      const [
+        { data: studentsData },
+        { data: classesData },
+        { data: subjectsData },
+        { data: gradesData },
+        { data: attendanceData },
+        { data: instrumentsData },
+        { data: instrumentEvalsData },
+        { data: scheduleData },
+        { data: diagnosticData }
+      ] = await Promise.all([
+        supabase.from('students').select('*'),
+        supabase.from('classes').select('*'),
+        supabase.from('subjects').select('*'),
+        supabase.from('grades').select('*'),
+        supabase.from('attendance').select('*'),
+        supabase.from('instruments').select('*'),
+        supabase.from('instrument_evaluations').select('*'),
+        supabase.from('schedule').select('*'),
+        supabase.from('diagnostic_evaluations').select('*')
+      ]);
+      
       if (studentsData?.length > 0) setStudents(studentsData);
-      
-      const { data: classesData } = await supabase.from('classes').select('*');
       if (classesData?.length > 0) setClasses(classesData);
-      
-      const { data: subjectsData } = await supabase.from('subjects').select('*');
       if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
         ...s,
         competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
       })));
-      
-      const { data: gradesData } = await supabase.from('grades').select('*');
       if (gradesData?.length > 0) setGrades(gradesData);
+      if (attendanceData?.length > 0) setAttendance(attendanceData);
+      if (instrumentsData?.length > 0) setInstruments(instrumentsData);
+      if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData);
+      if (scheduleData?.length > 0) setSchedule(scheduleData);
+      if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       
+      console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
     } catch (err) {
       console.error('Fetch error:', err);
