@@ -167,24 +167,36 @@ export default function Instruments() {
   const [isPicking, setIsPicking] = useState(false);
   const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
   const [studentNamesFromSupabase, setStudentNamesFromSupabase] = useState({});
+  const [studentsByName, setStudentsByName] = useState({});
 
   // Cargar nombres de estudiantes desde Supabase para evaluaciones sin nombre
   useEffect(() => {
     const loadStudentNames = async () => {
+      // Primero buscar por ID
       const evalsWithoutName = instrumentEvaluations.filter(ev => !ev.studentName && !ev.student_name && ev.studentId);
-      if (evalsWithoutName.length === 0) return;
-      
-      const studentIds = [...new Set(evalsWithoutName.map(ev => ev.studentId))];
-      const { data } = await supabase.from('students').select('id, name').in('id', studentIds);
-      
-      if (data) {
-        const namesMap = {};
-        data.forEach(s => { namesMap[s.id] = s.name; });
-        setStudentNamesFromSupabase(prev => ({ ...prev, ...namesMap }));
+      if (evalsWithoutName.length > 0) {
+        const studentIds = [...new Set(evalsWithoutName.map(ev => ev.studentId))];
+        const { data } = await supabase.from('students').select('id, name').in('id', studentIds);
+        
+        if (data) {
+          const namesMap = {};
+          const byNameMap = {};
+          data.forEach(s => { 
+            namesMap[s.id] = s.name;
+            byNameMap[s.name] = s;
+          });
+          setStudentNamesFromSupabase(prev => ({ ...prev, ...namesMap }));
+          setStudentsByName(prev => ({ ...prev, ...byNameMap }));
+        }
       }
+      
+      // También crear mapa de todos los estudiantes por nombre
+      const byNameMap = {};
+      students.forEach(s => { byNameMap[s.name] = s; });
+      setStudentsByName(prev => ({ ...prev, ...byNameMap }));
     };
     loadStudentNames();
-  }, [instrumentEvaluations]);
+  }, [instrumentEvaluations, students]);
 
   const availableSubjects = useMemo(() => {
     if (isAdmin || !currentUser?.assignments || currentUser.assignments.length === 0) {
@@ -1633,7 +1645,7 @@ export default function Instruments() {
                     s.id === ev.studentId || s.id === ev.student_id || 
                     s.student_id === ev.studentId || s.student_id === ev.student_id
                   );
-                  const studentByName = ev.student_name ? students.find(s => s.name === ev.student_name) : null;
+                  const studentByName = studentsByName[ev.student_name];
                   const studentFromSupabase = studentNamesFromSupabase[ev.studentId];
                   const displayStudent = studentFromList?.name || studentByName?.name || studentFromSupabase || ev.studentName || ev.student_name || 'Estudiante';
                   const formatDate = (dateStr) => {
