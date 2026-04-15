@@ -88,6 +88,7 @@ export const StoreProvider = ({ children }) => {
         sessionStorage.removeItem('edu_current_user_session');
       }
     }
+    setIsLoading(false);
   }, []);
 
   const [subjects, setSubjects] = useState(() => {
