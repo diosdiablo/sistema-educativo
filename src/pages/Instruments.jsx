@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
+import { supabase } from '../lib/supabase';
 import { 
   ClipboardCheck, Plus, Trash2, Play, 
   CheckSquare, BarChart2, Grid, ChevronLeft, 
@@ -165,6 +166,25 @@ export default function Instruments() {
   const [randomStudent, setRandomStudent] = useState(null);
   const [isPicking, setIsPicking] = useState(false);
   const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
+  const [studentNamesFromSupabase, setStudentNamesFromSupabase] = useState({});
+
+  // Cargar nombres de estudiantes desde Supabase para evaluaciones sin nombre
+  useEffect(() => {
+    const loadStudentNames = async () => {
+      const evalsWithoutName = instrumentEvaluations.filter(ev => !ev.studentName && !ev.student_name && ev.studentId);
+      if (evalsWithoutName.length === 0) return;
+      
+      const studentIds = [...new Set(evalsWithoutName.map(ev => ev.studentId))];
+      const { data } = await supabase.from('students').select('id, name').in('id', studentIds);
+      
+      if (data) {
+        const namesMap = {};
+        data.forEach(s => { namesMap[s.id] = s.name; });
+        setStudentNamesFromSupabase(prev => ({ ...prev, ...namesMap }));
+      }
+    };
+    loadStudentNames();
+  }, [instrumentEvaluations]);
 
   const availableSubjects = useMemo(() => {
     if (isAdmin || !currentUser?.assignments || currentUser.assignments.length === 0) {
@@ -1609,9 +1629,13 @@ export default function Instruments() {
                   const evalType = ev.instrumentType || instrument?.type || 'rubric';
                   const td = typeMap[evalType] || typeMap['rubric'];
                   const displayTitle = ev.instrumentTitle || instrument?.title || instrument?.name || 'Sin instrumento';
-                  const studentFromList = students.find(s => s.id === ev.studentId || s.id === ev.student_id);
-                  if (idx === 0) console.log('3rd from end - ev.studentId:', ev.studentId, '| ev.studentName:', ev.studentName, '| found:', studentFromList?.name);
-                  const displayStudent = ev.studentName || studentFromList?.name || 'Estudiante';
+                  const studentFromList = students.find(s => 
+                    s.id === ev.studentId || s.id === ev.student_id || 
+                    s.student_id === ev.studentId || s.student_id === ev.student_id
+                  );
+                  const studentByName = ev.student_name ? students.find(s => s.name === ev.student_name) : null;
+                  const studentFromSupabase = studentNamesFromSupabase[ev.studentId];
+                  const displayStudent = studentFromList?.name || studentByName?.name || studentFromSupabase || ev.studentName || ev.student_name || 'Estudiante';
                   const formatDate = (dateStr) => {
                     if (!dateStr) return 'Sin fecha';
                     const d = new Date(dateStr);
