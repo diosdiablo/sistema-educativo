@@ -69,7 +69,11 @@ const DEFAULT_PERIOD_DATES = {
 };
 
 export const StoreProvider = ({ children }) => {
-  const [isOnline] = useState(!!import.meta.env.VITE_SUPABASE_URL);
+  const [isOnline] = useState(() => {
+    const online = !!import.meta.env.VITE_SUPABASE_URL;
+    console.log('isOnline:', online, '| VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    return online;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('checking');
 
@@ -163,7 +167,8 @@ export const StoreProvider = ({ children }) => {
             subjectId: ev.subject_id,
             classId: ev.class_id,
             maxPossible: ev.max_possible,
-            studentName: ev.student_name,
+            scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
+            criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
             instrumentType: ev.instrument_type
           })));
           if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
@@ -252,17 +257,21 @@ export const StoreProvider = ({ children }) => {
         classId: i.class_id,
         criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
       })));
-      if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
-        ...ev,
-        instrumentId: ev.instrument_id,
-        studentId: ev.student_id,
-        competencyId: ev.competency_id,
-        subjectId: ev.subject_id,
-        classId: ev.class_id,
-        maxPossible: ev.max_possible,
-        studentName: ev.student_name,
-        instrumentType: ev.instrument_type
-      })));
+          if (instrumentEvalsData?.length > 0) {
+        console.log('Loading', instrumentEvalsData.length, 'instrument evaluations from Supabase');
+        setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
+          ...ev,
+          instrumentId: ev.instrument_id,
+          studentId: ev.student_id,
+          competencyId: ev.competency_id,
+          subjectId: ev.subject_id,
+          classId: ev.class_id,
+          maxPossible: ev.max_possible,
+          scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
+          criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
+          instrumentType: ev.instrument_type
+        })));
+      }
       if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
         ...s,
         userId: s.user_id,
@@ -514,6 +523,7 @@ export const StoreProvider = ({ children }) => {
 
   const saveInstrumentEvaluation = async (evaluation) => {
     const newEvaluation = { ...evaluation, id: evaluation.id || generateId(), createdAt: new Date().toISOString() };
+    console.log('Saving evaluation locally:', newEvaluation.id, '| isOnline:', isOnline);
     setInstrumentEvaluations(prev => [...prev, newEvaluation]);
     
     if (isOnline) {
@@ -529,16 +539,16 @@ export const StoreProvider = ({ children }) => {
         qualitative: newEvaluation.qualitative,
         period: newEvaluation.period,
         activity_name: newEvaluation.activityName,
-        instrument_title: newEvaluation.instrumentTitle,
         instrument_type: newEvaluation.instrumentType,
-        student_name: newEvaluation.studentName,
-        subject_name: newEvaluation.subjectName,
-        competency_name: newEvaluation.competencyName,
         scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
         criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
         date: newEvaluation.date || new Date().toISOString().split('T')[0]
       };
-      await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
+      const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
+      if (error) console.error('Error saving evaluation to Supabase:', error);
+      else console.log('Evaluation saved to Supabase:', newEvaluation.id);
+    } else {
+      console.log('Not online, skipping Supabase sync');
     }
   };
 
