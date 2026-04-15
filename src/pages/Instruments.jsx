@@ -1610,16 +1610,14 @@ export default function Instruments() {
                   const td = typeMap[evalType] || typeMap['rubric'];
                   const displayTitle = ev.instrumentTitle || instrument?.title || instrument?.name || 'Sin instrumento';
                   const studentFromList = students.find(s => s.id === ev.studentId || s.id === ev.student_id);
-                  if (idx < 3) console.log('Finding student for eval:', ev.id, '| studentId:', ev.studentId, '| students[0]?.id:', students[0]?.id, '| found:', studentFromList?.name);
+                  if (idx === 0) console.log('3rd from end - ev.studentId:', ev.studentId, '| ev.studentName:', ev.studentName, '| found:', studentFromList?.name);
                   const displayStudent = ev.studentName || studentFromList?.name || 'Estudiante';
-                  const displayDate = ev.date ? (() => {
-                    try {
-                      const d = new Date(ev.date);
-                      return isNaN(d.getTime()) ? 'Sin fecha' : d.toLocaleDateString('es-PE');
-                    } catch {
-                      return 'Sin fecha';
-                    }
-                  })() : 'Sin fecha';
+                  const formatDate = (dateStr) => {
+                    if (!dateStr) return 'Sin fecha';
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime())) return 'Sin fecha';
+                    return d.toLocaleDateString('es-PE');
+                  };
                   return (
                     <tr key={ev.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
                       <td style={{ fontWeight: 600, padding: '1rem' }}>{displayStudent}</td>
@@ -1638,7 +1636,7 @@ export default function Instruments() {
                         </span>
                       </td>
                       <td style={{ fontSize: '0.82rem', color: '#64748b', padding: '1rem' }}>
-                        {displayDate}
+                        {formatDate(ev.date)}
                       </td>
                       <td style={{ textAlign: 'center', padding: '1rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
