@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle } from 'lucide-react';
+import AIPlanningGenerator from '../components/AIPlanningGenerator';
 
 export default function PlanningDocuments() {
   try {
@@ -503,6 +504,8 @@ export default function PlanningDocuments() {
             </div>
           </div>
         </div>
+
+        <AIPlanningGenerator />
 
         {/* Contenido */}
         {filteredDocuments.length === 0 ? (
