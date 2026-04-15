@@ -167,6 +167,11 @@ export const StoreProvider = ({ children }) => {
             subjectId: ev.subject_id,
             classId: ev.class_id,
             maxPossible: ev.max_possible,
+            studentName: ev.student_name || 'Estudiante',
+            subjectName: ev.subject_name || '',
+            competencyName: ev.competency_name || '',
+            instrumentTitle: ev.instrument_title || '',
+            activityName: ev.activity_name || '',
             scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
             criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
             instrumentType: ev.instrument_type
@@ -267,6 +272,11 @@ export const StoreProvider = ({ children }) => {
           subjectId: ev.subject_id,
           classId: ev.class_id,
           maxPossible: ev.max_possible,
+          studentName: ev.student_name || 'Estudiante',
+          subjectName: ev.subject_name || '',
+          competencyName: ev.competency_name || '',
+          instrumentTitle: ev.instrument_title || '',
+          activityName: ev.activity_name || '',
           scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
           criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
           instrumentType: ev.instrument_type
@@ -527,28 +537,33 @@ export const StoreProvider = ({ children }) => {
     setInstrumentEvaluations(prev => [...prev, newEvaluation]);
     
     if (isOnline) {
-      const supabaseData = {
-        id: newEvaluation.id,
-        instrument_id: newEvaluation.instrumentId,
-        student_id: newEvaluation.studentId,
-        competency_id: newEvaluation.competencyId,
-        subject_id: newEvaluation.subjectId,
-        class_id: newEvaluation.classId,
-        score: newEvaluation.score,
-        max_possible: newEvaluation.maxPossible,
-        qualitative: newEvaluation.qualitative,
-        period: newEvaluation.period,
-        activity_name: newEvaluation.activityName,
-        instrument_type: newEvaluation.instrumentType,
-        scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
-        criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
-        date: newEvaluation.date || new Date().toISOString().split('T')[0]
-      };
-      const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
-      if (error) console.error('Error saving evaluation to Supabase:', error);
-      else console.log('Evaluation saved to Supabase:', newEvaluation.id);
-    } else {
-      console.log('Not online, skipping Supabase sync');
+      try {
+        const supabaseData = {
+          id: newEvaluation.id,
+          instrument_id: newEvaluation.instrumentId,
+          student_id: newEvaluation.studentId,
+          competency_id: newEvaluation.competencyId,
+          subject_id: newEvaluation.subjectId,
+          class_id: newEvaluation.classId,
+          score: newEvaluation.score,
+          max_possible: newEvaluation.maxPossible,
+          qualitative: newEvaluation.qualitative,
+          period: newEvaluation.period,
+          activity_name: newEvaluation.activityName,
+          instrument_type: newEvaluation.instrumentType,
+          scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
+          criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
+          date: newEvaluation.date || new Date().toISOString().split('T')[0]
+        };
+        const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
+        if (error) {
+          console.error('Error saving evaluation to Supabase:', error);
+        } else {
+          console.log('Evaluation saved to Supabase:', newEvaluation.id);
+        }
+      } catch (err) {
+        console.error('Supabase sync error:', err);
+      }
     }
   };
 
