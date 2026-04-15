@@ -98,6 +98,31 @@ export const StoreProvider = ({ children }) => {
   }, [currentUser, isOnline]);
 
   const fetchFromSupabase = useCallback(async () => {
+    if (!isOnline) return;
+    setSyncStatus('syncing');
+    try {
+      const { data: studentsData, error: studentsError } = await supabase.from('students').select('*');
+      console.log('Students fetch:', studentsData?.length, studentsError);
+      if (studentsData?.length > 0) setStudents(studentsData);
+      
+      const { data: classesData } = await supabase.from('classes').select('*');
+      if (classesData?.length > 0) setClasses(classesData);
+      
+      const { data: subjectsData } = await supabase.from('subjects').select('*');
+      if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
+        ...s,
+        competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
+      })));
+      
+      const { data: gradesData } = await supabase.from('grades').select('*');
+      if (gradesData?.length > 0) setGrades(gradesData);
+      
+      setSyncStatus('synced');
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setSyncStatus('error');
+    }
+  }, [isOnline]);
 
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
