@@ -284,6 +284,7 @@ export default function Instruments() {
     const buildEvaluationData = (student) => {
       const evalData = {
         instrumentId: applyingInstrument.id,
+        instrumentTitle: applyingInstrument.title || applyingInstrument.name || '',
         instrumentType: applyingInstrument.type,
         criteria: applyingInstrument.criteria || [],
         activityName,
@@ -1604,16 +1605,16 @@ export default function Instruments() {
               </thead>
               <tbody>
                 {instrumentEvaluations.slice().reverse().map((ev, idx) => {
-                  // Buscar el tipo: 1) de la evaluación guardada, 2) del instrumento original
                   const instrument = instruments.find(i => i.id === ev.instrumentId);
                   const evalType = ev.instrumentType || instrument?.type || 'rubric';
                   const td = typeMap[evalType] || typeMap['rubric'];
+                  const displayTitle = ev.instrumentTitle || instrument?.title || instrument?.name || 'Sin instrumento';
                   return (
                     <tr key={ev.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
                       <td style={{ fontWeight: 600, padding: '1rem' }}>{ev.studentName}</td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ fontWeight: 500 }}>{ev.activityName}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ev.instrumentTitle}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{displayTitle}</div>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <span style={{ fontSize: '0.78rem', color: td.color, fontWeight: 600, background: `${td.color}15`, padding: '4px 10px', borderRadius: '6px' }}>
