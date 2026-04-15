@@ -550,6 +550,10 @@ export const StoreProvider = ({ children }) => {
           qualitative: newEvaluation.qualitative,
           period: newEvaluation.period,
           activity_name: newEvaluation.activityName,
+          student_name: newEvaluation.studentName,
+          subject_name: newEvaluation.subjectName,
+          competency_name: newEvaluation.competencyName,
+          instrument_title: newEvaluation.instrumentTitle,
           instrument_type: newEvaluation.instrumentType,
           scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
           criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
@@ -557,7 +561,7 @@ export const StoreProvider = ({ children }) => {
         };
         const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
         if (error) {
-          console.error('Error saving evaluation to Supabase:', error);
+          console.error('Error saving evaluation to Supabase:', error, error.details);
         } else {
           console.log('Evaluation saved to Supabase:', newEvaluation.id);
         }
