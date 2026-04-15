@@ -152,7 +152,8 @@ export const StoreProvider = ({ children }) => {
             ...i,
             instrumentId: i.instrument_id,
             subjectId: i.subject_id,
-            classId: i.class_id
+            classId: i.class_id,
+            criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
           })));
           if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
             ...ev,
@@ -248,7 +249,8 @@ export const StoreProvider = ({ children }) => {
         ...i,
         instrumentId: i.instrument_id,
         subjectId: i.subject_id,
-        classId: i.class_id
+        classId: i.class_id,
+        criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
       })));
       if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
         ...ev,
@@ -340,8 +342,18 @@ export const StoreProvider = ({ children }) => {
         
         if (data) {
           console.log('User logged in:', data.name, 'role:', data.role, 'assignments:', data.assignments);
-          setCurrentUser(data);
-          sessionStorage.setItem('edu_current_user_session', JSON.stringify(data));
+          const normalizedUser = {
+            ...data,
+            assignments: Array.isArray(data.assignments) 
+              ? data.assignments.map(a => ({
+                  ...a,
+                  subjectId: a.subject_id || a.subjectId,
+                  classId: a.class_id || a.classId
+                }))
+              : []
+          };
+          setCurrentUser(normalizedUser);
+          sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
           return true;
         }
       } catch (err) {
