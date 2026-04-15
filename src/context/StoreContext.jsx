@@ -119,7 +119,10 @@ export const StoreProvider = ({ children }) => {
           ]);
           
           if (studentsData?.length > 0) setStudents(studentsData);
-          if (classesData?.length > 0) setClasses(classesData);
+          if (classesData?.length > 0) {
+            console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
+            setClasses(classesData);
+          }
           if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
             ...s,
             competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
@@ -141,6 +144,10 @@ export const StoreProvider = ({ children }) => {
       loadData();
     }
   }, [isOnline]);
+
+  useEffect(() => {
+    console.log('Current user changed:', currentUser?.name, 'assignments:', currentUser?.assignments);
+  }, [currentUser]);
 
   const fetchFromSupabase = async () => {
     if (!isOnline) return;
