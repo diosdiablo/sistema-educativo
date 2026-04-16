@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
@@ -134,6 +134,12 @@ function AppContent() {
   const AdminOnlyRoute = ({ children }) => {
     return isAdmin ? children : <Navigate to="/" replace />;
   };
+
+  useEffect(() => {
+    if (window.location.pathname !== '/') {
+      window.history.replaceState(null, '', '/');
+    }
+  }, []);
 
   return (
     <div className="app-container">
