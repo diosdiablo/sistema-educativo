@@ -663,8 +663,9 @@ export default function Grades() {
             ];
 
             return (
-              <div className="table-container" style={{ overflowX: 'auto', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                <table className="styled-table" style={{ tableLayout: 'auto' }}>
+              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <div className="table-container" style={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                  <table className="styled-table" style={{ tableLayout: 'auto', minWidth: '600px' }}>
                   <thead>
                     <tr>
                       <th style={{ 
@@ -814,6 +815,7 @@ export default function Grades() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             );
           })()}
