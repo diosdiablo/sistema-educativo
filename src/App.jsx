@@ -129,12 +129,6 @@ function AppContent() {
   const { currentUser, isAdmin, isLoading } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (window.location.pathname !== '/' && currentUser) {
-      window.history.replaceState(null, '', '/');
-    }
-  }, [currentUser]);
-
   if (!currentUser) return <Login />;
 
   const AdminOnlyRoute = ({ children }) => {
