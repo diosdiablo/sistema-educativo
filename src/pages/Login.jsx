@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Logo from '../assets/logo.png';
@@ -11,6 +11,10 @@ export default function Login() {
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    window.history.replaceState(null, '', '/');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
