@@ -607,7 +607,7 @@ export const StoreProvider = ({ children }) => {
   };
 
   const addPlanningDocument = (doc) => {
-    const newDoc = { ...doc, id: generateId(), uploadedAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Admin' };
+    const newDoc = { ...doc, id: generateId(), uploadedAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Usuario', uploadedById: currentUser?.id };
     setPlanningDocuments(prev => [...prev, { ...newDoc, fileData: null, fileSize: doc.fileData?.length || 0 }]);
   };
 
