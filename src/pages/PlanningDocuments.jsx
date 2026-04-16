@@ -569,7 +569,7 @@ export default function PlanningDocuments() {
                     }}>
                       <DocIcon size={24} color="white" />
                     </div>
-                    {(isAdmin || doc.uploadedById === currentUser?.id) && (
+                    {(isAdmin || doc.uploadedById === currentUser?.id || (!doc.uploadedById && doc.uploadedBy === currentUser?.name)) && (
                       <button
                         onClick={() => handleDelete(doc.id)}
                         style={{
@@ -743,7 +743,7 @@ export default function PlanningDocuments() {
                     >
                       <Download size={16} />
                     </a>
-                    {(isAdmin || doc.uploadedById === currentUser?.id) && (
+                    {(isAdmin || doc.uploadedById === currentUser?.id || (!doc.uploadedById && doc.uploadedBy === currentUser?.name)) && (
                       <button
                         onClick={() => handleDelete(doc.id)}
                         style={{
