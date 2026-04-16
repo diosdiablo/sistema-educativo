@@ -1569,7 +1569,7 @@ export default function Instruments() {
               </div>
             </div>
           </div>
-          <div className="table-container shadow-glass" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="table-container shadow-glass" style={{ borderRadius: '16px', overflowX: 'auto' }}>
             <table className="styled-table">
               <thead>
                 <tr>
