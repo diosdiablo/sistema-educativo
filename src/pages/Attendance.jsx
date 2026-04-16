@@ -774,7 +774,7 @@ export default function Attendance() {
           overflow: 'hidden',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
         }}>
-          <div className="table-container">
+          <div className="table-container" style={{ overflowX: 'auto' }}>
             <table className="styled-table">
               <thead>
                 <tr>
