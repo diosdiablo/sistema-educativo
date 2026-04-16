@@ -219,13 +219,12 @@ export default function Schedule() {
       </div>
 
       {/* Grid de horario moderno */}
-      <div className="table-container" style={{ 
-        overflowX: 'auto', 
-        borderRadius: '20px', 
-        overflow: 'hidden', 
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        background: 'white'
-      }}>
+      <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ 
+          borderRadius: '20px', 
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          background: 'white'
+        }}>
         <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
           <thead>
             <tr>
@@ -340,6 +339,7 @@ export default function Schedule() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Modal */}
