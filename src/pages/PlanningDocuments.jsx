@@ -151,7 +151,9 @@ export default function PlanningDocuments() {
           description: uploadData.description,
           period: uploadData.period,
           fileData: base64,
-          fileName: uploadData.fileName
+          fileName: uploadData.fileName,
+          uploadedBy: currentUser?.name || 'Usuario',
+          uploadedById: currentUser?.id
         };
 
         if (contentType === 'planifications') {
@@ -569,7 +571,7 @@ export default function PlanningDocuments() {
                     }}>
                       <DocIcon size={24} color="white" />
                     </div>
-                    {(isAdmin || doc.uploadedById === currentUser?.id || (!doc.uploadedById && doc.uploadedBy === currentUser?.name)) && (
+                    {(isAdmin || doc.uploadedById === currentUser?.id || doc.uploadedBy === currentUser?.name || (!doc.uploadedById && !doc.uploadedBy)) && (
                       <button
                         onClick={() => handleDelete(doc.id)}
                         style={{
@@ -743,7 +745,7 @@ export default function PlanningDocuments() {
                     >
                       <Download size={16} />
                     </a>
-                    {(isAdmin || doc.uploadedById === currentUser?.id || (!doc.uploadedById && doc.uploadedBy === currentUser?.name)) && (
+                    {(isAdmin || doc.uploadedById === currentUser?.id || doc.uploadedBy === currentUser?.name || (!doc.uploadedById && !doc.uploadedBy)) && (
                       <button
                         onClick={() => handleDelete(doc.id)}
                         style={{
