@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck, BarChart3, Award, Clock, Calendar, ArrowRight, GraduationCap } from 'lucide-react';
+import { Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck, BarChart3, Award, Clock, Calendar, ArrowRight, GraduationCap, Cake, Gift } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
@@ -192,12 +192,39 @@ export default function Dashboard() {
   };
   const nextClass = getNextClass();
 
+  const birthdayData = useMemo(() => {
+    const today = new Date();
+    const todayMonth = today.getMonth();
+    const todayDay = today.getDate();
+    
+    const withBirthday = students.filter(s => s.birthDate).map(s => {
+      const bd = new Date(s.birthDate);
+      const month = bd.getMonth();
+      const day = bd.getDate();
+      const isToday = month === todayMonth && day === todayDay;
+      const nextBirthday = new Date(today.getFullYear(), month, day);
+      if (nextBirthday < today) {
+        nextBirthday.setFullYear(today.getFullYear() + 1);
+      }
+      const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+      return { ...s, month, day, isToday, daysUntil };
+    });
+
+    const todayBirthdays = withBirthday.filter(s => s.isToday);
+    const thisWeek = withBirthday.filter(s => s.daysUntil <= 7 && !s.isToday);
+    const thisMonth = withBirthday.filter(s => s.month === todayMonth && !s.isToday);
+
+    return { todayBirthdays, thisWeek, thisMonth, total: withBirthday.length };
+  }, [students]);
+
   const statCards = [
     { icon: <Users size={24} />, title: "Total Estudiantes", value: totalStudents, color: "#3b82f6", gradient: ['#3b82f6', '#2563eb'] },
     { icon: <CheckCircle size={24} />, title: "Asistencia Promedio", value: avgAttendance, color: "#10b981", gradient: ['#10b981', '#059669'] },
     { icon: <TrendingUp size={24} />, title: "Calif. Registradas", value: grades.length + diagnosticEvaluations.length + instrumentEvaluations.length, color: "#8b5cf6", gradient: ['#8b5cf6', '#7c3aed'] },
     { icon: <ClipboardCheck size={24} />, title: "Instrumentos", value: instruments.length, color: "#f59e0b", gradient: ['#f59e0b', '#d97706'] },
   ];
+
+  const monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
   return (
     <div className="animate-fade-in">
@@ -290,6 +317,146 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* Sección de Cumpleaños */}
+      {birthdayData.total > 0 && (
+        <div style={{
+          background: 'white',
+          borderRadius: '20px',
+          padding: '1.5rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          border: '1px solid rgba(236, 72, 153, 0.2)',
+          marginBottom: '1.5rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ec4899, #db2777)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 15px rgba(236, 72, 153, 0.3)'
+            }}>
+              <Cake size={22} color="white" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>🎂 Próximos Cumpleaños</h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                {birthdayData.total} estudiante(s) con fecha de nacimiento registrada
+              </p>
+            </div>
+          </div>
+
+          {birthdayData.todayBirthdays.length > 0 && (
+            <div style={{
+              background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+              borderRadius: '16px',
+              padding: '1.25rem',
+              marginBottom: '1rem',
+              border: '2px solid #f59e0b'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <Gift size={20} color="#d97706" />
+                <span style={{ fontWeight: 700, color: '#92400e', fontSize: '1rem' }}>¡HOY ES SU CUMPLEAÑOS! 🎉</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                {birthdayData.todayBirthdays.map(student => (
+                  <div key={student.id} style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    padding: '0.75rem 1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}>
+                    <span style={{ fontSize: '1.5rem' }}>🎈</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{student.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{student.gradeLevel}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {birthdayData.thisWeek.length > 0 && (
+            <div style={{ marginBottom: birthdayData.todayBirthdays.length > 0 ? '1rem' : 0 }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+                Esta semana ({birthdayData.thisWeek.length} estudiante(s))
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {birthdayData.thisWeek.map(student => (
+                  <div key={student.id} style={{
+                    background: '#fdf2f8',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.75rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.85rem'
+                  }}>
+                    <span style={{ fontSize: '1rem' }}>🎂</span>
+                    <div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{student.name}</span>
+                      <span style={{ color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
+                        {student.daysUntil === 1 ? 'Mañana' : `En ${student.daysUntil} días`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {birthdayData.todayBirthdays.length === 0 && birthdayData.thisWeek.length === 0 && birthdayData.thisMonth.length > 0 && (
+            <div>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+                Este mes ({birthdayData.thisMonth.length} estudiante(s))
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {birthdayData.thisMonth.slice(0, 6).map(student => (
+                  <div key={student.id} style={{
+                    background: '#f5f3ff',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.75rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.8rem'
+                  }}>
+                    <span style={{ fontSize: '1rem' }}>🎂</span>
+                    <div>
+                      <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{student.name}</span>
+                      <span style={{ color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
+                        {student.day} {monthsNames[student.month]}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {birthdayData.thisMonth.length > 6 && (
+                  <div style={{
+                    background: '#f5f3ff',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    +{birthdayData.thisMonth.length - 6} más
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {birthdayData.todayBirthdays.length === 0 && birthdayData.thisWeek.length === 0 && birthdayData.thisMonth.length === 0 && (
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem' }}>
+              No hay cumpleaños próximos esta semana
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Secciones de horario e instrumentos */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
