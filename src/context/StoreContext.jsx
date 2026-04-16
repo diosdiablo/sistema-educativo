@@ -617,7 +617,7 @@ export const StoreProvider = ({ children }) => {
   };
 
   const addLearningSession = (session) => {
-    const newSession = { ...session, id: generateId(), createdAt: new Date().toISOString() };
+    const newSession = { ...session, id: generateId(), createdAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Admin', uploadedById: currentUser?.id };
     setLearningSessions(prev => [...prev, newSession]);
   };
 
