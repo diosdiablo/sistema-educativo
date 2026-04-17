@@ -179,13 +179,18 @@ export const StoreProvider = ({ children }) => {
 if (scheduleData?.length > 0) {
           const classMap = {};
           classesData?.forEach(c => { classMap[c.id] = c.color; });
-          setSchedule(scheduleData.map(s => ({
-            ...s,
-            userId: s.user_id,
-            classId: s.class_id,
-            subjectId: s.subject_id,
-            color: s.color || classMap[s.class_id] || '#10b981'
-          })));
+          setSchedule(scheduleData.map(s => {
+            let color = s.color || classMap[s.class_id] || '#10b981';
+            if (s.class_id === '__ATENCION__') color = '#ec4899';
+            if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
+            return {
+              ...s,
+              userId: s.user_id,
+              classId: s.class_id,
+              subjectId: s.subject_id,
+              color
+            };
+          }));
           const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
           if (isOnline && schedulesNeedingColorUpdate.length > 0) {
             try {
@@ -300,13 +305,18 @@ if (scheduleData?.length > 0) {
       if (scheduleData?.length > 0) {
         const classMap = {};
         classesData?.forEach(c => { classMap[c.id] = c.color; });
-        setSchedule(scheduleData.map(s => ({
-          ...s,
-          userId: s.user_id,
-          classId: s.class_id,
-          subjectId: s.subject_id,
-          color: s.color || classMap[s.class_id] || '#10b981'
-        })));
+        setSchedule(scheduleData.map(s => {
+          let color = s.color || classMap[s.class_id] || '#10b981';
+          if (s.class_id === '__ATENCION__') color = '#ec4899';
+          if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
+          return {
+            ...s,
+            userId: s.user_id,
+            classId: s.class_id,
+            subjectId: s.subject_id,
+            color
+          };
+        }));
         const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
         if (isOnline && schedulesNeedingColorUpdate.length > 0) {
           try {
@@ -643,7 +653,11 @@ if (scheduleData?.length > 0) {
 
   const saveScheduleItem = async (item) => {
     let classColor = '#10b981';
-    if (item.classId) {
+    if (item.classId === '__ATENCION__') {
+      classColor = '#ec4899';
+    } else if (item.classId === '__TRABAJO__') {
+      classColor = '#8b5cf6';
+    } else if (item.classId) {
       const targetClass = classes.find(c => c.id === item.classId);
       if (targetClass?.color) {
         classColor = targetClass.color;
