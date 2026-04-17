@@ -603,7 +603,8 @@ export const StoreProvider = ({ children }) => {
   };
 
   const saveScheduleItem = async (item) => {
-    const newItem = { ...item, id: item.id || generateId() };
+    const classColor = classes.find(c => c.id === item.classId)?.color || '#10b981';
+    const newItem = { ...item, id: item.id || generateId(), color: item.color || classColor };
     setSchedule(prev => {
       if (prev.find(s => s.id === newItem.id)) {
         return prev.map(s => s.id === newItem.id ? newItem : s);
@@ -670,51 +671,67 @@ export const StoreProvider = ({ children }) => {
   };
 
   const cleanupOrphanedData = async () => {
-    const validUserIds = users.map(u => u.id);
     const removed = { schedule: 0, instruments: 0, evaluations: 0, documents: 0, sessions: 0 };
     
-    const currentSchedules = schedule.filter(s => validUserIds.includes(s.userId));
-    const orphanedScheduleIds = schedule.filter(s => !validUserIds.includes(s.userId)).map(s => s.id);
-    setSchedule(currentSchedules);
-    removed.schedule = orphanedScheduleIds.length;
+    if (!isOnline) {
+      alert('Sin conexión a internet');
+      return removed;
+    }
     
-    const validInstruments = instruments.filter(i => {
-      const isValid = i.userId ? validUserIds.includes(i.userId) : true;
-      if (!isValid) removed.instruments++;
-      return isValid;
-    });
-    setInstruments(validInstruments);
-    
-    const validEvaluations = instrumentEvaluations.filter(e => {
-      const isValid = e.userId ? validUserIds.includes(e.userId) : true;
-      if (!isValid) removed.evaluations++;
-      return isValid;
-    });
-    setInstrumentEvaluations(validEvaluations);
-    
-    const validDocs = planningDocuments.filter(d => {
-      const isValid = d.uploadedById ? validUserIds.includes(d.uploadedById) : true;
-      if (!isValid) removed.documents++;
-      return isValid;
-    });
-    setPlanningDocuments(validDocs);
-    
-    const validSessions = learningSessions.filter(l => {
-      const isValid = l.uploadedById ? validUserIds.includes(l.uploadedById) : true;
-      if (!isValid) removed.sessions++;
-      return isValid;
-    });
-    setLearningSessions(validSessions);
-    
-    if (isOnline && orphanedScheduleIds.length > 0) {
-      try {
+    try {
+      const { data: allUsers } = await supabase.from('users').select('id');
+      const validUserIds = allUsers?.map(u => u.id) || [];
+      
+      if (validUserIds.length === 0) {
+        alert('No hay usuarios en la base de datos');
+        return removed;
+      }
+      
+      const currentSchedules = schedule.filter(s => validUserIds.includes(s.userId));
+      const orphanedScheduleIds = schedule.filter(s => !validUserIds.includes(s.userId)).map(s => s.id);
+      setSchedule(currentSchedules);
+      removed.schedule = orphanedScheduleIds.length;
+      
+      if (orphanedScheduleIds.length > 0) {
         await Promise.all(
           orphanedScheduleIds.map(id => supabase.from('schedule').delete().eq('id', id))
         );
-        console.log('Deleted orphaned schedules from Supabase:', orphanedScheduleIds.length);
-      } catch (err) {
-        console.error('Error deleting orphaned schedules:', err);
       }
+      
+      const validInstruments = instruments.filter(i => {
+        const isValid = i.userId ? validUserIds.includes(i.userId) : true;
+        if (!isValid) removed.instruments++;
+        return isValid;
+      });
+      setInstruments(validInstruments);
+      
+      const validEvaluations = instrumentEvaluations.filter(e => {
+        const isValid = e.userId ? validUserIds.includes(e.userId) : true;
+        if (!isValid) removed.evaluations++;
+        return isValid;
+      });
+      setInstrumentEvaluations(validEvaluations);
+      
+      const { data: allDocs } = await supabase.from('planning_documents').select('uploaded_by');
+      const validDocIds = allDocs?.map(d => d.uploaded_by).filter(Boolean) || [];
+      const validDocs = planningDocuments.filter(d => {
+        const isValid = d.uploadedById ? validDocIds.includes(d.uploadedById) : true;
+        if (!isValid) removed.documents++;
+        return isValid;
+      });
+      setPlanningDocuments(validDocs);
+      
+      const { data: allSessions } = await supabase.from('learning_sessions').select('uploaded_by');
+      const validSessionIds = allSessions?.map(l => l.uploaded_by).filter(Boolean) || [];
+      const validSessions = learningSessions.filter(l => {
+        const isValid = l.uploadedById ? validSessionIds.includes(l.uploadedById) : true;
+        if (!isValid) removed.sessions++;
+        return isValid;
+      });
+      setLearningSessions(validSessions);
+      
+    } catch (err) {
+      console.error('Error in cleanupOrphanedData:', err);
     }
     
     return removed;
