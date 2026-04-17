@@ -637,14 +637,18 @@ if (scheduleData?.length > 0) {
 
   const saveScheduleItem = async (item) => {
     let classColor = '#10b981';
-    const targetClass = classes.find(c => c.id === item.classId);
-    if (targetClass?.color) {
-      classColor = targetClass.color;
-    } else if (isOnline) {
-      const { data: classData } = await supabase.from('classes').select('color').eq('id', item.classId).single();
-      if (classData?.color) classColor = classData.color;
+    if (item.classId) {
+      const targetClass = classes.find(c => c.id === item.classId);
+      if (targetClass?.color) {
+        classColor = targetClass.color;
+      } else {
+        try {
+          const { data: classData } = await supabase.from('classes').select('color').eq('id', item.classId).single();
+          if (classData?.color) classColor = classData.color;
+        } catch (e) {}
+      }
     }
-    const newItem = { ...item, id: item.id || generateId(), color: item.color || classColor };
+    const newItem = { ...item, id: item.id || generateId(), color: classColor };
     setSchedule(prev => {
       if (prev.find(s => s.id === newItem.id)) {
         return prev.map(s => s.id === newItem.id ? newItem : s);
