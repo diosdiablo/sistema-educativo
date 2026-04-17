@@ -281,3 +281,15 @@ DO $$BEGIN
 EXCEPTION
   WHEN undefined_column THEN NULL;
 END $$;
+
+DO $$BEGIN
+  ALTER TABLE instruments ADD COLUMN IF NOT EXISTS user_id TEXT;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
+
+DO $$BEGIN
+  ALTER TABLE instrument_evaluations ADD COLUMN IF NOT EXISTS user_id TEXT;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
