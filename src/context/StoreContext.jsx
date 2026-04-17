@@ -168,6 +168,7 @@ export const StoreProvider = ({ children }) => {
             classId: ev.class_id,
             maxPossible: ev.max_possible,
             activityName: ev.activity_name || '',
+            userId: ev.user_id,
             scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
             criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
             instrumentType: ev.instrument_type
@@ -269,6 +270,7 @@ export const StoreProvider = ({ children }) => {
           classId: ev.class_id,
           maxPossible: ev.max_possible,
           activityName: ev.activity_name || '',
+          userId: ev.user_id,
           scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
           criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
           instrumentType: ev.instrument_type
@@ -460,15 +462,37 @@ export const StoreProvider = ({ children }) => {
     }
   };
 
-  const deleteUser = (id) => {
+  const deleteUser = async (id) => {
     if (users.length <= 1) return false;
+    
     setUsers(prev => prev.filter(u => u.id !== id));
     setSchedule(prev => prev.filter(s => s.userId !== id));
     setInstrumentEvaluations(prev => prev.filter(e => e.userId !== id));
+    setInstruments(prev => prev.filter(i => i.userId !== id));
+    setPlanningDocuments(prev => prev.filter(d => d.uploadedById !== id));
+    setLearningSessions(prev => prev.filter(l => l.uploadedById !== id));
+    
     if (currentUser?.id === id) setCurrentUser(null);
-    deleteFromSupabase('users', id);
-    syncToSupabase('schedule', schedule.filter(s => s.userId !== id));
-    syncToSupabase('instrument_evaluations', instrumentEvaluations.filter(e => e.userId !== id));
+    
+    await deleteFromSupabase('users', id);
+    await deleteFromSupabase('schedule', id);
+    await deleteFromSupabase('instruments', id);
+    await deleteFromSupabase('instrument_evaluations', id);
+    await deleteFromSupabase('planning_documents', id);
+    await deleteFromSupabase('learning_sessions', id);
+    
+    const remainingSchedule = schedule.filter(s => s.userId !== id);
+    const remainingInstruments = instruments.filter(i => i.userId !== id);
+    const remainingEvals = instrumentEvaluations.filter(e => e.userId !== id);
+    const remainingDocs = planningDocuments.filter(d => d.uploadedById !== id);
+    const remainingSessions = learningSessions.filter(l => l.uploadedById !== id);
+    
+    await syncToSupabase('schedule', remainingSchedule);
+    await syncToSupabase('instruments', remainingInstruments);
+    await syncToSupabase('instrument_evaluations', remainingEvals);
+    await syncToSupabase('planning_documents', remainingDocs);
+    await syncToSupabase('learning_sessions', remainingSessions);
+    
     return true;
   };
 
@@ -504,13 +528,20 @@ export const StoreProvider = ({ children }) => {
   };
 
   const addInstrument = (instrument) => {
-    const newInstrument = { ...instrument, id: generateId() };
+    const newInstrument = { ...instrument, id: generateId(), userId: instrument.userId };
     setInstruments(prev => [...prev, newInstrument]);
+    if (isOnline) {
+      syncToSupabase('instruments', [...instruments, newInstrument]);
+    }
     return newInstrument;
   };
 
   const updateInstrument = (id, updates) => {
     setInstruments(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    if (isOnline) {
+      const updated = instruments.map(i => i.id === id ? { ...i, ...updates } : i);
+      syncToSupabase('instruments', updated);
+    }
   };
 
   const deleteInstrument = (id) => {
@@ -543,6 +574,7 @@ export const StoreProvider = ({ children }) => {
           period: newEvaluation.period,
           activity_name: newEvaluation.activityName,
           instrument_type: newEvaluation.instrumentType,
+          user_id: newEvaluation.userId,
           scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
           criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
           date: newEvaluation.date || new Date().toISOString().split('T')[0]
@@ -626,13 +658,45 @@ export const StoreProvider = ({ children }) => {
     deleteFromSupabase('learning_sessions', id);
   };
 
-  const cleanupOrphanedSchedule = () => {
+  const cleanupOrphanedData = () => {
     const validUserIds = users.map(u => u.id);
-    const validClassIds = classes.map(c => c.id);
-    const validSubjectIds = subjects.map(s => s.id);
-    const validSchedule = schedule.filter(s => validUserIds.includes(s.userId) && validClassIds.includes(s.classId) && validSubjectIds.includes(s.subjectId));
-    const removed = schedule.length - validSchedule.length;
+    const removed = { schedule: 0, instruments: 0, evaluations: 0, documents: 0, sessions: 0 };
+    
+    const validSchedule = schedule.filter(s => {
+      const isValid = validUserIds.includes(s.userId);
+      if (!isValid) removed.schedule++;
+      return isValid;
+    });
     setSchedule(validSchedule);
+    
+    const validInstruments = instruments.filter(i => {
+      const isValid = i.userId ? validUserIds.includes(i.userId) : true;
+      if (!isValid) removed.instruments++;
+      return isValid;
+    });
+    setInstruments(validInstruments);
+    
+    const validEvaluations = instrumentEvaluations.filter(e => {
+      const isValid = e.userId ? validUserIds.includes(e.userId) : true;
+      if (!isValid) removed.evaluations++;
+      return isValid;
+    });
+    setInstrumentEvaluations(validEvaluations);
+    
+    const validDocs = planningDocuments.filter(d => {
+      const isValid = d.uploadedById ? validUserIds.includes(d.uploadedById) : true;
+      if (!isValid) removed.documents++;
+      return isValid;
+    });
+    setPlanningDocuments(validDocs);
+    
+    const validSessions = learningSessions.filter(l => {
+      const isValid = l.uploadedById ? validUserIds.includes(l.uploadedById) : true;
+      if (!isValid) removed.sessions++;
+      return isValid;
+    });
+    setLearningSessions(validSessions);
+    
     return removed;
   };
 
@@ -735,7 +799,7 @@ export const StoreProvider = ({ children }) => {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
-      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedSchedule,
+      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData,
       saveAttendanceDate, saveGrade,
       calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
       schedule, saveScheduleItem, deleteScheduleItem,
