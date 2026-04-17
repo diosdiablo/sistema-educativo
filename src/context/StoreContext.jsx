@@ -475,25 +475,36 @@ export const StoreProvider = ({ children }) => {
     if (currentUser?.id === id) setCurrentUser(null);
     
     await deleteFromSupabase('users', id);
-    await deleteFromSupabase('schedule', id);
-    await deleteFromSupabase('instruments', id);
-    await deleteFromSupabase('instrument_evaluations', id);
-    await deleteFromSupabase('planning_documents', id);
-    await deleteFromSupabase('learning_sessions', id);
     
-    const remainingSchedule = schedule.filter(s => s.userId !== id);
-    const remainingInstruments = instruments.filter(i => i.userId !== id);
-    const remainingEvals = instrumentEvaluations.filter(e => e.userId !== id);
-    const remainingDocs = planningDocuments.filter(d => d.uploadedById !== id);
-    const remainingSessions = learningSessions.filter(l => l.uploadedById !== id);
-    
-    await syncToSupabase('schedule', remainingSchedule);
-    await syncToSupabase('instruments', remainingInstruments);
-    await syncToSupabase('instrument_evaluations', remainingEvals);
-    await syncToSupabase('planning_documents', remainingDocs);
-    await syncToSupabase('learning_sessions', remainingSessions);
+    if (isOnline) {
+      try {
+        await supabase.from('schedule').delete().eq('user_id', id);
+        await supabase.from('instruments').delete().eq('user_id', id);
+        await supabase.from('instrument_evaluations').delete().eq('user_id', id);
+        await supabase.from('planning_documents').delete().eq('uploaded_by_id', id);
+        await supabase.from('learning_sessions').delete().eq('uploaded_by_id', id);
+      } catch (err) {
+        console.error('Error deleting user related data from Supabase:', err);
+      }
+    }
     
     return true;
+  };
+
+  const register = (name, username, password) => {
+    if (users.find(u => u.username === username)) return false;
+    const newUser = { 
+      id: generateId(), 
+      name, 
+      username, 
+      password, 
+      role: 'teacher',
+      assignments: [],
+      createdAt: new Date().toISOString()
+    };
+    setUsers(prev => [...prev, newUser]);
+    syncToSupabase('users', [newUser]);
+    return newUser;
   };
 
   const saveAttendanceDate = (date) => {
