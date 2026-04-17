@@ -210,8 +210,7 @@ export default function Schedule() {
                 </select>
               </div>
             )}
-            {!isAdmin || selectedUserId !== 'all' ? (
-              <button 
+            <button 
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '8px',
                   background: 'white', color: '#0891b2', border: 'none',
@@ -225,28 +224,6 @@ export default function Schedule() {
               >
                 <Plus size={18} /> Agregar Bloque
               </button>
-            ) : isAdmin && selectedUserId === 'all' && (
-              <button 
-                style={{ 
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'white', color: '#0891b2', border: 'none',
-                  padding: '0.75rem 1.25rem', borderRadius: '12px', fontWeight: 600, 
-                  cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
-                onClick={() => {
-                  const firstTeacher = teachers[0];
-                  if (firstTeacher) {
-                    setSelectedUserId(firstTeacher.id);
-                    handleOpenModal();
-                  }
-                }}
-              >
-                <Plus size={18} /> Agregar Bloque
-              </button>
-            )}
           </div>
         </div>
       </div>
