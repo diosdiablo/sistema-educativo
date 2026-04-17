@@ -434,9 +434,9 @@ export default function Settings() {
 
         <div style={{ marginTop: '1.5rem' }}>
           <button 
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm('¿Limpiar datos huérfanos? Esto eliminará horarios de docentes eliminados.')) {
-                const removed = cleanupOrphanedData();
+                const removed = await cleanupOrphanedData();
                 alert(`Datos huérfanos eliminados:\n- Horarios: ${removed.schedule}\n- Instrumentos: ${removed.instruments}\n- Evaluaciones: ${removed.evaluations}\n- Documentos: ${removed.documents}\n- Sesiones: ${removed.sessions}`);
               }
             }}
