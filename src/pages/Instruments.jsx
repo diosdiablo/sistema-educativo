@@ -258,7 +258,7 @@ export default function Instruments() {
     if (editingInstrument) {
       updateInstrument(editingInstrument.id, { title, type: instrumentType, criteria });
     } else {
-      addInstrument({ title, type: instrumentType, criteria });
+      addInstrument({ title, type: instrumentType, criteria, userId: currentUser?.id });
     }
     
     setView('list');
@@ -331,7 +331,8 @@ export default function Instruments() {
         period: selectedPeriod,
         classId: classes.find(c => c.name === selectedClass)?.id || '',
         studentId: student.id,
-        studentName: student.name
+        studentName: student.name,
+        userId: currentUser?.id
       };
       console.log('[SAVE] Evaluando:', student.name, '| score:', score, '| qualitative:', qualitative, '| scores:', JSON.stringify(evalData.scores));
       return evalData;
