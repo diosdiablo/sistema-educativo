@@ -173,30 +173,30 @@ export const StoreProvider = ({ children }) => {
             criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
             instrumentType: ev.instrument_type
           })));
-          if (scheduleData?.length > 0) {
-        const classMap = {};
-        classesData?.forEach(c => { classMap[c.id] = c.color; });
-        setSchedule(scheduleData.map(s => ({
-          ...s,
-          userId: s.user_id,
-          classId: s.class_id,
-          subjectId: s.subject_id,
-          color: s.color || classMap[s.class_id] || '#10b981'
-})));
-        const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
-        if (isOnline && schedulesNeedingColorUpdate.length > 0) {
-          try {
-            await Promise.all(schedulesNeedingColorUpdate.map(s => 
-              supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
-            ));
-          } catch (err) {
-            console.error('Error updating schedule colors:', err);
+if (scheduleData?.length > 0) {
+          const classMap = {};
+          classesData?.forEach(c => { classMap[c.id] = c.color; });
+          setSchedule(scheduleData.map(s => ({
+            ...s,
+            userId: s.user_id,
+            classId: s.class_id,
+            subjectId: s.subject_id,
+            color: s.color || classMap[s.class_id] || '#10b981'
+          })));
+          const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
+          if (isOnline && schedulesNeedingColorUpdate.length > 0) {
+            try {
+              await Promise.all(schedulesNeedingColorUpdate.map(s => 
+                supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
+              ));
+            } catch (err) {
+              console.error('Error updating schedule colors:', err);
+            }
           }
         }
-      }
       if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
-          
-          console.log('Loaded:', studentsData?.length, 'students');
+      
+      console.log('Loaded:', studentsData?.length, 'students');
           setSyncStatus('synced');
         } catch (err) {
           console.error('Fetch error:', err);
@@ -290,7 +290,8 @@ export const StoreProvider = ({ children }) => {
           criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
           instrumentType: ev.instrument_type
         })));
-if (scheduleData?.length > 0) {
+      }
+      if (scheduleData?.length > 0) {
         const classMap = {};
         classesData?.forEach(c => { classMap[c.id] = c.color; });
         setSchedule(scheduleData.map(s => ({
