@@ -310,6 +310,8 @@ export default function Schedule() {
                           flexDirection: 'column',
                           height: '100%',
                           justifyContent: 'center',
+                          alignItems: 'center',
+                          textAlign: 'center',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                           position: 'relative'
                         }}>
@@ -318,11 +320,11 @@ export default function Schedule() {
                               👤 {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2, textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>
                             {item.classId === '__ATENCION__' ? 'ATENCION AL PADRE DE FAMILIA' : item.classId === '__TRABAJO__' ? 'TRABAJO COLEGIADO' : classes.find(c => c.id === item.classId)?.name || 'Grado...'}
                           </span>
                           {(item.classId !== '__ATENCION__' && item.classId !== '__TRABAJO__') && (
-                            <span style={{ fontSize: '0.8rem', fontWeight: 500, lineHeight: 1.2 }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 500, lineHeight: 1.2, textAlign: 'center', display: 'block' }}>
                               {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
                             </span>
                           )}
