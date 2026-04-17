@@ -183,6 +183,10 @@ export const StoreProvider = ({ children }) => {
           
           console.log('Loaded:', studentsData?.length, 'students');
           setSyncStatus('synced');
+          
+          if (studentsData?.length > 0 || classesData?.length > 0) {
+            await supabase.rpc('cleanup_orphaned_schedule').catch(() => {});
+          }
         } catch (err) {
           console.error('Fetch error:', err);
           setSyncStatus('error');
@@ -286,6 +290,10 @@ export const StoreProvider = ({ children }) => {
       
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
+      
+      if (studentsData?.length > 0 || classesData?.length > 0) {
+        await supabase.rpc('cleanup_orphaned_schedule').catch(() => {});
+      }
     } catch (err) {
       console.error('Fetch error:', err);
       setSyncStatus('error');
@@ -474,7 +482,7 @@ export const StoreProvider = ({ children }) => {
     
     if (currentUser?.id === id) setCurrentUser(null);
     
-    await deleteFromSupabase('users', id);
+    await supabase.from('users').delete().eq('id', id);
     
     if (isOnline) {
       try {
@@ -810,7 +818,7 @@ export const StoreProvider = ({ children }) => {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
-      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData,
+      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
       saveAttendanceDate, saveGrade,
       calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
       schedule, saveScheduleItem, deleteScheduleItem,
