@@ -181,7 +181,7 @@ if (scheduleData?.length > 0) {
           classesData?.forEach(c => { classMap[c.id] = c.color; });
           setSchedule(scheduleData.map(s => {
             let color = s.color || classMap[s.class_id] || '#10b981';
-            if (s.class_id === '__ATENCION__') color = '#ec4899';
+            if (s.class_id === '__ATENCION__') color = '#6366f1';
             if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
             return {
               ...s,
@@ -307,7 +307,7 @@ if (scheduleData?.length > 0) {
         classesData?.forEach(c => { classMap[c.id] = c.color; });
         setSchedule(scheduleData.map(s => {
           let color = s.color || classMap[s.class_id] || '#10b981';
-          if (s.class_id === '__ATENCION__') color = '#ec4899';
+          if (s.class_id === '__ATENCION__') color = '#6366f1';
           if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
           return {
             ...s,
@@ -654,7 +654,7 @@ if (scheduleData?.length > 0) {
   const saveScheduleItem = async (item) => {
     let classColor = '#10b981';
     if (item.classId === '__ATENCION__') {
-      classColor = '#ec4899';
+      classColor = '#6366f1';
     } else if (item.classId === '__TRABAJO__') {
       classColor = '#8b5cf6';
     } else if (item.classId) {
