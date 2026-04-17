@@ -34,9 +34,14 @@ export default function Schedule() {
   }, [selectedUserId, isAdmin, currentUser, users]);
 
   const filteredSchedule = useMemo(() => {
-    if (isAdmin && selectedUserId === 'all') return schedule;
-    return schedule.filter(s => s.userId === viewedUser?.id);
-  }, [schedule, viewedUser, isAdmin, selectedUserId]);
+    let filtered = schedule;
+    if (isAdmin && selectedUserId === 'all') {
+      filtered = schedule.filter(s => users.some(u => u.id === s.userId));
+    } else {
+      filtered = schedule.filter(s => s.userId === viewedUser?.id);
+    }
+    return filtered;
+  }, [schedule, viewedUser, isAdmin, selectedUserId, users]);
 
   const availableClasses = useMemo(() => {
     if (isAdmin || viewedUser?.role === 'admin') return classes;
