@@ -21,7 +21,8 @@ export default function Schedule() {
     time: TIMES[0],
     classId: '',
     subjectId: '',
-    color: '#10b981'
+    color: '#10b981',
+    userId: ''
   });
 
   const teachers = useMemo(() => users.filter(u => u.role !== 'admin'), [users]);
@@ -64,7 +65,8 @@ export default function Schedule() {
         time: item.time,
         classId: item.classId,
         subjectId: item.subjectId,
-        color: item.color || '#10b981'
+        color: item.color || '#10b981',
+        userId: item.userId
       });
     } else {
       setEditingItem(null);
@@ -73,7 +75,8 @@ export default function Schedule() {
         time,
         classId: '',
         subjectId: '',
-        color: '#10b981'
+        color: '#10b981',
+        userId: selectedUserId === 'all' ? '' : viewedUser?.id || currentUser?.id
       });
     }
     setShowModal(true);
@@ -82,7 +85,14 @@ export default function Schedule() {
   const handleSave = (e) => {
     e.preventDefault();
     if (formData.classId && formData.subjectId) {
-      const targetUserId = viewedUser ? viewedUser.id : currentUser.id;
+      let targetUserId;
+      if (selectedUserId === 'all' && formData.userId) {
+        targetUserId = formData.userId;
+      } else if (viewedUser) {
+        targetUserId = viewedUser.id;
+      } else {
+        targetUserId = currentUser.id;
+      }
       saveScheduleItem({
         ...formData,
         userId: targetUserId,
@@ -200,7 +210,7 @@ export default function Schedule() {
                 </select>
               </div>
             )}
-            {(!isAdmin || selectedUserId !== 'all') && (
+            {!isAdmin || selectedUserId !== 'all' ? (
               <button 
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '8px',
@@ -212,6 +222,27 @@ export default function Schedule() {
                 onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
                 onClick={() => handleOpenModal()}
+              >
+                <Plus size={18} /> Agregar Bloque
+              </button>
+            ) : isAdmin && selectedUserId === 'all' && (
+              <button 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: 'white', color: '#0891b2', border: 'none',
+                  padding: '0.75rem 1.25rem', borderRadius: '12px', fontWeight: 600, 
+                  cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
+                onClick={() => {
+                  const firstTeacher = teachers[0];
+                  if (firstTeacher) {
+                    setSelectedUserId(firstTeacher.id);
+                    handleOpenModal();
+                  }
+                }}
               >
                 <Plus size={18} /> Agregar Bloque
               </button>
@@ -389,7 +420,7 @@ export default function Schedule() {
             </div>
 
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {isAdmin && !editingItem && (
+              {isAdmin && !editingItem && selectedUserId !== 'all' && (
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Docente</label>
                   <select 
@@ -398,6 +429,19 @@ export default function Schedule() {
                     onChange={e => setSelectedUserId(e.target.value)}
                   >
                     <option value={currentUser.id}>Yo (Admin)</option>
+                    {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {isAdmin && selectedUserId === 'all' && !editingItem && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Docente</label>
+                  <select 
+                    className="input-field" 
+                    value={formData.userId || ''} 
+                    onChange={e => setFormData({...formData, userId: e.target.value})}
+                  >
+                    <option value="">Seleccionar Docente</option>
                     {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
