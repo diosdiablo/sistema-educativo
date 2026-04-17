@@ -173,13 +173,28 @@ export const StoreProvider = ({ children }) => {
             criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
             instrumentType: ev.instrument_type
           })));
-          if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
-            ...s,
-            userId: s.user_id,
-            classId: s.class_id,
-            subjectId: s.subject_id
-          })));
-          if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+          if (scheduleData?.length > 0) {
+        const classMap = {};
+        classesData?.forEach(c => { classMap[c.id] = c.color; });
+        setSchedule(scheduleData.map(s => ({
+          ...s,
+          userId: s.user_id,
+          classId: s.class_id,
+          subjectId: s.subject_id,
+          color: s.color || classMap[s.class_id] || '#10b981'
+})));
+        const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
+        if (isOnline && schedulesNeedingColorUpdate.length > 0) {
+          try {
+            await Promise.all(schedulesNeedingColorUpdate.map(s => 
+              supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
+            ));
+          } catch (err) {
+            console.error('Error updating schedule colors:', err);
+          }
+        }
+      }
+      if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
           
           console.log('Loaded:', studentsData?.length, 'students');
           setSyncStatus('synced');
@@ -275,13 +290,27 @@ export const StoreProvider = ({ children }) => {
           criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
           instrumentType: ev.instrument_type
         })));
+if (scheduleData?.length > 0) {
+        const classMap = {};
+        classesData?.forEach(c => { classMap[c.id] = c.color; });
+        setSchedule(scheduleData.map(s => ({
+          ...s,
+          userId: s.user_id,
+          classId: s.class_id,
+          subjectId: s.subject_id,
+          color: s.color || classMap[s.class_id] || '#10b981'
+        })));
+        const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
+        if (isOnline && schedulesNeedingColorUpdate.length > 0) {
+          try {
+            await Promise.all(schedulesNeedingColorUpdate.map(s => 
+              supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
+            ));
+          } catch (err) {
+            console.error('Error updating schedule colors:', err);
+          }
+        }
       }
-      if (scheduleData?.length > 0) setSchedule(scheduleData.map(s => ({
-        ...s,
-        userId: s.user_id,
-        classId: s.class_id,
-        subjectId: s.subject_id
-      })));
       if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       
       console.log('Loaded:', studentsData?.length, 'students');
@@ -448,6 +477,9 @@ export const StoreProvider = ({ children }) => {
 
   const updateClassColor = (id, color) => {
     setClasses(prev => prev.map(c => c.id === id ? { ...c, color } : c));
+    if (isOnline) {
+      supabase.from('classes').update({ color }).eq('id', id).catch(() => {});
+    }
   };
 
   const reassignClassColors = () => {
@@ -603,7 +635,14 @@ export const StoreProvider = ({ children }) => {
   };
 
   const saveScheduleItem = async (item) => {
-    const classColor = classes.find(c => c.id === item.classId)?.color || '#10b981';
+    let classColor = '#10b981';
+    const targetClass = classes.find(c => c.id === item.classId);
+    if (targetClass?.color) {
+      classColor = targetClass.color;
+    } else if (isOnline) {
+      const { data: classData } = await supabase.from('classes').select('color').eq('id', item.classId).single();
+      if (classData?.color) classColor = classData.color;
+    }
     const newItem = { ...item, id: item.id || generateId(), color: item.color || classColor };
     setSchedule(prev => {
       if (prev.find(s => s.id === newItem.id)) {
