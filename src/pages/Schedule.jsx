@@ -318,7 +318,7 @@ export default function Schedule() {
                               👤 {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2 }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2, textAlign: 'center' }}>
                             {item.classId === '__ATENCION__' ? 'ATENCION AL PADRE DE FAMILIA' : item.classId === '__TRABAJO__' ? 'TRABAJO COLEGIADO' : classes.find(c => c.id === item.classId)?.name || 'Grado...'}
                           </span>
                           {(item.classId !== '__ATENCION__' && item.classId !== '__TRABAJO__') && (
