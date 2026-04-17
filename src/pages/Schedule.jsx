@@ -319,11 +319,13 @@ export default function Schedule() {
                             </span>
                           )}
                           <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2 }}>
-                            {item.classId === '__ATENCION__' ? 'ATENCION AL PADRE' : item.classId === '__TRABAJO__' ? 'TRABAJO COLEGIADO' : classes.find(c => c.id === item.classId)?.name || 'Grado...'}
+                            {item.classId === '__ATENCION__' ? 'ATENCION AL PADRE DE FAMILIA' : item.classId === '__TRABAJO__' ? 'TRABAJO COLEGIADO' : classes.find(c => c.id === item.classId)?.name || 'Grado...'}
                           </span>
-                          <span style={{ fontSize: '0.8rem', fontWeight: 500, lineHeight: 1.2 }}>
-                            {item.subjectId === '__ATENCION__' ? 'ATENCION AL PADRE' : item.subjectId === '__TRABAJO__' ? 'TRABAJO COLEGIADO' : subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
-                          </span>
+                          {(item.classId !== '__ATENCION__' && item.classId !== '__TRABAJO__') && (
+                            <span style={{ fontSize: '0.8rem', fontWeight: 500, lineHeight: 1.2 }}>
+                              {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         !(isAdmin && selectedUserId === 'all') && (
