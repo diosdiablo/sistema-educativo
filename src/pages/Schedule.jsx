@@ -49,6 +49,7 @@ export default function Schedule() {
   }, [viewedUser, classes, isAdmin]);
 
   const getAvailableSubjectsForClass = (classId) => {
+    if (classId === '__ATENCION__' || classId === '__TRABAJO__') return [];
     if (isAdmin || viewedUser?.role === 'admin') return subjects;
     if (!viewedUser?.assignments) return [];
     const subjectIds = viewedUser.assignments
@@ -84,7 +85,8 @@ export default function Schedule() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (formData.classId && formData.subjectId) {
+    const isSpecial = formData.classId === '__ATENCION__' || formData.classId === '__TRABAJO__';
+    if (formData.classId && (isSpecial || formData.subjectId)) {
       let targetUserId;
       if (selectedUserId === 'all' && formData.userId) {
         targetUserId = formData.userId;
@@ -440,15 +442,18 @@ export default function Schedule() {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Grado y Sección</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Grado y Sección / Actividad</label>
                 <select 
                   className="input-field" 
                   value={formData.classId} 
                   onChange={e => setFormData({...formData, classId: e.target.value, subjectId: ''})}
-                  required
                 >
                   <option value="">Seleccionar Grado</option>
-                  {availableClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="__ATENCION__">ATENCION AL PADRE DE FAMILIA</option>
+                  <option value="__TRABAJO__">TRABAJO COLEGIADO</option>
+                  <optgroup label="Grados">
+                    {availableClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </optgroup>
                 </select>
               </div>
 
@@ -458,9 +463,10 @@ export default function Schedule() {
                   className="input-field" 
                   value={formData.subjectId} 
                   onChange={e => setFormData({...formData, subjectId: e.target.value})}
-                  required
                 >
                   <option value="">Seleccionar Área</option>
+                  {formData.classId === '__ATENCION__' && <option value="__ATENCION__">ATENCION AL PADRE DE FAMILIA</option>}
+                  {formData.classId === '__TRABAJO__' && <option value="__TRABAJO__">TRABAJO COLEGIADO</option>}
                   {getAvailableSubjectsForClass(formData.classId).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
