@@ -183,10 +183,6 @@ export const StoreProvider = ({ children }) => {
           
           console.log('Loaded:', studentsData?.length, 'students');
           setSyncStatus('synced');
-          
-          if (studentsData?.length > 0 || classesData?.length > 0) {
-            await supabase.rpc('cleanup_orphaned_schedule').catch(() => {});
-          }
         } catch (err) {
           console.error('Fetch error:', err);
           setSyncStatus('error');
@@ -290,10 +286,6 @@ export const StoreProvider = ({ children }) => {
       
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
-      
-      if (studentsData?.length > 0 || classesData?.length > 0) {
-        await supabase.rpc('cleanup_orphaned_schedule').catch(() => {});
-      }
     } catch (err) {
       console.error('Fetch error:', err);
       setSyncStatus('error');
@@ -677,16 +669,14 @@ export const StoreProvider = ({ children }) => {
     deleteFromSupabase('learning_sessions', id);
   };
 
-  const cleanupOrphanedData = () => {
+  const cleanupOrphanedData = async () => {
     const validUserIds = users.map(u => u.id);
     const removed = { schedule: 0, instruments: 0, evaluations: 0, documents: 0, sessions: 0 };
     
-    const validSchedule = schedule.filter(s => {
-      const isValid = validUserIds.includes(s.userId);
-      if (!isValid) removed.schedule++;
-      return isValid;
-    });
-    setSchedule(validSchedule);
+    const currentSchedules = schedule.filter(s => validUserIds.includes(s.userId));
+    const orphanedScheduleIds = schedule.filter(s => !validUserIds.includes(s.userId)).map(s => s.id);
+    setSchedule(currentSchedules);
+    removed.schedule = orphanedScheduleIds.length;
     
     const validInstruments = instruments.filter(i => {
       const isValid = i.userId ? validUserIds.includes(i.userId) : true;
@@ -715,6 +705,17 @@ export const StoreProvider = ({ children }) => {
       return isValid;
     });
     setLearningSessions(validSessions);
+    
+    if (isOnline && orphanedScheduleIds.length > 0) {
+      try {
+        await Promise.all(
+          orphanedScheduleIds.map(id => supabase.from('schedule').delete().eq('id', id))
+        );
+        console.log('Deleted orphaned schedules from Supabase:', orphanedScheduleIds.length);
+      } catch (err) {
+        console.error('Error deleting orphaned schedules:', err);
+      }
+    }
     
     return removed;
   };
