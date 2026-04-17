@@ -11,7 +11,7 @@ export default function Settings() {
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
       setCurrentUser, syncToSupabaseManual, isOnline,
-      clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData, cleanupOrphanedSchedule
+      clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData, cleanupOrphanedData
     } = useStore();
     
     if (!periodDates) {
@@ -436,8 +436,8 @@ export default function Settings() {
           <button 
             onClick={() => {
               if (window.confirm('¿Limpiar datos huérfanos? Esto eliminará horarios de docentes eliminados.')) {
-                const removed = cleanupOrphanedSchedule();
-                alert(`Se eliminaron ${removed} registros huérfanos`);
+                const removed = cleanupOrphanedData();
+                alert(`Datos huérfanos eliminados:\n- Horarios: ${removed.schedule}\n- Instrumentos: ${removed.instruments}\n- Evaluaciones: ${removed.evaluations}\n- Documentos: ${removed.documents}\n- Sesiones: ${removed.sessions}`);
               }
             }}
             style={{ 
