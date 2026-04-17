@@ -109,7 +109,8 @@ export const StoreProvider = ({ children }) => {
             { data: instrumentsData },
             { data: instrumentEvalsData },
             { data: scheduleData },
-            { data: diagnosticData }
+            { data: diagnosticData },
+            { data: usersData }
           ] = await Promise.all([
             supabase.from('students').select('*'),
             supabase.from('classes').select('*'),
@@ -119,7 +120,8 @@ export const StoreProvider = ({ children }) => {
             supabase.from('instruments').select('*'),
             supabase.from('instrument_evaluations').select('*'),
             supabase.from('schedule').select('*'),
-            supabase.from('diagnostic_evaluations').select('*')
+            supabase.from('diagnostic_evaluations').select('*'),
+            supabase.from('users').select('*')
           ]);
           
       if (studentsData?.length > 0) {
@@ -142,6 +144,7 @@ export const StoreProvider = ({ children }) => {
             console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
             setClasses(classesData);
           }
+          if (usersData?.length > 0) setUsers(usersData);
           if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
             ...s,
             competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
@@ -224,7 +227,8 @@ if (scheduleData?.length > 0) {
         { data: instrumentsData },
         { data: instrumentEvalsData },
         { data: scheduleData },
-        { data: diagnosticData }
+        { data: diagnosticData },
+        { data: usersData }
       ] = await Promise.all([
         supabase.from('students').select('*'),
         supabase.from('classes').select('*'),
@@ -234,7 +238,8 @@ if (scheduleData?.length > 0) {
         supabase.from('instruments').select('*'),
         supabase.from('instrument_evaluations').select('*'),
         supabase.from('schedule').select('*'),
-        supabase.from('diagnostic_evaluations').select('*')
+        supabase.from('diagnostic_evaluations').select('*'),
+        supabase.from('users').select('*')
       ]);
       
       if (studentsData?.length > 0) {
@@ -257,6 +262,7 @@ if (scheduleData?.length > 0) {
         console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
         setClasses(classesData);
       }
+      if (usersData?.length > 0) setUsers(usersData);
       if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
         ...s,
         competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
