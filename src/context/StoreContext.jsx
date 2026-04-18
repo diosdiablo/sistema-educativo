@@ -110,7 +110,9 @@ export const StoreProvider = ({ children }) => {
             { data: instrumentEvalsData },
             { data: scheduleData },
             { data: diagnosticData },
-            { data: usersData }
+            { data: usersData },
+            { data: planningDocsData },
+            { data: learningSessionsData }
           ] = await Promise.all([
             supabase.from('students').select('*'),
             supabase.from('classes').select('*'),
@@ -121,7 +123,9 @@ export const StoreProvider = ({ children }) => {
             supabase.from('instrument_evaluations').select('*'),
             supabase.from('schedule').select('*'),
             supabase.from('diagnostic_evaluations').select('*'),
-            supabase.from('users').select('*')
+            supabase.from('users').select('*'),
+            supabase.from('planning_documents').select('*'),
+            supabase.from('learning_sessions').select('*')
           ]);
           
       if (studentsData?.length > 0) {
@@ -202,7 +206,19 @@ if (scheduleData?.length > 0) {
             }
           }
         }
-      if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
+        ...d,
+        uploadedBy: d.uploaded_by,
+        uploadedById: d.uploaded_by_id,
+        sections: d.sections || []
+      })));
+      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => ({
+        ...s,
+        uploadedBy: s.uploaded_by,
+        uploadedById: s.uploaded_by_id,
+        sections: s.sections || []
+      })));
       
       console.log('Loaded:', studentsData?.length, 'students');
           setSyncStatus('synced');
@@ -233,7 +249,9 @@ if (scheduleData?.length > 0) {
         { data: instrumentEvalsData },
         { data: scheduleData },
         { data: diagnosticData },
-        { data: usersData }
+        { data: usersData },
+        { data: planningDocsData },
+        { data: learningSessionsData }
       ] = await Promise.all([
         supabase.from('students').select('*'),
         supabase.from('classes').select('*'),
@@ -329,6 +347,18 @@ if (scheduleData?.length > 0) {
         }
       }
       if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
+        ...d,
+        uploadedBy: d.uploaded_by,
+        uploadedById: d.uploaded_by_id,
+        sections: d.sections || []
+      })));
+      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => ({
+        ...s,
+        uploadedBy: s.uploaded_by,
+        uploadedById: s.uploaded_by_id,
+        sections: s.sections || []
+      })));
       
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
@@ -714,9 +744,31 @@ if (scheduleData?.length > 0) {
     deleteFromSupabase('diagnostic_evaluations', id);
   };
 
-  const addPlanningDocument = (doc) => {
+  const addPlanningDocument = async (doc) => {
     const newDoc = { ...doc, id: generateId(), uploadedAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Usuario', uploadedById: currentUser?.id };
     setPlanningDocuments(prev => [...prev, { ...newDoc, fileData: null, fileSize: doc.fileData?.length || 0 }]);
+    
+    if (isOnline) {
+      try {
+        const supabaseDoc = {
+          id: newDoc.id,
+          title: newDoc.title,
+          description: newDoc.description,
+          sections: typeof newDoc.sections === 'object' ? JSON.stringify(newDoc.sections) : newDoc.sections,
+          subject_id: newDoc.subjectId,
+          period: newDoc.period,
+          grade_level: newDoc.gradeLevel,
+          file_data: newDoc.fileData,
+          file_name: newDoc.fileName,
+          uploaded_by: newDoc.uploadedBy,
+          uploaded_by_id: newDoc.uploadedById,
+          uploaded_at: newDoc.uploadedAt
+        };
+        await supabase.from('planning_documents').upsert(supabaseDoc, { onConflict: 'id' });
+      } catch (err) {
+        console.error('Error syncing planning doc to Supabase:', err);
+      }
+    }
   };
 
   const deletePlanningDocument = (id) => {
@@ -724,9 +776,31 @@ if (scheduleData?.length > 0) {
     deleteFromSupabase('planning_documents', id);
   };
 
-  const addLearningSession = (session) => {
+  const addLearningSession = async (session) => {
     const newSession = { ...session, id: generateId(), createdAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Admin', uploadedById: currentUser?.id };
     setLearningSessions(prev => [...prev, newSession]);
+    
+    if (isOnline) {
+      try {
+        const supabaseSession = {
+          id: newSession.id,
+          title: newSession.title,
+          description: newSession.description,
+          sections: typeof newSession.sections === 'object' ? JSON.stringify(newSession.sections) : newSession.sections,
+          subject_id: newSession.subjectId,
+          period: newSession.period,
+          grade_level: newSession.gradeLevel,
+          file_data: newSession.fileData,
+          file_name: newSession.fileName,
+          uploaded_by: newSession.uploadedBy,
+          uploaded_by_id: newSession.uploadedById,
+          uploaded_at: newSession.uploadedAt
+        };
+        await supabase.from('learning_sessions').upsert(supabaseSession, { onConflict: 'id' });
+      } catch (err) {
+        console.error('Error syncing learning session to Supabase:', err);
+      }
+    }
   };
 
   const deleteLearningSession = (id) => {
