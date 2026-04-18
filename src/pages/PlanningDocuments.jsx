@@ -13,8 +13,22 @@ export default function PlanningDocuments() {
   const [selectedSection, setSelectedSection] = useState(null);
   const [contentType, setContentType] = useState('planifications');
   const [showReportsModal, setShowReportsModal] = useState(false);
-  const [reportFiles, setReportFiles] = useState([]);
+  const [reportFiles, setReportFiles] = useState(() => {
+    const saved = localStorage.getItem('edu_reports');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [viewMode, setViewMode] = useState('grid');
+
+  // Guardar informes en localStorage
+  useEffect(() => {
+    localStorage.setItem('edu_reports', JSON.stringify(reportFiles));
+  }, [reportFiles]);
+
+  // Filtrar informes por docente
+  const myReports = useMemo(() => {
+    if (!currentUser) return [];
+    return reportFiles.filter(r => r.teacherId === currentUser.id || r.teacherId === currentUser.username);
+  }, [reportFiles, currentUser]);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadData, setUploadData] = useState({
     gradeLevel: '',
@@ -78,7 +92,7 @@ export default function PlanningDocuments() {
     } else if (contentType === 'sessions') {
       docs = learningSessions;
     } else {
-      docs = reportFiles;
+      docs = myReports;
     }
     let filtered = docs || [];
     
@@ -418,7 +432,7 @@ export default function PlanningDocuments() {
           <button 
             onClick={() => {
               if (contentType === 'reports') {
-                document.getElementById('reportFileInput')?.click();
+                setShowReportsModal(true);
               } else {
                 setShowUploadModal(true);
               }
@@ -864,16 +878,49 @@ export default function PlanningDocuments() {
 
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Adjuntar Archivo</label>
-                <div style={{
-                  border: '2px dashed #e2e8f0',
-                  borderRadius: '12px',
-                  padding: '2rem',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}>
+                <input 
+                  type="file" 
+                  id="reportFileInput"
+                  style={{ display: 'none' }}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const newReport = {
+                          id: Date.now().toString(),
+                          title: uploadData.title || 'Sin título',
+                          description: uploadData.description || '',
+                          fileName: file.name,
+                          fileData: event.target?.result,
+                          teacherId: currentUser?.id || currentUser?.username || 'admin',
+                          teacherName: currentUser?.name || currentUser?.username || 'Admin',
+                          uploadedAt: new Date().toISOString()
+                        };
+                        setReportFiles([...reportFiles, newReport]);
+                        setShowReportsModal(false);
+                        setUploadData({...uploadData, title: '', description: ''});
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <div 
+                  onClick={() => document.getElementById('reportFileInput')?.click()}
+                  style={{
+                    border: '2px dashed #e2e8f0',
+                    borderRadius: '12px',
+                    padding: '2rem',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#f59e0b'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                >
                   <Upload size={32} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Arrastra archivos aquí o haz clic para seleccionar</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Haz clic para seleccionar archivo</p>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>PDF, Word, Excel (máx. 10MB)</p>
                 </div>
               </div>
