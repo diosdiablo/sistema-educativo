@@ -143,8 +143,8 @@ export default function Students() {
         const numGradeB = parseInt(b.gradeLevel?.match(/\d+/)?.[0] || '0');
         if (numGradeA !== numGradeB) return numGradeA - numGradeB;
         
-        const sectionA = a.gradeLevel?.match(/[A-Z]$/)?.[0] || '';
-        const sectionB = b.gradeLevel?.match(/[A-Z]$/)?.[0] || '';
+        const sectionA = a.gradeLevel?.replace(/.*grado\s*/i, '').trim() || '';
+        const sectionB = b.gradeLevel?.replace(/.*grado\s*/i, '').trim() || '';
         if (sectionA !== sectionB) return sectionA.localeCompare(sectionB);
         
         const lastNameA = a.name.split(',')[0]?.trim().toLowerCase() || a.name.toLowerCase();
