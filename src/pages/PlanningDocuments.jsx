@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle, Briefcase } from 'lucide-react';
+import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle, Briefcase, Users, UserCheck } from 'lucide-react';
 import AIPlanningGenerator from '../components/AIPlanningGenerator';
 
 export default function PlanningDocuments() {
@@ -18,17 +18,37 @@ export default function PlanningDocuments() {
     return saved ? JSON.parse(saved) : [];
   });
   const [viewMode, setViewMode] = useState('grid');
+  const [selectedTeacherId, setSelectedTeacherId] = useState(null);
 
   // Guardar informes en localStorage
   useEffect(() => {
     localStorage.setItem('edu_reports', JSON.stringify(reportFiles));
   }, [reportFiles]);
 
-  // Filtrar informes por docente
+  // Obtener lista de docentes únicos
+  const teachers = useMemo(() => {
+    const teacherMap = {};
+    reportFiles.forEach(r => {
+      if (!teacherMap[r.teacherId]) {
+        teacherMap[r.teacherId] = {
+          id: r.teacherId,
+          name: r.teacherName || r.teacherId,
+          count: 0
+        };
+      }
+      teacherMap[r.teacherId].count++;
+    });
+    return Object.values(teacherMap);
+  }, [reportFiles]);
+
+  // Filtrar informes por docente seleccionado
   const myReports = useMemo(() => {
+    if (isAdmin && selectedTeacherId) {
+      return reportFiles.filter(r => r.teacherId === selectedTeacherId);
+    }
     if (!currentUser) return [];
     return reportFiles.filter(r => r.teacherId === currentUser.id || r.teacherId === currentUser.username);
-  }, [reportFiles, currentUser]);
+  }, [reportFiles, currentUser, isAdmin, selectedTeacherId]);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadData, setUploadData] = useState({
     gradeLevel: '',
@@ -426,9 +446,71 @@ export default function PlanningDocuments() {
               </div>
             );
           })}
-</div>
+        </div>
 
-{/* Botón agregar */}
+        {/* Lista de docentes para informes */}
+        {contentType === 'reports' && (
+          <div style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+              DOCENTES
+            </p>
+            <button
+              onClick={() => setSelectedTeacherId(null)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.75rem',
+                borderRadius: '12px',
+                border: !selectedTeacherId ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                background: !selectedTeacherId ? '#fef2f2' : 'white',
+                cursor: 'pointer',
+                width: '100%',
+                textAlign: 'left',
+                marginBottom: '0.5rem'
+              }}
+            >
+              <Users size={18} color={!selectedTeacherId ? '#ef4444' : '#64748b'} />
+              <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#ef4444' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                Todos los Docentes
+              </span>
+              <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                {reportFiles.length}
+              </span>
+            </button>
+            {teachers.map(teacher => (
+              <button
+                key={teacher.id}
+                onClick={() => setSelectedTeacherId(teacher.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.6rem 0.75rem',
+                  borderRadius: '10px',
+                  border: selectedTeacherId === teacher.id ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                  background: selectedTeacherId === teacher.id ? '#fef2f2' : 'white',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  marginBottom: '0.25rem'
+                }}
+              >
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ef444420', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <UserCheck size={16} color="#ef4444" />
+                </div>
+                <span style={{ fontWeight: selectedTeacherId === teacher.id ? 600 : 400, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
+                  {teacher.name}
+                </span>
+                <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                  {teacher.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Botón agregar */}
         {currentUser && (
           <button 
             onClick={() => {
