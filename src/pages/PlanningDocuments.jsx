@@ -454,14 +454,38 @@ export default function PlanningDocuments() {
               boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
             }}
           >
-<Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
+<button 
+            onClick={() => {
+              if (contentType === 'reports') {
+                setShowReportsModal(true);
+              } else {
+                setShowUploadModal(true);
+              }
+            }}
+            style={{
+              marginTop: 'auto',
+              background: contentType === 'reports' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white',
+              border: 'none',
+              padding: '0.9rem',
+              borderRadius: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+            }}
+          >
+            <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
           </button>
         )}
       </div>
       )}
 
       {/* Contenido principal */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, width: contentType === 'reports' ? '100%' : 'auto' }}>
         {/* Header */}
         <div style={{
           background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
