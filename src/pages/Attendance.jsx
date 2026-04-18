@@ -34,8 +34,9 @@ export default function Attendance() {
 
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return [];
-    return students.filter(s => s.gradeLevel === selectedClass);
-  }, [students, selectedClass]);
+    const selectedClassObj = classes.find(c => c.name === selectedClass);
+    return students.filter(s => s.gradeLevel === selectedClass || s.classId === selectedClass || s.classId === selectedClassObj?.name);
+  }, [students, selectedClass, classes]);
 
   // Estadísticas consolidadas de TODAS las fechas para el grado seleccionado
   const attendanceStats = useMemo(() => {
