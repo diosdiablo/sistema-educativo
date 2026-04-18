@@ -17,13 +17,20 @@ const Reports = () => {
 
   const periods = ['1', '2', '3', '4'];
 
+  const cleanClassFilter = (s, selected) => {
+    const cleanSelected = selected.trim().toLowerCase();
+    const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+    const cleanClass = (s.classId || '').trim().toLowerCase();
+    return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+  };
+
   const exportAttendance = async () => {
     if (!selectedClassAttendance) {
       alert('Por favor selecciona un grado/sección');
       return;
     }
 
-    const classStudents = students.filter(s => s.gradeLevel === selectedClassAttendance || s.classId === selectedClassAttendance || classes.find(c => c.name === selectedClassAttendance)?.id === s.classId || classes.find(c => c.name === selectedClassAttendance)?.name === s.classId);
+    const classStudents = students.filter(s => cleanClassFilter(s, selectedClassAttendance));
     if (classStudents.length === 0) {
       alert('No hay estudiantes en esta sección');
       return;
@@ -88,7 +95,7 @@ const Reports = () => {
     }
 
     const classStudents = students
-      .filter(s => s.gradeLevel === selectedClassFinal || s.classId === selectedClassFinal || classes.find(c => c.name === selectedClassFinal)?.id === s.classId || classes.find(c => c.name === selectedClassFinal)?.name === s.classId)
+      .filter(s => cleanClassFilter(s, selectedClassFinal))
       .sort((a, b) => a.name.localeCompare(b.name));
     
     const subject = subjects.find(s => s.id === selectedSubjectFinal);
@@ -174,7 +181,7 @@ const Reports = () => {
     }
 
     const classStudents = students
-      .filter(s => s.gradeLevel === selectedClassAux || s.classId === selectedClassAux || classes.find(c => c.name === selectedClassAux)?.id === s.classId || classes.find(c => c.name === selectedClassAux)?.name === s.classId)
+      .filter(s => cleanClassFilter(s, selectedClassAux))
       .sort((a, b) => a.name.localeCompare(b.name));
     
     const subject = subjects.find(s => s.id === selectedSubjectAux);

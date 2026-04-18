@@ -70,11 +70,15 @@ export default function DiagnosticEvaluation() {
 
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return [];
-    const selectedClassObj = classes.find(c => c.name === selectedClass);
+    const cleanSelected = selectedClass.trim().toLowerCase();
     return students
-      .filter(s => s.gradeLevel === selectedClass || s.classId === selectedClass || s.classId === selectedClassObj?.name)
+      .filter(s => {
+        const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+        const cleanClass = (s.classId || '').trim().toLowerCase();
+        return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+      })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [students, selectedClass, classes]);
+  }, [students, selectedClass]);
 
   const competencyCount = selectedSubjectData?.competencies?.length || 4;
 

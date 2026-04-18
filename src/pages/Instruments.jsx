@@ -212,9 +212,14 @@ export default function Instruments() {
   useEffect(() => { setSelectedStudent(''); setSelectedGroupIdx(null); }, [selectedClass]);
 
   const filteredStudents = useMemo(() => {
-    const selectedClassObj = classes.find(c => c.name === selectedClass);
-    return students.filter(s => s.gradeLevel === selectedClass || s.classId === selectedClass || s.classId === selectedClassObj?.name);
-  }, [students, selectedClass, classes]);
+    if (!selectedClass) return [];
+    const cleanSelected = selectedClass.trim().toLowerCase();
+    return students.filter(s => {
+      const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+      const cleanClass = (s.classId || '').trim().toLowerCase();
+      return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+    });
+  }, [students, selectedClass]);
   
   const predefinedGroups = useMemo(() => {
     const map = {};

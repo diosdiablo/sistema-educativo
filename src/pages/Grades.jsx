@@ -77,9 +77,13 @@ export default function Grades() {
 
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return [];
-    const selectedClassObj = classes.find(c => c.name === selectedClass);
-    return students.filter(s => s.gradeLevel === selectedClass || s.classId === selectedClass || s.classId === selectedClassObj?.name);
-  }, [students, selectedClass, classes]);
+    const cleanSelected = selectedClass.trim().toLowerCase();
+    return students.filter(s => {
+      const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+      const cleanClass = (s.classId || '').trim().toLowerCase();
+      return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+    });
+  }, [students, selectedClass]);
 
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
   const [hoveredEval, setHoveredEval] = useState(null); // { evaluation, position: { x, y } }
