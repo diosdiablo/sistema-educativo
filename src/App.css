@@ -157,7 +157,7 @@
   overflow-x: auto;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  background: #ffffff;
+  background: var(--bg-color-surface);
   box-shadow: var(--shadow-md);
 }
 
@@ -174,7 +174,7 @@
 }
 
 .styled-table th {
-  background-color: #f1f5f9;
+  background-color: var(--bg-color-main);
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -191,7 +191,11 @@
 }
 
 .styled-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .styled-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Animations */
