@@ -245,3 +245,31 @@ select.input-field {
   background-color: var(--bg-color-surface) !important;
   color: var(--text-primary) !important;
 }
+
+/* Aggressive override for ALL elements with white background in dark mode */
+[data-theme="dark"] * {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] > div {
+  background-color: var(--bg-color-surface) !important;
+}
+
+/* Force table and card backgrounds in dark mode */
+html[data-theme="dark"] body div {
+  background-color: var(--bg-color-surface) !important;
+}
+
+html[data-theme="dark"] body table {
+  background-color: var(--bg-color-surface) !important;
+}
+
+html[data-theme="dark"] body td {
+  background-color: var(--bg-color-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="dark"] body th {
+  background-color: var(--bg-color-surface) !important;
+  color: var(--text-primary) !important;
+}
