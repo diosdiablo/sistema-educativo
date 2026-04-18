@@ -20,7 +20,7 @@ import Settings from './pages/Settings';
 import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
 import PlanningDocuments from './pages/PlanningDocuments';
 
-function Sidebar({ isOpen, onClose }) {
+function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
   const { logout, currentUser, isAdmin } = useStore();
   
   const handleNavClick = () => {
@@ -119,6 +119,19 @@ function Sidebar({ isOpen, onClose }) {
           >
             <LogOut size={18} /> Cerrar Sesión
           </button>
+          <button 
+            onClick={() => setDarkMode(!darkMode)}
+            style={{ 
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.2)', 
+              color: '#ffffff',
+              padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              transition: 'all 0.2s ease', marginTop: '0.5rem'
+            }}
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
+          </button>
         </div>
       </div>
     </>
@@ -155,7 +168,7 @@ function AppContent() {
           {darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
       </div>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} darkMode={darkMode} setDarkMode={setDarkMode} />
       <div className="main-content">
         <Routes>
           <Route path="/" element={<Dashboard />} />
