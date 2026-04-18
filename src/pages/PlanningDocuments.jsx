@@ -223,7 +223,8 @@ export default function PlanningDocuments() {
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', gap: '1.5rem', minHeight: 'calc(100vh - 140px)' }}>
-      {/* Sidebar de navegación */}
+      {/* Sidebar de navegación - oculto para informes */}
+      {!isAdmin && contentType === 'reports' ? null : (
       <div style={{
         width: '280px',
         flexShrink: 0,
@@ -453,10 +454,11 @@ export default function PlanningDocuments() {
               boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
             }}
           >
-            <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
+<Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
           </button>
         )}
       </div>
+      )}
 
       {/* Contenido principal */}
       <div style={{ flex: 1 }}>
