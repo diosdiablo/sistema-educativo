@@ -125,10 +125,16 @@ export default function Students() {
     return classes.filter(c => classIds.includes(c.id)).map(c => c.name);
   }, [isAdmin, currentUser, classes]);
 
+  const cleanClassFilter = (studentGrade) => {
+    return (studentGrade || '').trim().toLowerCase();
+  };
+
   const filteredStudents = useMemo(() => {
     let baseList = students;
     if (!isAdmin) {
-      baseList = students.filter(s => assignedClassNames.includes(s.gradeLevel));
+      baseList = students.filter(s => assignedClassNames.some(c => 
+        cleanClassFilter(s.gradeLevel) === c.toLowerCase() || cleanClassFilter(s.classId) === c.toLowerCase()
+      ));
     }
     
     if (filterClass === 'Todos') {
@@ -137,12 +143,20 @@ export default function Students() {
         const numGradeB = parseInt(b.gradeLevel?.match(/\d+/)?.[0] || '0');
         if (numGradeA !== numGradeB) return numGradeA - numGradeB;
         
+        const sectionA = a.gradeLevel?.match(/[A-Z]$/)?.[0] || '';
+        const sectionB = b.gradeLevel?.match(/[A-Z]$/)?.[0] || '';
+        if (sectionA !== sectionB) return sectionA.localeCompare(sectionB);
+        
         const lastNameA = a.name.split(',')[0]?.trim().toLowerCase() || a.name.toLowerCase();
         const lastNameB = b.name.split(',')[0]?.trim().toLowerCase() || b.name.toLowerCase();
         return lastNameA.localeCompare(lastNameB);
       });
     }
-    return baseList.filter(s => s.gradeLevel === filterClass);
+    
+    const cleanFilter = filterClass.trim().toLowerCase();
+    return baseList.filter(s => 
+      cleanClassFilter(s.gradeLevel) === cleanFilter || cleanClassFilter(s.classId) === cleanFilter
+    );
   }, [students, filterClass, isAdmin, assignedClassNames]);
 
   const availableClassesForFilter = useMemo(() => {
