@@ -77,8 +77,9 @@ export default function Grades() {
 
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return [];
-    return students.filter(s => s.gradeLevel === selectedClass);
-  }, [students, selectedClass]);
+    const selectedClassObj = classes.find(c => c.name === selectedClass);
+    return students.filter(s => s.gradeLevel === selectedClass || s.classId === selectedClass || s.classId === selectedClassObj?.name);
+  }, [students, selectedClass, classes]);
 
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
   const [hoveredEval, setHoveredEval] = useState(null); // { evaluation, position: { x, y } }
