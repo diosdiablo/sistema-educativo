@@ -142,13 +142,16 @@ function AppContent() {
   const { currentUser, isAdmin, isLoading } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('edu_dark_mode');
-    return saved === 'true';
+    // Modo oscuro deshabilitado por problemas de compatibilidad
+    return false;
+    // const saved = localStorage.getItem('edu_dark_mode');
+    // return saved === 'true';
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-    localStorage.setItem('edu_dark_mode', darkMode);
+    // Modo oscuro deshabilitado
+    // document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    // localStorage.setItem('edu_dark_mode', darkMode);
   }, [darkMode]);
 
   if (!currentUser) return <Login />;

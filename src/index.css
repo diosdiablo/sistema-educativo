@@ -4,28 +4,27 @@
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   
   /* Light Theme Colors */
-  --bg-color-main: #FFFEF0; /* Light Yellow */
-  --bg-color-surface: #ffffff; /* White */
+  --bg-color-main: #FFFEF0;
+  --bg-color-surface: #ffffff;
   --bg-color-glass: rgba(255, 255, 255, 0.9);
   
-  --text-primary: #1e293b; /* Slate 800 */
-  --text-secondary: #64748b; /* Slate 500 */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
   
-  /* Brand Colors */
-  --sidebar-bg: #004d4d; /* Petroleum Green */
-  --accent-primary: #10b981; /* Emerald 500 */
-  --accent-hover: #059669; /* Emerald 600 */
+  --sidebar-bg: #004d4d;
+  --accent-primary: #10b981;
+  --accent-hover: #059669;
   
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
   
-  --grade-ad: #3b82f6; /* Blue */
-  --grade-a: #10b981; /* Green */
-  --grade-b: #f59e0b; /* Yellow */
-  --grade-c: #ef4444; /* Red */
+  --grade-ad: #3b82f6;
+  --grade-a: #10b981;
+  --grade-b: #f59e0b;
+  --grade-c: #ef4444;
   
-  --border-color: #e2e8f0; /* Slate 200 */
+  --border-color: #e2e8f0;
   --border-radius: 16px;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -34,31 +33,6 @@
   
   --transition-fast: 0.15s ease-in-out;
   --transition-normal: 0.3s ease-in-out;
-}
-
-/* Dark Theme */
-[data-theme="dark"] {
-  --bg-color-main: #0f172a; /* Slate 900 */
-  --bg-color-surface: #1e293b; /* Slate 800 */
-  --bg-color-glass: rgba(30, 41, 59, 0.9);
-  
-  --text-primary: #f1f5f9; /* Slate 100 */
-  --text-secondary: #94a3b8; /* Slate 400 */
-  
-  --sidebar-bg: #064e3b; /* Emerald 900 */
-  --accent-primary: #10b981;
-  --accent-hover: #34d399;
-  
-  --grade-ad: #60a5fa;
-  --grade-a: #34d399;
-  --grade-b: #fbbf24;
-  --grade-c: #f87171;
-  
-  --border-color: #334155; /* Slate 700 */
-  
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -155,11 +129,6 @@ select.input-field {
   padding-right: 2.5rem;
 }
 
-/* Dark mode select chevron */
-[data-theme="dark"] select.input-field {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-}
-
 .input-field:focus {
   outline: none;
   border-color: var(--accent-primary);
@@ -175,10 +144,10 @@ select.input-field {
   display: inline-block;
 }
 
-.badge-ad { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-.badge-a { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-b { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.badge-c { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-ad { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.badge-a { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-b { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-c { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
@@ -189,87 +158,9 @@ select.input-field {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Dark theme scrollbar */
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-}
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
-}
-
-/* Dark mode improvements for tables and content */
-[data-theme="dark"] .styled-table {
-  background: var(--bg-color-surface);
-}
-[data-theme="dark"] .styled-table td {
-  color: #e2e8f0;
-  border-color: var(--border-color);
-}
-[data-theme="dark"] .styled-table th {
-  color: #ffffff;
-  border-color: var(--border-color);
-}
-[data-theme="dark"] .table-container {
-  background: var(--bg-color-surface);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] code {
-  background: #334155;
-  color: #e2e8f0;
-}
-
-[data-theme="dark"] .glass-panel {
-  background: var(--bg-color-glass);
-  border-color: var(--border-color);
-}
-
-/* Override white backgrounds in dark mode - use more specific selectors */
-[data-theme="dark"] div[style*="background: white"],
-[data-theme="dark"] div[style*="background:'white'"],
-[data-theme="dark"] div[style*="background-color: white"],
-[data-theme="dark"] div[style*="background-color: white"] {
-  background-color: var(--bg-color-surface) !important;
-}
-
-/* Target table cells that might have white background */
-[data-theme="dark"] td[style*="white"],
-[data-theme="dark"] td[style*="#ffffff"] {
-  background-color: var(--bg-color-surface) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Aggressive override for ALL elements with white background in dark mode */
-[data-theme="dark"] * {
-  border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] > div {
-  background-color: var(--bg-color-surface) !important;
-}
-
-/* Force table and card backgrounds in dark mode */
-html[data-theme="dark"] body div {
-  background-color: var(--bg-color-surface) !important;
-}
-
-html[data-theme="dark"] body table {
-  background-color: var(--bg-color-surface) !important;
-}
-
-html[data-theme="dark"] body td {
-  background-color: var(--bg-color-surface) !important;
-  color: var(--text-primary) !important;
-}
-
-html[data-theme="dark"] body th {
-  background-color: var(--bg-color-surface) !important;
-  color: var(--text-primary) !important;
+  background: rgba(0, 0, 0, 0.3);
 }
