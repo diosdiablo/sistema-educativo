@@ -133,13 +133,13 @@ export default function Students() {
     
     if (filterClass === 'Todos') {
       return baseList.sort((a, b) => {
-        const lastNameA = a.name.split(',')[0]?.trim().toLowerCase() || a.name.toLowerCase();
-        const lastNameB = b.name.split(',')[0]?.trim().toLowerCase() || b.name.toLowerCase();
-        if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
-        
         const numGradeA = parseInt(a.gradeLevel?.match(/\d+/)?.[0] || '0');
         const numGradeB = parseInt(b.gradeLevel?.match(/\d+/)?.[0] || '0');
-        return numGradeA - numGradeB;
+        if (numGradeA !== numGradeB) return numGradeA - numGradeB;
+        
+        const lastNameA = a.name.split(',')[0]?.trim().toLowerCase() || a.name.toLowerCase();
+        const lastNameB = b.name.split(',')[0]?.trim().toLowerCase() || b.name.toLowerCase();
+        return lastNameA.localeCompare(lastNameB);
       });
     }
     return baseList.filter(s => s.gradeLevel === filterClass);
