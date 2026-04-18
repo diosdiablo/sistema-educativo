@@ -203,3 +203,30 @@ select.input-field {
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.5);
 }
+
+/* Dark mode improvements for tables and content */
+[data-theme="dark"] .styled-table {
+  background: var(--bg-color-surface);
+}
+[data-theme="dark"] .styled-table td {
+  color: #e2e8f0;
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .styled-table th {
+  color: #ffffff;
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .table-container {
+  background: var(--bg-color-surface);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] code {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .glass-panel {
+  background: var(--bg-color-glass);
+  border-color: var(--border-color);
+}
