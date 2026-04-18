@@ -265,12 +265,12 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         supabase.from('users').select('*')
       ]);
       
-      if (studentsData?.length > 0) {
+if (studentsData?.length > 0) {
         const normalizedStudents = studentsData.map(s => ({
           ...s,
           name: s.name,
           dni: s.dni,
-          gradeLevel: s.grade_level || s.gradeLevel || s.grade,
+          gradeLevel: s.grade_level || s.gradeLevel || s.grade || s.class_id,
           classId: s.class_id || s.classId,
           guardianName: s.guardian_name || s.guardianName,
           guardianDni: s.guardian_dni || s.guardianDni,
