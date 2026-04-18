@@ -211,7 +211,10 @@ export default function Instruments() {
   useEffect(() => { setSelectedCompetencyId(''); }, [selectedSubjectId]);
   useEffect(() => { setSelectedStudent(''); setSelectedGroupIdx(null); }, [selectedClass]);
 
-  const filteredStudents = useMemo(() => students.filter(s => s.gradeLevel === selectedClass), [students, selectedClass]);
+  const filteredStudents = useMemo(() => {
+    const selectedClassObj = classes.find(c => c.name === selectedClass);
+    return students.filter(s => s.gradeLevel === selectedClass || s.classId === selectedClass || s.classId === selectedClassObj?.name);
+  }, [students, selectedClass, classes]);
   
   const predefinedGroups = useMemo(() => {
     const map = {};
