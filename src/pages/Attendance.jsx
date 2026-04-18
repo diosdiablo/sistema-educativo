@@ -32,6 +32,13 @@ export default function Attendance() {
     setCurrentRecords(selectedDateRecord?.records || {});
   }, [date, selectedDateRecord]);
 
+  useEffect(() => {
+    console.log('selectedClass:', selectedClass);
+    console.log('Estudiantes:', students.length);
+    console.log('Estudiantes con classId 1° GRADO A:', students.filter(s => s.classId === '1° GRADO A').length);
+    console.log('Estudiantes con gradeLevel 1° GRADO A:', students.filter(s => s.gradeLevel === '1° GRADO A').length);
+  }, [selectedClass, students]);
+
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return [];
     const selectedClassObj = classes.find(c => c.name === selectedClass);
