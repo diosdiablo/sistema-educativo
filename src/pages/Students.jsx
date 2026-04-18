@@ -131,7 +131,17 @@ export default function Students() {
       baseList = students.filter(s => assignedClassNames.includes(s.gradeLevel));
     }
     
-    if (filterClass === 'Todos') return baseList;
+    if (filterClass === 'Todos') {
+      return baseList.sort((a, b) => {
+        const lastNameA = a.name.split(',')[0]?.trim().toLowerCase() || a.name.toLowerCase();
+        const lastNameB = b.name.split(',')[0]?.trim().toLowerCase() || b.name.toLowerCase();
+        if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
+        
+        const numGradeA = parseInt(a.gradeLevel?.match(/\d+/)?.[0] || '0');
+        const numGradeB = parseInt(b.gradeLevel?.match(/\d+/)?.[0] || '0');
+        return numGradeA - numGradeB;
+      });
+    }
     return baseList.filter(s => s.gradeLevel === filterClass);
   }, [students, filterClass, isAdmin, assignedClassNames]);
 
