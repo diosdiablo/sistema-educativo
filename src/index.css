@@ -230,3 +230,18 @@ select.input-field {
   background: var(--bg-color-glass);
   border-color: var(--border-color);
 }
+
+/* Override white backgrounds in dark mode - use more specific selectors */
+[data-theme="dark"] div[style*="background: white"],
+[data-theme="dark"] div[style*="background:'white'"],
+[data-theme="dark"] div[style*="background-color: white"],
+[data-theme="dark"] div[style*="background-color: white"] {
+  background-color: var(--bg-color-surface) !important;
+}
+
+/* Target table cells that might have white background */
+[data-theme="dark"] td[style*="white"],
+[data-theme="dark"] td[style*="#ffffff"] {
+  background-color: var(--bg-color-surface) !important;
+  color: var(--text-primary) !important;
+}
