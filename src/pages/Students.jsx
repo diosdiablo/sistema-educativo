@@ -3,6 +3,8 @@ import { useStore } from '../context/StoreContext';
 import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
+// Sistema de estudiantes - Gestión de alumnos
+
 export default function Students() {
   const { students, classes, addStudent, deleteStudent, importStudentsBulk, updateStudent, clearAllStudents, isAdmin, currentUser } = useStore();
   const [showForm, setShowForm] = useState(false);
