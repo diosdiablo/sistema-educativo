@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle, Briefcase } from 'lucide-react';
 import AIPlanningGenerator from '../components/AIPlanningGenerator';
 
 export default function PlanningDocuments() {
@@ -12,6 +12,8 @@ export default function PlanningDocuments() {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
   const [contentType, setContentType] = useState('planifications');
+  const [showReportsModal, setShowReportsModal] = useState(false);
+  const [reportFiles, setReportFiles] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadData, setUploadData] = useState({
@@ -70,7 +72,14 @@ export default function PlanningDocuments() {
   };
 
   const filteredDocuments = useMemo(() => {
-    const docs = contentType === 'planifications' ? planningDocuments : learningSessions;
+    let docs;
+    if (contentType === 'planifications') {
+      docs = planningDocuments;
+    } else if (contentType === 'sessions') {
+      docs = learningSessions;
+    } else {
+      docs = reportFiles;
+    }
     let filtered = docs || [];
     
     if (selectedSection) {
@@ -270,6 +279,27 @@ export default function PlanningDocuments() {
             <BookMarked size={16} />
             Sesiones
           </button>
+          <button
+            onClick={() => { setContentType('reports'); setSelectedSection(null); }}
+            style={{
+              flex: 1,
+              padding: '0.6rem 0.5rem',
+              borderRadius: '10px',
+              border: 'none',
+              background: contentType === 'reports' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#f1f5f9',
+              color: contentType === 'reports' ? 'white' : 'var(--text-secondary)',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}
+          >
+            <FileText size={16} />
+            Informes
+          </button>
         </div>
 
         {/* Ver todo */}
@@ -381,15 +411,21 @@ export default function PlanningDocuments() {
               </div>
             );
           })}
-        </div>
+</div>
 
         {/* Botón agregar */}
         {currentUser && (
           <button 
-            onClick={() => setShowUploadModal(true)}
+            onClick={() => {
+              if (contentType === 'reports') {
+                document.getElementById('reportFileInput')?.click();
+              } else {
+                setShowUploadModal(true);
+              }
+            }}
             style={{
               marginTop: 'auto',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              background: contentType === 'reports' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
               color: 'white',
               border: 'none',
               padding: '0.9rem',
@@ -403,7 +439,7 @@ export default function PlanningDocuments() {
               boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
             }}
           >
-            <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : 'Sesión'}
+            <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
           </button>
         )}
       </div>
@@ -759,9 +795,108 @@ export default function PlanningDocuments() {
                       >
                         <Trash2 size={16} />
                       </button>
-                    )}
-                  </div>
+)}
+      </div>
+
+      {/* Modal de informes */}
+      {showReportsModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+          padding: '4rem 1rem', zIndex: 1000, overflowY: 'auto'
+        }}>
+          <div style={{ 
+            maxWidth: '500px', width: '100%', 
+            background: 'white', borderRadius: '24px', padding: '2rem',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            position: 'relative'
+          }}>
+            <div style={{ 
+              position: 'absolute', top: '-30%', right: '-10%',
+              width: '150px', height: '150px',
+              background: 'linear-gradient(135deg, #ef444420, #dc262620)',
+              borderRadius: '50%'
+            }} />
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Briefcase size={24} color="white" />
                 </div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                  Subir Informe
+                </h3>
+              </div>
+              <button onClick={() => setShowReportsModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                <X size={24} color="var(--text-secondary)" />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Título del Informe</label>
+                <input 
+                  type="text" 
+                  className="input-field"
+                  placeholder="Ej: Informe de Gestión - Abril 2026"
+                  onChange={(e) => setUploadData({...uploadData, title: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Descripción</label>
+                <textarea 
+                  className="input-field"
+                  rows={3}
+                  placeholder="Breve descripción del informe..."
+                  onChange={(e) => setUploadData({...uploadData, description: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Adjuntar Archivo</label>
+                <div style={{
+                  border: '2px dashed #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '2rem',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}>
+                  <Upload size={32} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Arrastra archivos aquí o haz clic para seleccionar</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>PDF, Word, Excel (máx. 10MB)</p>
+                </div>
+              </div>
+
+              <button 
+                style={{
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  marginTop: '1rem'
+                }}
+              >
+                Subir Informe
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
               );
             })}
           </div>
