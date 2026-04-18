@@ -120,7 +120,6 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
             <LogOut size={18} /> Cerrar Sesión
           </button>
         </div>
-        </div>
       </div>
     </>
   );
