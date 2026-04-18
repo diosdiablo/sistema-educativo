@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -119,19 +119,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
           >
             <LogOut size={18} /> Cerrar Sesión
           </button>
-          <button 
-            onClick={() => setDarkMode(!darkMode)}
-            style={{ 
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.2)', 
-              color: '#ffffff',
-              padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-              transition: 'all 0.2s ease', marginTop: '0.5rem'
-            }}
-          >
-            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
-          </button>
+        </div>
         </div>
       </div>
     </>
@@ -167,11 +155,8 @@ function AppContent() {
           <Menu size={24} />
         </button>
         <span className="mobile-title">Portal Agro 110</span>
-        <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', color: 'var(--text-primary)' }}>
-          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
       </div>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
         <Routes>
           <Route path="/" element={<Dashboard />} />
