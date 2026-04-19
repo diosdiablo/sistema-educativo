@@ -112,7 +112,8 @@ export const StoreProvider = ({ children }) => {
             { data: diagnosticData },
             { data: usersData },
             { data: planningDocsData },
-            { data: learningSessionsData }
+            { data: learningSessionsData },
+            { data: periodDatesData }
           ] = await Promise.all([
             supabase.from('students').select('*'),
             supabase.from('classes').select('*'),
@@ -125,7 +126,8 @@ export const StoreProvider = ({ children }) => {
             supabase.from('diagnostic_evaluations').select('*'),
             supabase.from('users').select('*'),
             supabase.from('planning_documents').select('*'),
-            supabase.from('learning_sessions').select('*')
+            supabase.from('learning_sessions').select('*'),
+            supabase.from('period_dates').select('*')
           ]);
           
       if (studentsData?.length > 0) {
@@ -219,6 +221,16 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         uploadedById: s.uploaded_by_id,
         sections: s.sections || []
       })));
+      if (periodDatesData?.length > 0) {
+        const periodDatesMap = {};
+        periodDatesData.forEach(p => {
+          periodDatesMap[p.id] = {
+            start: p.start_date,
+            end: p.end_date
+          };
+        });
+        setPeriodDates(periodDatesMap);
+      }
       
       console.log('Loaded:', studentsData?.length, 'students');
           setSyncStatus('synced');
@@ -239,7 +251,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     if (!isOnline) return;
     setSyncStatus('syncing');
     try {
-      const [
+const [
         { data: studentsData },
         { data: classesData },
         { data: subjectsData },
@@ -251,7 +263,8 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         { data: diagnosticData },
         { data: usersData },
         { data: planningDocsData },
-        { data: learningSessionsData }
+        { data: learningSessionsData },
+        { data: periodDatesData }
       ] = await Promise.all([
         supabase.from('students').select('*'),
         supabase.from('classes').select('*'),
@@ -262,7 +275,10 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         supabase.from('instrument_evaluations').select('*'),
         supabase.from('schedule').select('*'),
         supabase.from('diagnostic_evaluations').select('*'),
-        supabase.from('users').select('*')
+        supabase.from('users').select('*'),
+        supabase.from('planning_documents').select('*'),
+        supabase.from('learning_sessions').select('*'),
+        supabase.from('period_dates').select('*')
       ]);
       
 if (studentsData?.length > 0) {
@@ -359,6 +375,16 @@ if (studentsData?.length > 0) {
         uploadedById: s.uploaded_by_id,
         sections: s.sections || []
       })));
+      if (periodDatesData?.length > 0) {
+        const periodDatesMap = {};
+        periodDatesData.forEach(p => {
+          periodDatesMap[p.id] = {
+            start: p.start_date,
+            end: p.end_date
+          };
+        });
+        setPeriodDates(periodDatesMap);
+      }
       
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
