@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
-import PageSkeleton from '../components/Skeleton';
 import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
@@ -16,34 +15,21 @@ export default function Settings() {
       clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData, cleanupOrphanedData
     } = useStore();
     
-    if (!periodDates) {
-      return (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <p>Cargando configuración...</p>
-        </div>
-      );
-    }
-    
-    const [localDates, setLocalDates] = useState(periodDates || {});
+    const { addToast } = useToast();
     const [syncMsg, setSyncMsg] = useState('');
     const [isSyncing, setIsSyncing] = useState(false);
     const [clearMsg, setClearMsg] = useState('');
     const [clearType, setClearType] = useState(null);
-    const { addToast } = useToast();
-    const [isLoading, setIsLoading] = useState(true);
+    const [localDates, setLocalDates] = useState(() => {
+      if (!periodDates) return {};
+      return periodDates;
+    });
 
     useEffect(() => {
-      const timer = setTimeout(() => setIsLoading(false), 500);
-      return () => clearTimeout(timer);
-    }, []);
-
-  if (isLoading) {
-    return <PageSkeleton />;
-  }
-
-  if (!periodDates) {
-    return <PageSkeleton />;
-  }
+      if (periodDates) {
+        setLocalDates(periodDates);
+      }
+    }, [periodDates]);
 
   if (!isAdmin) {
     return (
