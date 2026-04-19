@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { useToast } from '../components/Toast';
-import PageSkeleton from '../components/Skeleton';
 import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
@@ -25,25 +23,11 @@ export default function Settings() {
     }
     
     const [localDates, setLocalDates] = useState(periodDates || {});
+    const [saved, setSaved] = useState(false);
     const [syncMsg, setSyncMsg] = useState('');
     const [isSyncing, setIsSyncing] = useState(false);
     const [clearMsg, setClearMsg] = useState('');
     const [clearType, setClearType] = useState(null);
-    const { addToast } = useToast();
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-      const timer = setTimeout(() => setIsLoading(false), 500);
-      return () => clearTimeout(timer);
-    }, []);
-
-  if (isLoading) {
-    return <PageSkeleton />;
-  }
-
-  if (!periodDates) {
-    return <PageSkeleton />;
-  }
 
   if (!isAdmin) {
     return (
@@ -75,12 +59,13 @@ export default function Settings() {
     Object.keys(localDates).forEach(id => {
       updatePeriodDates(id, localDates[id]);
     });
-    addToast('Fechas guardadas correctamente', 'success');
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
   const syncToCloud = async () => {
     if (!isOnline) {
-      addToast('Sin conexión a internet', 'error');
+      setSyncMsg('✗ Error: No se conectó a Supabase (Faltan Configurar Variables de Entorno en Vercel)');
       return;
     }
     setIsSyncing(true);
@@ -88,14 +73,14 @@ export default function Settings() {
     
     try {
       await syncToSupabaseManual();
-      addToast('Sincronización completa', 'success');
+      setSyncMsg('✓ Sincronización completa');
     } catch (err) {
       console.error('Sync error:', err);
-      addToast('Error al sincronizar', 'error');
+      setSyncMsg('✗ Error al sincronizar');
     }
     
     setIsSyncing(false);
-    setSyncMsg('');
+    setTimeout(() => setSyncMsg(''), 3000);
   };
 
   const handleClearData = async (type) => {

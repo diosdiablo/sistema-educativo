@@ -178,15 +178,11 @@ function AppContent() {
   );
 }
 
-import { ToastProvider } from './components/Toast';
-
 function App() {
   return (
     <BrowserRouter>
       <StoreProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
+        <AppContent />
       </StoreProvider>
     </BrowserRouter>
   );

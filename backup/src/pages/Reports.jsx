@@ -1,0 +1,479 @@
+import { useState } from 'react';
+import { useStore } from '../context/StoreContext';
+import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative } from '../templates/exportTemplates';
+
+const Reports = () => {
+  const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
+  const [selectedClassAttendance, setSelectedClassAttendance] = useState('');
+  const [selectedPeriodAttendance, setSelectedPeriodAttendance] = useState('1');
+  const [selectedClassAux, setSelectedClassAux] = useState('');
+  const [selectedSubjectAux, setSelectedSubjectAux] = useState('');
+  const [selectedPeriodAux, setSelectedPeriodAux] = useState('1');
+  const [selectedClassFinal, setSelectedClassFinal] = useState('');
+  const [selectedSubjectFinal, setSelectedSubjectFinal] = useState('');
+  const [selectedPeriodFinal, setSelectedPeriodFinal] = useState('1');
+
+  const periods = ['1', '2', '3', '4'];
+
+  const cleanClassFilter = (s, selected) => {
+    const cleanSelected = selected.trim().toLowerCase();
+    const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+    const cleanClass = (s.classId || '').trim().toLowerCase();
+    return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+  };
+
+  const exportAttendance = async () => {
+    if (!selectedClassAttendance) {
+      alert('Por favor selecciona un grado/sección');
+      return;
+    }
+
+    const classStudents = students.filter(s => cleanClassFilter(s, selectedClassAttendance));
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
+    }
+
+    const period = periodDates[selectedPeriodAttendance];
+    const allDates = [...new Set(attendance.map(a => a.date))]
+      .filter(date => date >= period.start && date <= period.end)
+      .sort();
+    
+    if (allDates.length === 0) {
+      alert(`No hay registros de asistencia para el Bimestre ${selectedPeriodAttendance} en las fechas configuradas (${period.start} a ${period.end}).`);
+      return;
+    }
+    
+    const data = buildAttendanceData(classStudents, attendance, allDates);
+
+    const template = await loadTemplate('asistencia.xlsx');
+    let workbook;
+    
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
+      
+      data.forEach((row, rowIndex) => {
+        Object.entries(row).forEach(([key, value]) => {
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+          for (let col = 0; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 1, c: col });
+            const header = worksheet[cellRef]?.v;
+            if (header && String(header).toLowerCase().trim() === String(key).toLowerCase().trim()) {
+              const targetCell = XLSX.utils.encode_cell({ r: 2 + rowIndex, c: col });
+              worksheet[targetCell] = { t: 's', v: String(value) };
+              break;
+            }
+          }
+        });
+      });
+      
+      workbook = template;
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencia');
+      
+      const dateCols = allDates.length;
+      const wscols = [
+        { wch: 35 },
+        ...Array(dateCols).fill({ wch: 10 }),
+        { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+      ];
+      worksheet['!cols'] = wscols;
+    }
+
+    XLSX.writeFile(workbook, `Asistencia_${selectedClassAttendance.replace(/ /g, '_')}_Bimestre_${selectedPeriodAttendance}.xlsx`);
+  };
+
+  const exportFinalReport = async () => {
+    if (!selectedClassFinal || !selectedSubjectFinal) {
+      alert('Por favor selecciona un grado/sección y un área');
+      return;
+    }
+
+    const classStudents = students
+      .filter(s => cleanClassFilter(s, selectedClassFinal))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const subject = subjects.find(s => s.id === selectedSubjectFinal);
+    if (!subject) return;
+
+    const headerRows = [
+      ['REGISTRO FINAL'],
+      [''],
+      ['Área:', subject.name],
+      ['Grado y Sección:', selectedClassFinal],
+      ['Docente:', currentUser?.name || 'Administrador'],
+      ['Periodo:', `Bimestre ${selectedPeriodFinal}`],
+      ['']
+    ];
+
+    const dataHeaders = ['N°', 'Estudiante'];
+    subject.competencies.forEach(comp => {
+      dataHeaders.push(comp.name);
+      dataHeaders.push('Conclusión Descriptiva');
+    });
+
+    const studentData = classStudents.map((student, index) => {
+      const row = [index + 1, student.name];
+      
+      const studentEvals = instrumentEvaluations.filter(ev => 
+        ev.studentId === student.id && ev.period === selectedPeriodFinal
+      );
+      
+      subject.competencies.forEach(comp => {
+        const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
+        const scores = compEvals.map(ev => ev.qualitative).filter(q => q);
+        
+        const grade = scores.length > 0 
+          ? (scores.length === 1 ? scores[0] : getAverageQualitative(scores)) 
+          : '-';
+        
+        row.push(grade);
+        row.push('-');
+      });
+      return row;
+    });
+
+    const template = await loadTemplate('reporte_final.xlsx');
+    let workbook;
+    
+    if (template) {
+      const sheetName = template.SheetNames[0];
+      const worksheet = template.Sheets[sheetName];
+      
+      const worksheetData = [...headerRows, dataHeaders, ...studentData];
+      const newWorksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, newWorksheet, 'Reporte Final');
+      
+      const wscols = [{ wch: 5 }, { wch: 40 }];
+      subject.competencies.forEach(() => {
+        wscols.push({ wch: 15 });
+        wscols.push({ wch: 50 });
+      });
+      newWorksheet['!cols'] = wscols;
+    } else {
+      const worksheetData = [...headerRows, dataHeaders, ...studentData];
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
+
+      const wscols = [{ wch: 5 }, { wch: 40 }];
+      subject.competencies.forEach(() => {
+        wscols.push({ wch: 15 });
+        wscols.push({ wch: 50 });
+      });
+      worksheet['!cols'] = wscols;
+    }
+
+    XLSX.writeFile(workbook, `Reporte_Final_${subject.name.replace(/ /g, '_')}_${selectedClassFinal.replace(/ /g, '_')}_B${selectedPeriodFinal}.xlsx`);
+  };
+
+  const exportDetailedGrades = async () => {
+    if (!selectedClassAux || !selectedSubjectAux) {
+      alert('Por favor selecciona un grado/sección y un área');
+      return;
+    }
+
+    const classStudents = students
+      .filter(s => cleanClassFilter(s, selectedClassAux))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const subject = subjects.find(s => s.id === selectedSubjectAux);
+    if (!subject) return;
+
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
+    }
+
+    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subjects, selectedSubjectAux, selectedPeriodAux, selectedClassAux, selectedPeriodAux);
+    if (!workbook) {
+      alert('No se pudo generar el reporte');
+      return;
+    }
+    XLSX.writeFile(workbook, `Calificaciones_Detallado_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`);
+  };
+
+  return (
+    <div>
+      <div style={{
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        borderRadius: '20px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        color: 'white'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '56px', height: '56px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <FileDown size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Centro de Reportes</h2>
+              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Exporta registros de asistencia y evaluaciones en formato Excel</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
+        
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(59, 130, 246, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <CalendarCheck size={24} color="#3b82f6" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Reporte de Asistencia</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Seleccionar Grado y Sección
+              </label>
+              <select 
+                className="input-field"
+                value={selectedClassAttendance}
+                onChange={(e) => setSelectedClassAttendance(e.target.value)}
+              >
+                <option value="">-- Elige una sección --</option>
+                {classes.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Seleccionar Bimestre
+              </label>
+              <select 
+                className="input-field"
+                value={selectedPeriodAttendance}
+                onChange={(e) => setSelectedPeriodAttendance(e.target.value)}
+              >
+                {periods.map(p => (
+                  <option key={p} value={p}>Bimestre {p}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={exportAttendance}
+              className="btn-primary"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '1rem' }}
+            >
+              <Download size={20} />
+              Exportar Asistencia de Bimestre {selectedPeriodAttendance}
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            <p><strong>Nota:</strong> El reporte incluirá todas las fechas registradas hasta el momento para la sección seleccionada.</p>
+          </div>
+        </div>
+
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(34, 197, 94, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <Table size={24} color="#22c55e" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Registro Auxiliar</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Sección
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedClassAux}
+                  onChange={(e) => setSelectedClassAux(e.target.value)}
+                >
+                  <option value="">-- Sección --</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Periodo
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedPeriodAux}
+                  onChange={(e) => setSelectedPeriodAux(e.target.value)}
+                >
+                  {periods.map(p => (
+                    <option key={p} value={p}>Bimestre {p}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Área Curricular
+              </label>
+              <select 
+                className="input-field"
+                value={selectedSubjectAux}
+                onChange={(e) => setSelectedSubjectAux(e.target.value)}
+              >
+                <option value="">-- Selecciona el Área --</option>
+                {subjects.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={exportDetailedGrades}
+              className="btn-primary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '1rem',
+                backgroundColor: '#22c55e',
+                boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.39)'
+              }}
+            >
+              <Download size={20} />
+              Exportar Registro Auxiliar
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            <p><strong>Nota:</strong> Este reporte muestra cada evaluación por competencia con notas literales y promedio.</p>
+          </div>
+        </div>
+
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '16px', 
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(139, 92, 246, 0.1)', 
+              borderRadius: '12px' 
+            }}>
+              <FileDown size={24} color="#8b5cf6" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Reporte Final (Oficial)</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Sección
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedClassFinal}
+                  onChange={(e) => setSelectedClassFinal(e.target.value)}
+                >
+                  <option value="">-- Sección --</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Periodo
+                </label>
+                <select 
+                  className="input-field"
+                  value={selectedPeriodFinal}
+                  onChange={(e) => setSelectedPeriodFinal(e.target.value)}
+                >
+                  {periods.map(p => (
+                    <option key={p} value={p}>Bimestre {p}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                Área Curricular
+              </label>
+              <select 
+                className="input-field"
+                value={selectedSubjectFinal}
+                onChange={(e) => setSelectedSubjectFinal(e.target.value)}
+              >
+                <option value="">-- Selecciona el Área --</option>
+                {subjects.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={exportFinalReport}
+              className="btn-primary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '1rem',
+                backgroundColor: 'var(--accent-primary)',
+                boxShadow: '0 4px 14px 0 rgba(139, 92, 246, 0.39)'
+              }}
+            >
+              <Download size={20} />
+              Generar Registro Final (Excel)
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            <p><strong>Nota:</strong> Este reporte incluye el número de orden, notas finales y conclusiones descriptivas por cada competencia.</p>
+          </div>
+        </div>
+
+</div>
+    </div>
+  );
+};
+
+export default Reports;

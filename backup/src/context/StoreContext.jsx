@@ -1,0 +1,1021 @@
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '../lib/supabase';
+
+const StoreContext = createContext();
+
+export const useStore = () => useContext(StoreContext);
+
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+const hashCode = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash;
+};
+
+const loadData = (key, defaultValue) => {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
+const DEFAULT_SUBJECTS = [
+  { id: 'cneb-mat', name: 'Matemática', competencies: [
+    { id: 'c1', name: 'Resolución de problemas' },
+    { id: 'c2', name: 'Razonamiento lógico' }
+  ]},
+  { id: 'cneb-com', name: 'Comunicación', competencies: [
+    { id: 'c1', name: 'Comprensión lectora' },
+    { id: 'c2', name: 'Expresión oral' }
+  ]},
+  { id: 'cneb-cta', name: 'Ciencia y Tecnología', competencies: [
+    { id: 'c1', name: 'Investigación científica' },
+    { id: 'c2', name: 'Uso de Tecnología' }
+  ]},
+  { id: 'cneb-per', name: 'Personal Social', competencies: [
+    { id: 'c1', name: 'Identidad personal' },
+    { id: 'c2', name: 'Relaciones interpersonales' }
+  ]},
+  { id: 'cneb-arte', name: 'Arte y Cultura', competencies: [
+    { id: 'c1', name: 'Apreciación artística' },
+    { id: 'c2', name: 'Expresión creativa' }
+  ]}
+];
+
+const DEFAULT_CLASSES = [
+  { id: '1a', name: '1° GRADO A', color: '#10b981' },
+  { id: '1b', name: '1° GRADO B', color: '#3b82f6' },
+  { id: '2a', name: '2° GRADO A', color: '#8b5cf6' },
+  { id: '2b', name: '2° GRADO B', color: '#f59e0b' },
+  { id: '3a', name: '3° GRADO A', color: '#ef4444' },
+  { id: '3b', name: '3° GRADO B', color: '#06b6d4' },
+  { id: '4a', name: '4° GRADO A', color: '#84cc16' },
+  { id: '4b', name: '4° GRADO B', color: '#f97316' },
+  { id: '5a', name: '5° GRADO A', color: '#ec4899' }
+];
+
+const DEFAULT_PERIOD_DATES = {
+  '1': { start: '2026-03-01', end: '2026-05-15' },
+  '2': { start: '2026-05-16', end: '2026-07-24' },
+  '3': { start: '2026-08-10', end: '2026-10-16' },
+  '4': { start: '2026-10-17', end: '2026-12-22' }
+};
+
+export const StoreProvider = ({ children }) => {
+  const [isOnline] = useState(() => {
+    const online = !!import.meta.env.VITE_SUPABASE_URL;
+    console.log('isOnline:', online, '| VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    return online;
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [syncStatus, setSyncStatus] = useState('checking');
+
+  const [users, setUsers] = useState(() => loadData('edu_users', []));
+  const [currentUser, setCurrentUser] = useState(null);
+  const [students, setStudents] = useState(() => loadData('edu_students', []));
+  const [attendance, setAttendance] = useState(() => loadData('edu_attendance', []));
+  const [grades, setGrades] = useState(() => loadData('edu_grades', []));
+
+  useEffect(() => {
+    const savedUser = sessionStorage.getItem('edu_current_user_session');
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch {
+        sessionStorage.removeItem('edu_current_user_session');
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (isOnline) {
+      const loadData = async () => {
+        setSyncStatus('syncing');
+        try {
+          const [
+            { data: studentsData },
+            { data: classesData },
+            { data: subjectsData },
+            { data: gradesData },
+            { data: attendanceData },
+            { data: instrumentsData },
+            { data: instrumentEvalsData },
+            { data: scheduleData },
+            { data: diagnosticData },
+            { data: usersData },
+            { data: planningDocsData },
+            { data: learningSessionsData },
+            { data: periodDatesData }
+          ] = await Promise.all([
+            supabase.from('students').select('*'),
+            supabase.from('classes').select('*'),
+            supabase.from('subjects').select('*'),
+            supabase.from('grades').select('*'),
+            supabase.from('attendance').select('*'),
+            supabase.from('instruments').select('*'),
+            supabase.from('instrument_evaluations').select('*'),
+            supabase.from('schedule').select('*'),
+            supabase.from('diagnostic_evaluations').select('*'),
+            supabase.from('users').select('*'),
+            supabase.from('planning_documents').select('*'),
+            supabase.from('learning_sessions').select('*'),
+            supabase.from('period_dates').select('*')
+          ]);
+          
+      if (studentsData?.length > 0) {
+        const normalizedStudents = studentsData.map(s => ({
+          ...s,
+          name: s.name,
+          dni: s.dni,
+          gradeLevel: s.grade_level || s.gradeLevel || s.grade || s.class_id,
+          classId: s.class_id || s.classId,
+          guardianName: s.guardian_name || s.guardianName,
+          guardianDni: s.guardian_dni || s.guardianDni,
+          guardianPhone: s.guardian_phone || s.guardianPhone,
+          birthDate: s.birth_date || s.birthDate,
+          address: s.address,
+          phone: s.phone
+        }));
+        setStudents(normalizedStudents);
+      }
+          if (classesData?.length > 0) {
+            console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
+            setClasses(classesData);
+          }
+          if (usersData?.length > 0) setUsers(usersData);
+          if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
+            ...s,
+            competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
+          })));
+          if (gradesData?.length > 0) setGrades(gradesData.map(g => ({
+            ...g,
+            studentId: g.student_id,
+            competencyId: g.competency_id
+          })));
+          if (attendanceData?.length > 0) setAttendance(attendanceData);
+          if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
+            ...i,
+            instrumentId: i.instrument_id,
+            subjectId: i.subject_id,
+            classId: i.class_id,
+            criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
+          })));
+          if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
+            ...ev,
+            instrumentId: ev.instrument_id,
+            studentId: ev.student_id,
+            competencyId: ev.competency_id,
+            subjectId: ev.subject_id,
+            classId: ev.class_id,
+            maxPossible: ev.max_possible,
+            activityName: ev.activity_name || '',
+            userId: ev.user_id,
+            scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
+            criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
+            instrumentType: ev.instrument_type
+          })));
+if (scheduleData?.length > 0) {
+          const classMap = {};
+          classesData?.forEach(c => { classMap[c.id] = c.color; });
+          setSchedule(scheduleData.map(s => {
+            let color = s.color || classMap[s.class_id] || '#10b981';
+            if (s.class_id === '__ATENCION__') color = '#6366f1';
+            if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
+            return {
+              ...s,
+              userId: s.user_id,
+              classId: s.class_id,
+              subjectId: s.subject_id,
+              color
+            };
+          }));
+          const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
+          if (isOnline && schedulesNeedingColorUpdate.length > 0) {
+            try {
+              await Promise.all(schedulesNeedingColorUpdate.map(s => 
+                supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
+              ));
+            } catch (err) {
+              console.error('Error updating schedule colors:', err);
+            }
+          }
+        }
+if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
+        ...d,
+        uploadedBy: d.uploaded_by,
+        uploadedById: d.uploaded_by_id,
+        sections: d.sections || []
+      })));
+      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => ({
+        ...s,
+        uploadedBy: s.uploaded_by,
+        uploadedById: s.uploaded_by_id,
+        sections: s.sections || []
+      })));
+      if (periodDatesData?.length > 0) {
+        const periodDatesMap = {};
+        periodDatesData.forEach(p => {
+          periodDatesMap[p.id] = {
+            start: p.start_date,
+            end: p.end_date
+          };
+        });
+        setPeriodDates(periodDatesMap);
+      }
+      
+      console.log('Loaded:', studentsData?.length, 'students');
+          setSyncStatus('synced');
+        } catch (err) {
+          console.error('Fetch error:', err);
+          setSyncStatus('error');
+        }
+      };
+      loadData();
+    }
+  }, [isOnline]);
+
+  useEffect(() => {
+    console.log('Current user changed:', currentUser?.name, 'assignments:', currentUser?.assignments);
+  }, [currentUser]);
+
+  const fetchFromSupabase = async () => {
+    if (!isOnline) return;
+    setSyncStatus('syncing');
+    try {
+const [
+        { data: studentsData },
+        { data: classesData },
+        { data: subjectsData },
+        { data: gradesData },
+        { data: attendanceData },
+        { data: instrumentsData },
+        { data: instrumentEvalsData },
+        { data: scheduleData },
+        { data: diagnosticData },
+        { data: usersData },
+        { data: planningDocsData },
+        { data: learningSessionsData },
+        { data: periodDatesData }
+      ] = await Promise.all([
+        supabase.from('students').select('*'),
+        supabase.from('classes').select('*'),
+        supabase.from('subjects').select('*'),
+        supabase.from('grades').select('*'),
+        supabase.from('attendance').select('*'),
+        supabase.from('instruments').select('*'),
+        supabase.from('instrument_evaluations').select('*'),
+        supabase.from('schedule').select('*'),
+        supabase.from('diagnostic_evaluations').select('*'),
+        supabase.from('users').select('*'),
+        supabase.from('planning_documents').select('*'),
+        supabase.from('learning_sessions').select('*'),
+        supabase.from('period_dates').select('*')
+      ]);
+      
+if (studentsData?.length > 0) {
+        const normalizedStudents = studentsData.map(s => ({
+          ...s,
+          name: s.name,
+          dni: s.dni,
+          gradeLevel: s.grade_level || s.gradeLevel || s.grade || s.class_id,
+          classId: s.class_id || s.classId,
+          guardianName: s.guardian_name || s.guardianName,
+          guardianDni: s.guardian_dni || s.guardianDni,
+          guardianPhone: s.guardian_phone || s.guardianPhone,
+          birthDate: s.birth_date || s.birthDate,
+          address: s.address,
+          phone: s.phone
+        }));
+        setStudents(normalizedStudents);
+      }
+      if (classesData?.length > 0) {
+        console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
+        setClasses(classesData);
+      }
+      if (usersData?.length > 0) setUsers(usersData);
+      if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
+        ...s,
+        competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
+      })));
+      if (gradesData?.length > 0) setGrades(gradesData.map(g => ({
+        ...g,
+        studentId: g.student_id,
+        competencyId: g.competency_id
+      })));
+      if (attendanceData?.length > 0) setAttendance(attendanceData);
+      if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
+        ...i,
+        instrumentId: i.instrument_id,
+        subjectId: i.subject_id,
+        classId: i.class_id,
+        criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
+      })));
+          if (instrumentEvalsData?.length > 0) {
+        console.log('Loading', instrumentEvalsData.length, 'instrument evaluations from Supabase');
+        setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
+          ...ev,
+          instrumentId: ev.instrument_id,
+          studentId: ev.student_id,
+          competencyId: ev.competency_id,
+          subjectId: ev.subject_id,
+          classId: ev.class_id,
+          maxPossible: ev.max_possible,
+          activityName: ev.activity_name || '',
+          userId: ev.user_id,
+          scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
+          criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
+          instrumentType: ev.instrument_type
+        })));
+      }
+      if (scheduleData?.length > 0) {
+        const classMap = {};
+        classesData?.forEach(c => { classMap[c.id] = c.color; });
+        setSchedule(scheduleData.map(s => {
+          let color = s.color || classMap[s.class_id] || '#10b981';
+          if (s.class_id === '__ATENCION__') color = '#6366f1';
+          if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
+          return {
+            ...s,
+            userId: s.user_id,
+            classId: s.class_id,
+            subjectId: s.subject_id,
+            color
+          };
+        }));
+        const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
+        if (isOnline && schedulesNeedingColorUpdate.length > 0) {
+          try {
+            await Promise.all(schedulesNeedingColorUpdate.map(s => 
+              supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
+            ));
+          } catch (err) {
+            console.error('Error updating schedule colors:', err);
+          }
+        }
+      }
+      if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
+      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
+        ...d,
+        uploadedBy: d.uploaded_by,
+        uploadedById: d.uploaded_by_id,
+        sections: d.sections || []
+      })));
+      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => ({
+        ...s,
+        uploadedBy: s.uploaded_by,
+        uploadedById: s.uploaded_by_id,
+        sections: s.sections || []
+      })));
+      if (periodDatesData?.length > 0) {
+        const periodDatesMap = {};
+        periodDatesData.forEach(p => {
+          periodDatesMap[p.id] = {
+            start: p.start_date,
+            end: p.end_date
+          };
+        });
+        setPeriodDates(periodDatesMap);
+      }
+      
+      console.log('Loaded:', studentsData?.length, 'students');
+      setSyncStatus('synced');
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setSyncStatus('error');
+    }
+  };
+
+  const [subjects, setSubjects] = useState(() => {
+    const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
+    if (loaded.length < 5) return DEFAULT_SUBJECTS;
+    return loaded;
+  });
+
+  const [classes, setClasses] = useState(() => loadData('edu_classes', DEFAULT_CLASSES));
+  const [instruments, setInstruments] = useState(() => loadData('edu_instruments', []));
+  const [instrumentEvaluations, setInstrumentEvaluations] = useState(() => loadData('edu_instrument_evaluations', []));
+  const [schedule, setSchedule] = useState(() => loadData('edu_schedule', []));
+  const [diagnosticEvaluations, setDiagnosticEvaluations] = useState(() => loadData('edu_diagnostic_evaluations', []));
+  const [planningDocuments, setPlanningDocuments] = useState(() => loadData('edu_planning_documents', []));
+  const [learningSessions, setLearningSessions] = useState(() => loadData('edu_learning_sessions', []));
+  const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
+
+  useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
+  useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
+  useEffect(() => { localStorage.setItem('edu_period_dates', JSON.stringify(periodDates)); }, [periodDates]);
+  useEffect(() => { localStorage.setItem('edu_grades', JSON.stringify(grades)); }, [grades]);
+  useEffect(() => { localStorage.setItem('edu_subjects', JSON.stringify(subjects)); }, [subjects]);
+  useEffect(() => { localStorage.setItem('edu_classes', JSON.stringify(classes)); }, [classes]);
+  useEffect(() => { localStorage.setItem('edu_users', JSON.stringify(users)); }, [users]);
+  useEffect(() => { localStorage.setItem('edu_instruments', JSON.stringify(instruments)); }, [instruments]);
+  useEffect(() => { localStorage.setItem('edu_instrument_evaluations', JSON.stringify(instrumentEvaluations)); }, [instrumentEvaluations]);
+  useEffect(() => { localStorage.setItem('edu_schedule', JSON.stringify(schedule)); }, [schedule]);
+  useEffect(() => { localStorage.setItem('edu_diagnostic_evaluations', JSON.stringify(diagnosticEvaluations)); }, [diagnosticEvaluations]);
+  useEffect(() => { localStorage.setItem('edu_planning_documents', JSON.stringify(planningDocuments)); }, [planningDocuments]);
+  useEffect(() => { localStorage.setItem('edu_learning_sessions', JSON.stringify(learningSessions)); }, [learningSessions]);
+
+  const syncToSupabase = useCallback(async (table, data) => {
+    if (!isOnline) return;
+    try {
+      const { error } = await supabase.from(table).upsert(data.map(item => ({
+        ...item,
+        updated_at: new Date().toISOString()
+      })), { onConflict: 'id' });
+      if (error) throw error;
+    } catch (err) {
+      console.error(`Error syncing ${table}:`, err);
+    }
+  }, [isOnline]);
+
+  const deleteFromSupabase = useCallback(async (table, id) => {
+    if (!isOnline) return;
+    try {
+      await supabase.from(table).delete().eq('id', id);
+    } catch (err) {
+      console.error(`Error deleting from ${table}:`, err);
+    }
+  }, [isOnline]);
+
+  const login = async (username, password) => {
+    if (isOnline) {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('username', username)
+          .eq('password', password)
+          .single();
+        
+        if (data) {
+          console.log('User logged in:', data.name, 'role:', data.role, 'assignments:', data.assignments);
+          const normalizedUser = {
+            ...data,
+            assignments: Array.isArray(data.assignments) 
+              ? data.assignments.map(a => ({
+                  ...a,
+                  subjectId: a.subject_id || a.subjectId,
+                  classId: a.class_id || a.classId
+                }))
+              : []
+          };
+          setCurrentUser(normalizedUser);
+          sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
+          return true;
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+      }
+    }
+    
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      setCurrentUser(user);
+      return true;
+    }
+    return false;
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('edu_current_user');
+    localStorage.removeItem('edu_current_user_v2');
+    sessionStorage.removeItem('edu_current_user_session');
+  };
+
+  const addStudent = (student) => {
+    const newStudent = { ...student, id: generateId(), createdAt: new Date().toISOString() };
+    setStudents(prev => [...prev, newStudent]);
+    return newStudent;
+  };
+
+  const updateStudent = (id, updates) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+  };
+
+  const deleteStudent = (id) => {
+    setStudents(prev => prev.filter(s => s.id !== id));
+    deleteFromSupabase('students', id);
+  };
+
+  const importStudentsBulk = (data) => {
+    const newStudents = data.map(s => ({ ...s, id: generateId(), createdAt: new Date().toISOString() }));
+    setStudents(prev => [...prev, ...newStudents]);
+    return newStudents.length;
+  };
+
+  const addSubject = (subject) => {
+    const newSubject = { ...subject, id: generateId() };
+    setSubjects(prev => [...prev, newSubject]);
+  };
+
+  const deleteSubject = (id) => {
+    setSubjects(prev => prev.filter(s => s.id !== id));
+  };
+
+  const addCompetency = (subjectId, competency) => {
+    setSubjects(prev => prev.map(s => {
+      if (s.id === subjectId) {
+        return { ...s, competencies: [...(s.competencies || []), { ...competency, id: generateId() }] };
+      }
+      return s;
+    }));
+  };
+
+  const deleteCompetency = (subjectId, competencyId) => {
+    setSubjects(prev => prev.map(s => {
+      if (s.id === subjectId) {
+        return { ...s, competencies: s.competencies.filter(c => c.id !== competencyId) };
+      }
+      return s;
+    }));
+  };
+
+  const addClass = (cls) => {
+    const newClass = { ...cls, id: generateId() };
+    setClasses(prev => [...prev, newClass]);
+  };
+
+  const deleteClass = (id) => {
+    setClasses(prev => prev.filter(c => c.id !== id));
+  };
+
+  const updateClassColor = (id, color) => {
+    setClasses(prev => prev.map(c => c.id === id ? { ...c, color } : c));
+    if (isOnline) {
+      supabase.from('classes').update({ color }).eq('id', id).catch(() => {});
+    }
+  };
+
+  const reassignClassColors = () => {
+    const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#84cc16', '#f97316', '#ec4899'];
+    setClasses(prev => prev.map((c, i) => ({ ...c, color: colors[i % colors.length] })));
+  };
+
+  const updateUser = (id, updates) => {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+    if (currentUser?.id === id) {
+      setCurrentUser(prev => ({ ...prev, ...updates }));
+    }
+  };
+
+  const deleteUser = async (id) => {
+    if (users.length <= 1) return false;
+    
+    setUsers(prev => prev.filter(u => u.id !== id));
+    setSchedule(prev => prev.filter(s => s.userId !== id));
+    setInstrumentEvaluations(prev => prev.filter(e => e.userId !== id));
+    setInstruments(prev => prev.filter(i => i.userId !== id));
+    setPlanningDocuments(prev => prev.filter(d => d.uploadedById !== id));
+    setLearningSessions(prev => prev.filter(l => l.uploadedById !== id));
+    
+    if (currentUser?.id === id) setCurrentUser(null);
+    
+    await supabase.from('users').delete().eq('id', id);
+    
+    if (isOnline) {
+      try {
+        await supabase.from('schedule').delete().eq('user_id', id);
+        await supabase.from('instruments').delete().eq('user_id', id);
+        await supabase.from('instrument_evaluations').delete().eq('user_id', id);
+        await supabase.from('planning_documents').delete().eq('uploaded_by_id', id);
+        await supabase.from('learning_sessions').delete().eq('uploaded_by_id', id);
+      } catch (err) {
+        console.error('Error deleting user related data from Supabase:', err);
+      }
+    }
+    
+    return true;
+  };
+
+  const register = (name, username, password) => {
+    if (users.find(u => u.username === username)) return false;
+    const newUser = { 
+      id: generateId(), 
+      name, 
+      username, 
+      password, 
+      role: 'teacher',
+      assignments: [],
+      createdAt: new Date().toISOString()
+    };
+    setUsers(prev => [...prev, newUser]);
+    syncToSupabase('users', [newUser]);
+    return newUser;
+  };
+
+  const saveAttendanceDate = (date) => {
+    setAttendance(prev => {
+      if (prev.find(a => a.date === date)) return prev;
+      return [...prev, { date, records: [] }];
+    });
+  };
+
+  const saveGrade = (studentId, subject, competencyId, period, score, conclusion) => {
+    setGrades(prev => {
+      const existing = prev.find(g =>
+        g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period
+      );
+      if (existing) {
+        return prev.map(g =>
+          (g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period)
+            ? { ...g, score, conclusion }
+            : g
+        );
+      }
+      return [...prev, { id: generateId(), studentId, subject, competencyId, period, score, conclusion }];
+    });
+  };
+
+  const calculateQualitativeGrade = (score, max = 20) => {
+    const percentage = (score / max) * 100;
+    if (percentage >= 90) return 'AD';
+    if (percentage >= 75) return 'A';
+    if (percentage >= 60) return 'B';
+    return 'C';
+  };
+
+  const addInstrument = (instrument) => {
+    const newInstrument = { ...instrument, id: generateId(), userId: instrument.userId };
+    setInstruments(prev => [...prev, newInstrument]);
+    if (isOnline) {
+      syncToSupabase('instruments', [...instruments, newInstrument]);
+    }
+    return newInstrument;
+  };
+
+  const updateInstrument = (id, updates) => {
+    setInstruments(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    if (isOnline) {
+      const updated = instruments.map(i => i.id === id ? { ...i, ...updates } : i);
+      syncToSupabase('instruments', updated);
+    }
+  };
+
+  const deleteInstrument = (id) => {
+    setInstruments(prev => prev.filter(i => i.id !== id));
+    deleteFromSupabase('instruments', id);
+  };
+
+  const deleteInstrumentEvaluation = (id) => {
+    setInstrumentEvaluations(prev => prev.filter(e => e.id !== id));
+    deleteFromSupabase('instrument_evaluations', id);
+  };
+
+  const saveInstrumentEvaluation = async (evaluation) => {
+    const newEvaluation = { ...evaluation, id: evaluation.id || generateId(), createdAt: new Date().toISOString() };
+    console.log('Saving evaluation locally:', newEvaluation.id, '| isOnline:', isOnline);
+    setInstrumentEvaluations(prev => [...prev, newEvaluation]);
+    
+    if (isOnline) {
+      try {
+        const supabaseData = {
+          id: newEvaluation.id,
+          instrument_id: newEvaluation.instrumentId,
+          student_id: newEvaluation.studentId,
+          competency_id: newEvaluation.competencyId,
+          subject_id: newEvaluation.subjectId,
+          class_id: newEvaluation.classId,
+          score: newEvaluation.score,
+          max_possible: newEvaluation.maxPossible,
+          qualitative: newEvaluation.qualitative,
+          period: newEvaluation.period,
+          activity_name: newEvaluation.activityName,
+          instrument_type: newEvaluation.instrumentType,
+          user_id: newEvaluation.userId,
+          scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
+          criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
+          date: newEvaluation.date || new Date().toISOString().split('T')[0]
+        };
+        const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
+        if (error) {
+          console.error('Error saving evaluation to Supabase:', error, error.details);
+        } else {
+          console.log('Evaluation saved to Supabase:', newEvaluation.id);
+        }
+      } catch (err) {
+        console.error('Supabase sync error:', err);
+      }
+    }
+  };
+
+  const saveScheduleItem = async (item) => {
+    let classColor = '#10b981';
+    if (item.classId === '__ATENCION__') {
+      classColor = '#6366f1';
+    } else if (item.classId === '__TRABAJO__') {
+      classColor = '#8b5cf6';
+    } else if (item.classId) {
+      const targetClass = classes.find(c => c.id === item.classId);
+      if (targetClass?.color) {
+        classColor = targetClass.color;
+      } else {
+        try {
+          const { data: classData } = await supabase.from('classes').select('color').eq('id', item.classId).single();
+          if (classData?.color) classColor = classData.color;
+        } catch (e) {}
+      }
+    }
+    const newItem = { ...item, id: item.id || generateId(), color: classColor };
+    setSchedule(prev => {
+      if (prev.find(s => s.id === newItem.id)) {
+        return prev.map(s => s.id === newItem.id ? newItem : s);
+      }
+      return [...prev, newItem];
+    });
+    if (isOnline) {
+      const supabaseItem = {
+        id: newItem.id,
+        user_id: newItem.userId,
+        class_id: newItem.classId,
+        subject_id: newItem.subjectId,
+        day: newItem.day,
+        time: newItem.time,
+        color: newItem.color
+      };
+      await supabase.from('schedule').upsert(supabaseItem, { onConflict: 'id' });
+    }
+    return newItem;
+  };
+
+  const deleteScheduleItem = (id) => {
+    setSchedule(prev => prev.filter(s => s.id !== id));
+    deleteFromSupabase('schedule', id);
+  };
+
+  const updatePeriodDates = (periodId, dates) => {
+    setPeriodDates(prev => ({ ...prev, [periodId]: dates }));
+  };
+
+  const saveDiagnosticEvaluation = (evaluation) => {
+    const newEvaluation = { ...evaluation, id: generateId(), createdAt: new Date().toISOString() };
+    setDiagnosticEvaluations(prev => [...prev, newEvaluation]);
+    return newEvaluation;
+  };
+
+  const getDiagnosticEvaluation = (studentId, subjectId) => {
+    return diagnosticEvaluations.find(e => e.studentId === studentId && e.subjectId === subjectId);
+  };
+
+  const deleteDiagnosticEvaluation = (id) => {
+    setDiagnosticEvaluations(prev => prev.filter(e => e.id !== id));
+    deleteFromSupabase('diagnostic_evaluations', id);
+  };
+
+  const addPlanningDocument = async (doc) => {
+    const newDoc = { ...doc, id: generateId(), uploadedAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Usuario', uploadedById: currentUser?.id };
+    setPlanningDocuments(prev => [...prev, { ...newDoc, fileData: null, fileSize: doc.fileData?.length || 0 }]);
+    
+    if (isOnline) {
+      try {
+        const supabaseDoc = {
+          id: newDoc.id,
+          title: newDoc.title,
+          description: newDoc.description,
+          sections: typeof newDoc.sections === 'object' ? JSON.stringify(newDoc.sections) : newDoc.sections,
+          subject_id: newDoc.subjectId,
+          period: newDoc.period,
+          grade_level: newDoc.gradeLevel,
+          file_data: newDoc.fileData,
+          file_name: newDoc.fileName,
+          uploaded_by: newDoc.uploadedBy,
+          uploaded_by_id: newDoc.uploadedById,
+          uploaded_at: newDoc.uploadedAt
+        };
+        await supabase.from('planning_documents').upsert(supabaseDoc, { onConflict: 'id' });
+      } catch (err) {
+        console.error('Error syncing planning doc to Supabase:', err);
+      }
+    }
+  };
+
+  const deletePlanningDocument = (id) => {
+    setPlanningDocuments(prev => prev.filter(d => d.id !== id));
+    deleteFromSupabase('planning_documents', id);
+  };
+
+  const addLearningSession = async (session) => {
+    const newSession = { ...session, id: generateId(), createdAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Admin', uploadedById: currentUser?.id };
+    setLearningSessions(prev => [...prev, newSession]);
+    
+    if (isOnline) {
+      try {
+        const supabaseSession = {
+          id: newSession.id,
+          title: newSession.title,
+          description: newSession.description,
+          sections: typeof newSession.sections === 'object' ? JSON.stringify(newSession.sections) : newSession.sections,
+          subject_id: newSession.subjectId,
+          period: newSession.period,
+          grade_level: newSession.gradeLevel,
+          file_data: newSession.fileData,
+          file_name: newSession.fileName,
+          uploaded_by: newSession.uploadedBy,
+          uploaded_by_id: newSession.uploadedById,
+          uploaded_at: newSession.uploadedAt
+        };
+        await supabase.from('learning_sessions').upsert(supabaseSession, { onConflict: 'id' });
+      } catch (err) {
+        console.error('Error syncing learning session to Supabase:', err);
+      }
+    }
+  };
+
+  const deleteLearningSession = (id) => {
+    setLearningSessions(prev => prev.filter(d => d.id !== id));
+    deleteFromSupabase('learning_sessions', id);
+  };
+
+  const cleanupOrphanedData = async () => {
+    const removed = { schedule: 0, instruments: 0, evaluations: 0, documents: 0, sessions: 0 };
+    
+    if (!isOnline) {
+      alert('Sin conexión a internet');
+      return removed;
+    }
+    
+    try {
+      const { data: allUsers } = await supabase.from('users').select('id');
+      const validUserIds = allUsers?.map(u => u.id) || [];
+      
+      if (validUserIds.length === 0) {
+        alert('No hay usuarios en la base de datos');
+        return removed;
+      }
+      
+      const currentSchedules = schedule.filter(s => validUserIds.includes(s.userId));
+      const orphanedScheduleIds = schedule.filter(s => !validUserIds.includes(s.userId)).map(s => s.id);
+      setSchedule(currentSchedules);
+      removed.schedule = orphanedScheduleIds.length;
+      
+      if (orphanedScheduleIds.length > 0) {
+        await Promise.all(
+          orphanedScheduleIds.map(id => supabase.from('schedule').delete().eq('id', id))
+        );
+      }
+      
+      const validInstruments = instruments.filter(i => {
+        const isValid = i.userId ? validUserIds.includes(i.userId) : true;
+        if (!isValid) removed.instruments++;
+        return isValid;
+      });
+      setInstruments(validInstruments);
+      
+      const validEvaluations = instrumentEvaluations.filter(e => {
+        const isValid = e.userId ? validUserIds.includes(e.userId) : true;
+        if (!isValid) removed.evaluations++;
+        return isValid;
+      });
+      setInstrumentEvaluations(validEvaluations);
+      
+      const { data: allDocs } = await supabase.from('planning_documents').select('uploaded_by');
+      const validDocIds = allDocs?.map(d => d.uploaded_by).filter(Boolean) || [];
+      const validDocs = planningDocuments.filter(d => {
+        const isValid = d.uploadedById ? validDocIds.includes(d.uploadedById) : true;
+        if (!isValid) removed.documents++;
+        return isValid;
+      });
+      setPlanningDocuments(validDocs);
+      
+      const { data: allSessions } = await supabase.from('learning_sessions').select('uploaded_by');
+      const validSessionIds = allSessions?.map(l => l.uploaded_by).filter(Boolean) || [];
+      const validSessions = learningSessions.filter(l => {
+        const isValid = l.uploadedById ? validSessionIds.includes(l.uploadedById) : true;
+        if (!isValid) removed.sessions++;
+        return isValid;
+      });
+      setLearningSessions(validSessions);
+      
+    } catch (err) {
+      console.error('Error in cleanupOrphanedData:', err);
+    }
+    
+    return removed;
+  };
+
+  const syncToSupabaseManual = useCallback(async () => {
+    if (!isOnline) return;
+    try {
+      await Promise.all([
+        syncToSupabase('users', users),
+        syncToSupabase('students', students),
+        syncToSupabase('subjects', subjects),
+        syncToSupabase('classes', classes),
+        syncToSupabase('grades', grades),
+        syncToSupabase('attendance', attendance),
+        syncToSupabase('instruments', instruments),
+        syncToSupabase('instrument_evaluations', instrumentEvaluations),
+        syncToSupabase('schedule', schedule),
+        syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
+        syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end }))),
+        syncToSupabase('planning_documents', planningDocuments)
+      ]);
+      alert('Datos sincronizados a la nube');
+    } catch (err) {
+      console.error('Sync error:', err);
+      alert('Error al sincronizar');
+    }
+  }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, syncToSupabase]);
+
+  const clearAllGrades = () => {
+    setGrades([]);
+    localStorage.removeItem('edu_grades');
+  };
+
+  const clearAllAttendance = () => {
+    setAttendance([]);
+    localStorage.removeItem('edu_attendance');
+  };
+
+  const clearAllStudents = () => {
+    setStudents([]);
+    setGrades([]);
+    setAttendance([]);
+    localStorage.removeItem('edu_students');
+    localStorage.removeItem('edu_grades');
+    localStorage.removeItem('edu_attendance');
+  };
+
+  const clearAllInstruments = () => {
+    setInstruments([]);
+    setInstrumentEvaluations([]);
+    localStorage.removeItem('edu_instruments');
+    localStorage.removeItem('edu_instrument_evaluations');
+  };
+
+  const clearAllData = () => {
+    setStudents([]);
+    setGrades([]);
+    setAttendance([]);
+    setClasses(DEFAULT_CLASSES);
+    setSubjects(DEFAULT_SUBJECTS);
+    setUsers([]);
+    setSchedule([]);
+    setInstrumentEvaluations([]);
+    setInstruments([]);
+    setDiagnosticEvaluations([]);
+    setPlanningDocuments([]);
+    setLearningSessions([]);
+    localStorage.clear();
+  };
+
+  const autoBackup = () => {
+    const backupData = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      data: { users, students, attendance, grades, classes, subjects, instruments, instrumentEvaluations, schedule, diagnosticEvaluations }
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `respaldo_sistema_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const mergeData = (local, cloud) => {
+    const map = new Map();
+    local.forEach(item => map.set(item.id, item));
+    cloud.forEach(item => map.set(item.id, item));
+    return Array.from(map.values());
+  };
+
+  return (
+    <StoreContext.Provider value={{
+      isOnline, isLoading, syncStatus,
+      users, currentUser, login, logout,
+      students, subjects, attendance, grades, classes,
+      instruments, instrumentEvaluations, diagnosticEvaluations,
+      addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
+      clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
+      addSubject, deleteSubject, addCompetency, deleteCompetency,
+      addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
+      saveAttendanceDate, saveGrade,
+      calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
+      schedule, saveScheduleItem, deleteScheduleItem,
+      periodDates, updatePeriodDates,
+      saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
+      planningDocuments, addPlanningDocument, deletePlanningDocument,
+      learningSessions, addLearningSession, deleteLearningSession,
+      setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
+      setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
+      autoBackup, syncToSupabaseManual, fetchFromSupabase,
+      isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin'
+    }}>
+      {children}
+    </StoreContext.Provider>
+  );
+};
+
+export default StoreProvider;
