@@ -359,155 +359,178 @@ export default function PlanningDocuments() {
           </span>
         </button>
 
-        {/* Lista de grados y secciones */}
+        {/* Lista de grados y secciones o Docentes según el tipo */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {grades.map((grade, idx) => {
-            const gradeColor = gradientColors[idx % gradientColors.length];
-            const isGradeExpanded = selectedGrade === grade.name;
-            const hasSelectedChild = grade.sections.some(s => s.id === selectedSection);
-            
-            return (
-              <div key={grade.name} style={{ marginBottom: '0.5rem' }}>
+          {contentType === 'reports' ? (
+            isAdmin ? (
+              <>
                 <button
-                  onClick={() => setSelectedGrade(isGradeExpanded ? null : grade.name)}
+                  onClick={() => setSelectedTeacherId(null)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.6rem',
-                    padding: '0.6rem 0.75rem',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: hasSelectedChild || isGradeExpanded ? `${gradeColor[0]}15` : 'transparent',
+                    gap: '0.75rem',
+                    padding: '0.75rem',
+                    borderRadius: '12px',
+                    border: !selectedTeacherId ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                    background: !selectedTeacherId ? '#fef2f2' : 'white',
                     cursor: 'pointer',
                     width: '100%',
-                    textAlign: 'left'
+                    textAlign: 'left',
+                    marginBottom: '0.5rem'
                   }}
                 >
-                  {isGradeExpanded ? (
-                    <ChevronDown size={16} color={gradeColor[0]} />
-                  ) : (
-                    <ChevronRight size={16} color={gradeColor[0]} />
-                  )}
-                  <Folder size={18} color={gradeColor[0]} />
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
-                    {grade.name}
+                  <Users size={18} color={!selectedTeacherId ? '#ef4444' : '#64748b'} />
+                  <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#ef4444' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                    Todos los Docentes
                   </span>
-                  <span style={{ 
-                    marginLeft: 'auto', 
-                    background: gradeColor[0], 
-                    color: 'white', 
-                    fontSize: '0.7rem', 
-                    padding: '0.15rem 0.4rem', 
-                    borderRadius: '6px',
-                    fontWeight: 600
-                  }}>
-                    {getDocCountForGrade(grade.name)}
+                  <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                    {reportFiles.length}
                   </span>
                 </button>
-                
-                {isGradeExpanded && (
-                  <div style={{ paddingLeft: '1.5rem', marginTop: '0.25rem' }}>
-                    {grade.sections.map(section => (
-                      <button
-                        key={section.id}
-                        onClick={() => setSelectedSection(section.id)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          padding: '0.5rem 0.6rem',
-                          borderRadius: '8px',
-                          border: selectedSection === section.id ? `2px solid ${section.color}` : '1px solid transparent',
-                          background: selectedSection === section.id ? `${section.color}15` : 'transparent',
-                          cursor: 'pointer',
-                          width: '100%',
-                          textAlign: 'left',
-                          marginBottom: '0.25rem'
-                        }}
-                      >
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          background: section.color
-                        }} />
-                        <span style={{ 
-                          fontWeight: selectedSection === section.id ? 600 : 400, 
-                          color: 'var(--text-secondary)',
-                          fontSize: '0.8rem'
-                        }}>
-                          {section.name.split(' - ')[1] || section.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Lista de docentes para informes */}
-        {contentType === 'reports' && (
-          <div style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-              DOCENTES
-            </p>
-            <button
-              onClick={() => setSelectedTeacherId(null)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                border: !selectedTeacherId ? '2px solid #ef4444' : '1px solid #e2e8f0',
-                background: !selectedTeacherId ? '#fef2f2' : 'white',
-                cursor: 'pointer',
-                width: '100%',
-                textAlign: 'left',
-                marginBottom: '0.5rem'
-              }}
-            >
-              <Users size={18} color={!selectedTeacherId ? '#ef4444' : '#64748b'} />
-              <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#ef4444' : 'var(--text-primary)', fontSize: '0.9rem' }}>
-                Todos los Docentes
-              </span>
-              <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
-                {reportFiles.length}
-              </span>
-            </button>
-            {teachers.map(teacher => (
+                {teachers.map(teacher => (
+                  <button
+                    key={teacher.id}
+                    onClick={() => setSelectedTeacherId(teacher.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      padding: '0.6rem 0.75rem',
+                      borderRadius: '10px',
+                      border: selectedTeacherId === teacher.id ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                      background: selectedTeacherId === teacher.id ? '#fef2f2' : 'white',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left',
+                      marginBottom: '0.25rem'
+                    }}
+                  >
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ef444420', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <UserCheck size={16} color="#ef4444" />
+                    </div>
+                    <span style={{ fontWeight: selectedTeacherId === teacher.id ? 600 : 400, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
+                      {teacher.name}
+                    </span>
+                    <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                      {teacher.count}
+                    </span>
+                  </button>
+                ))}
+              </>
+            ) : (
               <button
-                key={teacher.id}
-                onClick={() => setSelectedTeacherId(teacher.id)}
+                onClick={() => setSelectedTeacherId(null)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.75rem',
-                  padding: '0.6rem 0.75rem',
-                  borderRadius: '10px',
-                  border: selectedTeacherId === teacher.id ? '2px solid #ef4444' : '1px solid #e2e8f0',
-                  background: selectedTeacherId === teacher.id ? '#fef2f2' : 'white',
+                  padding: '0.75rem',
+                  borderRadius: '12px',
+                  border: !selectedTeacherId ? '2px solid #ef4444' : '1px solid #e2e8f0',
+                  background: !selectedTeacherId ? '#fef2f2' : 'white',
                   cursor: 'pointer',
                   width: '100%',
                   textAlign: 'left',
-                  marginBottom: '0.25rem'
+                  marginBottom: '0.5rem'
                 }}
               >
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ef444420', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <UserCheck size={16} color="#ef4444" />
-                </div>
-                <span style={{ fontWeight: selectedTeacherId === teacher.id ? 600 : 400, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
-                  {teacher.name}
+                <FileText size={18} color={!selectedTeacherId ? '#ef4444' : '#64748b'} />
+                <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#ef4444' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                  Mis Informes
                 </span>
                 <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
-                  {teacher.count}
+                  {myReports.length}
                 </span>
               </button>
-            ))}
-          </div>
-        )}
+            )
+          ) : (
+            grades.map((grade, idx) => {
+              const gradeColor = gradientColors[idx % gradientColors.length];
+              const isGradeExpanded = selectedGrade === grade.name;
+              const hasSelectedChild = grade.sections.some(s => s.id === selectedSection);
+              
+              return (
+                <div key={grade.name} style={{ marginBottom: '0.5rem' }}>
+                  <button
+                    onClick={() => setSelectedGrade(isGradeExpanded ? null : grade.name)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.6rem',
+                      padding: '0.6rem 0.75rem',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: hasSelectedChild || isGradeExpanded ? `${gradeColor[0]}15` : 'transparent',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                  >
+                    {isGradeExpanded ? (
+                      <ChevronDown size={16} color={gradeColor[0]} />
+                    ) : (
+                      <ChevronRight size={16} color={gradeColor[0]} />
+                    )}
+                    <Folder size={18} color={gradeColor[0]} />
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
+                      {grade.name}
+                    </span>
+                    <span style={{ 
+                      marginLeft: 'auto', 
+                      background: gradeColor[0], 
+                      color: 'white', 
+                      fontSize: '0.7rem', 
+                      padding: '0.15rem 0.4rem', 
+                      borderRadius: '6px',
+                      fontWeight: 600
+                    }}>
+                      {getDocCountForGrade(grade.name)}
+                    </span>
+                  </button>
+                  
+                  {isGradeExpanded && (
+                    <div style={{ paddingLeft: '1.5rem', marginTop: '0.25rem' }}>
+                      {grade.sections.map(section => (
+                        <button
+                          key={section.id}
+                          onClick={() => setSelectedSection(section.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 0.6rem',
+                            borderRadius: '8px',
+                            border: selectedSection === section.id ? `2px solid ${section.color}` : '1px solid transparent',
+                            background: selectedSection === section.id ? `${section.color}15` : 'transparent',
+                            cursor: 'pointer',
+                            width: '100%',
+                            textAlign: 'left',
+                            marginBottom: '0.25rem'
+                          }}
+                        >
+                          <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: section.color
+                          }} />
+                          <span style={{ 
+                            fontWeight: selectedSection === section.id ? 600 : 400, 
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.8rem'
+                          }}>
+                            {section.name.split(' - ')[1] || section.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
 
         {/* Botón agregar */}
         {currentUser && (
