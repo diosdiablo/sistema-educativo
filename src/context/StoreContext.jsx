@@ -404,6 +404,7 @@ if (studentsData?.length > 0) {
         setPeriodDates(periodDatesMap);
       }
       
+      console.log('DEBUG: loginHistoryData raw:', loginHistoryData);
       console.log('DEBUG: loginHistoryData:', loginHistoryData?.length);
       if (loginHistoryData?.length > 0) {
         const remoteHistory = loginHistoryData.map(h => ({
