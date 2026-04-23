@@ -114,7 +114,8 @@ export const StoreProvider = ({ children }) => {
             { data: usersData },
             { data: planningDocsData },
             { data: learningSessionsData },
-            { data: periodDatesData }
+            { data: periodDatesData },
+            { data: loginHistoryData }
           ] = await Promise.all([
             supabase.from('students').select('*'),
             supabase.from('classes').select('*'),
@@ -128,7 +129,8 @@ export const StoreProvider = ({ children }) => {
             supabase.from('users').select('*'),
             supabase.from('planning_documents').select('*'),
             supabase.from('learning_sessions').select('*'),
-            supabase.from('period_dates').select('*')
+            supabase.from('period_dates').select('*'),
+            supabase.from('login_history').select('*').order('login_at', { ascending: false })
           ]);
           
       if (studentsData?.length > 0) {
@@ -233,8 +235,18 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         setPeriodDates(periodDatesMap);
       }
       
+      if (loginHistoryData?.length > 0) {
+        setLoginHistory(loginHistoryData.map(h => ({
+          ...h,
+          userId: h.user_id,
+          userName: h.user_name,
+          loginAt: h.login_at,
+          logoutAt: h.logout_at
+        })));
+      }
+      
       console.log('Loaded:', studentsData?.length, 'students');
-          setSyncStatus('synced');
+      setSyncStatus('synced');
         } catch (err) {
           console.error('Fetch error:', err);
           setSyncStatus('error');
@@ -265,7 +277,8 @@ const [
         { data: usersData },
         { data: planningDocsData },
         { data: learningSessionsData },
-        { data: periodDatesData }
+        { data: periodDatesData },
+        { data: loginHistoryData }
       ] = await Promise.all([
         supabase.from('students').select('*'),
         supabase.from('classes').select('*'),
@@ -279,7 +292,8 @@ const [
         supabase.from('users').select('*'),
         supabase.from('planning_documents').select('*'),
         supabase.from('learning_sessions').select('*'),
-        supabase.from('period_dates').select('*')
+        supabase.from('period_dates').select('*'),
+        supabase.from('login_history').select('*').order('login_at', { ascending: false })
       ]);
       
 if (studentsData?.length > 0) {
@@ -385,6 +399,16 @@ if (studentsData?.length > 0) {
           };
         });
         setPeriodDates(periodDatesMap);
+      }
+      
+      if (loginHistoryData?.length > 0) {
+        setLoginHistory(loginHistoryData.map(h => ({
+          ...h,
+          userId: h.user_id,
+          userName: h.user_name,
+          loginAt: h.login_at,
+          logoutAt: h.logout_at
+        })));
       }
       
       console.log('Loaded:', studentsData?.length, 'students');
