@@ -257,10 +257,14 @@ export default function Settings() {
                     onChange={(e) => handleChange(id, 'end', e.target.value)}
                     style={{ borderColor: color1 }}
                   />
-</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Historial de Ingresos */}
-      {isAdmin && loginHistory && loginHistory.length > 0 && (
+        {/* Historial de Ingresos */}
+        {isAdmin && loginHistory && loginHistory.length > 0 && (
         <div style={{
           background: 'white',
           borderRadius: '20px',
