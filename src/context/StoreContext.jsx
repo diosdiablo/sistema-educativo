@@ -7,16 +7,6 @@ export const useStore = () => useContext(StoreContext);
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-const hashCode = (str) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash;
-};
-
 const loadData = (key, defaultValue) => {
   try {
     const saved = localStorage.getItem(key);
@@ -246,6 +236,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         }));
         const localIds = new Set(loginHistory.map(l => l.id));
         const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
+        merged.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
         setLoginHistory(merged);
       }
       
@@ -418,6 +409,7 @@ if (studentsData?.length > 0) {
         console.log('DEBUG: remoteHistory:', remoteHistory);
         const localIds = new Set(loginHistory.map(l => l.id));
         const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
+        merged.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
         setLoginHistory(merged);
       }
       
@@ -531,7 +523,7 @@ if (studentsData?.length > 0) {
         logoutAt: null,
         duration: null
       };
-      setLoginHistory(prev => [...prev, entry]);
+      setLoginHistory(prev => [entry, ...prev]);
       sessionStorage.setItem('edu_current_login_entry', entry.id);
       syncToSupabase('login_history', [entry]);
       return true;

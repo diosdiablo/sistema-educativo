@@ -599,7 +599,7 @@ export default function Settings() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loginHistory.slice().reverse().slice(0, 50).map(entry => (
+                  {loginHistory.map(entry => (
                     <tr key={entry.id}>
                       <td style={{ fontWeight: 600 }}>{entry.userName}</td>
                       <td>{entry.loginAt ? new Date(entry.loginAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>
