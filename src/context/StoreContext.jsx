@@ -97,6 +97,7 @@ export const StoreProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    console.log('DEBUG useEffect: isOnline:', isOnline);
     if (isOnline) {
       const loadData = async () => {
         setSyncStatus('syncing');
