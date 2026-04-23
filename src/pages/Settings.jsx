@@ -576,7 +576,7 @@ export default function Settings() {
       )}
 
       {/* Historial de Ingresos */}
-      {isAdmin && loginHistory && loginHistory.length > 0 && (
+      {isAdmin && (
         <div style={{
           background: 'white',
           borderRadius: '20px',
@@ -587,30 +587,34 @@ export default function Settings() {
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Clock size={20} /> Historial de Ingresos
           </h3>
-          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            <table className="styled-table">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Ingreso</th>
-                  <th>Salida</th>
-                  <th>Duración</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loginHistory.slice().reverse().slice(0, 50).map(entry => (
-                  <tr key={entry.id}>
-                    <td style={{ fontWeight: 600 }}>{entry.userName}</td>
-                    <td>{entry.loginAt ? new Date(entry.loginAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>
-                    <td>{entry.logoutAt ? new Date(entry.logoutAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : 'En sesión'}</td>
-                    <td>
-                      {entry.duration !== null ? `${entry.duration} min` : '-'}
-                    </td>
+          {loginHistory && loginHistory.length > 0 ? (
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <table className="styled-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Ingreso</th>
+                    <th>Salida</th>
+                    <th>Duración</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {loginHistory.slice().reverse().slice(0, 50).map(entry => (
+                    <tr key={entry.id}>
+                      <td style={{ fontWeight: 600 }}>{entry.userName}</td>
+                      <td>{entry.loginAt ? new Date(entry.loginAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>
+                      <td>{entry.logoutAt ? new Date(entry.logoutAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : 'En sesión'}</td>
+                      <td>
+                        {entry.duration !== null ? `${entry.duration} min` : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No hay registros de ingresos aún.</p>
+          )}
         </div>
       )}
     </div>
