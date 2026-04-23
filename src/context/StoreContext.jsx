@@ -944,11 +944,16 @@ if (studentsData?.length > 0) {
     localStorage.removeItem('edu_attendance');
   };
 
-  const clearAllInstruments = () => {
+  const clearAllInstruments = async () => {
     setInstruments([]);
     setInstrumentEvaluations([]);
     localStorage.removeItem('edu_instruments');
     localStorage.removeItem('edu_instrument_evaluations');
+    if (isOnline) {
+      const { error: instError } = await supabase.from('instruments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      const { error: evalError } = await supabase.from('instrument_evaluations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (instError || evalError) console.error('Error clearing from Supabase:', instError, evalError);
+    }
   };
 
   const clearAllData = () => {
