@@ -491,8 +491,17 @@ export default function Dashboard() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {todaySchedule.map((item, idx) => {
-                const className = classes.find(c => c.id === item.classId)?.name || 'Grado...';
-                const subjectName = subjects.find(s => s.id === item.subjectId)?.name || 'Área...';
+                let className, subjectName;
+                if (item.classId === '__ATENCION__') {
+                  className = 'ATENCIÓN AL PADRE DE FAMILIA';
+                  subjectName = '';
+                } else if (item.classId === '__TRABAJO__') {
+                  className = 'TRABAJO COLEGIADO';
+                  subjectName = '';
+                } else {
+                  className = classes.find(c => c.id === item.classId)?.name || 'Grado...';
+                  subjectName = subjects.find(s => s.id === item.subjectId)?.name || 'Área...';
+                }
                 const timesDisplay = item.times.length > 1 ? item.times.join(' y ') : item.time;
                 return (
                   <div key={idx} style={{ 
@@ -511,7 +520,7 @@ export default function Dashboard() {
                       }}>{timesDisplay}</div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{className}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{subjectName}</div>
+                        {subjectName && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{subjectName}</div>}
                       </div>
                     </div>
                     <button 
