@@ -180,32 +180,28 @@ export const getAverageQualitative = (scores) => {
 
 export const buildAuxiliaryRegisterData = (students, instrumentEvaluations, subject, period) => {
   return students.map((student, idx) => {
-    // Filtrar evaluaciones de este estudiante para este período
-    const studentEvals = instrumentEvaluations.filter(ev => 
-      ev.studentId === student.id && 
-      ev.period === period
-    );
+    const studentEvals = instrumentEvaluations.filter(ev => {
+      if (ev.period !== period) return false;
+      const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+      const nameMatch = ev.student_name && ev.student_name === student.name;
+      return idMatch || nameMatch;
+    });
     
     const row = { 
       'N°': idx + 1,
       'Estudiante': student.name 
     };
     
-    // Para cada competencia, buscar las calificaciones
     subject.competencies.forEach(comp => {
-      // Buscar evaluaciones que coincidan con esta competencia
       const compEvals = studentEvals.filter(ev => 
         ev.competencyId === comp.id
       );
       
-      // Obtener las calificaciones (scores)
       const scores = compEvals.map(ev => ev.score);
       
-      // Calcular promedio cualitativo
       row[comp.name] = getAverageQualitative(scores);
     });
     
-    // Promedio general
     const allScores = studentEvals.map(ev => ev.score).filter(s => typeof s === 'number');
     row['PROMEDIO'] = getAverageQualitative(allScores);
     
@@ -247,9 +243,12 @@ export const buildInstrumentGradesData = (students, evaluations, instruments, pe
   const data = [];
   
   students.forEach((student, idx) => {
-    const studentEvals = evaluations.filter(ev => 
-      ev.studentId === student.id && ev.period === period
-    );
+    const studentEvals = evaluations.filter(ev => {
+      if (ev.period !== period) return false;
+      const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+      const nameMatch = ev.student_name && ev.student_name === student.name;
+      return idMatch || nameMatch;
+    });
 
     if (studentEvals.length > 0) {
       studentEvals.forEach(ev => {

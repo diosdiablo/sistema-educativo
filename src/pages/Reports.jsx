@@ -120,19 +120,27 @@ const Reports = () => {
     const studentData = classStudents.map((student, index) => {
       const row = [index + 1, student.name];
       
-      const studentEvals = instrumentEvaluations.filter(ev => 
-        ev.studentId === student.id && ev.period === selectedPeriodFinal
-      );
+      const studentEvals = instrumentEvaluations.filter(ev => {
+        if (ev.period !== selectedPeriodFinal) return false;
+        const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+        const nameMatch = ev.student_name && ev.student_name === student.name;
+        return idMatch || nameMatch;
+      });
       
       subject.competencies.forEach(comp => {
         const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
-        const scores = compEvals.map(ev => ev.qualitative).filter(q => q);
+        const scores = compEvals.map(ev => ev.score).filter(s => typeof s === 'number');
         
-        const grade = scores.length > 0 
-          ? (scores.length === 1 ? scores[0] : getAverageQualitative(scores)) 
-          : '-';
+        if (scores.length > 0) {
+          row.push(getAverageQualitative(scores));
+        } else {
+          const qualScores = compEvals.map(ev => ev.qualitative).filter(q => q);
+          const grade = qualScores.length > 0 
+            ? (qualScores.length === 1 ? qualScores[0] : getAverageQualitative(qualScores)) 
+            : '-';
+          row.push(grade);
+        }
         
-        row.push(grade);
         row.push('-');
       });
       return row;

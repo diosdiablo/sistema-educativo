@@ -113,9 +113,10 @@ export default function Grades() {
     
     filteredStudents.forEach(student => {
       currentSubject?.competencies?.forEach(comp => {
-        const ev = instrumentEvaluations.find(
-          e => e.studentId === student.id && e.competencyId === comp.id && e.period === selectedPeriod
-        );
+        const ev = instrumentEvaluations.find(e => {
+          if (e.period !== selectedPeriod || e.competencyId !== comp.id) return false;
+          return e.studentId === student.id || e.student_id === student.id || e.student_name === student.name;
+        });
         if (ev && counts[ev.qualitative] !== undefined) {
           counts[ev.qualitative]++;
           total++;
@@ -795,9 +796,12 @@ export default function Grades() {
                             );
                           }
                           return instruments.map(inst => {
-                            const ev = instrumentEvaluations.find(
-                              e => e.studentId === student.id && e.competencyId === comp.id && (e.activityName || e.instrumentId) === inst.id && e.period === selectedPeriod
-                            );
+                            const ev = instrumentEvaluations.find(e => {
+                              if (e.period !== selectedPeriod || e.competencyId !== comp.id) return false;
+                              const instMatch = (e.activityName || e.instrumentId) === inst.id;
+                              const idMatch = e.studentId === student.id || e.student_id === student.id;
+                              return instMatch && (idMatch || e.student_name === student.name);
+                            });
                             if (!ev) {
                               return (
                                 <td key={inst.id} style={{ textAlign: 'center' }}>
