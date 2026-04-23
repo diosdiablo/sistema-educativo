@@ -499,6 +499,9 @@ if (studentsData?.length > 0) {
       };
       setLoginHistory(prev => [...prev, entry]);
       sessionStorage.setItem('edu_current_login_entry', entry.id);
+      if (isOnline) {
+        syncToSupabase('login_history', [entry]);
+      }
       return true;
     }
     return false;
@@ -515,7 +518,11 @@ if (studentsData?.length > 0) {
             const logoutTime = new Date(logoutAt).getTime();
             const durationMs = logoutTime - loginTime;
             const duration = Math.round(durationMs / 60000);
-            return { ...entry, logoutAt, duration };
+            const updated = { ...entry, logoutAt, duration };
+            if (isOnline) {
+              syncToSupabase('login_history', [updated]);
+            }
+            return updated;
           }
           return entry;
         }));
@@ -953,7 +960,8 @@ if (studentsData?.length > 0) {
         syncToSupabase('schedule', schedule),
         syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
         syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end }))),
-        syncToSupabase('planning_documents', planningDocuments)
+        syncToSupabase('planning_documents', planningDocuments),
+        syncToSupabase('login_history', loginHistory)
       ]);
       alert('Datos sincronizados a la nube');
     } catch (err) {
