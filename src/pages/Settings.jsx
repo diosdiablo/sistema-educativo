@@ -3,8 +3,7 @@ import { useStore } from '../context/StoreContext';
 import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
-  try {
-    const { 
+  const { 
       periodDates, updatePeriodDates, isAdmin,
       users, students, attendance, grades, classes, subjects,
       instruments, instrumentEvaluations, schedule, diagnosticEvaluations,
@@ -298,14 +297,6 @@ export default function Settings() {
           </div>
         </div>
       )}
-    </div>
+</div>
   );
-  } catch (err) {
-    console.error('Settings page error:', err);
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <p>Error al cargar configuración: {err.message}</p>
-      </div>
-    );
-  }
 }
