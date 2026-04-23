@@ -927,7 +927,7 @@ export default function Instruments() {
                     </button>
                   </div>
                   {(() => {
-                    const availableStudents = filteredStudents.filter(s => !savedGroupMembers.has(s.id));
+                    const availableStudents = filteredStudents.filter(s => !savedGroupMembers.has(s.id)).sort((a, b) => a.name.localeCompare(b.name));
                     if (availableStudents.length === 0) {
                       return (
                         <div style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(16,185,129,0.1)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.3)' }}>
