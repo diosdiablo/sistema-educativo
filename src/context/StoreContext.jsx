@@ -523,9 +523,16 @@ if (studentsData?.length > 0) {
         logoutAt: null,
         duration: null
       };
+      const entryForSupabase = {
+        ...entry,
+        user_id: entry.userId,
+        user_name: entry.userName
+      };
+      delete entryForSupabase.userId;
+      delete entryForSupabase.userName;
       setLoginHistory(prev => [entry, ...prev]);
       sessionStorage.setItem('edu_current_login_entry', entry.id);
-      syncToSupabase('login_history', [entry]);
+      syncToSupabase('login_history', [entryForSupabase]);
       return true;
     }
     return false;
@@ -543,8 +550,15 @@ if (studentsData?.length > 0) {
             const durationMs = logoutTime - loginTime;
             const duration = Math.round(durationMs / 60000);
             const updated = { ...entry, logoutAt, duration };
+            const updatedForSupabase = {
+              ...updated,
+              user_id: updated.userId,
+              user_name: updated.userName
+            };
+            delete updatedForSupabase.userId;
+            delete updatedForSupabase.userName;
             if (isOnline) {
-              syncToSupabase('login_history', [updated]);
+              syncToSupabase('login_history', [updatedForSupabase]);
             }
             return updated;
           }
