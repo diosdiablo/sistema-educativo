@@ -82,7 +82,7 @@ export default function Grades() {
       const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
       const cleanClass = (s.classId || '').trim().toLowerCase();
       return cleanGrade === cleanSelected || cleanClass === cleanSelected;
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name));
   }, [students, selectedClass]);
 
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
