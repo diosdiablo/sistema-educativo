@@ -404,6 +404,7 @@ if (studentsData?.length > 0) {
         setPeriodDates(periodDatesMap);
       }
       
+      console.log('DEBUG: loginHistoryData:', loginHistoryData?.length);
       if (loginHistoryData?.length > 0) {
         const remoteHistory = loginHistoryData.map(h => ({
           ...h,
@@ -412,6 +413,7 @@ if (studentsData?.length > 0) {
           loginAt: h.login_at,
           logoutAt: h.logout_at
         }));
+        console.log('DEBUG: remoteHistory:', remoteHistory);
         const localIds = new Set(loginHistory.map(l => l.id));
         const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
         setLoginHistory(merged);
