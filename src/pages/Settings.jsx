@@ -262,9 +262,10 @@ export default function Settings() {
             );
           })}
         </div>
+      </div>
 
-        {/* Historial de Ingresos */}
-        {isAdmin && loginHistory && loginHistory.length > 0 && (
+      {/* Historial de Ingresos */}
+      {isAdmin && loginHistory && loginHistory.length > 0 && (
         <div style={{
           background: 'white',
           borderRadius: '20px',
