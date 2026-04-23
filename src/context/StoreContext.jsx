@@ -236,13 +236,16 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       }
       
       if (loginHistoryData?.length > 0) {
-        setLoginHistory(loginHistoryData.map(h => ({
+        const remoteHistory = loginHistoryData.map(h => ({
           ...h,
           userId: h.user_id,
           userName: h.user_name,
           loginAt: h.login_at,
           logoutAt: h.logout_at
-        })));
+        }));
+        const localIds = new Set(loginHistory.map(l => l.id));
+        const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
+        setLoginHistory(merged);
       }
       
       console.log('Loaded:', studentsData?.length, 'students');
@@ -402,13 +405,16 @@ if (studentsData?.length > 0) {
       }
       
       if (loginHistoryData?.length > 0) {
-        setLoginHistory(loginHistoryData.map(h => ({
+        const remoteHistory = loginHistoryData.map(h => ({
           ...h,
           userId: h.user_id,
           userName: h.user_name,
           loginAt: h.login_at,
           logoutAt: h.logout_at
-        })));
+        }));
+        const localIds = new Set(loginHistory.map(l => l.id));
+        const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
+        setLoginHistory(merged);
       }
       
       console.log('Loaded:', studentsData?.length, 'students');
@@ -523,9 +529,7 @@ if (studentsData?.length > 0) {
       };
       setLoginHistory(prev => [...prev, entry]);
       sessionStorage.setItem('edu_current_login_entry', entry.id);
-      if (isOnline) {
-        syncToSupabase('login_history', [entry]);
-      }
+      syncToSupabase('login_history', [entry]);
       return true;
     }
     return false;
