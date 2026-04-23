@@ -526,10 +526,14 @@ if (studentsData?.length > 0) {
       const entryForSupabase = {
         ...entry,
         user_id: entry.userId,
-        user_name: entry.userName
+        user_name: entry.userName,
+        login_at: entry.loginAt,
+        logout_at: entry.logoutAt
       };
       delete entryForSupabase.userId;
       delete entryForSupabase.userName;
+      delete entryForSupabase.loginAt;
+      delete entryForSupabase.logoutAt;
       setLoginHistory(prev => [entry, ...prev]);
       sessionStorage.setItem('edu_current_login_entry', entry.id);
       syncToSupabase('login_history', [entryForSupabase]);
@@ -553,10 +557,14 @@ if (studentsData?.length > 0) {
             const updatedForSupabase = {
               ...updated,
               user_id: updated.userId,
-              user_name: updated.userName
+              user_name: updated.userName,
+              login_at: updated.loginAt,
+              logout_at: updated.logoutAt
             };
             delete updatedForSupabase.userId;
             delete updatedForSupabase.userName;
+            delete updatedForSupabase.loginAt;
+            delete updatedForSupabase.logoutAt;
             if (isOnline) {
               syncToSupabase('login_history', [updatedForSupabase]);
             }
