@@ -79,6 +79,7 @@ export const StoreProvider = ({ children }) => {
 
   const [users, setUsers] = useState(() => loadData('edu_users', []));
   const [currentUser, setCurrentUser] = useState(null);
+  const [loginHistory, setLoginHistory] = useState(() => loadData('edu_login_history', []));
   const [students, setStudents] = useState(() => loadData('edu_students', []));
   const [attendance, setAttendance] = useState(() => loadData('edu_attendance', []));
   const [grades, setGrades] = useState(() => loadData('edu_grades', []));
@@ -422,6 +423,7 @@ if (studentsData?.length > 0) {
   useEffect(() => { localStorage.setItem('edu_diagnostic_evaluations', JSON.stringify(diagnosticEvaluations)); }, [diagnosticEvaluations]);
   useEffect(() => { localStorage.setItem('edu_planning_documents', JSON.stringify(planningDocuments)); }, [planningDocuments]);
   useEffect(() => { localStorage.setItem('edu_learning_sessions', JSON.stringify(learningSessions)); }, [learningSessions]);
+  useEffect(() => { localStorage.setItem('edu_login_history', JSON.stringify(loginHistory)); }, [loginHistory]);
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
@@ -446,6 +448,7 @@ if (studentsData?.length > 0) {
   }, [isOnline]);
 
   const login = async (username, password) => {
+    let loggedInUser = null;
     if (isOnline) {
       try {
         const { data, error } = await supabase
@@ -469,22 +472,56 @@ if (studentsData?.length > 0) {
           };
           setCurrentUser(normalizedUser);
           sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
-          return true;
+          loggedInUser = normalizedUser;
         }
       } catch (err) {
         console.error('Login error:', err);
       }
     }
     
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-      setCurrentUser(user);
+    if (!loggedInUser) {
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        setCurrentUser(user);
+        loggedInUser = user;
+      }
+    }
+    
+    if (loggedInUser) {
+      const entry = {
+        id: generateId(),
+        userId: loggedInUser.id,
+        userName: loggedInUser.name,
+        username: loggedInUser.username,
+        loginAt: new Date().toISOString(),
+        logoutAt: null,
+        duration: null
+      };
+      setLoginHistory(prev => [...prev, entry]);
+      sessionStorage.setItem('edu_current_login_entry', entry.id);
       return true;
     }
     return false;
   };
 
   const logout = () => {
+    if (currentUser) {
+      const logoutAt = new Date().toISOString();
+      const entryId = sessionStorage.getItem('edu_current_login_entry');
+      if (entryId) {
+        setLoginHistory(prev => prev.map(entry => {
+          if (entry.id === entryId) {
+            const loginTime = new Date(entry.loginAt).getTime();
+            const logoutTime = new Date(logoutAt).getTime();
+            const durationMs = logoutTime - loginTime;
+            const duration = Math.round(durationMs / 60000);
+            return { ...entry, logoutAt, duration };
+          }
+          return entry;
+        }));
+        sessionStorage.removeItem('edu_current_login_entry');
+      }
+    }
     setCurrentUser(null);
     localStorage.removeItem('edu_current_user');
     localStorage.removeItem('edu_current_user_v2');
@@ -999,7 +1036,7 @@ if (studentsData?.length > 0) {
   return (
     <StoreContext.Provider value={{
       isOnline, isLoading, syncStatus,
-      users, currentUser, login, logout,
+      users, currentUser, login, logout, loginHistory,
       students, subjects, attendance, grades, classes,
       instruments, instrumentEvaluations, diagnosticEvaluations,
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
