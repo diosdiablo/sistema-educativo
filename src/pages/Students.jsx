@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save } from 'lucide-react';
+import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 // Sistema de estudiantes - Gestión de alumnos
@@ -18,6 +18,9 @@ export default function Students() {
   const [filterClass, setFilterClass] = useState('Todos');
   const [isFilterHovered, setIsFilterHovered] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showRandomModal, setShowRandomModal] = useState(false);
+  const [randomStudent, setRandomStudent] = useState(null);
+  const [isPicking, setIsPicking] = useState(false);
   const fileInputRef = useRef(null);
 
   const maskPhone = (phone) => {
@@ -29,6 +32,22 @@ export default function Students() {
 
   const handleClearAll = () => {
     setShowConfirmModal(true);
+  };
+
+  const pickRandomStudent = () => {
+    if (filteredStudents.length === 0) return;
+    setShowRandomModal(true);
+    setIsPicking(true);
+    setRandomStudent(null);
+    let count = 0;
+    const interval = setInterval(() => {
+      const r = filteredStudents[Math.floor(Math.random() * filteredStudents.length)];
+      setRandomStudent(r);
+      if (++count > 15) {
+        clearInterval(interval);
+        setIsPicking(false);
+      }
+    }, 80);
   };
 
   const confirmClearAll = () => {
@@ -243,6 +262,21 @@ export default function Students() {
                   <Trash2 size={18} /> Vaciar
                 </button>
               )}
+
+              <button 
+                onClick={pickRandomStudent}
+                disabled={filteredStudents.length === 0}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: 'rgba(255,255,255,0.2)', color: filteredStudents.length === 0 ? 'rgba(255,255,255,0.5)' : 'white', border: '1px solid rgba(255,255,255,0.3)',
+                  padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: filteredStudents.length === 0 ? 'not-allowed' : 'pointer',
+                  backdropFilter: 'blur(10px)', transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => { if (filteredStudents.length > 0) { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <Shuffle size={18} /> Sorteo
+              </button>
 
               <input 
                 type="file" 
@@ -877,6 +911,168 @@ export default function Students() {
               >
                 Eliminar Todo
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Sorteo de Estudiante */}
+      {showRandomModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', 
+          backdropFilter: 'blur(8px)',
+          display: 'flex', justifyContent: 'center',
+          alignItems: 'center', padding: '1rem',
+          zIndex: 1200
+        }} onClick={() => !isPicking && setShowRandomModal(false)}>
+          <div style={{ 
+            maxWidth: '500px', width: '100%', 
+            background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', borderRadius: '24px', padding: '2.5rem',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            position: 'relative',
+            textAlign: 'center',
+            overflow: 'hidden'
+          }} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            {/* Decoración */}
+            <div style={{ 
+              position: 'absolute', top: '-40%', right: '-20%',
+              width: '200px', height: '200px',
+              background: 'linear-gradient(135deg, #22c55e20, #16a34a20)',
+              borderRadius: '50%'
+            }} />
+            <div style={{ 
+              position: 'absolute', bottom: '-30%', left: '-15%',
+              width: '150px', height: '150px',
+              background: 'linear-gradient(135deg, #3b82f615, #2563eb15)',
+              borderRadius: '50%'
+            }} />
+
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                <div style={{
+                  width: '72px',
+                  height: '72px',
+                  borderRadius: '18px',
+                  background: isPicking 
+                    ? 'linear-gradient(135deg, #f59e0b, #d97706)' 
+                    : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: isPicking ? '0 0 30px rgba(245, 158, 11, 0.4)' : '0 0 30px rgba(34, 197, 94, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <Shuffle size={36} color="white" style={{ transform: isPicking ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }} />
+                </div>
+              </div>
+
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#1e293b' }}>
+                {isPicking ? 'Sorteando...' : '¡Estudiante Seleccionado!'}
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '2rem' }}>
+                {isPicking ? 'El sorteo está en curso' : `Sección: ${selectedClass === 'Todos' ? 'Todas las secciones' : selectedClass}`}
+              </p>
+
+              {/* Estudiante */}
+              {randomStudent && (
+                <div style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  marginBottom: '2rem',
+                  border: isPicking ? '2px dashed #e2e8f0' : '2px solid #22c55e',
+                  boxShadow: isPicking ? 'none' : '0 8px 24px rgba(34, 197, 94, 0.15)',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: isPicking 
+                      ? 'linear-gradient(135deg, #f59e0b30, #d9770630)' 
+                      : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 1rem',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    {isPicking ? (
+                      <Users size={28} color="#d97706" />
+                    ) : (
+                      <span style={{ color: 'white', fontWeight: 800, fontSize: '1.25rem' }}>
+                        {randomStudent.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ 
+                    fontSize: '1.25rem', 
+                    fontWeight: 700, 
+                    color: isPicking ? '#94a3b8' : '#1e293b',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    {randomStudent.name}
+                  </div>
+                  <div style={{ 
+                    fontSize: '0.85rem', 
+                    color: isPicking ? '#cbd5e1' : '#64748b', 
+                    marginTop: '0.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}>
+                    <GraduationCap size={14} />
+                    {randomStudent.gradeLevel}
+                  </div>
+                  {randomStudent.dni && !isPicking && (
+                    <div style={{ 
+                      fontSize: '0.8rem', 
+                      color: '#94a3b8', 
+                      marginTop: '0.5rem',
+                      fontFamily: 'monospace'
+                    }}>
+                      DNI: {randomStudent.dni}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Botones */}
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button 
+                  style={{ 
+                    flex: 1, padding: '0.8rem', borderRadius: '12px',
+                    background: '#f1f5f9', color: '#64748b',
+                    border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600,
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => setShowRandomModal(false)}
+                >
+                  Cerrar
+                </button>
+                {!isPicking && (
+                  <button 
+                    style={{ 
+                      flex: 1, padding: '0.8rem', borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600,
+                      fontSize: '0.9rem',
+                      boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                    onClick={pickRandomStudent}
+                  >
+                    <Shuffle size={18} /> Sortear de nuevo
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
