@@ -183,7 +183,11 @@ export default function Students() {
     const cleanFilter = filterClass.trim().toLowerCase();
     return baseList.filter(s => 
       cleanClassFilter(s.gradeLevel) === cleanFilter || cleanClassFilter(s.classId) === cleanFilter
-    );
+    ).sort((a, b) => {
+      const lastNameA = a.name.split(',')[0]?.trim().toLowerCase() || a.name.toLowerCase();
+      const lastNameB = b.name.split(',')[0]?.trim().toLowerCase() || b.name.toLowerCase();
+      return lastNameA.localeCompare(lastNameB);
+    });
   }, [students, filterClass, isAdmin, assignedClassNames]);
 
   const availableClassesForFilter = useMemo(() => {
