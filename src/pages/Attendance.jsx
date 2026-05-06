@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck, History, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin } = useStore();
@@ -17,6 +17,29 @@ export default function Attendance() {
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
   const [selectedClass, setSelectedClass] = useState('');
+  const [expandedDates, setExpandedDates] = useState({});
+
+  const toggleDateExpand = (dateStr) => {
+    setExpandedDates(prev => ({ ...prev, [dateStr]: !prev[dateStr] }));
+  };
+
+  const getAttendanceForDate = (dateStr) => {
+    const record = attendance.find(a => a.date === dateStr);
+    return record?.records || {};
+  };
+
+  const getAttendanceSummaryForDate = (dateStr, studentsList) => {
+    const records = getAttendanceForDate(dateStr);
+    const stats = { P: 0, T: 0, F: 0, J: 0, total: 0 };
+    studentsList.forEach(student => {
+      const status = records[student.id];
+      if (status && stats[status] !== undefined) {
+        stats[status]++;
+        stats.total++;
+      }
+    });
+    return stats;
+  };
 
   useEffect(() => {
     const classParam = searchParams.get('class');
@@ -74,6 +97,16 @@ export default function Attendance() {
       datesCount,
       dates: allRecords.map(r => r.date).sort()
     };
+  }, [selectedClass, filteredStudents, attendance]);
+
+  // Fechas con asistencia registrada (para tabla de historial)
+  const historicalAttendanceDates = useMemo(() => {
+    if (!selectedClass || filteredStudents.length === 0) return [];
+    return attendance
+      .filter(a => filteredStudents.some(s => a.records && a.records[s.id]))
+      .map(a => a.date)
+      .sort()
+      .reverse();
   }, [selectedClass, filteredStudents, attendance]);
 
   // Estadísticas del día seleccionado
@@ -897,6 +930,369 @@ export default function Attendance() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Tabla de Historial de Asistencias Tomadas */}
+      {selectedClass && historicalAttendanceDates.length > 0 && (
+        <div style={{
+          marginTop: '2rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <History size={20} color="white" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                Historial de Asistencias
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                {historicalAttendanceDates.length} fechas registradas
+              </p>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
+            <div className="table-container" style={{ overflowX: 'auto' }}>
+              <table className="styled-table">
+                <thead>
+                  <tr>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '60px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <History size={16} />
+                      </div>
+                    </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem'
+                    }}>
+                      Fecha
+                    </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '120px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <CheckCircle size={14} />
+                        Presentes
+                      </div>
+                    </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '120px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <Clock size={14} />
+                        Tardanzas
+                      </div>
+                    </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '120px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <XCircle size={14} />
+                        Faltas
+                      </div>
+                    </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '120px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <FileCheck size={14} />
+                        Justificados
+                      </div>
+                    </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '120px',
+                      textAlign: 'center'
+                    }}>
+                      % Asistencia
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historicalAttendanceDates.map((dateStr, idx) => {
+                    const summary = getAttendanceSummaryForDate(dateStr, filteredStudents);
+                    const attendanceRate = summary.total > 0 
+                      ? Math.round(((summary.P + summary.T + summary.J) / summary.total) * 100) 
+                      : 0;
+                    const isExpanded = expandedDates[dateStr];
+
+                    return (
+                      <>
+                        <tr 
+                          key={dateStr} 
+                          style={{ 
+                            background: idx % 2 === 0 ? '#ffffff' : '#fafafa',
+                            cursor: 'pointer',
+                            transition: 'background 0.2s ease'
+                          }}
+                          onClick={() => toggleDateExpand(dateStr)}
+                        >
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <button
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                borderRadius: '6px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDateExpand(dateStr);
+                              }}
+                            >
+                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </button>
+                          </td>
+                          <td style={{ fontWeight: 600, padding: '0.75rem' }}>
+                            {new Date(dateStr + 'T00:00:00').toLocaleDateString('es-PE', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '20px',
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              color: '#10b981',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              minWidth: '40px'
+                            }}>
+                              {summary.P}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '20px',
+                              background: 'rgba(245, 158, 11, 0.1)',
+                              color: '#f59e0b',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              minWidth: '40px'
+                            }}>
+                              {summary.T}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '20px',
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              color: '#ef4444',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              minWidth: '40px'
+                            }}>
+                              {summary.F}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '20px',
+                              background: 'rgba(139, 92, 246, 0.1)',
+                              color: '#8b5cf6',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              minWidth: '40px'
+                            }}>
+                              {summary.J}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '0.35rem 0.75rem',
+                              borderRadius: '20px',
+                              background: attendanceRate >= 80 
+                                ? 'rgba(16, 185, 129, 0.1)' 
+                                : attendanceRate >= 60 
+                                ? 'rgba(245, 158, 11, 0.1)' 
+                                : 'rgba(239, 68, 68, 0.1)',
+                              color: attendanceRate >= 80 
+                                ? '#10b981' 
+                                : attendanceRate >= 60 
+                                ? '#f59e0b' 
+                                : '#ef4444',
+                              fontWeight: 800,
+                              fontSize: '0.95rem',
+                              minWidth: '50px'
+                            }}>
+                              {attendanceRate}%
+                            </span>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan="7" style={{ padding: 0, background: '#f8fafc' }}>
+                              <div style={{ padding: '1rem' }}>
+                                <h4 style={{ 
+                                  fontSize: '0.85rem', 
+                                  fontWeight: 700, 
+                                  color: '#64748b', 
+                                  marginBottom: '0.75rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Detalle por Estudiante
+                                </h4>
+                                <div style={{ 
+                                  display: 'grid', 
+                                  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                                  gap: '0.5rem'
+                                }}>
+                                  {filteredStudents.map(student => {
+                                    const records = getAttendanceForDate(dateStr);
+                                    const status = records[student.id];
+                                    if (!status) return null;
+                                    
+                                    const statusConfig = STATUS_OPTIONS.find(opt => opt.value === status);
+                                    return (
+                                      <div key={student.id} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '0.5rem 0.75rem',
+                                        borderRadius: '8px',
+                                        background: 'white',
+                                        border: `1px solid ${statusConfig?.color || '#e2e8f0'}30`
+                                      }}>
+                                        <span style={{ 
+                                          fontSize: '0.85rem', 
+                                          fontWeight: 500,
+                                          color: '#334155',
+                                          flex: 1,
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap',
+                                          marginRight: '0.5rem'
+                                        }}>
+                                          {student.name}
+                                        </span>
+                                        <span style={{
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          padding: '0.2rem 0.6rem',
+                                          borderRadius: '12px',
+                                          background: statusConfig?.bg || '#f1f5f9',
+                                          color: statusConfig?.color || '#64748b',
+                                          fontWeight: 700,
+                                          fontSize: '0.75rem',
+                                          whiteSpace: 'nowrap'
+                                        }}>
+                                          {statusConfig?.icon} {statusConfig?.label}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedClass && historicalAttendanceDates.length === 0 && attendanceStats && (
+        <div style={{
+          marginTop: '2rem',
+          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+          borderRadius: '16px',
+          padding: '2rem',
+          textAlign: 'center',
+          border: '2px dashed #bae6fd'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1rem'
+          }}>
+            <History size={28} color="white" />
+          </div>
+          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1e40af' }}>
+            No hay historial de asistencias
+          </h4>
+          <p style={{ fontSize: '0.9rem', color: '#1e40af', margin: 0 }}>
+            Las asistencias que tomes aparecerán aquí como historial
+          </p>
         </div>
       )}
     </div>
