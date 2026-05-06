@@ -978,7 +978,7 @@ export default function Students() {
                 {isPicking ? 'Sorteando...' : '¡Estudiante Seleccionado!'}
               </h3>
               <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '2rem' }}>
-                {isPicking ? 'El sorteo está en curso' : `Sección: ${selectedClass === 'Todos' ? 'Todas las secciones' : selectedClass}`}
+                {isPicking ? 'El sorteo está en curso' : `Sección: ${filterClass === 'Todos' ? 'Todas las secciones' : filterClass}`}
               </p>
 
               {/* Estudiante */}
