@@ -38,14 +38,20 @@ export default function Students() {
     if (filteredStudents.length === 0) return;
     setShowRandomModal(true);
     setIsPicking(true);
-    setRandomStudent(null);
+    
     let count = 0;
+    let finalStudent = null;
     const interval = setInterval(() => {
       const r = filteredStudents[Math.floor(Math.random() * filteredStudents.length)];
       setRandomStudent(r);
-      if (++count > 15) {
+      finalStudent = r;
+      count++;
+      if (count >= 15) {
         clearInterval(interval);
-        setIsPicking(false);
+        setTimeout(() => {
+          setRandomStudent(finalStudent);
+          setIsPicking(false);
+        }, 50);
       }
     }, 80);
   };
