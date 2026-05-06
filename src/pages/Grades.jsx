@@ -675,9 +675,24 @@ export default function Grades() {
                   <thead>
                     <tr>
                       <th style={{ 
-                        minWidth: '200px', 
+                        width: '50px',
+                        minWidth: '50px',
                         position: 'sticky', 
                         left: 0, 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                        zIndex: 10,
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        padding: '1rem',
+                        textAlign: 'center'
+                      }}>
+                        N°
+                      </th>
+                      <th style={{ 
+                        minWidth: '200px', 
+                        position: 'sticky', 
+                        left: 50, 
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
                         zIndex: 10,
                         color: 'white',
@@ -729,9 +744,22 @@ export default function Grades() {
                     </tr>
                     <tr>
                       <th style={{ 
-                        minWidth: '200px', 
+                        width: '50px',
+                        minWidth: '50px',
                         position: 'sticky', 
                         left: 0, 
+                        background: '#f8fafc', 
+                        zIndex: 10,
+                        padding: '0.75rem 1rem',
+                        borderBottom: '2px solid #e2e8f0',
+                        textAlign: 'center'
+                      }}>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>#</span>
+                      </th>
+                      <th style={{ 
+                        minWidth: '200px', 
+                        position: 'sticky', 
+                        left: 50, 
                         background: '#f8fafc', 
                         zIndex: 10,
                         padding: '0.75rem 1rem',
@@ -783,9 +811,10 @@ export default function Grades() {
                         </td>
                       </tr>
                     )}
-                    {filteredStudents.map(student => (
+                    {filteredStudents.map((student, studentIdx) => (
                       <tr key={student.id}>
-                        <td style={{ fontWeight: 600, position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 5 }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 5 }}>{studentIdx + 1}</td>
+                        <td style={{ fontWeight: 600, position: 'sticky', left: 50, background: 'var(--bg-primary)', zIndex: 5 }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const instruments = getInstrumentsForCompetency(comp.id);
                           if (instruments.length === 0) {

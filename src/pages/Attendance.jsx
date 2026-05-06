@@ -819,6 +819,15 @@ export default function Attendance() {
                   <th style={{ 
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
+                    padding: '1rem',
+                    width: '60px',
+                    textAlign: 'center'
+                  }}>
+                    N°
+                  </th>
+                  <th style={{ 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
                     padding: '1rem'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -852,13 +861,14 @@ export default function Attendance() {
               <tbody>
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan="3" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                       No hay estudiantes matriculados en esta sección.
                     </td>
                   </tr>
                 ) : (
                   filteredStudents.map((student, idx) => (
                     <tr key={student.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', padding: '1rem' }}>{idx + 1}</td>
                       <td style={{ fontWeight: 600, padding: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{

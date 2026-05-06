@@ -512,6 +512,15 @@ export default function Students() {
             <thead>
               <tr>
                 <th style={{ 
+                  width: '60px',
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  padding: '1rem',
+                  textAlign: 'center'
+                }}>N°</th>
+                <th style={{ 
                   minWidth: '120px', 
                   background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
                   color: 'white',
@@ -582,7 +591,7 @@ export default function Students() {
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                     No hay estudiantes registrados.
                   </td>
                 </tr>
@@ -591,6 +600,7 @@ export default function Students() {
                   const [color1, color2] = gradientColors[idx % gradientColors.length];
                   return (
                     <tr key={student.id}>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)' }}>{idx + 1}</td>
                       <td>
                         <code style={{ 
                           background: '#f1f5f9', 
