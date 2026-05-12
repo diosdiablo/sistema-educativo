@@ -19,6 +19,7 @@ import Schedule from './pages/Schedule';
 import Settings from './pages/Settings';
 import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
 import PlanningDocuments from './pages/PlanningDocuments';
+import StudentProfile from './pages/StudentProfile';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -160,6 +161,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/students" element={<Students />} />
+          <Route path="/students/:id" element={<StudentProfile />} />
           <Route path="/diagnostic-evaluation" element={<DiagnosticEvaluation />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/classes" element={<AdminOnlyRoute><Classes /></AdminOnlyRoute>} />

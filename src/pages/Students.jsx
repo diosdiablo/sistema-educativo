@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle } from 'lucide-react';
+import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 // Sistema de estudiantes - Gestión de alumnos
 
 export default function Students() {
+  const navigate = useNavigate();
   const { students, classes, addStudent, deleteStudent, importStudentsBulk, updateStudent, clearAllStudents, isAdmin, currentUser } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [newStudent, setNewStudent] = useState({ 
@@ -693,10 +695,10 @@ export default function Students() {
                             }}
                             onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
-                            onClick={() => setViewingStudent(student)}
-                            title="Ver Información"
+                            onClick={() => navigate(`/students/${student.id}`)}
+                            title="Ficha del Estudiante"
                           >
-                            <Eye size={18} />
+                            <ExternalLink size={18} />
                           </button>
                           
                           {isAdmin && (
