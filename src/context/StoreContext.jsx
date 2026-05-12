@@ -79,6 +79,7 @@ export const StoreProvider = ({ children }) => {
     if (savedUser) {
       try {
         setCurrentUser(JSON.parse(savedUser));
+        window.history.replaceState(null, '', '/');
       } catch {
         sessionStorage.removeItem('edu_current_user_session');
       }
