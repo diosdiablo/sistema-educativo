@@ -107,7 +107,8 @@ export const StoreProvider = ({ children }) => {
             { data: planningDocsData },
             { data: learningSessionsData },
             { data: periodDatesData },
-            { data: loginHistoryData }
+            { data: loginHistoryData },
+            { data: eventsData }
           ] = await Promise.all([
             supabase.from('students').select('*'),
             supabase.from('classes').select('*'),
@@ -122,7 +123,8 @@ export const StoreProvider = ({ children }) => {
             supabase.from('planning_documents').select('*'),
             supabase.from('learning_sessions').select('*'),
             supabase.from('period_dates').select('*'),
-            supabase.from('login_history').select('*').order('login_at', { ascending: false })
+            supabase.from('login_history').select('*').order('login_at', { ascending: false }),
+            supabase.from('events').select('*')
           ]);
           
       if (studentsData?.length > 0) {
@@ -241,6 +243,8 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         setLoginHistory(merged);
       }
       
+      if (eventsData?.length > 0) setEvents(eventsData);
+      
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
         } catch (err) {
@@ -274,7 +278,8 @@ const [
         { data: planningDocsData },
         { data: learningSessionsData },
         { data: periodDatesData },
-        { data: loginHistoryData }
+        { data: loginHistoryData },
+        { data: eventsData }
       ] = await Promise.all([
         supabase.from('students').select('*'),
         supabase.from('classes').select('*'),
@@ -289,7 +294,8 @@ const [
         supabase.from('planning_documents').select('*'),
         supabase.from('learning_sessions').select('*'),
         supabase.from('period_dates').select('*'),
-        supabase.from('login_history').select('*').order('login_at', { ascending: false })
+        supabase.from('login_history').select('*').order('login_at', { ascending: false }),
+        supabase.from('events').select('*')
       ]);
       
 if (studentsData?.length > 0) {
@@ -414,6 +420,8 @@ if (studentsData?.length > 0) {
         setLoginHistory(merged);
       }
       
+      if (eventsData?.length > 0) setEvents(eventsData);
+      
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
     } catch (err) {
@@ -436,6 +444,7 @@ if (studentsData?.length > 0) {
   const [planningDocuments, setPlanningDocuments] = useState(() => loadData('edu_planning_documents', []));
   const [learningSessions, setLearningSessions] = useState(() => loadData('edu_learning_sessions', []));
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
+  const [events, setEvents] = useState(() => loadData('edu_events', []));
 
   useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
   useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
@@ -451,6 +460,7 @@ if (studentsData?.length > 0) {
   useEffect(() => { localStorage.setItem('edu_planning_documents', JSON.stringify(planningDocuments)); }, [planningDocuments]);
   useEffect(() => { localStorage.setItem('edu_learning_sessions', JSON.stringify(learningSessions)); }, [learningSessions]);
   useEffect(() => { localStorage.setItem('edu_login_history', JSON.stringify(loginHistory)); }, [loginHistory]);
+  useEffect(() => { localStorage.setItem('edu_events', JSON.stringify(events)); }, [events]);
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
@@ -1008,7 +1018,8 @@ if (studentsData?.length > 0) {
         syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
         syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end }))),
         syncToSupabase('planning_documents', planningDocuments),
-        syncToSupabase('login_history', loginHistory)
+        syncToSupabase('login_history', loginHistory),
+        syncToSupabase('events', events)
       ]);
       alert('Datos sincronizados a la nube');
     } catch (err) {
@@ -1064,6 +1075,21 @@ if (studentsData?.length > 0) {
     localStorage.clear();
   };
 
+  const addEvent = (event) => {
+    const newEvent = { ...event, id: generateId(), createdAt: new Date().toISOString() };
+    setEvents(prev => [...prev, newEvent]);
+    return newEvent;
+  };
+
+  const updateEvent = (id, updates) => {
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+  };
+
+  const deleteEvent = (id) => {
+    setEvents(prev => prev.filter(e => e.id !== id));
+    deleteFromSupabase('events', id);
+  };
+
   const autoBackup = () => {
     const backupData = {
       version: '1.0',
@@ -1105,6 +1131,7 @@ if (studentsData?.length > 0) {
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
       planningDocuments, addPlanningDocument, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
+      events, addEvent, updateEvent, deleteEvent,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,

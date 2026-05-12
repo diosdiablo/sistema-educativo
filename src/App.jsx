@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -20,6 +20,7 @@ import Settings from './pages/Settings';
 import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
 import PlanningDocuments from './pages/PlanningDocuments';
 import StudentProfile from './pages/StudentProfile';
+import SchoolCalendar from './pages/SchoolCalendar';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -36,6 +37,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
     { name: 'Instrumentos', path: '/instruments', icon: <ClipboardCheck size={20} /> },
     { name: 'Evaluación Diagnóstica', path: '/diagnostic-evaluation', icon: <ClipboardList size={20} /> },
     { name: 'Horario', path: '/schedule', icon: <Clock size={20} /> },
+    { name: 'Calendario', path: '/calendar', icon: <CalendarIcon size={20} /> },
     { name: 'Planificación', path: '/planning', icon: <FolderOpen size={20} /> },
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
   ];
@@ -170,6 +172,7 @@ function AppContent() {
           <Route path="/users" element={<AdminOnlyRoute><UsersPage /></AdminOnlyRoute>} />
           <Route path="/instruments" element={<Instruments />} />
           <Route path="/schedule" element={<Schedule />} />
+          <Route path="/calendar" element={<SchoolCalendar />} />
           <Route path="/planning" element={<PlanningDocuments />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
