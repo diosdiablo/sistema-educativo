@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -23,8 +23,20 @@ import StudentProfile from './pages/StudentProfile';
 import SchoolCalendar from './pages/SchoolCalendar';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
-  const { logout, currentUser, isAdmin } = useStore();
+  const { logout, currentUser, isAdmin, notifications, markNotificationRead } = useStore();
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifRef = useRef(null);
   
+  const unreadCount = notifications.filter(n => !n.readBy.includes(currentUser?.id)).length;
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifs(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   const handleNavClick = () => {
     if (window.innerWidth <= 768) onClose();
   };
@@ -92,7 +104,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
         </div>
         
         <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(0,0,0,0.15)', borderRadius: '16px', margin: '0.5rem' }}>
-          <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ 
               width: '40px', height: '40px', 
               borderRadius: '12px', 
@@ -102,11 +114,81 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
             }}>
               <Users size={20} color="white" />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
               </span>
               <strong style={{color: '#ffffff', fontSize: '0.9rem', fontWeight: 600}}>{currentUser?.name}</strong>
+            </div>
+            <div ref={notifRef} style={{ position: 'relative' }}>
+              <button onClick={() => setShowNotifs(!showNotifs)} style={{
+                background: showNotifs ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem',
+                borderRadius: '10px', position: 'relative', transition: 'all 0.2s ease'
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
+                onMouseLeave={e => { if (!showNotifs) e.currentTarget.style.background = 'transparent'; }}
+              >
+                {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: '2px', right: '2px',
+                    width: '18px', height: '18px', borderRadius: '50%',
+                    background: '#ef4444', color: 'white', fontSize: '0.65rem',
+                    fontWeight: 700, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', border: '2px solid #0f172a'
+                  }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
+              </button>
+              {showNotifs && (
+                <div style={{
+                  position: 'absolute', bottom: 'calc(100% + 8px)', right: '0',
+                  width: '320px', maxHeight: '360px', overflowY: 'auto',
+                  background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                  zIndex: 100, padding: '0.5rem'
+                }}>
+                  <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
+                    Notificaciones
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                      No hay notificaciones
+                    </div>
+                  ) : (
+                    notifications.slice(0, 20).map(n => {
+                      const isUnread = !n.readBy.includes(currentUser?.id);
+                      return (
+                        <div key={n.id} onClick={() => { markNotificationRead(n.id); }} style={{
+                          padding: '0.75rem', borderRadius: '10px', cursor: 'pointer',
+                          background: isUnread ? '#fefce8' : 'transparent',
+                          marginBottom: '2px', transition: 'background 0.15s ease'
+                        }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fefce8' : 'transparent'; }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <div style={{
+                              width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
+                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                              <Bell size={14} color="white" />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.8rem', color: '#1e293b' }}>{n.title}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{n.message}</div>
+                              <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>
+                                {new Date(n.createdAt).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                            {isUnread && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0, marginTop: '6px' }} />}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <button 

@@ -445,6 +445,7 @@ if (studentsData?.length > 0) {
   const [learningSessions, setLearningSessions] = useState(() => loadData('edu_learning_sessions', []));
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
   const [events, setEvents] = useState(() => loadData('edu_events', []));
+  const [notifications, setNotifications] = useState(() => loadData('edu_notifications', []));
 
   useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
   useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
@@ -461,6 +462,7 @@ if (studentsData?.length > 0) {
   useEffect(() => { localStorage.setItem('edu_learning_sessions', JSON.stringify(learningSessions)); }, [learningSessions]);
   useEffect(() => { localStorage.setItem('edu_login_history', JSON.stringify(loginHistory)); }, [loginHistory]);
   useEffect(() => { localStorage.setItem('edu_events', JSON.stringify(events)); }, [events]);
+  useEffect(() => { localStorage.setItem('edu_notifications', JSON.stringify(notifications)); }, [notifications]);
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
@@ -1078,6 +1080,18 @@ if (studentsData?.length > 0) {
   const addEvent = (event) => {
     const newEvent = { ...event, id: generateId(), createdAt: new Date().toISOString() };
     setEvents(prev => [...prev, newEvent]);
+    if (currentUser?.role === 'admin' || currentUser?.username === 'admin') {
+      const notification = {
+        id: generateId(),
+        type: 'event_created',
+        eventId: newEvent.id,
+        title: 'Nuevo evento',
+        message: `${event.title} - ${new Date(event.date + 'T00:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long' })}`,
+        createdAt: new Date().toISOString(),
+        readBy: []
+      };
+      setNotifications(prev => [notification, ...prev]);
+    }
     return newEvent;
   };
 
@@ -1088,6 +1102,15 @@ if (studentsData?.length > 0) {
   const deleteEvent = (id) => {
     setEvents(prev => prev.filter(e => e.id !== id));
     deleteFromSupabase('events', id);
+  };
+
+  const markNotificationRead = (notificationId) => {
+    if (!currentUser) return;
+    setNotifications(prev => prev.map(n =>
+      n.id === notificationId && !n.readBy.includes(currentUser.id)
+        ? { ...n, readBy: [...n.readBy, currentUser.id] }
+        : n
+    ));
   };
 
   const autoBackup = () => {
@@ -1132,6 +1155,7 @@ if (studentsData?.length > 0) {
       planningDocuments, addPlanningDocument, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
       events, addEvent, updateEvent, deleteEvent,
+      notifications, markNotificationRead,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,
