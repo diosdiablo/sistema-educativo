@@ -1081,16 +1081,22 @@ if (studentsData?.length > 0) {
     const newEvent = { ...event, id: generateId(), createdAt: new Date().toISOString() };
     setEvents(prev => [...prev, newEvent]);
     if (currentUser?.role === 'admin' || currentUser?.username === 'admin') {
+      const dateStr = new Date(event.date + 'T00:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long' });
       const notification = {
         id: generateId(),
         type: 'event_created',
         eventId: newEvent.id,
         title: 'Nuevo evento',
-        message: `${event.title} - ${new Date(event.date + 'T00:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long' })}`,
+        message: `${event.title} - ${dateStr}`,
         createdAt: new Date().toISOString(),
         readBy: []
       };
       setNotifications(prev => [notification, ...prev]);
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: '📅 Nuevo evento', message: `${event.title} - ${dateStr}`, url: '/calendar' })
+      }).catch(() => {});
     }
     return newEvent;
   };

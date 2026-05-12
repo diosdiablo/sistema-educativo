@@ -1,0 +1,18 @@
+{
+  "name": "Portal Agro 110",
+  "short_name": "Portal Agro",
+  "description": "Sistema Educativo I.E.P. 110",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -193,6 +193,16 @@ CREATE TABLE IF NOT EXISTS planning_documents (
 -- Política RLS para planning_documents
 CREATE POLICY "Enable all for planning_documents" ON planning_documents FOR ALL USING (true) WITH CHECK (true);
 
+-- Tabla de suscripciones push
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  user_id TEXT PRIMARY KEY,
+  user_name TEXT,
+  subscription TEXT NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE POLICY "Enable all for push_subscriptions" ON push_subscriptions FOR ALL USING (true) WITH CHECK (true);
+
 -- Tabla de sesiones de aprendizaje
 CREATE TABLE IF NOT EXISTS learning_sessions (
   id TEXT PRIMARY KEY,
@@ -229,6 +239,7 @@ ALTER TABLE diagnostic_evaluations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE period_dates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE planning_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE learning_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para permitir acceso total (en desarrollo)
 CREATE POLICY "Enable all for users" ON users FOR ALL USING (true) WITH CHECK (true);
