@@ -21,6 +21,7 @@ import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
 import PlanningDocuments from './pages/PlanningDocuments';
 import StudentProfile from './pages/StudentProfile';
 import SchoolCalendar from './pages/SchoolCalendar';
+import BoletaNotas from './pages/BoletaNotas';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -40,6 +41,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Calendario', path: '/calendar', icon: <CalendarIcon size={20} /> },
     { name: 'Planificación', path: '/planning', icon: <FolderOpen size={20} /> },
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
+    { name: 'Boleta de Notas', path: '/boleta', icon: <FileText size={20} /> },
   ];
 
   const adminItems = [
@@ -279,6 +281,7 @@ function AppContent() {
           <Route path="/calendar" element={<SchoolCalendar />} />
           <Route path="/planning" element={<PlanningDocuments />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/boleta" element={<BoletaNotas />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
