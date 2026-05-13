@@ -77,7 +77,7 @@ export default function BoletaNotas() {
   }, [selectedStudent, subjects, studentEvals, studentLegacy]);
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem' }}>
+    <div className="animate-fade-in" style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', padding: '1.5rem' }}>
       <style>{`
         @media print {
           @page { margin: 1.5cm; size: A4 portrait; }
@@ -100,8 +100,8 @@ export default function BoletaNotas() {
         borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
-        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', top: '-30%', right: '-5%', width: '200px', height: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-15%', left: '-2%', width: '120px', height: '120px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
           <div style={{
             width: '56px', height: '56px', background: 'rgba(255,255,255,0.2)',
