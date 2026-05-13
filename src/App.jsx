@@ -85,7 +85,78 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
             <h1 className="sidebar-title">Portal Agro</h1>
             <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>I.E.P. 110</span>
           </div>
-          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', marginLeft: 'auto', background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+          <div ref={notifRef} style={{ position: 'relative', marginLeft: 'auto' }}>
+            <button onClick={() => setShowNotifs(!showNotifs)} style={{
+              background: showNotifs ? 'rgba(255,255,255,0.2)' : 'transparent',
+              border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem',
+              borderRadius: '10px', position: 'relative', transition: 'all 0.2s ease',
+              display: 'flex'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
+              onMouseLeave={e => { if (!showNotifs) e.currentTarget.style.background = 'transparent'; }}
+            >
+              {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: '2px', right: '2px',
+                  width: '18px', height: '18px', borderRadius: '50%',
+                  background: '#ef4444', color: 'white', fontSize: '0.65rem',
+                  fontWeight: 700, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', border: '2px solid #0f172a'
+                }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+            </button>
+            {showNotifs && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: '0',
+                width: '320px', maxHeight: '360px', overflowY: 'auto',
+                background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                zIndex: 9999, padding: '0.5rem'
+              }}>
+                <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
+                  Notificaciones
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                    No hay notificaciones
+                  </div>
+                ) : (
+                  notifications.slice(0, 20).map(n => {
+                    const isUnread = !n.readBy.includes(currentUser?.id);
+                    return (
+                      <div key={n.id} onClick={() => { markNotificationRead(n.id); }} style={{
+                        padding: '0.75rem', borderRadius: '10px', cursor: 'pointer',
+                        background: isUnread ? '#fefce8' : 'transparent',
+                        marginBottom: '2px', transition: 'background 0.15s ease'
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fefce8' : 'transparent'; }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <div style={{
+                            width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                          }}>
+                            <Bell size={14} color="white" />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.8rem', color: '#1e293b' }}>{n.title}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{n.message}</div>
+                            <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>
+                              {new Date(n.createdAt).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                          {isUnread && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0, marginTop: '6px' }} />}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem' }}>
             <X size={24} />
           </button>
         </div>
@@ -119,76 +190,6 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
                 {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
               </span>
               <strong style={{color: '#ffffff', fontSize: '0.9rem', fontWeight: 600}}>{currentUser?.name}</strong>
-            </div>
-            <div ref={notifRef} style={{ position: 'relative' }}>
-              <button onClick={() => setShowNotifs(!showNotifs)} style={{
-                background: showNotifs ? 'rgba(255,255,255,0.2)' : 'transparent',
-                border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem',
-                borderRadius: '10px', position: 'relative', transition: 'all 0.2s ease'
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
-                onMouseLeave={e => { if (!showNotifs) e.currentTarget.style.background = 'transparent'; }}
-              >
-                {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
-                {unreadCount > 0 && (
-                  <span style={{
-                    position: 'absolute', top: '2px', right: '2px',
-                    width: '18px', height: '18px', borderRadius: '50%',
-                    background: '#ef4444', color: 'white', fontSize: '0.65rem',
-                    fontWeight: 700, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', border: '2px solid #0f172a'
-                  }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-                )}
-              </button>
-              {showNotifs && (
-                <div style={{
-                  position: 'absolute', bottom: 'calc(100% + 8px)', right: '0',
-                  width: '320px', maxHeight: '360px', overflowY: 'auto',
-                  background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                  zIndex: 100, padding: '0.5rem'
-                }}>
-                  <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
-                    Notificaciones
-                  </div>
-                  {notifications.length === 0 ? (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
-                      No hay notificaciones
-                    </div>
-                  ) : (
-                    notifications.slice(0, 20).map(n => {
-                      const isUnread = !n.readBy.includes(currentUser?.id);
-                      return (
-                        <div key={n.id} onClick={() => { markNotificationRead(n.id); }} style={{
-                          padding: '0.75rem', borderRadius: '10px', cursor: 'pointer',
-                          background: isUnread ? '#fefce8' : 'transparent',
-                          marginBottom: '2px', transition: 'background 0.15s ease'
-                        }}
-                          onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fefce8' : 'transparent'; }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                            <div style={{
-                              width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
-                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center'
-                            }}>
-                              <Bell size={14} color="white" />
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 600, fontSize: '0.8rem', color: '#1e293b' }}>{n.title}</div>
-                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{n.message}</div>
-                              <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>
-                                {new Date(n.createdAt).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                              </div>
-                            </div>
-                            {isUnread && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0, marginTop: '6px' }} />}
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              )}
             </div>
           </div>
           <button 
