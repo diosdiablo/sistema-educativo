@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Printer, FileText, Search, Users, Download } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const GRADE_TO_NUM = { AD: 4, A: 3, B: 2, C: 1 };
 const NUM_TO_GRADE = (n) => {
@@ -179,26 +180,30 @@ export default function BoletaNotas() {
     setGeneratingPdf(grade);
     const group = gradeGroups[grade] || [];
     if (group.length === 0) { setGeneratingPdf(''); return; }
-    const allHtml = group.map((s, i) =>
-      buildBoletaHTML(s) + (i < group.length - 1 ? '<div style="page-break-after:always"></div>' : '')
-    ).join('');
-    const temp = document.createElement('div');
-    temp.style.cssText = 'position:fixed;left:0;top:0;width:1000px;background:#fff;z-index:10000';
-    temp.innerHTML = allHtml;
-    document.body.appendChild(temp);
-    await new Promise(r => setTimeout(r, 300));
-    try {
-      await html2pdf().set({
-        margin: [10, 10, 10, 10],
-        filename: `Boletas_${grade.replace(/[^a-zA-Z0-9_]/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(temp).save();
-    } catch (e) {
-      console.error('PDF generation error:', e);
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageW = pdf.internal.pageSize.getWidth() - 20;
+    for (let i = 0; i < group.length; i++) {
+      const temp = document.createElement('div');
+      temp.style.cssText = 'position:fixed;left:0;top:0;width:1000px;background:#fff;z-index:10000';
+      temp.innerHTML = buildBoletaHTML(group[i]);
+      document.body.appendChild(temp);
+      await new Promise(r => requestAnimationFrame(() => setTimeout(r, 100)));
+      try {
+        const canvas = await html2canvas(temp, { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' });
+        const img = canvas.toDataURL('image/jpeg', 0.95);
+        const h = (canvas.height * pageW) / canvas.width;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(img, 'JPEG', 10, 10, pageW, h);
+      } catch (e) {
+        console.error('PDF page error:', e);
+      }
+      document.body.removeChild(temp);
     }
-    document.body.removeChild(temp);
+    try {
+      pdf.save(`Boletas_${grade.replace(/[^a-zA-Z0-9_]/g, '_')}.pdf`);
+    } catch (e) {
+      console.error('PDF save error:', e);
+    }
     setGeneratingPdf('');
   };
 
