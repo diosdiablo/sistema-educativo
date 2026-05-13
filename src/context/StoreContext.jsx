@@ -1078,7 +1078,7 @@ if (studentsData?.length > 0) {
   };
 
   const addEvent = (event) => {
-    const newEvent = { ...event, id: generateId(), createdAt: new Date().toISOString() };
+    const newEvent = { ...event, id: generateId(), created_at: new Date().toISOString() };
     setEvents(prev => [...prev, newEvent]);
     syncToSupabase('events', [newEvent]);
     if (currentUser?.role === 'admin' || currentUser?.username === 'admin') {

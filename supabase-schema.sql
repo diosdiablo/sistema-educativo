@@ -193,6 +193,20 @@ CREATE TABLE IF NOT EXISTS planning_documents (
 -- Política RLS para planning_documents
 CREATE POLICY "Enable all for planning_documents" ON planning_documents FOR ALL USING (true) WITH CHECK (true);
 
+-- Tabla de eventos del calendario
+CREATE TABLE IF NOT EXISTS events (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  date TEXT NOT NULL,
+  type TEXT DEFAULT 'event',
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all for events" ON events FOR ALL USING (true) WITH CHECK (true);
+
 -- Tabla de suscripciones push
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   user_id TEXT PRIMARY KEY,
