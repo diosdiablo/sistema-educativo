@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Printer, FileText, Search, Users } from 'lucide-react';
+import { Printer, FileText, Search, Users, Download } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 
 const GRADE_TO_NUM = { AD: 4, A: 3, B: 2, C: 1 };
 const NUM_TO_GRADE = (n) => {
@@ -63,6 +64,142 @@ export default function BoletaNotas() {
   };
 
   const handlePrint = () => window.print();
+
+  const pdfContainerRef = useRef(null);
+  const [generatingPdf, setGeneratingPdf] = useState('');
+
+  const escHtml = (str) => {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  };
+
+  const gradeGroups = useMemo(() => {
+    const groups = {};
+    students.forEach(s => {
+      const g = s.gradeLevel || 'Sin grado';
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(s);
+    });
+    return groups;
+  }, [students]);
+
+  const cellStyleStr = (grade) => [
+    'text-align:center;padding:6px 10px;font-size:0.85rem;',
+    `font-weight:${grade ? 700 : 400};`,
+    `color:${grade && grade !== '-' ? GRADE_COLOR[grade] || '#1e293b' : '#94a3b8'};`,
+    'border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;'
+  ].join('');
+
+  const buildBoletaHTML = (student) => {
+    const evals = instrumentEvaluations.filter(e => e.studentId === student.id);
+    const legacy = legacyGrades.filter(g => g.studentId === student.id);
+    const getG = (subject, competencyId, period) => {
+      const ev = evals.find(e => e.subjectId === subject.id && e.competencyId === competencyId && e.period === period);
+      if (ev) return ev.qualitative || NUM_TO_GRADE((ev.score / (ev.maxPossible || 20)) * 4);
+      const gr = legacy.find(g => g.subject === subject.name && g.competencyId === competencyId && g.period === period);
+      if (gr && gr.score) return gr.conclusion || NUM_TO_GRADE(GRADE_TO_NUM[gr.score] || 0);
+      return '-';
+    };
+    const calcA = (grades) => {
+      const nums = grades.filter(g => g !== '-').map(g => GRADE_TO_NUM[g]).filter(Boolean);
+      if (nums.length === 0) return '-';
+      return NUM_TO_GRADE(nums.reduce((a, b) => a + b, 0) / nums.length);
+    };
+
+    let subjectsHtml = '';
+    subjects.forEach(sub => {
+      const compRows = sub.competencies.map(comp => {
+        const grades = PERIODS.map(p => getG(sub, comp.id, p));
+        return { name: comp.name, grades, avg: calcA(grades) };
+      });
+      const periodAvgs = PERIODS.map((p, pi) => calcA(compRows.map(r => r.grades[pi])));
+      const overallAvg = calcA(compRows.flatMap(r => r.grades));
+
+      let compsHtml = '';
+      compRows.forEach(comp => {
+        compsHtml += `<tr>
+          <td style="padding:6px 12px;font-size:0.85rem;color:#334155;border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0">${escHtml(comp.name)}</td>
+          ${comp.grades.map(g => `<td style="${cellStyleStr(g)}">${g}</td>`).join('')}
+          <td style="${cellStyleStr(comp.avg)}font-weight:800;background:#f8fafc">${comp.avg}</td>
+        </tr>`;
+      });
+
+      subjectsHtml += `<div style="margin-bottom:16px;page-break-inside:avoid">
+        <h3 style="font-size:0.85rem;font-weight:800;text-transform:uppercase;padding:0.5rem 0.75rem;background:#004d4d;color:white;border-radius:8px 8px 0 0;letter-spacing:0.05em;margin:0">${escHtml(sub.name)}</h3>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-top:none">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="text-align:left;padding:8px 12px;font-size:0.8rem;color:#475569;font-weight:700;border-bottom:2px solid #cbd5e1;border-right:1px solid #e2e8f0">Competencias</th>
+              ${PERIODS.map(p => `<th style="text-align:center;padding:8px 6px;font-size:0.75rem;color:#475569;font-weight:700;border-bottom:2px solid #cbd5e1;border-right:1px solid #e2e8f0;width:80px">${PERIOD_LABEL[p]}</th>`).join('')}
+              <th style="text-align:center;padding:8px 6px;font-size:0.75rem;color:#475569;font-weight:700;border-bottom:2px solid #cbd5e1;width:70px">Prom.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${compsHtml}
+            <tr style="background:#f8fafc">
+              <td style="padding:8px 12px;font-size:0.8rem;font-weight:800;color:#1e293b;border-top:2px solid #cbd5e1;border-right:1px solid #e2e8f0">Promedio del Área</td>
+              ${periodAvgs.map(avg => `<td style="${cellStyleStr(avg)}border-top:2px solid #cbd5e1;font-weight:800;font-size:0.9rem">${avg}</td>`).join('')}
+              <td style="${cellStyleStr(overallAvg)}border-top:2px solid #cbd5e1;font-weight:800;font-size:0.9rem;background:#e2e8f0">${overallAvg}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+    });
+
+    return `<div style="font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:1000px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:16px;padding-bottom:10px;border-bottom:3px double #1e293b">
+        <h2 style="font-size:1.3rem;font-weight:800;margin:0 0 2px 0;letter-spacing:-0.5px">I.E.P. 110 - PORTAL AGRO</h2>
+        <p style="font-size:0.85rem;color:#64748b;margin:0">BOLETA DE NOTAS - AÑO ESCOLAR 2026</p>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px;padding:10px 14px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0">
+        <div>
+          <p style="font-size:0.85rem;color:#64748b;margin:0"><strong>Apellidos y Nombres:</strong></p>
+          <p style="font-size:1rem;font-weight:700;color:#1e293b;margin:0">${escHtml(student.name)}</p>
+        </div>
+        <div style="text-align:right">
+          <p style="font-size:0.85rem;color:#64748b;margin:0"><strong>Grado/Sección:</strong></p>
+          <p style="font-size:1rem;font-weight:700;color:#1e293b;margin:0">${escHtml(student.gradeLevel)}</p>
+        </div>
+      </div>
+      ${subjectsHtml}
+      <div style="margin-top:16px;padding:8px 12px;background:#fefce8;border-radius:8px;border:1px solid #fde68a;font-size:0.8rem;color:#92400e">
+        <strong>Leyenda:</strong> AD = Destacado (18-20) | A = Logrado (14-17) | B = En Proceso (11-13) | C = En Inicio (0-10)
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:10px;font-size:0.85rem">
+        <div style="text-align:center;flex:1">
+          <div style="border-top:1px solid #1e293b;padding-top:6px;margin:0 2rem">Docente</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="border-top:1px solid #1e293b;padding-top:6px;margin:0 2rem">Director(a)</div>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  const handleGeneratePDF = async (grade) => {
+    setGeneratingPdf(grade);
+    const group = gradeGroups[grade] || [];
+    if (group.length === 0) { setGeneratingPdf(''); return; }
+    const container = pdfContainerRef.current;
+    if (!container) { setGeneratingPdf(''); return; }
+    const allHtml = group.map((s, i) =>
+      buildBoletaHTML(s) + (i < group.length - 1 ? '<div style="page-break-after:always"></div>' : '')
+    ).join('');
+    container.innerHTML = allHtml;
+    try {
+      await html2pdf().set({
+        margin: [10, 10, 10, 10],
+        filename: `Boletas_${grade.replace(/[^a-zA-Z0-9_]/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(container).save();
+    } catch (e) {
+      console.error('PDF generation error:', e);
+    }
+    container.innerHTML = '';
+    setGeneratingPdf('');
+  };
 
   const subjectData = useMemo(() => {
     if (!selectedStudent) return [];
@@ -224,6 +361,36 @@ export default function BoletaNotas() {
           </>
           ) : null}
         </div>
+
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <Download size={18} color="#d97706" />
+            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Generar PDF por Grado</span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {Object.entries(gradeGroups).map(([grade, sts]) => (
+              <button key={grade} onClick={() => handleGeneratePDF(grade)}
+                disabled={generatingPdf === grade}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.5rem 1rem', borderRadius: '10px',
+                  background: generatingPdf === grade ? '#e2e8f0' : 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  color: generatingPdf === grade ? '#94a3b8' : 'white',
+                  border: 'none', fontWeight: 600, fontSize: '0.8rem',
+                  cursor: generatingPdf === grade ? 'not-allowed' : 'pointer',
+                  boxShadow: generatingPdf === grade ? 'none' : '0 4px 12px rgba(245, 158, 11, 0.25)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => { if (generatingPdf !== grade) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(245, 158, 11, 0.35)'; } }}
+                onMouseLeave={e => { if (generatingPdf !== grade) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)'; } }}
+              >
+                <FileText size={14} />
+                {grade} ({sts.length})
+                {generatingPdf === grade && <span style={{ fontSize: '0.75rem' }}>⋯</span>}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {selectedStudent && (
@@ -331,6 +498,7 @@ export default function BoletaNotas() {
           </div>
         </div>
       )}
+      <div ref={pdfContainerRef} style={{ position: 'absolute', left: '-9999px', top: 0, width: '1000px' }} />
     </div>
   );
 }
