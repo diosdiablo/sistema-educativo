@@ -285,6 +285,56 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Sincronización con la nube */}
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(16, 185, 129, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: '48px', height: '48px', borderRadius: '12px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <RefreshCw size={24} color="white" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Sincronización con Supabase</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+              Sube todos los datos locales a la nube para que otros usuarios los vean
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={syncToCloud}
+            disabled={isSyncing}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '0.75rem 1.5rem',
+              background: isSyncing ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white', border: 'none', borderRadius: '12px', cursor: isSyncing ? 'not-allowed' : 'pointer',
+              fontWeight: 600, transition: 'all 0.3s ease',
+              boxShadow: isSyncing ? 'none' : '0 4px 15px rgba(16, 185, 129, 0.3)'
+            }}
+            onMouseEnter={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; } }}
+            onMouseLeave={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)'; } }}
+          >
+            <RefreshCw size={20} className={isSyncing ? 'spinner' : ''} /> {isSyncing ? 'Sincronizando...' : 'Sincronizar Todo'}
+          </button>
+          {syncMsg && (
+            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: syncMsg.includes('✓') ? '#10b981' : '#ef4444' }} className="animate-fade-in">
+              {syncMsg}
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Info importante */}
       <div style={{
         background: 'linear-gradient(135deg, #f59e0b15, #fcd34d15)',
