@@ -1028,7 +1028,7 @@ if (studentsData?.length > 0) {
       console.error('Sync error:', err);
       alert('Error al sincronizar');
     }
-  }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, syncToSupabase]);
+  }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, syncToSupabase]);
 
   const clearAllGrades = () => {
     setGrades([]);
