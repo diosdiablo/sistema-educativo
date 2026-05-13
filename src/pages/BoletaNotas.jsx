@@ -139,7 +139,7 @@ export default function BoletaNotas() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+          <div style={{ position: 'relative', flex: '1 1 0px', minWidth: '220px' }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
             <input
               type="text"
@@ -150,16 +150,14 @@ export default function BoletaNotas() {
               style={{ paddingLeft: '2.25rem' }}
             />
           </div>
-          <div style={{ flex: 1, minWidth: '220px' }}>
+          <div style={{ flex: '1 1 0px', minWidth: '220px' }}>
             <select
               value={selectedStudentId}
               onChange={e => { setSelectedStudentId(e.target.value); setSearchTerm(''); }}
               className="input-field"
               style={{ background: selectedStudentId ? '#fefce8' : 'white', borderColor: selectedStudentId ? '#f59e0b' : '#e2e8f0' }}
             >
-              <option value="">{searchTerm ? `${
-                filteredStudents.length > 0 ? `${filteredStudents.length} resultado(s)` : 'Sin resultados'
-              }` : '-- Seleccionar alumno --'}</option>
+              <option value="">{searchTerm && filteredStudents.length === 0 ? 'Sin resultados' : '-- Seleccionar alumno --'}</option>
               {filteredStudents.map(s => (
                 <option key={s.id} value={s.id}>{s.name} - {s.gradeLevel}</option>
               ))}
