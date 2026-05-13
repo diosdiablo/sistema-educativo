@@ -163,10 +163,10 @@ function AppContent() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && currentUser) {
+    if (!isLoading && currentUser && window.location.pathname !== '/') {
       navigate('/', { replace: true });
     }
-  }, [isLoading, currentUser, navigate]);
+  }, [isLoading]);
 
   const unreadCount = notifications.filter(n => !n.readBy.includes(currentUser?.id)).length;
 
