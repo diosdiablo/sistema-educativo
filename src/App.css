@@ -110,6 +110,7 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 2.5rem 3rem;
   position: relative;
   display: flex;
