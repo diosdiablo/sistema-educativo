@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
@@ -158,6 +158,13 @@ function AppContent() {
   const bellBtnRef = useRef(null);
   const notifDropdownRef = useRef(null);
   const [darkMode, setDarkMode] = useState(() => false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && currentUser) {
+      navigate('/', { replace: true });
+    }
+  }, [isLoading, currentUser, navigate]);
 
   const unreadCount = notifications.filter(n => !n.readBy.includes(currentUser?.id)).length;
 
