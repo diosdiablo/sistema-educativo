@@ -1080,6 +1080,7 @@ if (studentsData?.length > 0) {
   const addEvent = (event) => {
     const newEvent = { ...event, id: generateId(), createdAt: new Date().toISOString() };
     setEvents(prev => [...prev, newEvent]);
+    syncToSupabase('events', [newEvent]);
     if (currentUser?.role === 'admin' || currentUser?.username === 'admin') {
       const dateStr = new Date(event.date + 'T00:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long' });
       const notification = {
@@ -1103,6 +1104,7 @@ if (studentsData?.length > 0) {
 
   const updateEvent = (id, updates) => {
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    syncToSupabase('events', [{ id, ...updates }]);
   };
 
   const deleteEvent = (id) => {
