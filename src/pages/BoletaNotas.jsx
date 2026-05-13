@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Printer, FileText, Search, Users, GraduationCap } from 'lucide-react';
+import { Printer, FileText, Search, Users } from 'lucide-react';
 
 const GRADE_TO_NUM = { AD: 4, A: 3, B: 2, C: 1 };
 const NUM_TO_GRADE = (n) => {
@@ -24,6 +24,7 @@ export default function BoletaNotas() {
   const { students, subjects, instrumentEvaluations, grades: legacyGrades } = useStore();
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const filteredStudents = useMemo(() => {
     if (!searchTerm.trim()) return students;
@@ -138,33 +139,76 @@ export default function BoletaNotas() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: selectedStudent ? '1fr 1fr auto' : '1fr 1fr', gap: '0.75rem' }}>
-          <div style={{ position: 'relative', minWidth: 0 }}>
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative' }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
             <input
               type="text"
-              placeholder="Buscar alumno..."
+              placeholder="Buscar alumno por nombre, DNI o grado..."
               value={searchTerm}
               onChange={e => { setSearchTerm(e.target.value); setSelectedStudentId(''); }}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
               className="input-field"
               style={{ paddingLeft: '2.25rem' }}
             />
           </div>
-          <div style={{ minWidth: 0 }}>
-            <select
-              value={selectedStudentId}
-              onChange={e => { setSelectedStudentId(e.target.value); setSearchTerm(''); }}
-              className="input-field"
-              style={{ background: selectedStudentId ? '#fefce8' : 'white', borderColor: selectedStudentId ? '#f59e0b' : '#e2e8f0' }}
-            >
-              <option value="">{searchTerm && filteredStudents.length === 0 ? 'Sin resultados' : '-- Seleccionar alumno --'}</option>
+          {searchTerm && searchFocused && filteredStudents.length > 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+              background: 'white', borderRadius: '12px', marginTop: '4px',
+              border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+              maxHeight: '280px', overflowY: 'auto'
+            }}>
               {filteredStudents.map(s => (
-                <option key={s.id} value={s.id}>{s.name} - {s.gradeLevel}</option>
+                <div key={s.id} onClick={() => { setSelectedStudentId(s.id); setSearchTerm(''); setSearchFocused(false); }}
+                  style={{
+                    padding: '0.75rem 1rem', cursor: 'pointer', fontSize: '0.9rem',
+                    borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fefce8'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                >
+                  <span style={{ color: '#1e293b', fontWeight: 500 }}>{s.name}</span>
+                  <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{s.gradeLevel}</span>
+                </div>
               ))}
-            </select>
-          </div>
-          {selectedStudent && (
-            <button onClick={handlePrint} style={{
+            </div>
+          )}
+          {searchTerm && searchFocused && filteredStudents.length === 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+              background: 'white', borderRadius: '12px', marginTop: '4px',
+              border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+              padding: '1.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem'
+            }}>
+              No se encontraron alumnos
+            </div>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.75rem' }}>
+          {selectedStudent ? (
+            <>
+              <div style={{
+                flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem',
+                padding: '0.75rem 1rem', background: '#fefce8', borderRadius: '12px',
+                border: '1px solid #fde68a'
+              }}>
+                <Users size={18} color="#d97706" />
+                <span style={{ fontWeight: 600, color: '#1e293b', flex: 1 }}>
+                  {students.find(s => s.id === selectedStudentId)?.name}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: '#92400e', background: '#fde68a', padding: '2px 10px', borderRadius: '999px' }}>
+                  {students.find(s => s.id === selectedStudentId)?.gradeLevel}
+                </span>
+                <button onClick={() => { setSelectedStudentId(''); setSearchTerm(''); }}
+                  style={{ background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, padding: '4px 8px', borderRadius: '8px' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fde68a'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >Cambiar</button>
+              </div>
+              <button onClick={handlePrint} style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.75rem 1.5rem', borderRadius: '12px',
               background: 'linear-gradient(135deg, #f59e0b, #d97706)',
@@ -177,7 +221,8 @@ export default function BoletaNotas() {
             >
               <Printer size={18} /> Imprimir / PDF
             </button>
-          )}
+          </>
+          ) : null}
         </div>
       </div>
 
