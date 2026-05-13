@@ -138,8 +138,8 @@ export default function BoletaNotas() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: '1 1 0px', minWidth: '220px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: selectedStudent ? '1fr 1fr auto' : '1fr 1fr', gap: '0.75rem' }}>
+          <div style={{ position: 'relative', minWidth: 0 }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
             <input
               type="text"
@@ -150,7 +150,7 @@ export default function BoletaNotas() {
               style={{ paddingLeft: '2.25rem' }}
             />
           </div>
-          <div style={{ flex: '1 1 0px', minWidth: '220px' }}>
+          <div style={{ minWidth: 0 }}>
             <select
               value={selectedStudentId}
               onChange={e => { setSelectedStudentId(e.target.value); setSearchTerm(''); }}
