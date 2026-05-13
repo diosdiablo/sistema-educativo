@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Printer } from 'lucide-react';
+import { Printer, FileText, Search, Users, GraduationCap } from 'lucide-react';
 
 const GRADE_TO_NUM = { AD: 4, A: 3, B: 2, C: 1 };
 const NUM_TO_GRADE = (n) => {
@@ -23,6 +23,17 @@ const cellStyle = (grade) => ({
 export default function BoletaNotas() {
   const { students, subjects, instrumentEvaluations, grades: legacyGrades } = useStore();
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredStudents = useMemo(() => {
+    if (!searchTerm.trim()) return students;
+    const q = searchTerm.toLowerCase().trim();
+    return students.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      (s.dni && s.dni.includes(q)) ||
+      (s.gradeLevel && s.gradeLevel.toLowerCase().includes(q))
+    );
+  }, [students, searchTerm]);
 
   const selectedStudent = useMemo(() => students.find(s => s.id === selectedStudentId), [students, selectedStudentId]);
 
@@ -84,22 +95,88 @@ export default function BoletaNotas() {
         }
       `}</style>
 
-      <div className="card no-print" style={{ marginBottom: '2rem' }}>
-        <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>Boleta de Notas</h1>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '250px' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#64748b', fontSize: '0.85rem' }}>
+      <div className="no-print" style={{
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
+        borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
+        color: 'white', position: 'relative', overflow: 'hidden'
+      }}>
+        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+          <div style={{
+            width: '56px', height: '56px', background: 'rgba(255,255,255,0.2)',
+            borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <FileText size={28} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Boleta de Notas</h2>
+            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Reporte oficial de calificaciones por áreas y competencias</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="no-print" style={{
+        background: 'white', borderRadius: '16px', padding: '1.5rem',
+        border: '1px solid #e2e8f0', marginBottom: '1.5rem',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div style={{
+            width: '44px', height: '44px', borderRadius: '12px',
+            background: 'rgba(245, 158, 11, 0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <Users size={22} color="#d97706" />
+          </div>
+          <div>
+            <label style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1e293b', display: 'block' }}>
               Seleccionar Alumno
             </label>
-            <select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)} className="input-field">
-              <option value="">-- Seleccionar --</option>
-              {students.map(s => (
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Busca por nombre, DNI o grado</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder="Buscar alumno..."
+              value={searchTerm}
+              onChange={e => { setSearchTerm(e.target.value); setSelectedStudentId(''); }}
+              className="input-field"
+              style={{ paddingLeft: '2.25rem' }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: '220px' }}>
+            <select
+              value={selectedStudentId}
+              onChange={e => { setSelectedStudentId(e.target.value); setSearchTerm(''); }}
+              className="input-field"
+              style={{ background: selectedStudentId ? '#fefce8' : 'white', borderColor: selectedStudentId ? '#f59e0b' : '#e2e8f0' }}
+            >
+              <option value="">{searchTerm ? `${
+                filteredStudents.length > 0 ? `${filteredStudents.length} resultado(s)` : 'Sin resultados'
+              }` : '-- Seleccionar alumno --'}</option>
+              {filteredStudents.map(s => (
                 <option key={s.id} value={s.id}>{s.name} - {s.gradeLevel}</option>
               ))}
             </select>
           </div>
           {selectedStudent && (
-            <button onClick={handlePrint} className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}>
+            <button onClick={handlePrint} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.75rem 1.5rem', borderRadius: '12px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white', border: 'none', fontWeight: 600, fontSize: '0.9rem',
+              cursor: 'pointer', boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
+              transition: 'all 0.2s ease', whiteSpace: 'nowrap'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.3)'; }}
+            >
               <Printer size={18} /> Imprimir / PDF
             </button>
           )}
