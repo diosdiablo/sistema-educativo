@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { ArrowLeft, Users, GraduationCap, Calendar, Phone, MapPin, UserCheck, FileText, Clock, CheckCircle, XCircle, AlertCircle, BookOpen, Target, Award, BarChart3, PieChart } from 'lucide-react';
+import { ArrowLeft, Users, GraduationCap, Calendar, Phone, MapPin, UserCheck, FileText, Clock, CheckCircle, XCircle, AlertCircle, BookOpen, Target, Award, BarChart3, PieChart, CalendarRange } from 'lucide-react';
 
 const GRADE_TO_NUM = { 'AD': 4, 'A': 3, 'B': 2, 'C': 1 };
 const NUM_TO_GRADE = (n) => {
@@ -18,8 +18,9 @@ const PERIOD_LABELS = { '1': 'I Bimestre', '2': 'II Bimestre', '3': 'III Bimestr
 export default function StudentProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { students, grades, subjects, attendance, instrumentEvaluations, diagnosticEvaluations } = useStore();
+  const { students, grades, subjects, attendance, instrumentEvaluations, diagnosticEvaluations, periodDates } = useStore();
   const [activeTab, setActiveTab] = useState('info');
+  const [selectedAttendancePeriod, setSelectedAttendancePeriod] = useState(null);
 
   const student = useMemo(() => students.find(s => s.id === id), [students, id]);
 
@@ -59,6 +60,38 @@ export default function StudentProfile() {
       percentage: total > 0 ? Math.round((present / total) * 100) : 0
     };
   }, [attendance, student]);
+
+  const filteredAttendanceStats = useMemo(() => {
+    if (!student || !selectedAttendancePeriod) return attendanceStats;
+    const period = periodDates[selectedAttendancePeriod];
+    if (!period) return attendanceStats;
+    let present = 0, late = 0, absent = 0, justified = 0, total = 0;
+    attendance.forEach(day => {
+      const status = day.records[student.id];
+      if (!status) return;
+      if (day.date < period.start || day.date > period.end) return;
+      total++;
+      if (status === 'P') present++;
+      else if (status === 'T') late++;
+      else if (status === 'F') absent++;
+      else if (status === 'J') justified++;
+    });
+    return {
+      total, present, late, absent, justified,
+      percentage: total > 0 ? Math.round((present / total) * 100) : 0
+    };
+  }, [attendance, student, selectedAttendancePeriod, periodDates, attendanceStats]);
+
+  const filteredAttendanceDays = useMemo(() => {
+    let days = [...attendance].reverse().filter(a => a.records[student.id]);
+    if (selectedAttendancePeriod) {
+      const period = periodDates[selectedAttendancePeriod];
+      if (period) {
+        days = days.filter(a => a.date >= period.start && a.date <= period.end);
+      }
+    }
+    return days.slice(-60);
+  }, [attendance, student, selectedAttendancePeriod, periodDates]);
 
   const gradesByPeriodAndSubject = useMemo(() => {
     if (!student) return {};
@@ -307,12 +340,37 @@ export default function StudentProfile() {
 
       {activeTab === 'attendance' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Period selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <CalendarRange size={18} color="#64748b" />
+            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginRight: '0.25rem' }}>Filtrar por:</span>
+            <button onClick={() => setSelectedAttendancePeriod(null)} style={{
+              padding: '0.4rem 0.75rem', borderRadius: '8px',
+              border: selectedAttendancePeriod === null ? '2px solid #22c55e' : '1px solid #e2e8f0',
+              background: selectedAttendancePeriod === null ? 'rgba(34,197,94,0.08)' : 'white',
+              color: selectedAttendancePeriod === null ? '#16a34a' : '#64748b',
+              fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem'
+            }}>Todo</button>
+            {PERIODS.map(p => {
+              const isActive = selectedAttendancePeriod === p;
+              return (
+                <button key={p} onClick={() => setSelectedAttendancePeriod(p)} style={{
+                  padding: '0.4rem 0.75rem', borderRadius: '8px',
+                  border: isActive ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                  background: isActive ? 'rgba(34,197,94,0.08)' : 'white',
+                  color: isActive ? '#16a34a' : '#64748b',
+                  fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem'
+                }}>{p}° Bim.</button>
+              );
+            })}
+          </div>
+
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
-            <StatCard icon={<CheckCircle size={22} />} label="Presente" value={String(attendanceStats.present)} color="#10b981" large />
-            <StatCard icon={<AlertCircle size={22} />} label="Tardanza" value={String(attendanceStats.late)} color="#f59e0b" large />
-            <StatCard icon={<XCircle size={22} />} label="Falta" value={String(attendanceStats.absent)} color="#ef4444" large />
-            <StatCard icon={<Clock size={22} />} label="Justificado" value={String(attendanceStats.justified)} color="#8b5cf6" large />
+            <StatCard icon={<CheckCircle size={22} />} label="Presente" value={String(filteredAttendanceStats.present)} color="#10b981" large />
+            <StatCard icon={<AlertCircle size={22} />} label="Tardanza" value={String(filteredAttendanceStats.late)} color="#f59e0b" large />
+            <StatCard icon={<XCircle size={22} />} label="Falta" value={String(filteredAttendanceStats.absent)} color="#ef4444" large />
+            <StatCard icon={<Clock size={22} />} label="Justificado" value={String(filteredAttendanceStats.justified)} color="#8b5cf6" large />
           </div>
 
           {/* History */}
@@ -320,11 +378,11 @@ export default function StudentProfile() {
             <h3 style={{ fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Clock size={20} color="#22c55e" /> Historial de Asistencia
             </h3>
-            {attendance.filter(a => a.records[student.id]).length === 0 ? (
-              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '1rem' }}>No hay registro de asistencia.</p>
+            {filteredAttendanceDays.length === 0 ? (
+              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '1rem' }}>No hay registro de asistencia para este período.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto' }}>
-                {[...attendance].reverse().filter(a => a.records[student.id]).slice(-60).map(day => {
+                {filteredAttendanceDays.map(day => {
                   const status = day.records[student.id];
                   const statusConfig = {
                     P: { label: 'Presente', color: '#10b981', bg: '#10b98115' },
