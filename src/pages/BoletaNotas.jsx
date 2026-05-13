@@ -498,7 +498,7 @@ export default function BoletaNotas() {
           </div>
         </div>
       )}
-      <div ref={pdfContainerRef} style={{ position: 'absolute', left: '-9999px', top: 0, width: '1000px' }} />
+      <div ref={pdfContainerRef} style={{ position: 'fixed', left: 0, top: 0, width: '1000px', opacity: 0, pointerEvents: 'none', zIndex: -1 }} />
     </div>
   );
 }
