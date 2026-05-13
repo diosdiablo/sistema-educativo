@@ -318,3 +318,10 @@ DO $$BEGIN
 EXCEPTION
   WHEN undefined_column THEN NULL;
 END $$;
+
+-- Migración: agregar columna createdAt a events para compatibilidad con datos locales antiguos
+DO $$BEGIN
+  ALTER TABLE events ADD COLUMN IF NOT EXISTS "createdAt" TEXT;
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
