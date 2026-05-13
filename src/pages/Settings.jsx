@@ -10,7 +10,7 @@ export default function Settings() {
       loginHistory,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
-      setCurrentUser, syncToSupabaseManual, isOnline,
+      setCurrentUser, syncToSupabaseManual, isOnline, events,
       clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData, cleanupOrphanedData
     } = useStore();
     
@@ -307,6 +307,11 @@ export default function Settings() {
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
               Sube todos los datos locales a la nube para que otros usuarios los vean
             </p>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>📅 {events.length} eventos</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>👥 {users.length} usuarios</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>🎓 {students.length} alumnos</span>
+            </div>
           </div>
         </div>
 

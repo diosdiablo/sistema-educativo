@@ -466,15 +466,11 @@ if (studentsData?.length > 0) {
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
-    try {
-      const { error } = await supabase.from(table).upsert(data.map(item => ({
-        ...item,
-        updated_at: new Date().toISOString()
-      })), { onConflict: 'id' });
-      if (error) throw error;
-    } catch (err) {
-      console.error(`Error syncing ${table}:`, err);
-    }
+    const { error } = await supabase.from(table).upsert(data.map(item => ({
+      ...item,
+      updated_at: new Date().toISOString()
+    })), { onConflict: 'id' });
+    if (error) throw error;
   }, [isOnline]);
 
   const deleteFromSupabase = useCallback(async (table, id) => {
@@ -1006,27 +1002,35 @@ if (studentsData?.length > 0) {
 
   const syncToSupabaseManual = useCallback(async () => {
     if (!isOnline) return;
-    try {
-      await Promise.all([
-        syncToSupabase('users', users),
-        syncToSupabase('students', students),
-        syncToSupabase('subjects', subjects),
-        syncToSupabase('classes', classes),
-        syncToSupabase('grades', grades),
-        syncToSupabase('attendance', attendance),
-        syncToSupabase('instruments', instruments),
-        syncToSupabase('instrument_evaluations', instrumentEvaluations),
-        syncToSupabase('schedule', schedule),
-        syncToSupabase('diagnostic_evaluations', diagnosticEvaluations),
-        syncToSupabase('period_dates', Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end }))),
-        syncToSupabase('planning_documents', planningDocuments),
-        syncToSupabase('login_history', loginHistory),
-        syncToSupabase('events', events)
-      ]);
-      alert('Datos sincronizados a la nube');
-    } catch (err) {
-      console.error('Sync error:', err);
-      alert('Error al sincronizar');
+    const tables = [
+      { name: 'users', data: users },
+      { name: 'students', data: students },
+      { name: 'subjects', data: subjects },
+      { name: 'classes', data: classes },
+      { name: 'grades', data: grades },
+      { name: 'attendance', data: attendance },
+      { name: 'instruments', data: instruments },
+      { name: 'instrument_evaluations', data: instrumentEvaluations },
+      { name: 'schedule', data: schedule },
+      { name: 'diagnostic_evaluations', data: diagnosticEvaluations },
+      { name: 'period_dates', data: Object.entries(periodDates).map(([id, dates]) => ({ id, start_date: dates.start, end_date: dates.end })) },
+      { name: 'planning_documents', data: planningDocuments },
+      { name: 'login_history', data: loginHistory },
+      { name: 'events', data: events },
+    ];
+    const results = await Promise.allSettled(
+      tables.map(t =>
+        syncToSupabase(t.name, t.data)
+          .then(() => ({ table: t.name, status: 'ok' }))
+          .catch(err => ({ table: t.name, status: 'error', error: err.message }))
+      )
+    );
+    const errors = results.map(r => r.value).filter(v => v?.status === 'error');
+    if (errors.length > 0) {
+      errors.forEach(e => console.error(`Error sync ${e.table}:`, e.error));
+      alert(`Error en: ${errors.map(e => e.table).join(', ')}. Revisa la consola (F12).`);
+    } else {
+      alert(`✓ Todos los datos sincronizados (${tables.length} tablas)`);
     }
   }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, syncToSupabase]);
 
