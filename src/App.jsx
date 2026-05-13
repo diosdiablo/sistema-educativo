@@ -25,8 +25,18 @@ import SchoolCalendar from './pages/SchoolCalendar';
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
   const { logout, currentUser, isAdmin, notifications, markNotificationRead } = useStore();
   const [showNotifs, setShowNotifs] = useState(false);
+  const [notifPos, setNotifPos] = useState(null);
   const notifRef = useRef(null);
-  
+  const bellBtnRef = useRef(null);
+
+  const toggleNotifs = () => {
+    if (!showNotifs && bellBtnRef.current) {
+      const rect = bellBtnRef.current.getBoundingClientRect();
+      setNotifPos({ left: rect.right + 8, top: rect.top });
+    }
+    setShowNotifs(!showNotifs);
+  };
+
   const unreadCount = notifications.filter(n => !n.readBy.includes(currentUser?.id)).length;
 
   useEffect(() => {
@@ -86,7 +96,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
             <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>I.E.P. 110</span>
           </div>
           <div ref={notifRef} style={{ position: 'relative', marginLeft: 'auto' }}>
-            <button onClick={() => setShowNotifs(!showNotifs)} style={{
+            <button ref={bellBtnRef} onClick={toggleNotifs} style={{
               background: showNotifs ? 'rgba(255,255,255,0.2)' : 'transparent',
               border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem',
               borderRadius: '10px', position: 'relative', transition: 'all 0.2s ease',
@@ -106,9 +116,9 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode }) {
                 }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
             </button>
-            {showNotifs && (
+            {showNotifs && notifPos && (
               <div style={{
-                position: 'absolute', top: 'calc(100% + 8px)', right: '0',
+                position: 'fixed', left: notifPos.left, top: notifPos.top,
                 width: '320px', maxHeight: '360px', overflowY: 'auto',
                 background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                 zIndex: 9999, padding: '0.5rem'
