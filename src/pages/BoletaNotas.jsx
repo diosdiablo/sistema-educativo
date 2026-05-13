@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Printer, FileText, Search, Users, Download } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
@@ -65,7 +65,6 @@ export default function BoletaNotas() {
 
   const handlePrint = () => window.print();
 
-  const pdfContainerRef = useRef(null);
   const [generatingPdf, setGeneratingPdf] = useState('');
 
   const escHtml = (str) => {
@@ -180,12 +179,14 @@ export default function BoletaNotas() {
     setGeneratingPdf(grade);
     const group = gradeGroups[grade] || [];
     if (group.length === 0) { setGeneratingPdf(''); return; }
-    const container = pdfContainerRef.current;
-    if (!container) { setGeneratingPdf(''); return; }
     const allHtml = group.map((s, i) =>
       buildBoletaHTML(s) + (i < group.length - 1 ? '<div style="page-break-after:always"></div>' : '')
     ).join('');
-    container.innerHTML = allHtml;
+    const temp = document.createElement('div');
+    temp.style.cssText = 'position:fixed;left:0;top:0;width:1000px;background:#fff;z-index:10000';
+    temp.innerHTML = allHtml;
+    document.body.appendChild(temp);
+    await new Promise(r => setTimeout(r, 300));
     try {
       await html2pdf().set({
         margin: [10, 10, 10, 10],
@@ -193,11 +194,11 @@ export default function BoletaNotas() {
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(container).save();
+      }).from(temp).save();
     } catch (e) {
       console.error('PDF generation error:', e);
     }
-    container.innerHTML = '';
+    document.body.removeChild(temp);
     setGeneratingPdf('');
   };
 
@@ -498,7 +499,6 @@ export default function BoletaNotas() {
           </div>
         </div>
       )}
-      <div ref={pdfContainerRef} style={{ position: 'fixed', left: 0, top: 0, width: '1000px', opacity: 0, pointerEvents: 'none', zIndex: -1 }} />
     </div>
   );
 }
