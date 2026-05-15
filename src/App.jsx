@@ -41,7 +41,6 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Calendario', path: '/calendar', icon: <CalendarIcon size={20} /> },
     { name: 'Planificación', path: '/planning', icon: <FolderOpen size={20} /> },
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
-    { name: 'Boleta de Notas', path: '/boleta', icon: <FileText size={20} /> },
   ];
 
   const adminItems = [
@@ -49,6 +48,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Áreas Curriculares', path: '/subjects', icon: <BookOpen size={20} /> },
     { name: 'Usuarios', path: '/users', icon: <UserCog size={20} /> },
     { name: 'Configuración', path: '/settings', icon: <SettingsIcon size={20} /> },
+    { name: 'Boleta de Notas', path: '/boleta', icon: <FileText size={20} /> },
   ];
 
   const menuItems = isAdmin ? [...allMenuItems, ...adminItems] : allMenuItems;
@@ -281,7 +281,7 @@ function AppContent() {
           <Route path="/calendar" element={<SchoolCalendar />} />
           <Route path="/planning" element={<PlanningDocuments />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/boleta" element={<BoletaNotas />} />
+          <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
