@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink, Camera, Cloud, WifiOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { supabase } from '../lib/supabase';
 
 // Sistema de estudiantes - Gestión de alumnos
 
@@ -12,7 +13,7 @@ export default function Students() {
   const [showForm, setShowForm] = useState(false);
   const [newStudent, setNewStudent] = useState({ 
     name: '', gradeLevel: '', dni: '', birthDate: '', address: '', phone: '',
-    guardianName: '', guardianDni: '', guardianPhone: ''
+    guardianName: '', guardianDni: '', guardianPhone: '', photo_url: ''
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentStudentId, setCurrentStudentId] = useState(null);
@@ -23,7 +24,9 @@ export default function Students() {
   const [showRandomModal, setShowRandomModal] = useState(false);
   const [randomStudent, setRandomStudent] = useState(null);
   const [isPicking, setIsPicking] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const photoInputRef = useRef(null);
 
   const maskPhone = (phone) => {
     if (!phone) return '-';
@@ -91,7 +94,8 @@ export default function Students() {
       phone: '',
       guardianName: '',
       guardianDni: '',
-      guardianPhone: ''
+      guardianPhone: '',
+      photo_url: ''
     });
     setIsEditing(false);
     setCurrentStudentId(null);
@@ -108,7 +112,8 @@ export default function Students() {
       phone: student.phone || '',
       guardianName: student.guardianName || '',
       guardianDni: student.guardianDni || '',
-      guardianPhone: student.guardianPhone || ''
+      guardianPhone: student.guardianPhone || '',
+      photo_url: student.photo_url || ''
     });
     setIsEditing(true);
     setCurrentStudentId(student.id);
@@ -488,6 +493,77 @@ export default function Students() {
                   onChange={e => setNewStudent({...newStudent, phone: e.target.value})} 
                 />
               </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label className="input-label">Foto del Estudiante</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
+                  <div style={{
+                    width: '80px', height: '80px', borderRadius: '50%',
+                    background: newStudent.photo_url ? `url(${newStudent.photo_url}) center/cover` : '#f1f5f9',
+                    border: '2px dashed #cbd5e1',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    overflow: 'hidden', flexShrink: 0
+                  }}>
+                    {!newStudent.photo_url && <Camera size={24} color="#94a3b8" />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      ref={photoInputRef}
+                      id="student-photo-input"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        setPhotoUploading(true);
+                        const localPreview = await new Promise(resolve => {
+                          const reader = new FileReader();
+                          reader.onload = ev => resolve(ev.target.result);
+                          reader.readAsDataURL(file);
+                        });
+                        setNewStudent(prev => ({...prev, photo_url: localPreview}));
+                        const ext = file.name.split('.').pop();
+                        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                        try {
+                          const { data, error } = await supabase.storage
+                            .from('student-photos')
+                            .upload(fileName, file, { contentType: file.type, upsert: true });
+                          if (!error && data?.path) {
+                            const { data: { publicUrl } } = supabase.storage
+                              .from('student-photos')
+                              .getPublicUrl(data.path);
+                            setNewStudent(prev => ({...prev, photo_url: publicUrl }));
+                          }
+                        } catch {}
+                        setPhotoUploading(false);
+                      }}
+                    />
+                    <label htmlFor="student-photo-input" style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                      padding: '0.6rem 1rem', borderRadius: '10px',
+                      background: '#f1f5f9', border: '1px solid #e2e8f0',
+                      cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', color: '#64748b'
+                    }}>
+                      {photoUploading ? (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span className="spinner" style={{ width: 14, height: 14, border: '2px solid #e2e8f0', borderTopColor: '#22c55e', borderRadius: '50%', display: 'inline-block' }} /> Subiendo...
+                        </span>
+                      ) : (
+                        <><Camera size={16} /> {newStudent.photo_url ? 'Cambiar foto' : 'Subir foto'}</>
+                      )}
+                    </label>
+                    {newStudent.photo_url && (
+                      <button type="button" onClick={() => setNewStudent(prev => ({...prev, photo_url: ''}))} style={{
+                        marginLeft: '0.5rem', padding: '0.6rem 1rem', borderRadius: '10px',
+                        background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                        cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', color: '#ef4444'
+                      }}>
+                        Quitar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', marginTop: '0.5rem' }}>
                 <h4 style={{ marginBottom: '1rem', color: '#22c55e', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <UserCheck size={18} /> Información del Apoderado
@@ -567,6 +643,15 @@ export default function Students() {
                   textAlign: 'center'
                 }}>N°</th>
                 <th style={{ 
+                  width: '64px',
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  padding: '1rem',
+                  textAlign: 'center'
+                }}>Foto</th>
+                <th style={{ 
                   minWidth: '120px', 
                   background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
                   color: 'white',
@@ -637,7 +722,7 @@ export default function Students() {
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                     No hay estudiantes registrados.
                   </td>
                 </tr>
@@ -647,6 +732,22 @@ export default function Students() {
                   return (
                     <tr key={student.id}>
                       <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)' }}>{idx + 1}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {student.photo_url ? (
+                          <img src={student.photo_url} alt="" style={{
+                            width: '40px', height: '40px', borderRadius: '50%',
+                            objectFit: 'cover', border: '2px solid #e2e8f0'
+                          }} />
+                        ) : (
+                          <div style={{
+                            width: '40px', height: '40px', borderRadius: '50%',
+                            background: '#f1f5f9', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', margin: '0 auto'
+                          }}>
+                            <Camera size={16} color="#94a3b8" />
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <code style={{ 
                           background: '#f1f5f9', 
@@ -803,6 +904,15 @@ export default function Students() {
               </button>
             </div>
             
+            {viewingStudent.photo_url && (
+              <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                <img src={viewingStudent.photo_url} alt="" style={{
+                  width: '100px', height: '100px', borderRadius: '50%',
+                  objectFit: 'cover', border: '3px solid #22c55e',
+                  boxShadow: '0 4px 15px rgba(34,197,94,0.3)'
+                }} />
+              </div>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
                 <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>DNI</span>

@@ -138,7 +138,8 @@ export const StoreProvider = ({ children }) => {
           guardianPhone: s.guardian_phone || s.guardianPhone,
           birthDate: s.birth_date || s.birthDate,
           address: s.address,
-          phone: s.phone
+          phone: s.phone,
+          photo_url: s.photo_url || s.photoUrl
         }));
         setStudents(normalizedStudents);
       }
@@ -309,7 +310,8 @@ if (studentsData?.length > 0) {
           guardianPhone: s.guardian_phone || s.guardianPhone,
           birthDate: s.birth_date || s.birthDate,
           address: s.address,
-          phone: s.phone
+          phone: s.phone,
+          photo_url: s.photo_url || s.photoUrl
         }));
         setStudents(normalizedStudents);
       }

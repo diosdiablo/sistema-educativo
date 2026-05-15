@@ -3,6 +3,15 @@
 -- Ejecutar en Supabase SQL Editor
 -- ============================================
 
+-- Storage bucket para fotos de estudiantes
+INSERT INTO storage.buckets (id, name, public) VALUES ('student-photos', 'student-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Permitir acceso público de lectura/escritura a las fotos
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'student-photos');
+CREATE POLICY "Public Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'student-photos');
+CREATE POLICY "Public Delete" ON storage.objects FOR DELETE USING (bucket_id = 'student-photos');
+
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
@@ -33,6 +42,7 @@ CREATE TABLE IF NOT EXISTS students (
   guardian_dni TEXT,
   guardian_phone TEXT,
   birth_date TEXT,
+  photo_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

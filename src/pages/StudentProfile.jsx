@@ -179,12 +179,16 @@ export default function StudentProfile() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
           <div style={{
             width: '72px', height: '72px', borderRadius: '18px',
-            background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', backdropFilter: 'blur(10px)'
+            background: student.photo_url ? `url(${student.photo_url}) center/cover` : 'rgba(255,255,255,0.2)',
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'center', backdropFilter: 'blur(10px)',
+            overflow: 'hidden', flexShrink: 0
           }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 800 }}>
-              {student.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-            </span>
+            {student.photo_url ? null : (
+              <span style={{ fontSize: '1.75rem', fontWeight: 800 }}>
+                {student.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+              </span>
+            )}
           </div>
           <div>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>{student.name}</h2>
