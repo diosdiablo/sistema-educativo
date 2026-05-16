@@ -264,7 +264,12 @@ export default function Chat() {
   };
 
   const totalUnread = Object.values(unreadCount).reduce((a, b) => a + b, 0);
-  const [isMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const searchBox = (
     <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9' }}>
@@ -478,10 +483,75 @@ export default function Chat() {
   );
 
   const contactsPanel = (
-    <div style={{ width: '320px', minWidth: '320px', borderRight: '1px solid #f1f5f9',
-      display: 'flex', flexDirection: 'column', background: '#fafbfc', height: '100%' }}>
+    <div style={{
+      width: '320px', minWidth: '320px', borderRight: '1px solid #f1f5f9',
+      display: 'flex', flexDirection: 'column', background: '#fafbfc',
+      alignSelf: 'stretch', flexShrink: 0
+    }}>
       {searchBox}
       {contactsList}
+    </div>
+  );
+
+  const mobileContactsPanel = (
+    <div style={{
+      display: 'flex', flexDirection: 'column', background: '#fafbfc',
+      height: '100%', width: '100%'
+    }}>
+      {searchBox}
+      {contactsList}
+    </div>
+  );
+
+  const mobileConversationPanel = (
+    <div style={{
+      display: 'flex', flexDirection: 'column', background: 'white',
+      height: '100%', width: '100%'
+    }}>
+      {chatHeader}
+      <div ref={chatContainerRef} style={{
+        flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem',
+        background: '#f8fafc'
+      }}>
+        {conversationMessages.length === 0 ? (
+          <div style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', paddingTop: '2rem' }}>
+            No hay mensajes aún. ¡Envía el primero!
+          </div>
+        ) : (
+          <>
+            {conversationMessages.map((msg, idx) => {
+              const isMine = msg.senderId === currentUser?.id;
+              const showDate = idx === 0 || new Date(msg.createdAt).toDateString() !== new Date(conversationMessages[idx - 1].createdAt).toDateString();
+              return (
+                <div key={msg.id}>
+                  {showDate && (
+                    <div style={{ textAlign: 'center', margin: '1rem 0 0.75rem' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f1f5f9', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>{formatDateSeparator(msg.createdAt)}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', marginBottom: '0.5rem' }}>
+                    <div style={{
+                      maxWidth: '75%', padding: '0.65rem 1rem',
+                      borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                      background: isMine ? '#6366f1' : 'white',
+                      color: isMine ? 'white' : '#1e293b',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+                    }}>
+                      <div style={{ fontSize: '0.88rem', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>{msg.message}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
+                        <span style={{ fontSize: '0.65rem', color: isMine ? 'rgba(255,255,255,0.7)' : '#94a3b8' }}>{formatTime(msg.createdAt)}</span>
+                        {isMine && (msg.readAt ? <CheckCheck size={12} color="#a5b4fc" /> : <Check size={12} color="rgba(255,255,255,0.5)" />)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </>
+        )}
+      </div>
+      {chatInput}
     </div>
   );
 
@@ -489,14 +559,11 @@ export default function Chat() {
     <div style={{
       height: 'calc(100dvh - 320px)', minHeight: '400px',
       background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-      overflow: 'hidden', position: 'relative'
+      overflow: 'hidden'
     }}>
-      <div className="desktop-layout" style={{ display: 'flex', height: '100%', width: '100%' }}>
+      <div style={{ display: 'flex', height: '100%', width: '100%' }}>
         {contactsPanel}
         {conversationPanel}
-      </div>
-      <div className="mobile-layout" style={{ display: 'none', height: '100%', width: '100%', background: 'white' }}>
-        {showMobileList ? contactsPanel : conversationPanel}
       </div>
     </div>
   );
@@ -526,14 +593,15 @@ export default function Chat() {
           </div>
         </div>
       </div>
-      {mainContent}
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-layout { display: none !important; }
-          .mobile-layout { display: flex !important; }
-          .mobile-back-btn { display: flex !important; }
-        }
-      `}</style>
+      {isMobile ? (
+        <div style={{
+          height: 'calc(100dvh - 320px)', minHeight: '300px',
+          background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          overflow: 'hidden'
+        }}>
+          {showMobileList ? mobileContactsPanel : mobileConversationPanel}
+        </div>
+      ) : mainContent}
     </div>
   );
 }
