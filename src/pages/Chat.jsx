@@ -345,10 +345,10 @@ function ChatConversation({ userId, onBack }) {
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 150px)' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
       <div style={{
         background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden'
+        display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0
       }}>
         <div style={{
           padding: '1rem 1.25rem', borderBottom: '1px solid #f1f5f9',
