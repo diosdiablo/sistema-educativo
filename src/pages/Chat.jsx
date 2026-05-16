@@ -291,8 +291,8 @@ export default function Chat() {
         </div>
       </div>
 
-      <div style={{
-        display: 'flex', gap: '1rem', height: 'calc(100vh - 320px)', minHeight: '500px',
+      <div className="chat-main" style={{
+        display: 'flex', gap: '1rem', height: 'calc(100dvh - 320px)', minHeight: '400px',
         background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         overflow: 'hidden'
       }}>
@@ -392,7 +392,7 @@ export default function Chat() {
           {!selectedContact ? (
             <div style={{
               flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', color: '#94a3b8', padding: '2rem'
+              justifyContent: 'center', color: '#94a3b8', padding: '2rem', minHeight: '300px'
             }}>
               <MessageCircle size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
               <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#64748b' }}>Selecciona un docente</div>
@@ -432,13 +432,13 @@ export default function Chat() {
               </div>
 
               <div ref={chatContainerRef} style={{
-                flex: 1, overflowY: 'auto', padding: '1.25rem',
+                flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem',
                 background: '#f8fafc'
               }}>
                 {conversationMessages.length === 0 ? (
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    height: '100%', color: '#94a3b8', fontSize: '0.9rem'
+                    flex: 1, color: '#94a3b8', fontSize: '0.9rem'
                   }}>
                     No hay mensajes aún. ¡Envía el primero!
                   </div>
@@ -552,8 +552,16 @@ export default function Chat() {
           .chat-contacts.hidden-mobile {
             display: none !important;
           }
+          .chat-conversation {
+            width: 100% !important;
+            flex: none !important;
+          }
           .chat-conversation.hidden-mobile {
             display: none !important;
+          }
+          .chat-main {
+            height: calc(100dvh - 280px) !important;
+            min-height: 300px !important;
           }
           .mobile-back-btn {
             display: flex !important;
