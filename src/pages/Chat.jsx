@@ -16,7 +16,7 @@ const loadMessages = () => {
 };
 
 export default function Chat() {
-  const { currentUser, isOnline, users } = useStore();
+  const { currentUser, isOnline, users, setUsers } = useStore();
   const { addToast } = useToast();
   const [messages, setMessages] = useState(loadMessages);
   const [selectedContactId, setSelectedContactId] = useState(null);
@@ -28,10 +28,17 @@ export default function Chat() {
   const pollingRef = useRef(null);
 
   const contacts = useMemo(() => {
-    return users.filter(u => {
-      if (u.id === currentUser?.id) return false;
-      return u.role === 'teacher' || u.role === 'admin' || u.username === 'admin';
+    const currentId = currentUser?.id;
+    const contactUsers = users.filter(u => {
+      if (u.id === currentId) return false;
+      const role = (u.role || '').toLowerCase();
+      if (role === 'user') return false;
+      return role === 'teacher' || role === 'admin' || u.username === 'admin';
     });
+    if (contactUsers.length === 0 && users.length > 1 && currentId) {
+      return users.filter(u => u.id !== currentId);
+    }
+    return contactUsers;
   }, [users, currentUser]);
 
   const filteredContacts = useMemo(() => {
@@ -158,6 +165,22 @@ export default function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversationMessages]);
+
+  useEffect(() => {
+    if (isOnline && users.length <= 1) {
+      const fetchUsers = async () => {
+        try {
+          const { data } = await supabase.from('users').select('*');
+          if (data?.length > users.length) {
+            setUsers(data);
+          }
+        } catch (err) {
+          console.error('Error fetching users for chat:', err);
+        }
+      };
+      fetchUsers();
+    }
+  }, [isOnline, users.length]);
 
   const sendMessage = async () => {
     if (!inputText.trim() || !selectedContactId || !currentUser) return;
