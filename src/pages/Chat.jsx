@@ -291,12 +291,12 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className="chat-main" style={{
+      <div style={{
         display: 'flex', gap: '1rem', height: 'calc(100dvh - 320px)', minHeight: '400px',
         background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        overflow: 'hidden'
+        overflow: 'hidden', position: 'relative'
       }}>
-        <div className={`chat-contacts ${showMobileList ? '' : 'hidden-mobile'}`} style={{
+        <div className="chat-contacts-desktop" style={{
           width: '320px', minWidth: '320px', borderRight: '1px solid #f1f5f9',
           display: 'flex', flexDirection: 'column', background: '#fafbfc'
         }}>
@@ -386,8 +386,8 @@ export default function Chat() {
           </div>
         </div>
 
-        <div className={`chat-conversation ${showMobileList ? 'hidden-mobile' : ''}`} style={{
-          flex: 1, display: 'flex', flexDirection: 'column', background: 'white'
+        <div className="chat-conversation-desktop" style={{
+          flex: 1, display: 'flex', flexDirection: 'column', background: 'white', minWidth: 0
         }}>
           {!selectedContact ? (
             <div style={{
@@ -438,7 +438,7 @@ export default function Chat() {
                 {conversationMessages.length === 0 ? (
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flex: 1, color: '#94a3b8', fontSize: '0.9rem'
+                    height: '100%', color: '#94a3b8', fontSize: '0.9rem'
                   }}>
                     No hay mensajes aún. ¡Envía el primero!
                   </div>
@@ -541,29 +541,222 @@ export default function Chat() {
             </>
           )}
         </div>
+
+        <div className="chat-mobile-overlay" style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          display: 'none', background: 'white', zIndex: 10
+        }}>
+          {showMobileList ? (
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#fafbfc' }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  background: 'white', borderRadius: '12px', padding: '0.5rem 1rem',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <Search size={18} color="#94a3b8" />
+                  <input
+                    type="text"
+                    placeholder="Buscar docente..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    style={{
+                      border: 'none', outline: 'none', flex: 1, fontSize: '0.85rem',
+                      background: 'transparent', color: '#1e293b'
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
+                {filteredContacts.length === 0 ? (
+                  <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                    <Users size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+                    <div>{searchTerm ? 'Sin resultados' : 'No hay otros docentes'}</div>
+                  </div>
+                ) : (
+                  filteredContacts.map(contact => {
+                    const preview = lastMessagePreview[contact.id];
+                    const unread = unreadCount[contact.id] || 0;
+                    return (
+                      <div
+                        key={contact.id}
+                        onClick={() => openConversation(contact.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.75rem',
+                          padding: '0.75rem', borderRadius: '12px', cursor: 'pointer',
+                          marginBottom: '2px'
+                        }}
+                      >
+                        <div style={{
+                          width: '44px', height: '44px', borderRadius: '14px', flexShrink: 0,
+                          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'white', fontWeight: 700, fontSize: '1rem'
+                        }}>
+                          {contact.name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '0.85rem', color: '#1e293b' }}>{contact.name}</strong>
+                            {preview && (
+                              <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{formatTime(preview.createdAt)}</span>
+                            )}
+                          </div>
+                          <div style={{
+                            fontSize: '0.8rem', color: unread > 0 ? '#1e293b' : '#94a3b8',
+                            marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            fontWeight: unread > 0 ? 600 : 400
+                          }}>
+                            {preview ? (
+                              <>
+                                {preview.senderId === currentUser?.id && <span style={{ marginRight: '4px' }}>{preview.readAt ? <CheckCheck size={12} style={{ display: 'inline' }} /> : <Check size={12} style={{ display: 'inline' }} />}</span>}
+                                {preview.message}
+                              </>
+                            ) : 'Sin mensajes'}
+                          </div>
+                        </div>
+                        {unread > 0 && (
+                          <div style={{
+                            width: '22px', height: '22px', borderRadius: '50%',
+                            background: '#6366f1', color: 'white', fontSize: '0.7rem',
+                            fontWeight: 700, display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', flexShrink: 0
+                          }}>{unread > 9 ? '9+' : unread}</div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          ) : selectedContact ? (
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'white' }}>
+              <div style={{
+                padding: '1rem 1.25rem', borderBottom: '1px solid #f1f5f9',
+                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                background: '#fafbfc'
+              }}>
+                <button
+                  onClick={() => { setShowMobileList(true); setSelectedContactId(null); }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    padding: '0.25rem', color: '#6366f1'
+                  }}
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
+                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 700, fontSize: '0.9rem'
+                }}>
+                  {selectedContact.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <div>
+                  <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>{selectedContact.name}</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                    {selectedContact.role === 'admin' ? 'Administrador' : 'Docente'}
+                  </div>
+                </div>
+              </div>
+              <div style={{
+                flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem',
+                background: '#f8fafc'
+              }}>
+                {conversationMessages.length === 0 ? (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    height: '100%', color: '#94a3b8', fontSize: '0.9rem'
+                  }}>
+                    No hay mensajes aún. ¡Envía el primero!
+                  </div>
+                ) : (
+                  <>
+                    {conversationMessages.map((msg, idx) => {
+                      const isMine = msg.senderId === currentUser?.id;
+                      const showDate = idx === 0 || new Date(msg.createdAt).toDateString() !== new Date(conversationMessages[idx - 1].createdAt).toDateString();
+                      return (
+                        <div key={msg.id}>
+                          {showDate && (
+                            <div style={{ textAlign: 'center', margin: '1rem 0 0.75rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f1f5f9', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>{formatDateSeparator(msg.createdAt)}</span>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', marginBottom: '0.5rem' }}>
+                            <div style={{
+                              maxWidth: '75%', padding: '0.65rem 1rem',
+                              borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                              background: isMine ? '#6366f1' : 'white',
+                              color: isMine ? 'white' : '#1e293b',
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                              position: 'relative'
+                            }}>
+                              <div style={{ fontSize: '0.88rem', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>{msg.message}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
+                                <span style={{ fontSize: '0.65rem', color: isMine ? 'rgba(255,255,255,0.7)' : '#94a3b8' }}>{formatTime(msg.createdAt)}</span>
+                                {isMine && (
+                                  msg.readAt
+                                    ? <CheckCheck size={12} color={isMine ? '#a5b4fc' : '#6366f1'} />
+                                    : <Check size={12} color={isMine ? 'rgba(255,255,255,0.5)' : '#cbd5e1'} />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
+              <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid #f1f5f9', background: 'white' }}>
+                <div style={{
+                  display: 'flex', alignItems: 'flex-end', gap: '0.75rem',
+                  background: '#f8fafc', borderRadius: '14px', padding: '0.5rem 1rem',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <textarea
+                    value={inputText}
+                    onChange={e => setInputText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Escribe un mensaje..."
+                    rows={1}
+                    style={{
+                      flex: 1, border: 'none', outline: 'none', resize: 'none',
+                      fontSize: '0.88rem', background: 'transparent', color: '#1e293b',
+                      fontFamily: 'inherit', maxHeight: '120px', padding: '0.25rem 0'
+                    }}
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!inputText.trim()}
+                    style={{
+                      width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
+                      border: 'none', cursor: inputText.trim() ? 'pointer' : 'not-allowed',
+                      background: inputText.trim() ? '#6366f1' : '#e2e8f0',
+                      color: 'white', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Send size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <style>{`
         @media (max-width: 768px) {
-          .chat-contacts {
-            width: 100% !important;
-            min-width: 100% !important;
-          }
-          .chat-contacts.hidden-mobile {
+          .chat-contacts-desktop {
             display: none !important;
           }
-          .chat-conversation {
-            width: 100% !important;
-            flex: none !important;
-          }
-          .chat-conversation.hidden-mobile {
+          .chat-conversation-desktop {
             display: none !important;
           }
-          .chat-main {
-            height: calc(100dvh - 280px) !important;
-            min-height: 300px !important;
-          }
-          .mobile-back-btn {
+          .chat-mobile-overlay {
             display: flex !important;
           }
         }
