@@ -1126,6 +1126,19 @@ if (studentsData?.length > 0) {
     ));
   };
 
+  const addNotification = (title, message, type = 'chat_message') => {
+    const notification = {
+      id: generateId(),
+      type,
+      title,
+      message,
+      createdAt: new Date().toISOString(),
+      readBy: []
+    };
+    setNotifications(prev => [notification, ...prev]);
+    return notification;
+  };
+
   const autoBackup = () => {
     const backupData = {
       version: '1.0',
@@ -1168,7 +1181,7 @@ if (studentsData?.length > 0) {
       planningDocuments, addPlanningDocument, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
       events, addEvent, updateEvent, deleteEvent,
-      notifications, markNotificationRead,
+      notifications, markNotificationRead, addNotification,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,

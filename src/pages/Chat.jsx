@@ -16,7 +16,7 @@ const loadMessages = () => {
 };
 
 export default function Chat() {
-  const { currentUser, isOnline, users, setUsers } = useStore();
+  const { currentUser, isOnline, users, setUsers, notifications, markNotificationRead, addNotification } = useStore();
   const { addToast } = useToast();
   const [messages, setMessages] = useState(loadMessages);
   const [selectedContactId, setSelectedContactId] = useState(null);
@@ -122,7 +122,17 @@ export default function Chat() {
         supabase.from('chat_messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds).catch(() => {});
       }
     }
+    const senderName = users.find(u => u.id === selectedContactId)?.name || '';
+    if (senderName) {
+      notifications.forEach(n => {
+        if (n.title?.includes(senderName) && !n.readBy.includes(currentUser.id)) {
+          markNotificationRead(n.id);
+        }
+      });
+    }
   }, [selectedContactId, currentUser]);
+
+  const notifiedIdsRef = useRef(new Set());
 
   useEffect(() => {
     if (!isOnline) return;
@@ -150,7 +160,22 @@ export default function Chat() {
           setMessages(prev => {
             const existingIds = new Set(prev.map(p => p.id));
             const newOnes = normalized.filter(n => !existingIds.has(n.id));
-            return newOnes.length > 0 ? [...prev, ...newOnes] : prev;
+            if (newOnes.length > 0) {
+              newOnes.forEach(msg => {
+                if (msg.receiverId === currentUser?.id && !notifiedIdsRef.current.has(msg.id)) {
+                  notifiedIdsRef.current.add(msg.id);
+                  const sender = users.find(u => u.id === msg.senderId);
+                  const senderName = sender?.name || msg.senderName;
+                  addNotification(
+                    `Nuevo mensaje de ${senderName}`,
+                    msg.message.length > 80 ? msg.message.slice(0, 80) + '...' : msg.message,
+                    'chat_message'
+                  );
+                }
+              });
+              return [...prev, ...newOnes];
+            }
+            return prev;
           });
         }
       } catch (err) {
@@ -160,7 +185,7 @@ export default function Chat() {
     fetchNewMessages();
     pollingRef.current = setInterval(fetchNewMessages, 5000);
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
-  }, [isOnline, currentUser?.id]);
+  }, [isOnline, currentUser?.id, users]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
