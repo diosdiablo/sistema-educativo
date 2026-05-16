@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -22,6 +22,7 @@ import PlanningDocuments from './pages/PlanningDocuments';
 import StudentProfile from './pages/StudentProfile';
 import SchoolCalendar from './pages/SchoolCalendar';
 import BoletaNotas from './pages/BoletaNotas';
+import Chat from './pages/Chat';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -42,6 +43,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Planificación', path: '/planning', icon: <FolderOpen size={20} /> },
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
     { name: 'Boleta de Notas', path: '/boleta', icon: <FileText size={20} /> },
+    { name: 'Chat', path: '/chat', icon: <MessageCircle size={20} /> },
   ];
 
   const adminItems = [
@@ -282,6 +284,7 @@ function AppContent() {
           <Route path="/planning" element={<PlanningDocuments />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

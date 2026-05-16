@@ -335,3 +335,20 @@ DO $$BEGIN
 EXCEPTION
   WHEN undefined_column THEN NULL;
 END $$;
+
+-- ══════════════════════════════════════════════════════════════
+-- CHAT ENTRE DOCENTES
+-- ══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id TEXT PRIMARY KEY,
+  sender_id TEXT NOT NULL,
+  sender_name TEXT NOT NULL,
+  receiver_id TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  read_at TIMESTAMP WITH TIME ZONE
+);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all for chat_messages" ON chat_messages FOR ALL USING (true) WITH CHECK (true);
