@@ -26,6 +26,20 @@ export function ChatConversationPage() {
   console.log('ChatConversationPage rendered, params:', useParams());
   const { userId } = useParams();
   const navigate = useNavigate();
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile) {
+    return (
+      <div style={{
+        position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0,
+        background: '#f8fafc', zIndex: 40,
+        display: 'flex', flexDirection: 'column'
+      }}>
+        <ChatConversation key={userId} userId={userId} onBack={() => navigate('/chat')} />
+      </div>
+    );
+  }
+
   return <ChatConversation key={userId} userId={userId} onBack={() => navigate('/chat')} />;
 }
 
