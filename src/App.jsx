@@ -22,7 +22,7 @@ import PlanningDocuments from './pages/PlanningDocuments';
 import StudentProfile from './pages/StudentProfile';
 import SchoolCalendar from './pages/SchoolCalendar';
 import BoletaNotas from './pages/BoletaNotas';
-import Chat from './pages/Chat';
+import { ChatList, ChatConversationPage } from './pages/Chat';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -284,8 +284,8 @@ function AppContent() {
           <Route path="/planning" element={<PlanningDocuments />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
-          <Route path="/chat/:userId" element={<Chat />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/:userId" element={<ChatConversationPage />} />
+          <Route path="/chat" element={<ChatList />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

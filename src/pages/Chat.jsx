@@ -16,10 +16,23 @@ const loadMessages = () => {
   }
 };
 
-export default function Chat() {
+export function ChatList() {
+  console.log('ChatList rendered');
+  const navigate = useNavigate();
+  return <ChatContacts onSelect={(id) => navigate(`/chat/${id}`)} />;
+}
+
+export function ChatConversationPage() {
+  console.log('ChatConversationPage rendered, params:', useParams());
   const { userId } = useParams();
   const navigate = useNavigate();
+  return <ChatConversation key={userId} userId={userId} onBack={() => navigate('/chat')} />;
+}
 
+export default function Chat() {
+  console.warn('Chat() default export should not be used directly; use ChatList or ChatConversationPage');
+  const { userId } = useParams();
+  const navigate = useNavigate();
   if (userId) return <ChatConversation userId={userId} onBack={() => navigate('/chat')} />;
   return <ChatContacts onSelect={(id) => navigate(`/chat/${id}`)} />;
 }
@@ -219,6 +232,7 @@ function ChatConversation({ userId, onBack }) {
   const pollingRef = useRef(null);
   const notifiedIdsRef = useRef(new Set());
 
+  console.log('ChatConversation mounted, userId:', userId, 'currentUser:', currentUser?.id, 'messages:', messages.length, 'notifications:', notifications?.length);
   const contact = useMemo(() => users.find(u => u.id === userId), [users, userId]);
 
   const conversationMessages = useMemo(() => {
@@ -244,12 +258,14 @@ function ChatConversation({ userId, onBack }) {
         supabase.from('chat_messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds).catch(() => {});
       }
     }
-    const contactName = contact?.name || '';
-    if (contactName) {
-      notifications.forEach(n => {
-        if (n.title?.includes(contactName) && !n.readBy.includes(currentUser.id)) markNotificationRead(n.id);
-      });
-    }
+    try {
+      const contactName = contact?.name || '';
+      if (contactName) {
+        notifications.forEach(n => {
+          if (n.title?.includes(contactName) && n.readBy && !n.readBy.includes(currentUser.id)) markNotificationRead(n.id);
+        });
+      }
+    } catch {} // eslint-disable-line no-empty
   }, [userId, currentUser]);
 
   useEffect(() => {
@@ -345,7 +361,7 @@ function ChatConversation({ userId, onBack }) {
   };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+    <div id="chat-conversation-root" style={{ flex: 1, minHeight: 200, display: 'flex', flexDirection: 'column', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
       <div style={{
         background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0
