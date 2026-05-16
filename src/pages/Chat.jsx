@@ -231,6 +231,19 @@ export default function Chat() {
           created_at: msg.createdAt,
           read_at: msg.readAt
         }, { onConflict: 'id' });
+        const receiverUser = users.find(u => u.id === selectedContactId);
+        if (receiverUser) {
+          fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: `📩 ${currentUser.name}`,
+              message: msg.message.length > 100 ? msg.message.slice(0, 100) + '...' : msg.message,
+              url: '/chat',
+              userId: selectedContactId
+            })
+          }).catch(() => {});
+        }
       } catch (err) {
         console.error('Error sending message:', err);
         addToast('Error al enviar mensaje', 'error');

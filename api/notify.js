@@ -10,7 +10,7 @@ webpush.setVapidDetails(
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { title, message, url } = req.body;
+  const { title, message, url, userId } = req.body;
   if (!title) return res.status(400).json({ error: 'Falta título' });
 
   const supabase = createClient(
@@ -18,9 +18,11 @@ export default async function handler(req, res) {
     process.env.VITE_SUPABASE_ANON_KEY
   );
 
-  const { data: subscriptions, error } = await supabase
-    .from('push_subscriptions')
-    .select('subscription');
+  let query = supabase.from('push_subscriptions').select('subscription, user_id');
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+  const { data: subscriptions, error } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
   if (!subscriptions?.length) return res.json({ sent: 0 });
