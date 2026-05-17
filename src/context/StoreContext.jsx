@@ -75,10 +75,12 @@ export const StoreProvider = ({ children }) => {
   const [grades, setGrades] = useState(() => loadData('edu_grades', []));
 
   useEffect(() => {
-    const savedUser = sessionStorage.getItem('edu_current_user_session');
+    const savedUser = sessionStorage.getItem('edu_current_user_session') || localStorage.getItem('edu_current_user_session');
     if (savedUser) {
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        const user = JSON.parse(savedUser);
+        setCurrentUser(user);
+        sessionStorage.setItem('edu_current_user_session', JSON.stringify(user));
       } catch {
         sessionStorage.removeItem('edu_current_user_session');
       }
@@ -508,6 +510,7 @@ if (studentsData?.length > 0) {
           };
           setCurrentUser(normalizedUser);
           sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
+          localStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
           loggedInUser = normalizedUser;
         }
       } catch (err) {
@@ -519,6 +522,8 @@ if (studentsData?.length > 0) {
       const user = users.find(u => u.username === username && u.password === password);
       if (user) {
         setCurrentUser(user);
+        sessionStorage.setItem('edu_current_user_session', JSON.stringify(user));
+        localStorage.setItem('edu_current_user_session', JSON.stringify(user));
         loggedInUser = user;
       }
     }
@@ -589,6 +594,7 @@ if (studentsData?.length > 0) {
     localStorage.removeItem('edu_current_user');
     localStorage.removeItem('edu_current_user_v2');
     sessionStorage.removeItem('edu_current_user_session');
+    localStorage.removeItem('edu_current_user_session');
   };
 
   const addStudent = (student) => {
