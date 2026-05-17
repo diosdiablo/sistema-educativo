@@ -155,12 +155,14 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
 }
 
 function AppContent() {
-  const { currentUser, isAdmin, isLoading, notifications, markNotificationRead } = useStore();
+  const { currentUser, isAdmin, isLoading, notifications, markNotificationRead, deleteNotification } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifPos, setNotifPos] = useState(null);
   const bellBtnRef = useRef(null);
   const notifDropdownRef = useRef(null);
+  const touchStartX = useRef(0);
+  const swipedNotif = useRef(null);
   const [darkMode, setDarkMode] = useState(() => false);
   const navigate = useNavigate();
 
@@ -236,11 +238,16 @@ function AppContent() {
             notifications.slice(0, 20).map(n => {
               const isUnread = !n.readBy.includes(currentUser?.id);
               return (
-                <div key={n.id} onClick={() => { markNotificationRead(n.id); }} style={{
-                  padding: '0.75rem', borderRadius: '10px', cursor: 'pointer',
-                  background: isUnread ? '#fefce8' : 'transparent',
-                  marginBottom: '2px', transition: 'background 0.15s ease'
-                }}
+                <div key={n.id} onClick={() => { markNotificationRead(n.id); }}
+                  onTouchStart={e => { touchStartX.current = e.touches[0].clientX; swipedNotif.current = null; }}
+                  onTouchMove={e => { const dx = e.touches[0].clientX - touchStartX.current; if (dx > 60) swipedNotif.current = n.id; }}
+                  onTouchEnd={() => { if (swipedNotif.current === n.id) deleteNotification(n.id); }}
+                  style={{
+                    padding: '0.75rem', borderRadius: '10px', cursor: 'pointer',
+                    background: isUnread ? '#fefce8' : 'transparent',
+                    marginBottom: '2px', transition: 'background 0.15s ease',
+                    position: 'relative', overflow: 'hidden'
+                  }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fefce8' : 'transparent'; }}
                 >

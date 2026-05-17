@@ -1126,6 +1126,10 @@ if (studentsData?.length > 0) {
     ));
   };
 
+  const deleteNotification = (notificationId) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  };
+
   const addNotification = (title, message, type = 'chat_message') => {
     const notification = {
       id: generateId(),
@@ -1181,7 +1185,7 @@ if (studentsData?.length > 0) {
       planningDocuments, addPlanningDocument, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
       events, addEvent, updateEvent, deleteEvent,
-      notifications, markNotificationRead, addNotification,
+      notifications, markNotificationRead, addNotification, deleteNotification,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,
