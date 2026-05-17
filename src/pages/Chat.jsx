@@ -39,7 +39,7 @@ export default function Chat() {
 }
 
 function ChatContacts({ onSelect }) {
-  const { currentUser, users, isOnline, setUsers } = useStore();
+  const { currentUser, users, isOnline, setUsers, addNotification } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState(loadMessages);
 
@@ -62,7 +62,16 @@ function ChatContacts({ onSelect }) {
           setMessages(prev => {
             const ids = new Set(prev.map(p => p.id));
             const newOnes = n.filter(x => !ids.has(x.id));
-            return newOnes.length ? [...prev, ...newOnes] : prev;
+            if (newOnes.length > 0) {
+              newOnes.forEach(msg => {
+                if (msg.receiverId === currentUser?.id) {
+                  const sender = users.find(u => u.id === msg.senderId);
+                  addNotification(`Nuevo mensaje de ${sender?.name || msg.senderName}`, msg.message.length > 80 ? msg.message.slice(0, 80) + '...' : msg.message, 'chat_message');
+                }
+              });
+              return [...prev, ...newOnes];
+            }
+            return prev;
           });
         }
       } catch {}
