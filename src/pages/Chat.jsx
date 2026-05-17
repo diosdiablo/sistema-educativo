@@ -256,7 +256,9 @@ function ChatConversation({ userId, onBack }) {
     if (unreadIds.length > 0) {
       setMessages(prev => prev.map(m => unreadIds.includes(m.id) ? { ...m, readAt: new Date().toISOString() } : m));
       if (isOnline) {
-        supabase.from('chat_messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds).catch(() => {});
+        try {
+          supabase.from('chat_messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds);
+        } catch {}
       }
     }
     try {
@@ -362,10 +364,7 @@ function ChatConversation({ userId, onBack }) {
   };
 
   return (
-    <div id="chat-conversation-root" style={{
-      flex: 1, minHeight: '50dvh', display: 'flex', flexDirection: 'column',
-      maxWidth: '900px', margin: '0 auto', width: '100%'
-    }}>
+    <div id="chat-conversation-root" style={{ flex: 1, minHeight: 200, display: 'flex', flexDirection: 'column', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
       <div style={{
         background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0
