@@ -26,19 +26,6 @@ export function ChatConversationPage() {
   console.log('ChatConversationPage rendered, params:', useParams());
   const { userId } = useParams();
   const navigate = useNavigate();
-  const isMobile = window.innerWidth <= 768;
-
-  if (isMobile) {
-    return (
-      <div style={{
-        position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0,
-        background: '#f8fafc', zIndex: 40,
-        display: 'flex', flexDirection: 'column'
-      }}>
-        <ChatConversation key={userId} userId={userId} onBack={() => navigate('/chat')} />
-      </div>
-    );
-  }
 
   return <ChatConversation key={userId} userId={userId} onBack={() => navigate('/chat')} />;
 }
@@ -375,7 +362,10 @@ function ChatConversation({ userId, onBack }) {
   };
 
   return (
-    <div id="chat-conversation-root" style={{ flex: 1, minHeight: 200, display: 'flex', flexDirection: 'column', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+    <div id="chat-conversation-root" style={{
+      flex: 1, minHeight: '50dvh', display: 'flex', flexDirection: 'column',
+      maxWidth: '900px', margin: '0 auto', width: '100%'
+    }}>
       <div style={{
         background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0
