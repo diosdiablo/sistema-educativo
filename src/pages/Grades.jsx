@@ -813,8 +813,8 @@ export default function Grades() {
                     )}
                     {filteredStudents.map((student, studentIdx) => (
                       <tr key={student.id}>
-                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', position: 'sticky', left: 0, background: 'var(--bg-primary)', zIndex: 5 }}>{studentIdx + 1}</td>
-                        <td style={{ fontWeight: 600, position: 'sticky', left: 50, background: 'var(--bg-primary)', zIndex: 5 }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', position: 'sticky', left: 0, background: 'white', zIndex: 5, borderRight: '1px solid #f1f5f9' }}>{studentIdx + 1}</td>
+                        <td style={{ fontWeight: 600, position: 'sticky', left: 50, background: 'white', zIndex: 5, borderRight: '1px solid #f1f5f9' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const instruments = getInstrumentsForCompetency(comp.id);
                           if (instruments.length === 0) {

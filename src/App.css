@@ -366,16 +366,4 @@
     white-space: nowrap;
     padding: 0.5rem 0.5rem;
   }
-
-  .table-container .styled-table th:first-child,
-  .table-container .styled-table td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    background: inherit;
-  }
-
-  .table-container .styled-table thead th:first-child {
-    z-index: 2;
-  }
 }
