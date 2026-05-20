@@ -687,7 +687,7 @@ export default function Grades() {
                         N°
                       </th>
                       <th style={{ 
-                        minWidth: '200px', 
+                        minWidth: '150px', 
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
                         color: 'white',
                         fontWeight: 700,
@@ -706,7 +706,7 @@ export default function Grades() {
                           return (
                             <th key={comp.id} style={{ 
                               textAlign: 'center', 
-                              minWidth: '100px', 
+                              minWidth: '70px', 
                               fontSize: '0.8rem',
                               background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
                               color: 'white',
@@ -748,7 +748,7 @@ export default function Grades() {
                         <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>#</span>
                       </th>
                       <th style={{ 
-                        minWidth: '200px', 
+                        minWidth: '150px', 
                         background: '#f8fafc', 
                         padding: '0.75rem 1rem',
                         borderBottom: '2px solid #e2e8f0'
@@ -775,7 +775,7 @@ export default function Grades() {
                         return instruments.map(inst => (
                           <th key={inst.id} style={{ 
                             textAlign: 'center', 
-                            minWidth: '80px', 
+                            minWidth: '60px', 
                             fontSize: '0.7rem', 
                             color: '#64748b',
                             background: '#f8fafc',
@@ -802,7 +802,7 @@ export default function Grades() {
                     {filteredStudents.map((student, studentIdx) => (
                       <tr key={student.id}>
                         <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px' }}>{studentIdx + 1}</td>
-                        <td style={{ fontWeight: 600, minWidth: '200px' }}>{student.name}</td>
+                        <td style={{ fontWeight: 600, minWidth: '150px' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const instruments = getInstrumentsForCompetency(comp.id);
                           if (instruments.length === 0) {
