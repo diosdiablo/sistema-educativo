@@ -37,6 +37,7 @@ export default function SchoolCalendar() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
+  const isMobile = window.innerWidth <= 600;
 
   const loadCivicCalendar = () => {
     const existingTitles = new Set(events.map(e => e.title));
@@ -144,7 +145,7 @@ export default function SchoolCalendar() {
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
-        borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
+        borderRadius: '20px', padding: isMobile ? '1.25rem 1rem' : '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
         <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px',
@@ -173,7 +174,7 @@ export default function SchoolCalendar() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', flexWrap: 'wrap' }}>
             <button onClick={prevMonth} style={{
               padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
               background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
@@ -182,7 +183,7 @@ export default function SchoolCalendar() {
               onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
             ><ChevronLeft size={20} /></button>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, minWidth: '180px' }}>
+            <h3 style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, margin: 0, minWidth: isMobile ? 'auto' : '180px' }}>
               {MONTHS[month]} {year}
             </h3>
             <button onClick={nextMonth} style={{
@@ -205,29 +206,30 @@ export default function SchoolCalendar() {
           <button onClick={() => openAddForm(formatDate(new Date()))} style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            color: 'white', border: 'none', padding: '0.75rem 1.25rem',
+            color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
             borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
             boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
             transition: 'all 0.2s ease'
           }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.3)'; }}
           >
-            <Plus size={18} /> Nuevo Evento
+            <Plus size={isMobile ? 14 : 18} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
           </button>
           <button onClick={loadCivicCalendar} style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             background: 'linear-gradient(135deg, #10b981, #059669)',
-            color: 'white', border: 'none', padding: '0.75rem 1.25rem',
+            color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
             borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-            fontSize: '0.85rem',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
             boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
             transition: 'all 0.2s ease'
           }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.3)'; }}
           >
-            <Download size={18} /> Calendario Cívico
+            <Download size={isMobile ? 14 : 18} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
           </button>
         </div>
 
@@ -235,8 +237,8 @@ export default function SchoolCalendar() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
           {DAYS.map(d => (
             <div key={d} style={{
-              textAlign: 'center', padding: '0.75rem 0.25rem',
-              fontWeight: 700, fontSize: '0.8rem', color: '#94a3b8',
+              textAlign: 'center', padding: isMobile ? '0.5rem 0.1rem' : '0.75rem 0.25rem',
+              fontWeight: 700, fontSize: isMobile ? '0.65rem' : '0.8rem', color: '#94a3b8',
               borderBottom: '1px solid #f1f5f9'
             }}>{d}</div>
           ))}
@@ -246,11 +248,11 @@ export default function SchoolCalendar() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
           {calendarDays.map((cell, idx) => {
             const dayEvents = eventsByDate[cell.date] || [];
-            const maxShow = 2;
+            const maxShow = isMobile ? 0 : 2;
             const remaining = dayEvents.length - maxShow;
             return (
               <div key={idx} onClick={() => openAddForm(cell.date)} style={{
-                minHeight: '90px', padding: '0.5rem',
+                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.2rem' : '0.5rem',
                 borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
                 borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
                 background: cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white',
@@ -262,9 +264,9 @@ export default function SchoolCalendar() {
                 onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white'; }}
               >
                 <div style={{
-                  fontSize: '0.85rem', fontWeight: cell.isToday ? 800 : 600,
+                  fontSize: isMobile ? '0.7rem' : '0.85rem', fontWeight: cell.isToday ? 800 : 600,
                   color: cell.isToday ? '#d97706' : '#1e293b',
-                  width: '28px', height: '28px', display: 'flex',
+                  width: isMobile ? '22px' : '28px', height: isMobile ? '22px' : '28px', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   borderRadius: '50%',
                   background: cell.isToday ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
