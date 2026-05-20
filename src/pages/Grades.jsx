@@ -677,10 +677,7 @@ export default function Grades() {
                       <th style={{ 
                         width: '50px',
                         minWidth: '50px',
-                        position: 'sticky', 
-                        left: 0, 
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                        zIndex: 10,
                         color: 'white',
                         fontWeight: 700,
                         fontSize: '0.85rem',
@@ -691,10 +688,7 @@ export default function Grades() {
                       </th>
                       <th style={{ 
                         minWidth: '200px', 
-                        position: 'sticky', 
-                        left: 50, 
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                        zIndex: 10,
                         color: 'white',
                         fontWeight: 700,
                         fontSize: '0.85rem',
@@ -746,10 +740,7 @@ export default function Grades() {
                       <th style={{ 
                         width: '50px',
                         minWidth: '50px',
-                        position: 'sticky', 
-                        left: 0, 
                         background: '#f8fafc', 
-                        zIndex: 10,
                         padding: '0.75rem 1rem',
                         borderBottom: '2px solid #e2e8f0',
                         textAlign: 'center'
@@ -758,10 +749,7 @@ export default function Grades() {
                       </th>
                       <th style={{ 
                         minWidth: '200px', 
-                        position: 'sticky', 
-                        left: 50, 
                         background: '#f8fafc', 
-                        zIndex: 10,
                         padding: '0.75rem 1rem',
                         borderBottom: '2px solid #e2e8f0'
                       }}>
@@ -813,8 +801,8 @@ export default function Grades() {
                     )}
                     {filteredStudents.map((student, studentIdx) => (
                       <tr key={student.id}>
-                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', position: 'sticky', left: 0, background: 'white', zIndex: 5, borderRight: '1px solid #f1f5f9' }}>{studentIdx + 1}</td>
-                        <td style={{ fontWeight: 600, position: 'sticky', left: 50, background: 'white', zIndex: 5, borderRight: '1px solid #f1f5f9' }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px' }}>{studentIdx + 1}</td>
+                        <td style={{ fontWeight: 600, minWidth: '200px' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const instruments = getInstrumentsForCompetency(comp.id);
                           if (instruments.length === 0) {
