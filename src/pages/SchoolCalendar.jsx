@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
+import CALENDARIO_CIVICO from '../data/calendario-civico';
 
 const EVENT_COLORS = {
   holiday: { bg: '#ef444420', text: '#ef4444', border: '#ef4444' },
@@ -36,6 +37,22 @@ export default function SchoolCalendar() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
+
+  const loadCivicCalendar = () => {
+    const existingTitles = new Set(events.map(e => e.title));
+    let count = 0;
+    CALENDARIO_CIVICO.forEach(ev => {
+      if (!existingTitles.has(ev.title)) {
+        addEvent(ev);
+        count++;
+      }
+    });
+    if (count > 0) {
+      alert(`Se agregaron ${count} fechas del Calendario Cívico Escolar`);
+    } else {
+      alert('El Calendario Cívico ya está cargado');
+    }
+  };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -197,6 +214,20 @@ export default function SchoolCalendar() {
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.3)'; }}
           >
             <Plus size={18} /> Nuevo Evento
+          </button>
+          <button onClick={loadCivicCalendar} style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white', border: 'none', padding: '0.75rem 1.25rem',
+            borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
+            fontSize: '0.85rem',
+            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+            transition: 'all 0.2s ease'
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.3)'; }}
+          >
+            <Download size={18} /> Calendario Cívico
           </button>
         </div>
 
