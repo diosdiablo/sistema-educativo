@@ -29,7 +29,8 @@ export default function ParentDashboard() {
     if (!currentChild) return [];
     const records = [];
     attendance.forEach(a => {
-      const record = (a.records || []).find(r => r.studentId === currentChild.id);
+      const recs = typeof a.records === 'string' ? JSON.parse(a.records) : (a.records || []);
+      const record = recs.find(r => r.studentId === currentChild.id);
       if (record) records.push({ date: a.date, status: record.status });
     });
     return records.sort((a, b) => new Date(b.date) - new Date(a.date));
