@@ -23,6 +23,8 @@ import StudentProfile from './pages/StudentProfile';
 import SchoolCalendar from './pages/SchoolCalendar';
 import BoletaNotas from './pages/BoletaNotas';
 import { ChatList, ChatConversationPage } from './pages/Chat';
+import ParentLogin from './pages/ParentLogin';
+import ParentDashboard from './pages/ParentDashboard';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -204,7 +206,18 @@ function AppContent() {
   useEffect(() => {
   }, [darkMode]);
 
-  if (!currentUser) return <Login />;
+  if (!currentUser) {
+    const path = window.location.pathname;
+    if (path.startsWith('/parent')) {
+      return (
+        <Routes>
+          <Route path="/parent/dashboard" element={<ParentDashboard />} />
+          <Route path="/parent" element={<ParentLogin />} />
+        </Routes>
+      );
+    }
+    return <Login />;
+  }
 
   const AdminOnlyRoute = ({ children }) => {
     return isAdmin ? children : <Navigate to="/" replace />;
@@ -293,6 +306,8 @@ function AppContent() {
           <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
           <Route path="/chat/:userId" element={<ChatConversationPage />} />
           <Route path="/chat" element={<ChatList />} />
+          <Route path="/parent/dashboard" element={<ParentDashboard />} />
+          <Route path="/parent" element={<ParentLogin />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

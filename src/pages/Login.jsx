@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff, Users } from 'lucide-react';
 import Logo from '../assets/logo.png';
 
 export default function Login() {
@@ -170,6 +170,16 @@ export default function Login() {
             <ArrowRight size={18} />
           </button>
         </form>
+
+        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+          <button onClick={() => navigate('/parent')} style={{
+            background: 'none', border: 'none', color: '#64748b',
+            fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline',
+            display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+          }}>
+            <Users size={14} /> Acceso para padres de familia
+          </button>
+        </div>
       </div>
     </div>
   );
