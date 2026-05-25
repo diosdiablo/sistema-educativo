@@ -239,10 +239,9 @@ export default function SchoolCalendar() {
           </button>
         </div>
 
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-          minWidth: isMobile ? '560px' : 'auto'
+          minWidth: 0
         }}>
           {/* Day names */}
           {DAYS.map((d, idx) => (
@@ -309,7 +308,6 @@ export default function SchoolCalendar() {
               </div>
             );
           })}
-        </div>
         </div>
       </div>
 
