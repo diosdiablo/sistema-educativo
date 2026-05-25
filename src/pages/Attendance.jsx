@@ -135,7 +135,11 @@ export default function Attendance() {
   }, [selectedClass, filteredStudents, currentRecords]);
 
   const handleStatusChange = (studentId, status) => {
-    setCurrentRecords(prev => ({ ...prev, [studentId]: status }));
+    setCurrentRecords(prev => {
+      const updated = { ...prev, [studentId]: status };
+      saveAttendanceDate(date, updated);
+      return updated;
+    });
   };
 
   const handleSave = () => {
