@@ -766,18 +766,15 @@ if (studentsData?.length > 0) {
     deleteFromSupabase('instruments', id);
   };
 
-  const SAVE_QUAL_MAP = { AD: 20, A: 15, B: 12, C: 8 };
-
   const saveQuickGrade = async ({ studentId, studentName, subjectId, subjectName, competencyId, period, classId, score, activityName, date, note }) => {
     const qualitative = score;
-    const numericScore = SAVE_QUAL_MAP[qualitative] || 12;
     const newEval = {
       id: generateId(),
       instrumentId: 'quick',
       studentId, studentName, subjectId, subjectName,
       competencyId: competencyId || '__all__',
-      period, classId, score: numericScore,
-      maxPossible: 20, qualitative,
+      period, classId,
+      score: null, maxPossible: 20, qualitative,
       activityName, instrumentType: 'quick',
       userId: currentUser?.id,
       date: date || new Date().toISOString().split('T')[0],
@@ -793,7 +790,7 @@ if (studentsData?.length > 0) {
           student_id: studentId, student_name: studentName,
           subject_id: subjectId, subject_name: subjectName,
           competency_id: newEval.competencyId,
-          period, class_id: classId, score: numericScore, max_possible: 20,
+          period, class_id: classId, score: null, max_possible: 20,
           qualitative, activity_name: activityName,
           instrument_type: 'quick', user_id: currentUser?.id,
           date: newEval.date, scores: newEval.scores, criteria: [],
