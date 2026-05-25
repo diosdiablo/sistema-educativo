@@ -226,11 +226,36 @@ export default function Dashboard() {
 
   const monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const [attendanceView, setAttendanceView] = useState('daily');
+  const [attendanceClass, setAttendanceClass] = useState('');
+
+  const classStudentIds = useMemo(() => {
+    if (!attendanceClass) return null;
+    const cleanSelected = attendanceClass.trim().toLowerCase();
+    const ids = students
+      .filter(s => (s.gradeLevel || '').trim().toLowerCase() === cleanSelected || (s.classId || '').trim().toLowerCase() === cleanSelected)
+      .map(s => s.id);
+    return new Set(ids);
+  }, [attendanceClass, students]);
 
   const attendanceChartData = useMemo(() => {
     const now = new Date();
     const sortedDates = [...attendance].sort((a, b) => a.date.localeCompare(b.date));
     if (sortedDates.length === 0) return [];
+
+    const filterRecords = (records) => {
+      if (!classStudentIds) return records;
+      const filtered = {};
+      Object.entries(records).forEach(([sid, status]) => {
+        if (classStudentIds.has(sid)) filtered[sid] = status;
+      });
+      return filtered;
+    };
+
+    const countStats = (records) => {
+      const stats = { P: 0, T: 0, F: 0, J: 0 };
+      Object.values(records).forEach(s => { if (stats[s] !== undefined) stats[s]++; });
+      return stats;
+    };
 
     if (attendanceView === 'daily') {
       const days = 14;
@@ -238,11 +263,7 @@ export default function Dashboard() {
       cutoff.setDate(cutoff.getDate() - days);
       return sortedDates
         .filter(d => d.date >= cutoff.toISOString().split('T')[0])
-        .map(d => {
-          const stats = { P: 0, T: 0, F: 0, J: 0 };
-          Object.values(d.records).forEach(s => { if (stats[s] !== undefined) stats[s]++; });
-          return { date: d.date.slice(5), P: stats.P, T: stats.T, F: stats.F, J: stats.J };
-        });
+        .map(d => ({ date: d.date.slice(5), ...countStats(filterRecords(d.records)) }));
     }
 
     if (attendanceView === 'weekly') {
@@ -258,13 +279,14 @@ export default function Dashboard() {
       sortedDates.forEach(d => {
         const wk = getWeekKey(d.date);
         if (!weekData[wk]) weekData[wk] = { P: 0, T: 0, F: 0, J: 0 };
-        Object.values(d.records).forEach(s => { if (weekData[wk][s] !== undefined) weekData[wk][s]++; });
+        const stats = countStats(filterRecords(d.records));
+        Object.keys(stats).forEach(k => { weekData[wk][k] += stats[k]; });
       });
       const weekKeys = Object.keys(weekData).sort().slice(-weeks);
       return weekKeys.map(wk => {
         const [y, m, day] = wk.split('-');
         const label = `${monthsNames[parseInt(m) - 1]} ${parseInt(day)}`;
-        return { date: label, ...weekData[wk], total: Object.values(weekData[wk]).reduce((a, b) => a + b, 0) };
+        return { date: label, ...weekData[wk] };
       });
     }
 
@@ -274,14 +296,15 @@ export default function Dashboard() {
     sortedDates.forEach(d => {
       const mk = d.date.slice(0, 7);
       if (!monthData[mk]) monthData[mk] = { P: 0, T: 0, F: 0, J: 0 };
-      Object.values(d.records).forEach(s => { if (monthData[mk][s] !== undefined) monthData[mk][s]++; });
+      const stats = countStats(filterRecords(d.records));
+      Object.keys(stats).forEach(k => { monthData[mk][k] += stats[k]; });
     });
     const monthKeys = Object.keys(monthData).sort().slice(-months);
     return monthKeys.map(mk => {
       const [y, m] = mk.split('-');
       return { date: `${monthsNames[parseInt(m) - 1]} ${y}`, ...monthData[mk] };
     });
-  }, [attendance, attendanceView, monthsNames]);
+  }, [attendance, attendanceView, monthsNames, classStudentIds]);
 
   const attendancePresentRate = useMemo(() => {
     return attendanceChartData.map(d => {
@@ -692,16 +715,29 @@ export default function Dashboard() {
             border: '1px solid rgba(16, 185, 129, 0.15)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <h3 style={{ color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <BarChart3 size={18} color="white" />
-                </div>
-                Asistencia
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <h3 style={{ color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <BarChart3 size={18} color="white" />
+                  </div>
+                  Asistencia
+                </h3>
+                <select value={attendanceClass} onChange={e => setAttendanceClass(e.target.value)}
+                  style={{
+                    padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #e2e8f0',
+                    fontSize: '0.8rem', fontWeight: 600, color: '#1e293b', background: '#f8fafc',
+                    cursor: 'pointer', outline: 'none'
+                  }}>
+                  <option value="">Todas las secciones</option>
+                  {classes.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
               <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', borderRadius: '10px', padding: '3px' }}>
                 {[
                   { key: 'daily', label: 'Diario' },
