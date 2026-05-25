@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck, BarChart3, Award, Clock, Calendar, ArrowRight, GraduationCap, Cake, Gift } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
@@ -225,6 +225,71 @@ export default function Dashboard() {
   ];
 
   const monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const [attendanceView, setAttendanceView] = useState('daily');
+
+  const attendanceChartData = useMemo(() => {
+    const now = new Date();
+    const sortedDates = [...attendance].sort((a, b) => a.date.localeCompare(b.date));
+    if (sortedDates.length === 0) return [];
+
+    if (attendanceView === 'daily') {
+      const days = 14;
+      const cutoff = new Date(now);
+      cutoff.setDate(cutoff.getDate() - days);
+      return sortedDates
+        .filter(d => d.date >= cutoff.toISOString().split('T')[0])
+        .map(d => {
+          const stats = { P: 0, T: 0, F: 0, J: 0 };
+          Object.values(d.records).forEach(s => { if (stats[s] !== undefined) stats[s]++; });
+          return { date: d.date.slice(5), P: stats.P, T: stats.T, F: stats.F, J: stats.J };
+        });
+    }
+
+    if (attendanceView === 'weekly') {
+      const weeks = 8;
+      const weekData = {};
+      const getWeekKey = (dateStr) => {
+        const d = new Date(dateStr + 'T00:00:00');
+        const dayOfWeek = d.getDay();
+        const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diff));
+        return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+      };
+      sortedDates.forEach(d => {
+        const wk = getWeekKey(d.date);
+        if (!weekData[wk]) weekData[wk] = { P: 0, T: 0, F: 0, J: 0 };
+        Object.values(d.records).forEach(s => { if (weekData[wk][s] !== undefined) weekData[wk][s]++; });
+      });
+      const weekKeys = Object.keys(weekData).sort().slice(-weeks);
+      return weekKeys.map(wk => {
+        const [y, m, day] = wk.split('-');
+        const label = `${monthsNames[parseInt(m) - 1]} ${parseInt(day)}`;
+        return { date: label, ...weekData[wk], total: Object.values(weekData[wk]).reduce((a, b) => a + b, 0) };
+      });
+    }
+
+    // monthly
+    const months = 12;
+    const monthData = {};
+    sortedDates.forEach(d => {
+      const mk = d.date.slice(0, 7);
+      if (!monthData[mk]) monthData[mk] = { P: 0, T: 0, F: 0, J: 0 };
+      Object.values(d.records).forEach(s => { if (monthData[mk][s] !== undefined) monthData[mk][s]++; });
+    });
+    const monthKeys = Object.keys(monthData).sort().slice(-months);
+    return monthKeys.map(mk => {
+      const [y, m] = mk.split('-');
+      return { date: `${monthsNames[parseInt(m) - 1]} ${y}`, ...monthData[mk] };
+    });
+  }, [attendance, attendanceView, monthsNames]);
+
+  const attendancePresentRate = useMemo(() => {
+    return attendanceChartData.map(d => {
+      const total = (d.P || 0) + (d.T || 0) + (d.F || 0) + (d.J || 0);
+      const present = (d.P || 0) + (d.T || 0) + (d.J || 0);
+      return { date: d.date, rate: total > 0 ? Math.round((present / total) * 100) : 0 };
+    });
+  }, [attendanceChartData]);
 
   return (
     <div className="animate-fade-in">
@@ -615,6 +680,78 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Gráficos de Asistencia */}
+      {attendanceChartData.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.15)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <h3 style={{ color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <BarChart3 size={18} color="white" />
+                </div>
+                Asistencia
+              </h3>
+              <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', borderRadius: '10px', padding: '3px' }}>
+                {[
+                  { key: 'daily', label: 'Diario' },
+                  { key: 'weekly', label: 'Semanal' },
+                  { key: 'monthly', label: 'Mensual' },
+                ].map(v => (
+                  <button key={v.key} onClick={() => setAttendanceView(v.key)} style={{
+                    padding: '6px 14px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
+                    background: attendanceView === v.key ? '#10b981' : 'transparent',
+                    color: attendanceView === v.key ? 'white' : '#64748b',
+                    transition: 'all 0.2s'
+                  }}>
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={attendanceChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Bar dataKey="P" stackId="a" fill="#10b981" name="Presente" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="T" stackId="a" fill="#f59e0b" name="Tarde" />
+                <Bar dataKey="J" stackId="a" fill="#8b5cf6" name="Justificado" />
+                <Bar dataKey="F" stackId="a" fill="#ef4444" name="Falta" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+
+            {attendancePresentRate.length > 0 && (
+              <div style={{ marginTop: '1.5rem' }}>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+                  % de Asistencia (Presentes+Tardes+Justificados)
+                </h4>
+                <ResponsiveContainer width="100%" height={100}>
+                  <LineChart data={attendancePresentRate}>
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v) => `${v}%`} />
+                    <Line type="monotone" dataKey="rate" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981', r: 3 }} name="% Asistencia" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Gráficos de estadísticas */}
       {(grades.length > 0 || diagnosticEvaluations.length > 0 || instrumentEvaluations.length > 0) && (
