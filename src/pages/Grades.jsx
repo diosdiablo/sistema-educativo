@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2 } from 'lucide-react';
 
@@ -95,6 +95,8 @@ export default function Grades() {
   const LITERAL_GRADES = ['AD', 'A', 'B', 'C'];
   const [quickGradeSaving, setQuickGradeSaving] = useState(false);
   const [quickGradeMsg, setQuickGradeMsg] = useState('');
+  const [quickAzarAnim, setQuickAzarAnim] = useState(false);
+  const quickAzarRef = useRef(null);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -1283,16 +1285,42 @@ export default function Grades() {
                         <option value="">Seleccionar estudiante...</option>
                         {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
-                      <button onClick={() => {
+                      <button ref={quickAzarRef} onClick={() => {
                         const available = filteredStudents.filter(s => s.id !== quickGrade.studentId);
-                        if (available.length === 0) return;
-                        const random = available[Math.floor(Math.random() * available.length)];
-                        setQuickGrade(prev => ({ ...prev, studentId: random.id }));
+                        if (available.length === 0 || quickAzarAnim) return;
+                        setQuickAzarAnim(true);
+                        let count = 0;
+                        const maxSteps = 12;
+                        const interval = setInterval(() => {
+                          const temp = available[Math.floor(Math.random() * available.length)];
+                          setQuickGrade(prev => ({ ...prev, studentId: temp.id }));
+                          count++;
+                          if (count >= maxSteps) {
+                            clearInterval(interval);
+                            const final = available[Math.floor(Math.random() * available.length)];
+                            setQuickGrade(prev => ({ ...prev, studentId: final.id }));
+                            setQuickAzarAnim(false);
+                            if (quickAzarRef.current) {
+                              quickAzarRef.current.style.transition = 'all 0.3s ease';
+                              quickAzarRef.current.style.background = '#dbeafe';
+                              quickAzarRef.current.style.borderColor = '#3b82f6';
+                              setTimeout(() => {
+                                if (quickAzarRef.current) {
+                                  quickAzarRef.current.style.background = '#f8fafc';
+                                  quickAzarRef.current.style.borderColor = '#e2e8f0';
+                                }
+                              }, 600);
+                            }
+                          }
+                        }, 80);
                       }} title="Alumno al azar" style={{
                         padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                        background: '#f8fafc', cursor: 'pointer', fontSize: '0.85rem', color: '#64748b',
-                        whiteSpace: 'nowrap'
-                      }}>🎲 Azar</button>
+                        background: quickAzarAnim ? '#dbeafe' : '#f8fafc',
+                        cursor: quickAzarAnim ? 'wait' : 'pointer',
+                        fontSize: '0.85rem', color: quickAzarAnim ? '#3b82f6' : '#64748b',
+                        whiteSpace: 'nowrap', transition: 'all 0.15s',
+                        animation: quickAzarAnim ? 'quickShake 0.15s infinite' : 'none'
+                      }}>{quickAzarAnim ? '🎰' : '🎲'} {quickAzarAnim ? '' : 'Azar'}</button>
                     </div>
                   </div>
 
@@ -1390,6 +1418,15 @@ export default function Grades() {
           )}
         </>
       )}
+      <style>{`
+        @keyframes quickShake {
+          0% { transform: rotate(0deg); }
+          25% { transform: rotate(-8deg); }
+          50% { transform: rotate(0deg); }
+          75% { transform: rotate(8deg); }
+          100% { transform: rotate(0deg); }
+        }
+      `}</style>
     </div>
   );
 }
