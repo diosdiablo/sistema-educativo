@@ -597,11 +597,13 @@ if (studentsData?.length > 0) {
   const addStudent = (student) => {
     const newStudent = { ...student, id: generateId(), createdAt: new Date().toISOString() };
     setStudents(prev => [...prev, newStudent]);
+    syncToSupabase('students', [newStudent]);
     return newStudent;
   };
 
   const updateStudent = (id, updates) => {
     setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    syncToSupabase('students', [{ id, ...updates }]);
   };
 
   const deleteStudent = (id) => {
@@ -612,43 +614,53 @@ if (studentsData?.length > 0) {
   const importStudentsBulk = (data) => {
     const newStudents = data.map(s => ({ ...s, id: generateId(), createdAt: new Date().toISOString() }));
     setStudents(prev => [...prev, ...newStudents]);
+    syncToSupabase('students', newStudents);
     return newStudents.length;
   };
 
   const addSubject = (subject) => {
     const newSubject = { ...subject, id: generateId() };
     setSubjects(prev => [...prev, newSubject]);
+    syncToSupabase('subjects', [newSubject]);
   };
 
   const deleteSubject = (id) => {
     setSubjects(prev => prev.filter(s => s.id !== id));
+    deleteFromSupabase('subjects', id);
   };
 
   const addCompetency = (subjectId, competency) => {
-    setSubjects(prev => prev.map(s => {
-      if (s.id === subjectId) {
-        return { ...s, competencies: [...(s.competencies || []), { ...competency, id: generateId() }] };
-      }
-      return s;
-    }));
+    const newCompetency = { ...competency, id: generateId() };
+    setSubjects(prev => {
+      const updated = prev.map(s =>
+        s.id === subjectId ? { ...s, competencies: [...(s.competencies || []), newCompetency] } : s
+      );
+      const subject = updated.find(s => s.id === subjectId);
+      if (subject) syncToSupabase('subjects', [subject]);
+      return updated;
+    });
   };
 
   const deleteCompetency = (subjectId, competencyId) => {
-    setSubjects(prev => prev.map(s => {
-      if (s.id === subjectId) {
-        return { ...s, competencies: s.competencies.filter(c => c.id !== competencyId) };
-      }
-      return s;
-    }));
+    setSubjects(prev => {
+      const updated = prev.map(s =>
+        s.id === subjectId ? { ...s, competencies: s.competencies.filter(c => c.id !== competencyId) } : s
+      );
+      const subject = updated.find(s => s.id === subjectId);
+      if (subject) syncToSupabase('subjects', [subject]);
+      return updated;
+    });
   };
 
   const addClass = (cls) => {
     const newClass = { ...cls, id: generateId() };
     setClasses(prev => [...prev, newClass]);
+    syncToSupabase('classes', [newClass]);
   };
 
   const deleteClass = (id) => {
     setClasses(prev => prev.filter(c => c.id !== id));
+    deleteFromSupabase('classes', id);
   };
 
   const updateClassColor = (id, color) => {
@@ -660,7 +672,11 @@ if (studentsData?.length > 0) {
 
   const reassignClassColors = () => {
     const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#84cc16', '#f97316', '#ec4899'];
-    setClasses(prev => prev.map((c, i) => ({ ...c, color: colors[i % colors.length] })));
+    setClasses(prev => {
+      const updated = prev.map((c, i) => ({ ...c, color: colors[i % colors.length] }));
+      syncToSupabase('classes', updated);
+      return updated;
+    });
   };
 
   const updateUser = (id, updates) => {
@@ -668,6 +684,7 @@ if (studentsData?.length > 0) {
     if (currentUser?.id === id) {
       setCurrentUser(prev => ({ ...prev, ...updates }));
     }
+    syncToSupabase('users', [{ id, ...updates }]);
   };
 
   const deleteUser = async (id) => {
@@ -735,13 +752,17 @@ if (studentsData?.length > 0) {
         g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period
       );
       if (existing) {
+        const updated = { ...existing, score, conclusion };
+        syncToSupabase('grades', [updated]);
         return prev.map(g =>
           (g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period)
-            ? { ...g, score, conclusion }
+            ? updated
             : g
         );
       }
-      return [...prev, { id: generateId(), studentId, subject, competencyId, period, score, conclusion }];
+      const newGrade = { id: generateId(), studentId, subject, competencyId, period, score, conclusion };
+      syncToSupabase('grades', [newGrade]);
+      return [...prev, newGrade];
     });
   };
 
@@ -755,19 +776,19 @@ if (studentsData?.length > 0) {
 
   const addInstrument = (instrument) => {
     const newInstrument = { ...instrument, id: generateId(), userId: instrument.userId };
-    setInstruments(prev => [...prev, newInstrument]);
-    if (isOnline) {
-      syncToSupabase('instruments', [...instruments, newInstrument]);
-    }
+    setInstruments(prev => {
+      syncToSupabase('instruments', [...prev, newInstrument]);
+      return [...prev, newInstrument];
+    });
     return newInstrument;
   };
 
   const updateInstrument = (id, updates) => {
-    setInstruments(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
-    if (isOnline) {
-      const updated = instruments.map(i => i.id === id ? { ...i, ...updates } : i);
+    setInstruments(prev => {
+      const updated = prev.map(i => i.id === id ? { ...i, ...updates } : i);
       syncToSupabase('instruments', updated);
-    }
+      return updated;
+    });
   };
 
   const deleteInstrument = (id) => {
@@ -897,12 +918,17 @@ if (studentsData?.length > 0) {
   };
 
   const updatePeriodDates = (periodId, dates) => {
-    setPeriodDates(prev => ({ ...prev, [periodId]: dates }));
+    setPeriodDates(prev => {
+      const updated = { ...prev, [periodId]: dates };
+      syncToSupabase('period_dates', [{ id: periodId, start_date: dates.start, end_date: dates.end }]);
+      return updated;
+    });
   };
 
   const saveDiagnosticEvaluation = (evaluation) => {
     const newEvaluation = { ...evaluation, id: generateId(), createdAt: new Date().toISOString() };
     setDiagnosticEvaluations(prev => [...prev, newEvaluation]);
+    syncToSupabase('diagnostic_evaluations', [newEvaluation]);
     return newEvaluation;
   };
 
