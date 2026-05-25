@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2 } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -44,7 +44,7 @@ const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Ini
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation } = useStore();
 
   const availableClasses = useMemo(() => {
     if (isAdmin) return classes;
@@ -1218,13 +1218,24 @@ export default function Grades() {
                   </div>
                 </div>
 
-                <button 
-                  className="btn-primary" 
-                  style={{ width: '100%', marginTop: '1.5rem' }}
-                  onClick={() => setViewingEvaluation(null)}
-                >
-                  Cerrar
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <button onClick={() => setViewingEvaluation(null)} style={{
+                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+                    background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  }}>Cerrar</button>
+                  <button onClick={() => {
+                    if (confirm('¿Eliminar esta evaluación?')) {
+                      deleteInstrumentEvaluation(viewingEvaluation.id);
+                      setViewingEvaluation(null);
+                    }
+                  }} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    padding: '0.75rem 1rem', borderRadius: '10px', border: 'none',
+                    background: '#fee2e2', color: '#dc2626', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  }}>
+                    <Trash2 size={16} /> Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           )}
