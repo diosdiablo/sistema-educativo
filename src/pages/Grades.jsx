@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -44,7 +44,7 @@ const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Ini
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade } = useStore();
 
   const availableClasses = useMemo(() => {
     if (isAdmin) return classes;
@@ -86,8 +86,14 @@ export default function Grades() {
   }, [students, selectedClass]);
 
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
-  const [hoveredEval, setHoveredEval] = useState(null); // { evaluation, position: { x, y } }
+  const [hoveredEval, setHoveredEval] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
+  const [showQuickGrade, setShowQuickGrade] = useState(false);
+  const [quickGrade, setQuickGrade] = useState({
+    studentId: '', activityName: '', score: '', date: new Date().toISOString().split('T')[0], note: '', competencyId: ''
+  });
+  const [quickGradeSaving, setQuickGradeSaving] = useState(false);
+  const [quickGradeMsg, setQuickGradeMsg] = useState('');
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -632,6 +638,19 @@ export default function Grades() {
               <Info size={18} color="white" />
             </div>
             <span>Cada columna representa un instrumento aplicado. <strong style={{ color: '#667eea' }}>Haz clic en la nota</strong> para ver el detalle.</span>
+          </div>
+
+          {/* Botón de calificación rápida */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <button onClick={() => { setQuickGrade({ studentId: '', activityName: '', score: '', date: new Date().toISOString().split('T')[0], note: '', competencyId: currentSubject?.competencies?.[0]?.id || '' }); setQuickGradeMsg(''); setShowQuickGrade(true); }} style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.7rem 1.25rem', border: 'none', borderRadius: '12px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(16,185,129,0.3)'
+            }}>
+              <Plus size={18} /> Calificación Rápida
+            </button>
           </div>
 
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
@@ -1206,6 +1225,139 @@ export default function Grades() {
                 >
                   Cerrar
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de calificación rápida */}
+          {showQuickGrade && (
+            <div className="modal-overlay animate-fade-in" style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+              display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+              padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
+            }}>
+              <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{
+                      width: '40px', height: '40px', borderRadius: '10px',
+                      background: 'rgba(16,185,129,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Plus size={20} color="#10b981" />
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Calificación Rápida</h3>
+                  </div>
+                  <button onClick={() => setShowQuickGrade(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                    <X size={20} color="var(--text-secondary)" />
+                  </button>
+                </div>
+
+                {quickGradeMsg && (
+                  <div style={{
+                    padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '1rem',
+                    background: quickGradeMsg.startsWith('✓') ? '#dcfce7' : '#fef2f2',
+                    color: quickGradeMsg.startsWith('✓') ? '#16a34a' : '#dc2626',
+                    fontSize: '0.85rem', fontWeight: 500
+                  }}>{quickGradeMsg}</div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Estudiante</label>
+                    <select value={quickGrade.studentId} onChange={e => setQuickGrade(prev => ({ ...prev, studentId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
+                      <option value="">Seleccionar estudiante...</option>
+                      {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
+                    <input type="text" className="input-field" placeholder="Ej: Participación oral, Actividad en pizarra..." value={quickGrade.activityName}
+                      onChange={e => setQuickGrade(prev => ({ ...prev, activityName: e.target.value }))} style={{ width: '100%' }} />
+                  </div>
+
+                  {currentSubject?.competencies?.length > 0 && (
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Competencia <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                      <select value={quickGrade.competencyId} onChange={e => setQuickGrade(prev => ({ ...prev, competencyId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
+                        <option value="">Todas las competencias</option>
+                        {currentSubject.competencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Nota (0-20)</label>
+                    <input type="number" className="input-field" min="0" max="20" step="0.5" placeholder="0-20" value={quickGrade.score}
+                      onChange={e => setQuickGrade(prev => ({ ...prev, score: e.target.value }))} style={{ width: '100%' }} />
+                    {quickGrade.score && (
+                      <div style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                        Cualitativo: <span className={`badge ${BADGE_THEME[(() => { const s = Number(quickGrade.score); return s >= 18 ? 'AD' : s >= 15 ? 'A' : s >= 12 ? 'B' : 'C'; })()]}`} style={{ fontWeight: 700 }}>
+                          {(() => { const s = Number(quickGrade.score); return s >= 18 ? 'AD' : s >= 15 ? 'A' : s >= 12 ? 'B' : 'C'; })()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
+                    <input type="date" className="input-field" value={quickGrade.date}
+                      onChange={e => setQuickGrade(prev => ({ ...prev, date: e.target.value }))} style={{ width: '100%' }} />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Comentario <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                    <textarea className="input-field" rows={3} placeholder="Nota u observación..." value={quickGrade.note}
+                      onChange={e => setQuickGrade(prev => ({ ...prev, note: e.target.value }))} style={{ width: '100%', resize: 'vertical' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <button onClick={() => setShowQuickGrade(false)} style={{
+                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+                    background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  }}>Cancelar</button>
+                  <button onClick={async () => {
+                    if (!quickGrade.studentId) { setQuickGradeMsg('Selecciona un estudiante'); return; }
+                    if (!quickGrade.activityName.trim()) { setQuickGradeMsg('Ingresa el nombre de la actividad'); return; }
+                    const scoreNum = Number(quickGrade.score);
+                    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 20) { setQuickGradeMsg('Ingresa una nota válida (0-20)'); return; }
+                    setQuickGradeSaving(true);
+                    setQuickGradeMsg('');
+                    try {
+                      const student = students.find(s => s.id === quickGrade.studentId);
+                      await saveQuickGrade({
+                        studentId: quickGrade.studentId,
+                        studentName: student?.name || 'Desconocido',
+                        subjectId: selectedSubjectId,
+                        subjectName: currentSubject?.name || '',
+                        competencyId: quickGrade.competencyId || undefined,
+                        period: selectedPeriod,
+                        classId: student?.classId || '',
+                        score: scoreNum,
+                        activityName: quickGrade.activityName.trim(),
+                        date: quickGrade.date,
+                        note: quickGrade.note.trim() || undefined
+                      });
+                      setQuickGradeMsg('✓ Calificación guardada correctamente');
+                      setQuickGrade(prev => ({ ...prev, studentId: '', activityName: '', score: '', note: '' }));
+                    } catch (err) {
+                      setQuickGradeMsg('Error al guardar la calificación');
+                      console.error(err);
+                    } finally {
+                      setQuickGradeSaving(false);
+                    }
+                  }} disabled={quickGradeSaving} style={{
+                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    padding: '0.75rem', borderRadius: '10px', border: 'none',
+                    background: quickGradeSaving ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
+                    color: 'white', fontWeight: 600, cursor: quickGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
+                  }}>
+                    <Send size={16} /> {quickGradeSaving ? 'Guardando...' : 'Guardar'}
+                  </button>
+                </div>
               </div>
             </div>
           )}

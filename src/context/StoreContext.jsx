@@ -771,6 +771,41 @@ if (studentsData?.length > 0) {
     deleteFromSupabase('instruments', id);
   };
 
+  const saveQuickGrade = async ({ studentId, studentName, subjectId, subjectName, competencyId, period, classId, score, activityName, date, note }) => {
+    const qualitative = score >= 18 ? 'AD' : score >= 15 ? 'A' : score >= 12 ? 'B' : 'C';
+    const newEval = {
+      id: generateId(),
+      instrumentId: 'quick',
+      studentId, studentName, subjectId, subjectName,
+      competencyId: competencyId || '__all__',
+      period, classId, score,
+      maxPossible: 20, qualitative,
+      activityName, instrumentType: 'quick',
+      userId: currentUser?.id,
+      date: date || new Date().toISOString().split('T')[0],
+      scores: note ? { __note__: note } : {},
+      criteria: [],
+      createdAt: new Date().toISOString()
+    };
+    setInstrumentEvaluations(prev => [...prev, newEval]);
+    if (isOnline) {
+      try {
+        await supabase.from('instrument_evaluations').upsert({
+          id: newEval.id, instrument_id: 'quick',
+          student_id: studentId, student_name: studentName,
+          subject_id: subjectId, subject_name: subjectName,
+          competency_id: newEval.competencyId,
+          period, class_id: classId, score, max_possible: 20,
+          qualitative, activity_name: activityName,
+          instrument_type: 'quick', user_id: currentUser?.id,
+          date: newEval.date, scores: newEval.scores, criteria: [],
+          created_at: newEval.createdAt
+        }, { onConflict: 'id' });
+      } catch (err) { console.error('Error syncing quick grade:', err); }
+    }
+    return newEval;
+  };
+
   const deleteInstrumentEvaluation = (id) => {
     setInstrumentEvaluations(prev => prev.filter(e => e.id !== id));
     deleteFromSupabase('instrument_evaluations', id);
@@ -1199,7 +1234,7 @@ if (studentsData?.length > 0) {
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
       saveAttendanceDate, saveGrade,
-      calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
+      calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
       schedule, saveScheduleItem, deleteScheduleItem,
       periodDates, updatePeriodDates,
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
