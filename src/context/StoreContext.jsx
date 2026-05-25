@@ -718,8 +718,14 @@ if (studentsData?.length > 0) {
   const saveAttendanceDate = (date, records = {}) => {
     setAttendance(prev => {
       const existing = prev.find(a => a.date === date);
-      if (existing) return prev.map(a => a.date === date ? { ...a, records } : a);
-      return [...prev, { id: generateId(), date, records }];
+      if (existing) {
+        const updated = prev.map(a => a.date === date ? { ...a, records } : a);
+        syncToSupabase('attendance', [updated.find(a => a.date === date)]);
+        return updated;
+      }
+      const newRecord = { id: generateId(), date, records };
+      syncToSupabase('attendance', [newRecord]);
+      return [...prev, newRecord];
     });
   };
 
