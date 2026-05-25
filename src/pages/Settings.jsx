@@ -645,26 +645,36 @@ export default function Settings() {
           {loginHistory && loginHistory.length > 0 ? (
             <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
               <table className="styled-table">
-                <thead>
-                  <tr>
-                    <th>Usuario</th>
-                    <th>Ingreso</th>
-                    <th>Salida</th>
-                    <th>Duración</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loginHistory.map(entry => (
-                    <tr key={entry.id}>
-                      <td style={{ fontWeight: 600 }}>{entry.userName}</td>
-                      <td>{entry.loginAt ? new Date(entry.loginAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>
-                      <td>{entry.logoutAt ? new Date(entry.logoutAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : 'En sesión'}</td>
-                      <td>
-                        {entry.duration !== null ? `${entry.duration} min` : '-'}
-                      </td>
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Rol</th>
+                      <th>Ingreso</th>
+                      <th>Salida</th>
+                      <th>Duración</th>
                     </tr>
-                  ))}
-                </tbody>
+                  </thead>
+                  <tbody>
+                    {loginHistory.map(entry => (
+                      <tr key={entry.id}>
+                        <td style={{ fontWeight: 600 }}>{entry.userName}</td>
+                        <td>
+                          <span style={{
+                            display: 'inline-block', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
+                            background: entry.role === 'admin' ? 'rgba(239,68,68,0.1)' : entry.role === 'parent' ? 'rgba(234,179,8,0.1)' : 'rgba(16,185,129,0.1)',
+                            color: entry.role === 'admin' ? '#dc2626' : entry.role === 'parent' ? '#ca8a04' : '#059669'
+                          }}>
+                            {entry.role === 'admin' ? 'Admin' : entry.role === 'parent' ? 'Padre' : 'Docente'}
+                          </span>
+                        </td>
+                        <td>{entry.loginAt ? new Date(entry.loginAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>
+                        <td>{entry.logoutAt ? new Date(entry.logoutAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : 'En sesión'}</td>
+                        <td>
+                          {entry.duration !== null ? `${entry.duration} min` : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
               </table>
             </div>
           ) : (

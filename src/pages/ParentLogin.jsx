@@ -6,7 +6,7 @@ import Logo from '../assets/logo.png';
 
 export default function ParentLogin() {
   const navigate = useNavigate();
-  const { students } = useStore();
+  const { students, recordParentLogin } = useStore();
   const [dni, setDni] = useState('');
   const [error, setError] = useState('');
 
@@ -18,6 +18,7 @@ export default function ParentLogin() {
     const hijos = students.filter(s => s.guardianDni === cleanDni || s.guardian_dni === cleanDni);
     if (hijos.length === 0) { setError('No se encontraron hijos con ese DNI'); return; }
     sessionStorage.setItem('edu_parent_dni', cleanDni);
+    recordParentLogin(cleanDni);
     navigate('/parent/dashboard');
   };
 

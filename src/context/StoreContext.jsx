@@ -917,6 +917,32 @@ if (studentsData?.length > 0) {
     deleteFromSupabase('schedule', id);
   };
 
+  const recordParentLogin = (dni) => {
+    const parentName = students.find(s => s.guardianDni === dni || s.guardian_dni === dni)?.guardianName || `Padre (DNI: ${dni})`;
+    const entry = {
+      id: generateId(),
+      userId: dni,
+      userName: parentName,
+      username: dni,
+      role: 'parent',
+      loginAt: new Date().toISOString(),
+      logoutAt: null,
+      duration: null
+    };
+    const entryForSupabase = {
+      id: entry.id,
+      user_id: entry.userId,
+      user_name: entry.userName,
+      username: entry.username,
+      role: entry.role,
+      login_at: entry.loginAt,
+      logout_at: entry.logoutAt
+    };
+    setLoginHistory(prev => [entry, ...prev]);
+    syncToSupabase('login_history', [entryForSupabase]);
+    sessionStorage.setItem('edu_current_login_entry', entry.id);
+  };
+
   const updatePeriodDates = (periodId, dates) => {
     setPeriodDates(prev => {
       const updated = { ...prev, [periodId]: dates };
@@ -1289,7 +1315,7 @@ if (studentsData?.length > 0) {
       learningSessions, addLearningSession, deleteLearningSession,
       events, addEvent, updateEvent, deleteEvent,
       notifications, markNotificationRead, addNotification, deleteNotification,
-      behavior, addBehaviorRecord, deleteBehaviorRecord,
+      behavior, addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,
