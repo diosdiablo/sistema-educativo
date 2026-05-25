@@ -241,13 +241,14 @@ export default function SchoolCalendar() {
 
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-          minWidth: 0
+          width: '100%', minWidth: 0
         }}>
           {/* Day names */}
           {DAYS.map((d, idx) => (
             <div key={'h' + idx} style={{
-              textAlign: 'center', padding: isMobile ? '0.3rem' : '0.5rem',
-              fontWeight: 700, fontSize: isMobile ? '0.7rem' : '0.8rem', color: '#94a3b8',
+              textAlign: 'center', padding: isMobile ? '0.2rem' : '0.5rem',
+              fontWeight: 700, fontSize: isMobile ? '0.65rem' : '0.8rem', color: '#94a3b8',
+              boxSizing: 'border-box',
               borderBottom: '1px solid #f1f5f9',
               borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
             }}>{d}</div>
@@ -259,7 +260,8 @@ export default function SchoolCalendar() {
             const remaining = dayEvents.length - maxShow;
             return (
               <div key={idx} onClick={() => openAddForm(cell.date)} style={{
-                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.3rem' : '0.5rem',
+                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.2rem' : '0.5rem',
+                overflow: 'hidden', boxSizing: 'border-box',
                 borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
                 borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
                 background: cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white',
@@ -271,9 +273,9 @@ export default function SchoolCalendar() {
                 onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white'; }}
               >
                 <div style={{
-                  fontSize: isMobile ? '0.7rem' : '0.85rem', fontWeight: cell.isToday ? 800 : 600,
+                  fontSize: isMobile ? '0.65rem' : '0.85rem', fontWeight: cell.isToday ? 800 : 600,
                   color: cell.isToday ? '#d97706' : '#1e293b',
-                  width: isMobile ? '22px' : '28px', height: isMobile ? '22px' : '28px', display: 'flex',
+                  width: isMobile ? '20px' : '28px', height: isMobile ? '20px' : '28px', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   borderRadius: '50%',
                   background: cell.isToday ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
