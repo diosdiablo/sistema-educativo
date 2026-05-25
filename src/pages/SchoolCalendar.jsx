@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
@@ -37,7 +37,13 @@ export default function SchoolCalendar() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
-  const isMobile = window.innerWidth <= 600;
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 600);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const loadCivicCalendar = () => {
     const existingTitles = new Set(events.map(e => e.title));
@@ -234,18 +240,25 @@ export default function SchoolCalendar() {
         </div>
 
         {/* Day names */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
+          minWidth: isMobile ? '560px' : 'auto'
+        }}>
           {DAYS.map(d => (
             <div key={d} style={{
               textAlign: 'center', padding: isMobile ? '0.5rem 0.1rem' : '0.75rem 0.25rem',
-              fontWeight: 700, fontSize: isMobile ? '0.65rem' : '0.8rem', color: '#94a3b8',
+              fontWeight: 700, fontSize: isMobile ? '0.7rem' : '0.8rem', color: '#94a3b8',
               borderBottom: '1px solid #f1f5f9'
             }}>{d}</div>
           ))}
         </div>
 
         {/* Calendar grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
+          minWidth: isMobile ? '560px' : 'auto'
+        }}>
           {calendarDays.map((cell, idx) => {
             const dayEvents = eventsByDate[cell.date] || [];
             const maxShow = isMobile ? 0 : 2;
@@ -301,6 +314,7 @@ export default function SchoolCalendar() {
               </div>
             );
           })}
+        </div>
         </div>
       </div>
 
