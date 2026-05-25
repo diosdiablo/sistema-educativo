@@ -92,6 +92,7 @@ export default function Grades() {
   const [quickGrade, setQuickGrade] = useState({
     studentId: '', activityName: '', score: '', date: new Date().toISOString().split('T')[0], note: '', competencyId: ''
   });
+  const LITERAL_GRADES = ['AD', 'A', 'B', 'C'];
   const [quickGradeSaving, setQuickGradeSaving] = useState(false);
   const [quickGradeMsg, setQuickGradeMsg] = useState('');
 
@@ -1277,10 +1278,22 @@ export default function Grades() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Estudiante</label>
-                    <select value={quickGrade.studentId} onChange={e => setQuickGrade(prev => ({ ...prev, studentId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
-                      <option value="">Seleccionar estudiante...</option>
-                      {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <select value={quickGrade.studentId} onChange={e => setQuickGrade(prev => ({ ...prev, studentId: e.target.value }))} className="input-field" style={{ flex: 1 }}>
+                        <option value="">Seleccionar estudiante...</option>
+                        {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                      <button onClick={() => {
+                        const available = filteredStudents.filter(s => s.id !== quickGrade.studentId);
+                        if (available.length === 0) return;
+                        const random = available[Math.floor(Math.random() * available.length)];
+                        setQuickGrade(prev => ({ ...prev, studentId: random.id }));
+                      }} title="Alumno al azar" style={{
+                        padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+                        background: '#f8fafc', cursor: 'pointer', fontSize: '0.85rem', color: '#64748b',
+                        whiteSpace: 'nowrap'
+                      }}>🎲 Azar</button>
+                    </div>
                   </div>
 
                   <div>
@@ -1300,16 +1313,20 @@ export default function Grades() {
                   )}
 
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Nota (0-20)</label>
-                    <input type="number" className="input-field" min="0" max="20" step="0.5" placeholder="0-20" value={quickGrade.score}
-                      onChange={e => setQuickGrade(prev => ({ ...prev, score: e.target.value }))} style={{ width: '100%' }} />
-                    {quickGrade.score && (
-                      <div style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
-                        Cualitativo: <span className={`badge ${BADGE_THEME[(() => { const s = Number(quickGrade.score); return s >= 18 ? 'AD' : s >= 15 ? 'A' : s >= 12 ? 'B' : 'C'; })()]}`} style={{ fontWeight: 700 }}>
-                          {(() => { const s = Number(quickGrade.score); return s >= 18 ? 'AD' : s >= 15 ? 'A' : s >= 12 ? 'B' : 'C'; })()}
-                        </span>
-                      </div>
-                    )}
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Nota</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {LITERAL_GRADES.map(g => {
+                        const colors = { AD: { bg: '#dcfce7', text: '#16a34a' }, A: { bg: '#dbeafe', text: '#2563eb' }, B: { bg: '#fef9c3', text: '#ca8a04' }, C: { bg: '#fee2e2', text: '#dc2626' } };
+                        return (
+                          <button key={g} onClick={() => setQuickGrade(prev => ({ ...prev, score: g }))} style={{
+                            flex: 1, padding: '0.6rem', borderRadius: '10px', border: quickGrade.score === g ? `2px solid ${colors[g].text}` : '1.5px solid #e2e8f0',
+                            background: quickGrade.score === g ? colors[g].bg : 'white',
+                            color: colors[g].text, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}>{g}</button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div>
@@ -1333,8 +1350,7 @@ export default function Grades() {
                   <button onClick={async () => {
                     if (!quickGrade.studentId) { setQuickGradeMsg('Selecciona un estudiante'); return; }
                     if (!quickGrade.activityName.trim()) { setQuickGradeMsg('Ingresa el nombre de la actividad'); return; }
-                    const scoreNum = Number(quickGrade.score);
-                    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 20) { setQuickGradeMsg('Ingresa una nota válida (0-20)'); return; }
+                    if (!quickGrade.score) { setQuickGradeMsg('Selecciona una nota (AD/A/B/C)'); return; }
                     setQuickGradeSaving(true);
                     setQuickGradeMsg('');
                     try {
@@ -1347,7 +1363,7 @@ export default function Grades() {
                         competencyId: quickGrade.competencyId || undefined,
                         period: selectedPeriod,
                         classId: student?.classId || '',
-                        score: scoreNum,
+                        score: quickGrade.score,
                         activityName: quickGrade.activityName.trim(),
                         date: quickGrade.date,
                         note: quickGrade.note.trim() || undefined
