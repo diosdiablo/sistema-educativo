@@ -247,7 +247,7 @@ export default function SchoolCalendar() {
         }}>
           {DAYS.map((d, idx) => (
             <div key={d} style={{
-              textAlign: 'center', padding: isMobile ? '0.5rem 0.1rem' : '0.75rem 0.25rem',
+              textAlign: 'center', padding: isMobile ? '0.3rem' : '0.5rem',
               fontWeight: 700, fontSize: isMobile ? '0.7rem' : '0.8rem', color: '#94a3b8',
               borderBottom: '1px solid #f1f5f9',
               borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
@@ -266,7 +266,7 @@ export default function SchoolCalendar() {
             const remaining = dayEvents.length - maxShow;
             return (
               <div key={idx} onClick={() => openAddForm(cell.date)} style={{
-                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.2rem' : '0.5rem',
+                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.3rem' : '0.5rem',
                 borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
                 borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
                 background: cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white',
