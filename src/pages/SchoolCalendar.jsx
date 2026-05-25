@@ -240,26 +240,20 @@ export default function SchoolCalendar() {
         </div>
 
         <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        {/* Day names */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
           minWidth: isMobile ? '560px' : 'auto'
         }}>
+          {/* Day names */}
           {DAYS.map((d, idx) => (
-            <div key={d} style={{
+            <div key={'h' + idx} style={{
               textAlign: 'center', padding: isMobile ? '0.3rem' : '0.5rem',
               fontWeight: 700, fontSize: isMobile ? '0.7rem' : '0.8rem', color: '#94a3b8',
               borderBottom: '1px solid #f1f5f9',
               borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
             }}>{d}</div>
           ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-          minWidth: isMobile ? '560px' : 'auto'
-        }}>
+          {/* Calendar cells */}
           {calendarDays.map((cell, idx) => {
             const dayEvents = eventsByDate[cell.date] || [];
             const maxShow = isMobile ? 0 : 2;
