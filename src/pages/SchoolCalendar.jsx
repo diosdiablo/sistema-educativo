@@ -245,11 +245,12 @@ export default function SchoolCalendar() {
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
           minWidth: isMobile ? '560px' : 'auto'
         }}>
-          {DAYS.map(d => (
+          {DAYS.map((d, idx) => (
             <div key={d} style={{
               textAlign: 'center', padding: isMobile ? '0.5rem 0.1rem' : '0.75rem 0.25rem',
               fontWeight: 700, fontSize: isMobile ? '0.7rem' : '0.8rem', color: '#94a3b8',
-              borderBottom: '1px solid #f1f5f9'
+              borderBottom: '1px solid #f1f5f9',
+              borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
             }}>{d}</div>
           ))}
         </div>
