@@ -239,6 +239,7 @@ export default function SchoolCalendar() {
           </button>
         </div>
 
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {/* Day names */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
@@ -254,7 +255,6 @@ export default function SchoolCalendar() {
         </div>
 
         {/* Calendar grid */}
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
           minWidth: isMobile ? '560px' : 'auto'
