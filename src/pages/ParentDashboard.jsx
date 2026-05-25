@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { LogOut, GraduationCap, CalendarCheck, ChevronDown, BookOpen, Target, ArrowLeft, User } from 'lucide-react';
+import { LogOut, GraduationCap, CalendarCheck, ChevronDown, BookOpen, Target, ArrowLeft, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const PERIODS = ['I Bimestre', 'II Bimestre', 'III Bimestre', 'IV Bimestre'];
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
-  const { students, grades, attendance, subjects, classes } = useStore();
+  const { students, grades, attendance, subjects, classes, behavior } = useStore();
   const parentDni = sessionStorage.getItem('edu_parent_dni');
   const [selectedStudentIdx, setSelectedStudentIdx] = useState(0);
   const [view, setView] = useState('grades');
@@ -37,6 +37,11 @@ export default function ParentDashboard() {
     });
     return records.sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [attendance, currentChild]);
+
+  const childBehavior = useMemo(() => {
+    if (!currentChild) return [];
+    return behavior.filter(r => r.studentId === currentChild.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [behavior, currentChild]);
 
   const subjectsWithGrades = useMemo(() => {
     const periodGrades = childGrades.filter(g => g.period === PERIODS[selectedPeriod]);
@@ -157,6 +162,15 @@ export default function ParentDashboard() {
               }}>
                 <CalendarCheck size={18} /> Asistencia
               </button>
+              <button onClick={() => setView('behavior')} style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.2s',
+                background: view === 'behavior' ? '#10b981' : '#e2e8f0',
+                color: view === 'behavior' ? 'white' : '#64748b'
+              }}>
+                <ThumbsUp size={18} /> Conducta
+              </button>
             </div>
 
             {/* Period selector for grades */}
@@ -223,6 +237,57 @@ export default function ParentDashboard() {
                       </div>
                     </div>
                   ))
+                )}
+              </div>
+            )}
+
+            {/* Behavior view */}
+            {view === 'behavior' && (
+              <div>
+                {childBehavior.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                    <ThumbsUp size={48} style={{ opacity: 0.3, marginBottom: '0.75rem' }} />
+                    <p>No hay registros de conducta</p>
+                  </div>
+                ) : (
+                  <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                    <div style={{
+                      padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9',
+                      background: '#fafbfc', fontWeight: 700, fontSize: '0.9rem',
+                      color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                    }}>
+                      <ThumbsUp size={16} /> Registro de Conducta
+                    </div>
+                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                      {childBehavior.map((r, idx) => (
+                        <div key={idx} style={{
+                          display: 'flex', alignItems: 'center', gap: '0.75rem',
+                          padding: '0.65rem 1rem', borderBottom: '1px solid #f8fafc'
+                        }}>
+                          <div style={{
+                            width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: r.type === 'positive' ? '#dcfce7' : '#fee2e2'
+                          }}>
+                            {r.type === 'positive' ? <ThumbsUp size={16} color="#16a34a" /> : <ThumbsDown size={16} color="#dc2626" />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{r.description}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                              {new Date(r.date).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </div>
+                          </div>
+                          <span style={{
+                            padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
+                            background: r.type === 'positive' ? '#dcfce7' : '#fee2e2',
+                            color: r.type === 'positive' ? '#16a34a' : '#dc2626'
+                          }}>
+                            {r.type === 'positive' ? 'Positivo' : 'Negativo'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

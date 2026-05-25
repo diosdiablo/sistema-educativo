@@ -109,23 +109,12 @@ export const StoreProvider = ({ children }) => {
             { data: learningSessionsData },
             { data: periodDatesData },
             { data: loginHistoryData },
-            { data: eventsData }
+            { data: eventsData },
+            { data: behaviorData }
           ] = await Promise.all([
-            supabase.from('students').select('*'),
-            supabase.from('classes').select('*'),
-            supabase.from('subjects').select('*'),
-            supabase.from('grades').select('*'),
-            supabase.from('attendance').select('*'),
-            supabase.from('instruments').select('*'),
-            supabase.from('instrument_evaluations').select('*'),
-            supabase.from('schedule').select('*'),
-            supabase.from('diagnostic_evaluations').select('*'),
-            supabase.from('users').select('*'),
-            supabase.from('planning_documents').select('*'),
-            supabase.from('learning_sessions').select('*'),
-            supabase.from('period_dates').select('*'),
             supabase.from('login_history').select('*').order('login_at', { ascending: false }),
-            supabase.from('events').select('*')
+            supabase.from('events').select('*'),
+            supabase.from('behavior').select('*')
           ]);
           
       if (studentsData?.length > 0) {
@@ -246,6 +235,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       }
       
       if (eventsData?.length > 0) setEvents(eventsData);
+      if (behaviorData?.length > 0) setBehavior(behaviorData);
       
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
@@ -281,7 +271,8 @@ const [
         { data: learningSessionsData },
         { data: periodDatesData },
         { data: loginHistoryData },
-        { data: eventsData }
+        { data: eventsData },
+        { data: behaviorData }
       ] = await Promise.all([
         supabase.from('students').select('*'),
         supabase.from('classes').select('*'),
@@ -297,7 +288,8 @@ const [
         supabase.from('learning_sessions').select('*'),
         supabase.from('period_dates').select('*'),
         supabase.from('login_history').select('*').order('login_at', { ascending: false }),
-        supabase.from('events').select('*')
+        supabase.from('events').select('*'),
+        supabase.from('behavior').select('*')
       ]);
       
 if (studentsData?.length > 0) {
@@ -424,6 +416,7 @@ if (studentsData?.length > 0) {
       }
       
       if (eventsData?.length > 0) setEvents(eventsData);
+      if (behaviorData?.length > 0) setBehavior(behaviorData);
       
       console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
@@ -449,6 +442,7 @@ if (studentsData?.length > 0) {
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
   const [events, setEvents] = useState(() => loadData('edu_events', []));
   const [notifications, setNotifications] = useState(() => loadData('edu_notifications', []));
+  const [behavior, setBehavior] = useState(() => loadData('edu_behavior', []));
 
   useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
   useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
@@ -466,6 +460,7 @@ if (studentsData?.length > 0) {
   useEffect(() => { localStorage.setItem('edu_login_history', JSON.stringify(loginHistory)); }, [loginHistory]);
   useEffect(() => { localStorage.setItem('edu_events', JSON.stringify(events)); }, [events]);
   useEffect(() => { localStorage.setItem('edu_notifications', JSON.stringify(notifications)); }, [notifications]);
+  useEffect(() => { localStorage.setItem('edu_behavior', JSON.stringify(behavior)); }, [behavior]);
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
@@ -1074,6 +1069,7 @@ if (studentsData?.length > 0) {
       { name: 'planning_documents', data: planningDocuments },
       { name: 'login_history', data: loginHistory },
       { name: 'events', data: events },
+      { name: 'behavior', data: behavior },
     ];
     const results = await Promise.allSettled(
       tables.map(t =>
@@ -1089,7 +1085,7 @@ if (studentsData?.length > 0) {
     } else {
       alert(`✓ Todos los datos sincronizados (${tables.length} tablas)`);
     }
-  }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, syncToSupabase]);
+  }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, behavior, syncToSupabase]);
 
   const clearAllGrades = () => {
     setGrades([]);
@@ -1186,6 +1182,22 @@ if (studentsData?.length > 0) {
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
 
+  const addBehaviorRecord = (record) => {
+    const newRecord = {
+      ...record,
+      id: generateId(),
+      createdAt: new Date().toISOString()
+    };
+    setBehavior(prev => [...prev, newRecord]);
+    syncToSupabase('behavior', [newRecord]);
+    return newRecord;
+  };
+
+  const deleteBehaviorRecord = (id) => {
+    setBehavior(prev => prev.filter(r => r.id !== id));
+    deleteFromSupabase('behavior', id);
+  };
+
   const addNotification = (title, message, type = 'chat_message') => {
     const notification = {
       id: generateId(),
@@ -1242,6 +1254,7 @@ if (studentsData?.length > 0) {
       learningSessions, addLearningSession, deleteLearningSession,
       events, addEvent, updateEvent, deleteEvent,
       notifications, markNotificationRead, addNotification, deleteNotification,
+      behavior, addBehaviorRecord, deleteBehaviorRecord,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
       autoBackup, syncToSupabaseManual, fetchFromSupabase,

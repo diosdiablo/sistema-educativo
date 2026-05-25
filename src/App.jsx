@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle, ThumbsUp } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -25,6 +25,7 @@ import BoletaNotas from './pages/BoletaNotas';
 import { ChatList, ChatConversationPage } from './pages/Chat';
 import ParentLogin from './pages/ParentLogin';
 import ParentDashboard from './pages/ParentDashboard';
+import Behavior from './pages/Behavior';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin } = useStore();
@@ -46,6 +47,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Reportes', path: '/reports', icon: <FileText size={20} /> },
     { name: 'Boleta de Notas', path: '/boleta', icon: <FileText size={20} /> },
     { name: 'Chat', path: '/chat', icon: <MessageCircle size={20} /> },
+    { name: 'Conducta', path: '/behavior', icon: <ThumbsUp size={20} /> },
   ];
 
   const adminItems = [
@@ -306,6 +308,7 @@ function AppContent() {
           <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
           <Route path="/chat/:userId" element={<ChatConversationPage />} />
           <Route path="/chat" element={<ChatList />} />
+          <Route path="/behavior" element={<Behavior />} />
           <Route path="/parent/dashboard" element={<ParentDashboard />} />
           <Route path="/parent" element={<ParentLogin />} />
           <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />

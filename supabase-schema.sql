@@ -265,6 +265,22 @@ ALTER TABLE planning_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE learning_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
+CREATE TABLE IF NOT EXISTS behavior (
+  id TEXT PRIMARY KEY,
+  student_id TEXT NOT NULL,
+  student_name TEXT,
+  class_id TEXT,
+  type TEXT NOT NULL,
+  description TEXT NOT NULL,
+  date TEXT,
+  user_id TEXT,
+  user_name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE behavior ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all for behavior" ON behavior FOR ALL USING (true) WITH CHECK (true);
+
 -- Políticas para permitir acceso total (en desarrollo)
 CREATE POLICY "Enable all for users" ON users FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Enable all for students" ON students FOR ALL USING (true) WITH CHECK (true);
