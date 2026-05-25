@@ -71,7 +71,9 @@ export const StoreProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loginHistory, setLoginHistory] = useState(() => loadData('edu_login_history', []));
   const [students, setStudents] = useState(() => loadData('edu_students', []));
-  const [attendance, setAttendance] = useState(() => loadData('edu_attendance', []));
+  const [attendance, setAttendance] = useState(() =>
+    loadData('edu_attendance', []).map(r => r.id ? r : { ...r, id: generateId() })
+  );
   const [grades, setGrades] = useState(() => loadData('edu_grades', []));
 
   useEffect(() => {
@@ -713,10 +715,11 @@ if (studentsData?.length > 0) {
     return newUser;
   };
 
-  const saveAttendanceDate = (date) => {
+  const saveAttendanceDate = (date, records = {}) => {
     setAttendance(prev => {
-      if (prev.find(a => a.date === date)) return prev;
-      return [...prev, { date, records: [] }];
+      const existing = prev.find(a => a.date === date);
+      if (existing) return prev.map(a => a.date === date ? { ...a, records } : a);
+      return [...prev, { id: generateId(), date, records }];
     });
   };
 
