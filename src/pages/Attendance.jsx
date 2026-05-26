@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck, History, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Attendance() {
-  const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin } = useStore();
+  const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
   const [searchParams] = useSearchParams();
   
   const availableClasses = useMemo(() => {
@@ -18,6 +18,17 @@ export default function Attendance() {
   const [date, setDate] = useState(today);
   const [selectedClass, setSelectedClass] = useState('');
   const [expandedDates, setExpandedDates] = useState({});
+  const [selectedPeriod, setSelectedPeriod] = useState('all');
+
+  const getPeriodForDate = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    for (const [period, dates] of Object.entries(periodDates)) {
+      const start = new Date(dates.start + 'T00:00:00');
+      const end = new Date(dates.end + 'T00:00:00');
+      if (date >= start && date <= end) return period;
+    }
+    return null;
+  };
 
   const toggleDateExpand = (dateStr) => {
     setExpandedDates(prev => ({ ...prev, [dateStr]: !prev[dateStr] }));
@@ -108,6 +119,18 @@ export default function Attendance() {
       .sort()
       .reverse();
   }, [selectedClass, filteredStudents, attendance]);
+
+  const filteredHistoricalDates = useMemo(() => {
+    if (selectedPeriod === 'all') return historicalAttendanceDates;
+    return historicalAttendanceDates.filter(d => getPeriodForDate(d) === selectedPeriod);
+  }, [historicalAttendanceDates, selectedPeriod]);
+
+  const PERIOD_LABELS = {
+    '1': 'I Bimestre',
+    '2': 'II Bimestre',
+    '3': 'III Bimestre',
+    '4': 'IV Bimestre'
+  };
 
   // Estadísticas del día seleccionado
   const todayStats = useMemo(() => {
@@ -956,7 +979,8 @@ export default function Attendance() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            flexWrap: 'wrap'
           }}>
             <div style={{
               width: '40px',
@@ -969,14 +993,36 @@ export default function Attendance() {
             }}>
               <History size={20} color="white" />
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
                 Historial de Asistencias
               </h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-                {historicalAttendanceDates.length} fechas registradas
+                {filteredHistoricalDates.length} de {historicalAttendanceDates.length} fechas registradas
               </p>
             </div>
+            <select
+              value={selectedPeriod}
+              onChange={e => setSelectedPeriod(e.target.value)}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '10px',
+                border: '2px solid #e2e8f0',
+                background: 'white',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                color: '#334155',
+                cursor: 'pointer',
+                minWidth: '160px'
+              }}
+            >
+              <option value="all">Todos los bimestres</option>
+              {Object.entries(periodDates).map(([key, dates]) => (
+                <option key={key} value={key}>
+                  {PERIOD_LABELS[key] || `Bimestre ${key}`} ({new Date(dates.start).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} - {new Date(dates.end).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div style={{
@@ -1066,7 +1112,7 @@ export default function Attendance() {
                   </tr>
                 </thead>
                 <tbody>
-                  {historicalAttendanceDates.map((dateStr, idx) => {
+                  {filteredHistoricalDates.map((dateStr, idx) => {
                     const summary = getAttendanceSummaryForDate(dateStr, filteredStudents);
                     const attendanceRate = summary.total > 0 
                       ? Math.round(((summary.P + summary.T + summary.J) / summary.total) * 100) 
@@ -1074,9 +1120,8 @@ export default function Attendance() {
                     const isExpanded = expandedDates[dateStr];
 
                     return (
-                      <>
+                      <React.Fragment key={dateStr}>
                         <tr 
-                          key={dateStr} 
                           style={{ 
                             background: idx % 2 === 0 ? '#ffffff' : '#fafafa',
                             cursor: 'pointer',
@@ -1270,7 +1315,7 @@ export default function Attendance() {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
@@ -1306,6 +1351,36 @@ export default function Attendance() {
           </h4>
           <p style={{ fontSize: '0.9rem', color: '#1e40af', margin: 0 }}>
             Las asistencias que tomes aparecerán aquí como historial
+          </p>
+        </div>
+      )}
+
+      {selectedClass && filteredHistoricalDates.length === 0 && historicalAttendanceDates.length > 0 && (
+        <div style={{
+          marginTop: '2rem',
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          borderRadius: '16px',
+          padding: '2rem',
+          textAlign: 'center',
+          border: '2px dashed #fbbf24'
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1rem'
+          }}>
+            <Calendar size={28} color="white" />
+          </div>
+          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#92400e' }}>
+            Sin registros en este bimestre
+          </h4>
+          <p style={{ fontSize: '0.9rem', color: '#92400e', margin: 0 }}>
+            No hay fechas de asistencia registradas en {PERIOD_LABELS[selectedPeriod] || `Bimestre ${selectedPeriod}`} para {selectedClass}
           </p>
         </div>
       )}
