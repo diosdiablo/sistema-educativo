@@ -1000,7 +1000,6 @@ if (studentsData?.length > 0) {
           file_data: newDoc.fileData,
           file_name: newDoc.fileName,
           uploaded_by: newDoc.uploadedBy,
-          uploaded_by_id: newDoc.uploadedById,
           uploaded_at: newDoc.uploadedAt
         };
         await supabase.from('planning_documents').upsert(supabaseDoc, { onConflict: 'id' });
@@ -1032,7 +1031,6 @@ if (studentsData?.length > 0) {
           file_data: newSession.fileData,
           file_name: newSession.fileName,
           uploaded_by: newSession.uploadedBy,
-          uploaded_by_id: newSession.uploadedById,
           uploaded_at: newSession.uploadedAt
         };
         await supabase.from('learning_sessions').upsert(supabaseSession, { onConflict: 'id' });
