@@ -1002,7 +1002,7 @@ if (studentsData?.length > 0) {
           uploaded_by: newDoc.uploadedBy,
           uploaded_at: newDoc.uploadedAt
         };
-        await supabase.from('planning_documents').upsert(supabaseDoc, { onConflict: 'id' });
+        await syncToSupabase('planning_documents', [supabaseDoc]);
       } catch (err) {
         console.error('Error syncing planning doc to Supabase:', err);
       }
@@ -1033,7 +1033,7 @@ if (studentsData?.length > 0) {
           uploaded_by: newSession.uploadedBy,
           uploaded_at: newSession.uploadedAt
         };
-        await supabase.from('learning_sessions').upsert(supabaseSession, { onConflict: 'id' });
+        await syncToSupabase('learning_sessions', [supabaseSession]);
       } catch (err) {
         console.error('Error syncing learning session to Supabase:', err);
       }
