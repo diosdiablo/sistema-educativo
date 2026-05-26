@@ -1309,12 +1309,16 @@ export default function PlanningDocuments() {
                 </button>
               </div>
             </div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <iframe 
-                src={viewingDoc.fileData}
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                title={viewingDoc.title}
-              />
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
+              {viewingDoc.fileData ? (
+                <embed 
+                  src={viewingDoc.fileData}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  type={viewingDoc.fileName?.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream'}
+                />
+              ) : (
+                <p style={{ color: 'var(--text-secondary)' }}>El archivo no está disponible. Intenta descargarlo.</p>
+              )}
             </div>
           </div>
         </div>
