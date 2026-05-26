@@ -436,8 +436,12 @@ if (studentsData?.length > 0) {
   const [instrumentEvaluations, setInstrumentEvaluations] = useState(() => loadData('edu_instrument_evaluations', []));
   const [schedule, setSchedule] = useState(() => loadData('edu_schedule', []));
   const [diagnosticEvaluations, setDiagnosticEvaluations] = useState(() => loadData('edu_diagnostic_evaluations', []));
-  const [planningDocuments, setPlanningDocuments] = useState(() => loadData('edu_planning_documents', []));
-  const [learningSessions, setLearningSessions] = useState(() => loadData('edu_learning_sessions', []));
+  const [planningDocuments, setPlanningDocuments] = useState(() =>
+    loadData('edu_planning_documents', []).filter(d => d.fileData)
+  );
+  const [learningSessions, setLearningSessions] = useState(() =>
+    loadData('edu_learning_sessions', []).filter(d => d.fileData)
+  );
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
   const [events, setEvents] = useState(() => loadData('edu_events', []));
   const [notifications, setNotifications] = useState(() => loadData('edu_notifications', []));
