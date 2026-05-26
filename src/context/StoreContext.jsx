@@ -7,6 +7,11 @@ export const useStore = () => useContext(StoreContext);
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+const normalizeDocSections = (doc) => ({
+  ...doc,
+  sections: typeof doc.sections === 'string' ? JSON.parse(doc.sections) : (doc.sections || [])
+});
+
 const loadData = (key, defaultValue) => {
   try {
     const saved = localStorage.getItem(key);
@@ -212,18 +217,16 @@ if (scheduleData?.length > 0) {
           }
         }
 if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
-      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
+      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => normalizeDocSections({
         ...d,
         fileData: d.file_data || d.fileData,
         uploadedBy: d.uploaded_by,
-        uploadedById: d.uploaded_by_id,
-        sections: d.sections || []
+        uploadedById: d.uploaded_by_id
       })));
-      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => ({
+      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => normalizeDocSections({
         ...s,
         uploadedBy: s.uploaded_by,
-        uploadedById: s.uploaded_by_id,
-        sections: s.sections || []
+        uploadedById: s.uploaded_by_id
       })));
       if (periodDatesData?.length > 0) {
         const periodDatesMap = {};
@@ -373,18 +376,16 @@ if (studentsData?.length > 0) {
         }
       }
       if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
-      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
+      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => normalizeDocSections({
         ...d,
         fileData: d.file_data || d.fileData,
         uploadedBy: d.uploaded_by,
-        uploadedById: d.uploaded_by_id,
-        sections: d.sections || []
+        uploadedById: d.uploaded_by_id
       })));
-      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => ({
+      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => normalizeDocSections({
         ...s,
         uploadedBy: s.uploaded_by,
-        uploadedById: s.uploaded_by_id,
-        sections: s.sections || []
+        uploadedById: s.uploaded_by_id
       })));
       if (periodDatesData?.length > 0) {
         const periodDatesMap = {};
@@ -437,10 +438,10 @@ if (studentsData?.length > 0) {
   const [schedule, setSchedule] = useState(() => loadData('edu_schedule', []));
   const [diagnosticEvaluations, setDiagnosticEvaluations] = useState(() => loadData('edu_diagnostic_evaluations', []));
   const [planningDocuments, setPlanningDocuments] = useState(() =>
-    loadData('edu_planning_documents', []).filter(d => d.fileData)
+    loadData('edu_planning_documents', []).filter(d => d.fileData).map(normalizeDocSections)
   );
   const [learningSessions, setLearningSessions] = useState(() =>
-    loadData('edu_learning_sessions', []).filter(d => d.fileData)
+    loadData('edu_learning_sessions', []).filter(d => d.fileData).map(normalizeDocSections)
   );
   const [periodDates, setPeriodDates] = useState(() => loadData('edu_period_dates', DEFAULT_PERIOD_DATES));
   const [events, setEvents] = useState(() => loadData('edu_events', []));
@@ -993,7 +994,7 @@ if (studentsData?.length > 0) {
           id: newDoc.id,
           title: newDoc.title,
           description: newDoc.description,
-          sections: typeof newDoc.sections === 'object' ? JSON.stringify(newDoc.sections) : newDoc.sections,
+          sections: newDoc.sections || [],
           subject_id: newDoc.subjectId,
           period: newDoc.period,
           grade_level: newDoc.gradeLevel,
@@ -1024,7 +1025,7 @@ if (studentsData?.length > 0) {
           id: newSession.id,
           title: newSession.title,
           description: newSession.description,
-          sections: typeof newSession.sections === 'object' ? JSON.stringify(newSession.sections) : newSession.sections,
+          sections: newSession.sections || [],
           subject_id: newSession.subjectId,
           period: newSession.period,
           grade_level: newSession.gradeLevel,
