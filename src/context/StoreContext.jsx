@@ -114,6 +114,19 @@ export const StoreProvider = ({ children }) => {
             { data: eventsData },
             { data: behaviorData }
           ] = await Promise.all([
+            supabase.from('students').select('*'),
+            supabase.from('classes').select('*'),
+            supabase.from('subjects').select('*'),
+            supabase.from('grades').select('*'),
+            supabase.from('attendance').select('*'),
+            supabase.from('instruments').select('*'),
+            supabase.from('instrument_evaluations').select('*'),
+            supabase.from('schedule').select('*'),
+            supabase.from('diagnostic_evaluations').select('*'),
+            supabase.from('users').select('*'),
+            supabase.from('planning_documents').select('*'),
+            supabase.from('learning_sessions').select('*'),
+            supabase.from('period_dates').select('*'),
             supabase.from('login_history').select('*').order('login_at', { ascending: false }),
             supabase.from('events').select('*'),
             supabase.from('behavior').select('*')
