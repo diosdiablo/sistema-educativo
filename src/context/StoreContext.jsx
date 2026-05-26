@@ -201,6 +201,7 @@ if (scheduleData?.length > 0) {
 if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
         ...d,
+        fileData: d.file_data || d.fileData,
         uploadedBy: d.uploaded_by,
         uploadedById: d.uploaded_by_id,
         sections: d.sections || []
@@ -222,24 +223,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         setPeriodDates(periodDatesMap);
       }
       
-      if (loginHistoryData?.length > 0) {
-        const remoteHistory = loginHistoryData.map(h => ({
-          ...h,
-          userId: h.user_id,
-          userName: h.user_name,
-          loginAt: h.login_at,
-          logoutAt: h.logout_at
-        }));
-        const localIds = new Set(loginHistory.map(l => l.id));
-        const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
-        merged.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
-        setLoginHistory(merged);
-      }
-      
-      if (eventsData?.length > 0) setEvents(eventsData);
-      if (behaviorData?.length > 0) setBehavior(behaviorData);
-      
-      console.log('Loaded:', studentsData?.length, 'students');
       setSyncStatus('synced');
         } catch (err) {
           console.error('Fetch error:', err);
@@ -379,6 +362,7 @@ if (studentsData?.length > 0) {
       if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => ({
         ...d,
+        fileData: d.file_data || d.fileData,
         uploadedBy: d.uploaded_by,
         uploadedById: d.uploaded_by_id,
         sections: d.sections || []
