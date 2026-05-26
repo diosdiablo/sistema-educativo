@@ -253,7 +253,7 @@ function AppContent() {
             notifications.slice(0, 20).map(n => {
               const isUnread = !n.readBy.includes(currentUser?.id);
               return (
-                <div key={n.id} onClick={() => { markNotificationRead(n.id); }}
+                <div key={n.id} onClick={() => { markNotificationRead(n.id); setTimeout(() => deleteNotification(n.id), 300); }}
                   onTouchStart={e => { touchStartX.current = e.touches[0].clientX; e.currentTarget.style.transition = 'none'; }}
                   onTouchMove={e => { const dx = e.touches[0].clientX - touchStartX.current; if (dx > 0) e.currentTarget.style.transform = `translateX(${dx}px)`; }}
                   onTouchEnd={e => { const dx = parseInt(e.currentTarget.style.transform?.replace('translateX(', '')?.replace('px)', '') || '0'); if (dx > 80) { e.currentTarget.style.transition = 'transform 0.3s ease'; e.currentTarget.style.transform = 'translateX(100%)'; setTimeout(() => deleteNotification(n.id), 300); } else { e.currentTarget.style.transition = 'transform 0.2s ease'; e.currentTarget.style.transform = 'translateX(0)'; } }}
