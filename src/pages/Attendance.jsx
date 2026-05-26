@@ -69,11 +69,13 @@ export default function Attendance() {
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return [];
     const cleanSelected = selectedClass.trim().toLowerCase();
-    return students.filter(s => {
-      const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
-      const cleanClass = (s.classId || '').trim().toLowerCase();
-      return cleanGrade === cleanSelected || cleanClass === cleanSelected;
-    });
+    return students
+      .filter(s => {
+        const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+        const cleanClass = (s.classId || '').trim().toLowerCase();
+        return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'es'));
   }, [students, selectedClass]);
 
   // Estadísticas consolidadas de TODAS las fechas para el grado seleccionado
