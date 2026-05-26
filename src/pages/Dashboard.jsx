@@ -443,13 +443,19 @@ export default function Dashboard() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', position: 'relative', zIndex: 2 }}>
             <div style={{
-              width: '48px', height: '48px', borderRadius: '14px',
+              width: '56px', height: '56px', borderRadius: '16px',
               background: 'linear-gradient(135deg, #ec4899, #db2777, #be185d)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 15px rgba(236, 72, 153, 0.4)',
-              animation: 'pulseBirthday 2s ease-in-out infinite'
+              boxShadow: '0 4px 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(236, 72, 153, 0.15)',
+              animation: 'glowCelebration 2s ease-in-out infinite',
+              position: 'relative'
             }}>
-              <Cake size={24} color="white" />
+              <Cake size={26} color="white" />
+              {/* Luces alrededor del pastel */}
+              <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 8px #fbbf24', animation: 'candleFlicker 0.6s ease-in-out infinite alternate' }} />
+              <span style={{ position: 'absolute', top: '-2px', left: '-3px', width: '8px', height: '8px', borderRadius: '50%', background: '#f472b6', boxShadow: '0 0 6px #f472b6', animation: 'candleFlicker 0.8s ease-in-out infinite alternate', animationDelay: '0.2s' }} />
+              <span style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '7px', height: '7px', borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 6px #60a5fa', animation: 'candleFlicker 0.5s ease-in-out infinite alternate', animationDelay: '0.4s' }} />
+              <span style={{ position: 'absolute', bottom: '-4px', left: '-2px', width: '9px', height: '9px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399', animation: 'candleFlicker 0.7s ease-in-out infinite alternate', animationDelay: '0.1s' }} />
             </div>
             <div style={{ flex: 1 }}>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, background: 'linear-gradient(135deg, #db2777, #be185d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -596,6 +602,10 @@ export default function Dashboard() {
             @keyframes glowCelebration {
               0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3); }
               50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.6); }
+            }
+            @keyframes candleFlicker {
+              0% { opacity: 0.4; transform: scale(0.8); }
+              100% { opacity: 1; transform: scale(1.2); }
             }
             ${[...Array(12)].map((_, i) => `
               @keyframes confettiFall${i} {
