@@ -969,7 +969,7 @@ if (studentsData?.length > 0) {
 
   const addPlanningDocument = async (doc) => {
     const newDoc = { ...doc, id: generateId(), uploadedAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Usuario', uploadedById: currentUser?.id };
-    setPlanningDocuments(prev => [...prev, { ...newDoc, fileData: null, fileSize: doc.fileData?.length || 0 }]);
+    setPlanningDocuments(prev => [...prev, newDoc]);
     
     const adminUsers = users.filter(u => u.role === 'admin' || u.username === 'admin');
     adminUsers.forEach(admin => {
