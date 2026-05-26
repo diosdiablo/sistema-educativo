@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck, BarChart3, Award, Clock, Calendar, ArrowRight, GraduationCap, Cake, Gift } from 'lucide-react';
@@ -406,60 +406,119 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Sección de Cumpleaños */}
+      {/* Sección de Cumpleaños Animada */}
       {birthdayData.total > 0 && (
         <div style={{
-          background: 'white',
-          borderRadius: '20px',
-          padding: '1.5rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid rgba(236, 72, 153, 0.2)',
-          marginBottom: '1.5rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          background: 'linear-gradient(145deg, #fff5f9 0%, #fff0f7 50%, #fef3f2 100%)',
+          borderRadius: '24px',
+          padding: '1.75rem',
+          boxShadow: '0 8px 32px rgba(236, 72, 153, 0.15), 0 2px 8px rgba(0,0,0,0.06)',
+          border: '1px solid rgba(236, 72, 153, 0.15)',
+          marginBottom: '1.5rem',
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease',
+          cursor: 'default'
+        }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(236, 72, 153, 0.2), 0 2px 8px rgba(0,0,0,0.06)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(236, 72, 153, 0.15), 0 2px 8px rgba(0,0,0,0.06)'; }}
+        >
+          {/* Partículas decorativas flotantes */}
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+            {[0,1,2,3,4].map(i => (
+              <span key={i} style={{
+                position: 'absolute',
+                fontSize: `${1.5 + Math.random() * 1.5}rem`,
+                opacity: 0.15,
+                animation: `floatBirthday${i} ${4 + Math.random() * 4}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 3}s`,
+                left: `${10 + Math.random() * 80}%`,
+                top: `${10 + Math.random() * 70}%`,
+                transform: 'rotate(0deg)'
+              }}>
+                {['🎂','🎈','🎉','🎊','✨'][i]}
+              </span>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', position: 'relative', zIndex: 2 }}>
             <div style={{
-              width: '44px', height: '44px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ec4899, #db2777)',
+              width: '48px', height: '48px', borderRadius: '14px',
+              background: 'linear-gradient(135deg, #ec4899, #db2777, #be185d)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 15px rgba(236, 72, 153, 0.3)'
+              boxShadow: '0 4px 15px rgba(236, 72, 153, 0.4)',
+              animation: 'pulseBirthday 2s ease-in-out infinite'
             }}>
-              <Cake size={22} color="white" />
+              <Cake size={24} color="white" />
             </div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>🎂 Próximos Cumpleaños</h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-                {birthdayData.total} estudiante(s) con fecha de nacimiento registrada
+            <div style={{ flex: 1 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, background: 'linear-gradient(135deg, #db2777, #be185d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                🎂 Próximos Cumpleaños
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: '#a855a8', margin: 0, fontStyle: 'italic' }}>
+                {birthdayData.total} estudiante(s) registrados
               </p>
             </div>
           </div>
 
+          {/* HOY - Tarjeta de celebración animada */}
           {birthdayData.todayBirthdays.length > 0 && (
             <div style={{
-              background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
-              borderRadius: '16px',
-              padding: '1.25rem',
+              background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
+              borderRadius: '18px',
+              padding: '1.5rem',
               marginBottom: '1rem',
-              border: '2px solid #f59e0b'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <Gift size={20} color="#d97706" />
-                <span style={{ fontWeight: 700, color: '#92400e', fontSize: '1rem' }}>¡HOY ES SU CUMPLEAÑOS! 🎉</span>
+              position: 'relative',
+              overflow: 'hidden',
+              animation: 'glowCelebration 2s ease-in-out infinite',
+              transition: 'transform 0.3s ease',
+            }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {/* Confeti animado */}
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                {[...Array(12)].map((_, i) => (
+                  <span key={i} style={{
+                    position: 'absolute',
+                    width: `${6 + Math.random() * 6}px`,
+                    height: `${6 + Math.random() * 6}px`,
+                    borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                    background: ['#ec4899','#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444'][i % 6],
+                    opacity: 0.8,
+                    animation: `confettiFall${i} ${2 + Math.random() * 2}s ease-in infinite`,
+                    animationDelay: `${Math.random() * 2}s`,
+                    left: `${Math.random() * 100}%`,
+                    top: '-10px'
+                  }} />
+                ))}
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', position: 'relative', zIndex: 1 }}>
+                <span style={{ fontSize: '1.5rem', animation: 'bounceParty 1s ease-in-out infinite' }}>🎉</span>
+                <span style={{ fontWeight: 800, color: 'white', fontSize: '1.05rem', textShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>¡HOY ES SU CUMPLEAÑOS!</span>
+                <span style={{ fontSize: '1.5rem', animation: 'bounceParty 1s ease-in-out infinite', animationDelay: '0.3s' }}>🎉</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
                 {birthdayData.todayBirthdays.map(student => (
                   <div key={student.id} style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    padding: '0.75rem 1rem',
+                    background: 'rgba(255,255,255,0.95)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '14px',
+                    padding: '0.75rem 1.25rem',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }}>
-                    <span style={{ fontSize: '1.5rem' }}>🎈</span>
+                    gap: '0.75rem',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'default'
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px) rotate(-1deg)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0) rotate(0deg)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)'; }}
+                  >
+                    <span style={{ fontSize: '2rem', animation: 'bounceParty 1.5s ease-in-out infinite' }}>🎈</span>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{student.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{student.gradeLevel}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1e293b' }}>{student.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{student.gradeLevel}</div>
                     </div>
                   </div>
                 ))}
@@ -467,27 +526,35 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Carrusel animado para todas las listas */}
           {birthdayData.thisWeek.length > 0 && (
-            <div style={{ marginBottom: birthdayData.todayBirthdays.length > 0 ? '1rem' : 0 }}>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
-                Esta semana ({birthdayData.thisWeek.length} estudiante(s))
+            <div style={{ marginBottom: birthdayData.todayBirthdays.length > 0 ? '1rem' : 0, position: 'relative', zIndex: 2 }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#db2777', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ display: 'inline-block', animation: 'pulseBirthday 2s ease-in-out infinite' }}>📅</span>
+                Esta semana ({birthdayData.thisWeek.length})
               </h4>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {birthdayData.thisWeek.map(student => (
                   <div key={student.id} style={{
-                    background: '#fdf2f8',
-                    borderRadius: '10px',
-                    padding: '0.5rem 0.75rem',
+                    background: 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)',
+                    borderRadius: '12px',
+                    padding: '0.6rem 1rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    fontSize: '0.85rem'
-                  }}>
-                    <span style={{ fontSize: '1rem' }}>🎂</span>
+                    fontSize: '0.85rem',
+                    border: '1px solid rgba(236, 72, 153, 0.15)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'default'
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(236, 72, 153, 0.2)'; e.currentTarget.style.borderColor = '#ec4899'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(236, 72, 153, 0.15)'; }}
+                  >
+                    <span style={{ fontSize: '1.2rem', animation: 'floatBirthday0 3s ease-in-out infinite' }}>🎂</span>
                     <div>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{student.name}</span>
-                      <span style={{ color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
-                        {student.daysUntil === 1 ? 'Mañana' : `En ${student.daysUntil} días`}
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.name}</span>
+                      <span style={{ color: '#db2777', marginLeft: '0.4rem', fontWeight: 600, fontSize: '0.8rem' }}>
+                        {student.daysUntil === 1 ? '¡Mañana!' : `En ${student.daysUntil} días`}
                       </span>
                     </div>
                   </div>
@@ -496,53 +563,54 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Mes actual - con auto-scroll */}
           {birthdayData.todayBirthdays.length === 0 && birthdayData.thisWeek.length === 0 && birthdayData.thisMonth.length > 0 && (
-            <div>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
-                Este mes ({birthdayData.thisMonth.length} estudiante(s))
-              </h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {birthdayData.thisMonth.slice(0, 6).map(student => (
-                  <div key={student.id} style={{
-                    background: '#f5f3ff',
-                    borderRadius: '10px',
-                    padding: '0.5rem 0.75rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    fontSize: '0.8rem'
-                  }}>
-                    <span style={{ fontSize: '1rem' }}>🎂</span>
-                    <div>
-                      <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{student.name}</span>
-                      <span style={{ color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
-                        {student.day} {monthsNames[student.month]}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {birthdayData.thisMonth.length > 6 && (
-                  <div style={{
-                    background: '#f5f3ff',
-                    borderRadius: '10px',
-                    padding: '0.5rem 0.75rem',
-                    fontSize: '0.8rem',
-                    color: 'var(--text-secondary)',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    +{birthdayData.thisMonth.length - 6} más
-                  </div>
-                )}
-              </div>
-            </div>
+            <BirthdayCarousel items={birthdayData.thisMonth} monthsNames={monthsNames} />
           )}
 
           {birthdayData.todayBirthdays.length === 0 && birthdayData.thisWeek.length === 0 && birthdayData.thisMonth.length === 0 && (
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem' }}>
-              No hay cumpleaños próximos esta semana
-            </p>
+            <div style={{
+              background: 'rgba(236, 72, 153, 0.05)',
+              borderRadius: '14px',
+              padding: '1.5rem',
+              textAlign: 'center',
+              position: 'relative',
+              zIndex: 2
+            }}>
+              <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem', opacity: 0.6 }}>🎂</span>
+              <p style={{ fontSize: '0.9rem', color: '#a855a8', margin: 0, fontStyle: 'italic' }}>
+                No hay cumpleaños próximos esta semana
+              </p>
+            </div>
           )}
+
+          <style>{`
+            @keyframes pulseBirthday {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.05); }
+            }
+            @keyframes bounceParty {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-6px); }
+            }
+            @keyframes glowCelebration {
+              0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3); }
+              50% { box-shadow: 0 4px 40px rgba(245, 158, 11, 0.6); }
+            }
+            ${[...Array(12)].map((_, i) => `
+              @keyframes confettiFall${i} {
+                0% { transform: translateY(-10px) rotate(0deg); opacity: 0.8; }
+                100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
+              }
+            `).join('')}
+            ${[0,1,2,3,4].map(i => `
+              @keyframes floatBirthday${i} {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                33% { transform: translateY(-10px) rotate(3deg); }
+                66% { transform: translateY(5px) rotate(-2deg); }
+              }
+            `).join('')}
+          `}</style>
         </div>
       )}
 
@@ -929,6 +997,87 @@ export default function Dashboard() {
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function BirthdayCarousel({ items, monthsNames }) {
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 4;
+  const totalPages = Math.ceil(items.length / pageSize);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setCurrentPage(prev => (prev + 1) % totalPages);
+    }, 4000);
+    return () => clearInterval(intervalRef.current);
+  }, [totalPages]);
+
+  const visibleItems = items.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+
+  return (
+    <div style={{ position: 'relative', zIndex: 2 }}>
+      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#7c3aed', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={{ display: 'inline-block', animation: 'pulseBirthday 2s ease-in-out infinite' }}>📅</span>
+        Este mes ({items.length} estudiante(s))
+      </h4>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        gap: '0.5rem',
+        minHeight: '80px',
+        transition: 'all 0.3s ease'
+      }}>
+        {visibleItems.map(student => (
+          <div key={student.id} style={{
+            background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+            borderRadius: '12px',
+            padding: '0.6rem 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.8rem',
+            border: '1px solid rgba(139, 92, 246, 0.15)',
+            transition: 'all 0.3s ease',
+            cursor: 'default',
+            animation: 'fadeSlideIn 0.3s ease-out'
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.2)'; e.currentTarget.style.borderColor = '#8b5cf6'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.15)'; }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🎂</span>
+            <div>
+              <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.85rem' }}>{student.name}</span>
+              <span style={{ color: '#7c3aed', marginLeft: '0.4rem', fontWeight: 500, fontSize: '0.75rem' }}>
+                {student.day} {monthsNames[student.month]}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Indicadores de página */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
+          {[...Array(totalPages)].map((_, i) => (
+            <button key={i} onClick={() => setCurrentPage(i)} style={{
+              width: '8px', height: '8px', borderRadius: '50%',
+              border: 'none', padding: 0, cursor: 'pointer',
+              background: i === currentPage ? '#8b5cf6' : '#e2e8f0',
+              transition: 'all 0.3s ease',
+              transform: i === currentPage ? 'scale(1.3)' : 'scale(1)'
+            }} />
+          ))}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
