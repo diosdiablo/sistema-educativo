@@ -280,13 +280,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       ['behavior', setBehavior],
     ];
     simple.forEach(([table, setter]) => {
-      channel.on('postgres_changes', { event: '*', schema: 'public', table }, table === 'events'
-        ? (payload) => {
-            console.log('Realtime event received:', table, payload.eventType, payload.new?.id);
-            handleUpsert(setter)(payload);
-          }
-        : handleUpsert(setter)
-      );
+      channel.on('postgres_changes', { event: '*', schema: 'public', table }, handleUpsert(setter));
     });
 
     // -- students --
@@ -390,7 +384,9 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       }
     });
 
-    channel.subscribe();
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') console.log('Realtime channel connected (db-changes)');
+    });
     realtimeChannelsRef.current.push(channel);
     return () => {
       realtimeChannelsRef.current = realtimeChannelsRef.current.filter(ch => ch !== channel);
