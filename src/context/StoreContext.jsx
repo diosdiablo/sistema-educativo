@@ -609,14 +609,33 @@ if (studentsData?.length > 0) {
   useEffect(() => { try { localStorage.setItem('edu_notifications', JSON.stringify(notifications)); } catch(e) { console.warn('localStorage edu_notifications error:', e.message); } }, [notifications]);
   useEffect(() => { try { localStorage.setItem('edu_behavior', JSON.stringify(behavior)); } catch(e) { console.warn('localStorage edu_behavior error:', e.message); } }, [behavior]);
 
+  const toSnakeCase = useCallback((str) => str.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`), []);
+
+  const prepareForSupabase = useCallback((item) => {
+    const result = { updated_at: new Date().toISOString() };
+    for (const key of Object.keys(item || {})) {
+      if (key === 'updated_at' || key.startsWith('_')) continue;
+      const val = item[key];
+      if (val !== null && val !== undefined) {
+        const snakeKey = toSnakeCase(key);
+        if (typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date) && !(val instanceof File)) {
+          try { result[snakeKey] = JSON.stringify(val); } catch { result[snakeKey] = val; }
+        } else {
+          result[snakeKey] = val;
+        }
+      }
+    }
+    return result;
+  }, [toSnakeCase]);
+
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
-    const { error } = await supabase.from(table).upsert(data.map(item => ({
-      ...item,
-      updated_at: new Date().toISOString()
-    })), { onConflict: 'id' });
+    const { error } = await supabase.from(table).upsert(
+      data.map(item => prepareForSupabase(item)),
+      { onConflict: 'id' }
+    );
     if (error) throw error;
-  }, [isOnline]);
+  }, [isOnline, prepareForSupabase]);
 
   const deleteFromSupabase = useCallback(async (table, id) => {
     if (!isOnline) return;
