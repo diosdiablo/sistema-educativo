@@ -967,21 +967,24 @@ if (studentsData?.length > 0) {
     return 'C';
   };
 
-  const addInstrument = (instrument) => {
+  const addInstrument = async (instrument) => {
     const newInstrument = { ...instrument, id: generateId(), userId: instrument.userId };
-    setInstruments(prev => {
-      syncToSupabase('instruments', [...prev, newInstrument]);
-      return [...prev, newInstrument];
-    });
+    setInstruments(prev => [...prev, newInstrument]);
+    try {
+      await syncToSupabase('instruments', [newInstrument]);
+    } catch (err) {
+      console.error('Error syncing instrument to Supabase:', err);
+    }
     return newInstrument;
   };
 
-  const updateInstrument = (id, updates) => {
-    setInstruments(prev => {
-      const updated = prev.map(i => i.id === id ? { ...i, ...updates } : i);
-      syncToSupabase('instruments', updated);
-      return updated;
-    });
+  const updateInstrument = async (id, updates) => {
+    setInstruments(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    try {
+      await syncToSupabase('instruments', [{ id, ...updates }]);
+    } catch (err) {
+      console.error('Error syncing instrument update to Supabase:', err);
+    }
   };
 
   const deleteInstrument = (id) => {
