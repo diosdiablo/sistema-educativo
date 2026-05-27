@@ -276,12 +276,23 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       ['classes', setClasses],
       ['attendance', setAttendance],
       ['diagnostic_evaluations', setDiagnosticEvaluations],
-      ['events', setEvents],
       ['behavior', setBehavior],
     ];
     simple.forEach(([table, setter]) => {
       channel.on('postgres_changes', { event: '*', schema: 'public', table }, handleUpsert(setter));
     });
+
+    // -- events --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, handleUpsert(setEvents));
+
+    // -- instruments --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instruments' }, handleUpsert(setInstruments, (d) => ({
+      ...d,
+      instrumentId: d.instrument_id,
+      subjectId: d.subject_id,
+      classId: d.class_id,
+      criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
+    })));
 
     // -- students --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, handleUpsert(setStudents, (d) => ({
