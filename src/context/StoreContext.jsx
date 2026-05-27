@@ -619,7 +619,7 @@ if (studentsData?.length > 0) {
     grades: ['id', 'student_id', 'subject_id', 'competency_id', 'period', 'score', 'qualitative', 'class_id', 'created_at'],
     attendance: ['id', 'date', 'records', 'created_at'],
     instruments: ['id', 'title', 'instrument_id', 'subject_id', 'class_id', 'type', 'criteria', 'period', 'max_score', 'user_id', 'created_at'],
-    instrument_evaluations: ['id', 'instrument_id', 'instrument_type', 'criteria', 'activity_name', 'scores', 'score', 'max_possible', 'qualitative', 'subject_id', 'competency_id', 'period', 'class_id', 'student_id', 'student_name', 'user_id', 'created_at', 'date'],
+    instrument_evaluations: ['id', 'instrument_id', 'instrument_type', 'criteria', 'activity_name', 'scores', 'score', 'max_possible', 'qualitative', 'subject_id', 'competency_id', 'period', 'class_id', 'student_id', 'student_name', 'created_at', 'date'],
     schedule: ['id', 'user_id', 'class_id', 'subject_id', 'day', 'time', 'color', 'created_at'],
     diagnostic_evaluations: ['id', 'student_id', 'subject_id', 'result', 'period', 'created_at'],
     period_dates: ['id', 'start_date', 'end_date'],
