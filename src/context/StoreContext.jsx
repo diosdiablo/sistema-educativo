@@ -286,13 +286,20 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, handleUpsert(setEvents));
 
     // -- instruments --
-    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instruments' }, handleUpsert(setInstruments, (d) => ({
-      ...d,
-      instrumentId: d.instrument_id,
-      subjectId: d.subject_id,
-      classId: d.class_id,
-      criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
-    })));
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instruments' }, handleUpsert(setInstruments, (d) => {
+      try {
+        return {
+          ...d,
+          instrumentId: d.instrument_id,
+          subjectId: d.subject_id,
+          classId: d.class_id,
+          criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
+        };
+      } catch (err) {
+        console.error('Error normalizing instrument from Realtime:', err, d);
+        return d;
+      }
+    }));
 
     // -- students --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, handleUpsert(setStudents, (d) => ({
@@ -317,15 +324,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       ...d,
       studentId: d.student_id,
       competencyId: d.competency_id,
-    })));
-
-    // -- instruments --
-    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instruments' }, handleUpsert(setInstruments, (d) => ({
-      ...d,
-      instrumentId: d.instrument_id,
-      subjectId: d.subject_id,
-      classId: d.class_id,
-      criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
     })));
 
     // -- instrument_evaluations --
