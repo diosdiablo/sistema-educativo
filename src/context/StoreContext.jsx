@@ -618,22 +618,22 @@ if (studentsData?.length > 0) {
   const toSnakeCase = useCallback((str) => str.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`), []);
 
   const TABLE_COLUMNS = useMemo(() => ({
-    users: ['id', 'username', 'password', 'name', 'role', 'created_at'],
-    students: ['id', 'name', 'dni', 'grade', 'grade_level', 'class_id', 'guardian_name', 'guardian_dni', 'guardian_phone', 'birth_date', 'address', 'phone', 'photo_url', 'created_at'],
-    subjects: ['id', 'name', 'competencies', 'created_at'],
-    classes: ['id', 'name', 'color', 'created_at'],
-    grades: ['id', 'student_id', 'subject_id', 'competency_id', 'period', 'score', 'qualitative', 'class_id', 'created_at'],
+    users: ['id', 'username', 'password', 'name', 'role', 'created_at', 'updated_at'],
+    students: ['id', 'name', 'dni', 'class_id', 'guardian_name', 'guardian_dni', 'guardian_phone', 'birth_date', 'created_at', 'updated_at', 'grade_level', 'photo_url'],
+    subjects: ['id', 'name', 'competencies', 'created_at', 'updated_at'],
+    classes: ['id', 'name', 'created_at', 'updated_at', 'color'],
+    grades: ['id', 'student_id', 'subject', 'competency_id', 'period', 'score', 'conclusion', 'created_at', 'updated_at'],
     attendance: ['id', 'date', 'records', 'created_at'],
-    instruments: ['id', 'title', 'instrument_id', 'subject_id', 'class_id', 'type', 'criteria', 'period', 'max_score', 'user_id', 'created_at'],
-    instrument_evaluations: ['id', 'instrument_id', 'instrument_type', 'criteria', 'activity_name', 'scores', 'score', 'max_possible', 'qualitative', 'subject_id', 'competency_id', 'period', 'class_id', 'student_id', 'student_name', 'created_at', 'date'],
-    schedule: ['id', 'user_id', 'class_id', 'subject_id', 'day', 'time', 'color', 'created_at'],
-    diagnostic_evaluations: ['id', 'student_id', 'subject_id', 'result', 'period', 'created_at'],
-    period_dates: ['id', 'start_date', 'end_date'],
-    planning_documents: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'created_at'],
-    learning_sessions: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'created_at'],
-    login_history: ['id', 'user_id', 'user_name', 'login_at', 'logout_at'],
-    events: ['id', 'title', 'description', 'date', 'created_at'],
-    behavior: ['id', 'student_id', 'type', 'description', 'date', 'created_at'],
+    instruments: ['id', 'name', 'type', 'subject_id', 'class_id', 'date', 'max_score', 'description', 'created_at', 'updated_at', 'title', 'criteria'],
+    instrument_evaluations: ['id', 'instrument_id', 'student_id', 'score', 'max_possible', 'qualitative', 'competency_id', 'subject_id', 'subject_name', 'period', 'class_id', 'activity_name', 'observations', 'scores', 'date', 'created_at', 'updated_at', 'student_name', 'criteria', 'instrument_type'],
+    schedule: ['id', 'class_id', 'subject_id', 'created_at', 'updated_at', 'user_id', 'day', 'time', 'color'],
+    diagnostic_evaluations: ['id', 'class_id', 'subject_id', 'period', 'proficiency_level', 'student_results', 'observations', 'created_at', 'updated_at'],
+    period_dates: ['id', 'start_date', 'end_date', 'updated_at'],
+    planning_documents: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'updated_at'],
+    learning_sessions: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'updated_at'],
+    login_history: ['id', 'user_id', 'user_name', 'username', 'login_at', 'logout_at', 'duration', 'updated_at'],
+    events: ['id', 'title', 'date', 'type', 'description', 'created_at', 'updated_at', 'createdAt'],
+    behavior: ['id', 'student_id', 'student_name', 'class_id', 'type', 'description', 'date', 'user_id', 'user_name', 'created_at'],
   }), []);
 
   const prepareForSupabase = useCallback((item, table) => {
