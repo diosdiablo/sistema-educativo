@@ -10,7 +10,7 @@ export default function Settings() {
       loginHistory,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations,
-      setCurrentUser, syncToSupabaseManual, isOnline, events,
+        setCurrentUser, syncToSupabaseManual, fetchFromSupabase, isOnline, events,
       clearAllStudents, clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData, cleanupOrphanedData
     } = useStore();
     
@@ -73,6 +73,7 @@ export default function Settings() {
     
     try {
       await syncToSupabaseManual();
+      await fetchFromSupabase();
       setSyncMsg('✓ Sincronización completa');
     } catch (err) {
       console.error('Sync error:', err);

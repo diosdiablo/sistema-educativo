@@ -283,9 +283,6 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
       const nameMatch = ev.student_name && ev.student_name === student.name;
       return idMatch || nameMatch;
     });
-    if (evals.length > 0) {
-      console.log('getStudentEvals:', student.name, '| found:', evals.length, '| evals:', JSON.stringify(evals.map(e => ({ id: e.id, competencyId: e.competencyId, competency_id: e.competency_id, qualitative: e.qualitative, score: e.score, period: e.period, subjectId: e.subjectId, subject_id: e.subject_id }))));
-    }
     return evals;
   };
   

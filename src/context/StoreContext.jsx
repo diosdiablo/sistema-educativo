@@ -71,15 +71,7 @@ export const StoreProvider = ({ children }) => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('checking');
-
-  const [users, setUsers] = useState(() => loadData('edu_users', []));
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loginHistory, setLoginHistory] = useState(() => loadData('edu_login_history', []));
-  const [students, setStudents] = useState(() => loadData('edu_students', []));
-  const [attendance, setAttendance] = useState(() =>
-    loadData('edu_attendance', []).map(r => r.id ? r : { ...r, id: generateId() })
-  );
-  const [grades, setGrades] = useState(() => loadData('edu_grades', []));
+  const realtimeChannelsRef = useRef([]);
 
   useEffect(() => {
     const savedUser = sessionStorage.getItem('edu_current_user_session') || localStorage.getItem('edu_current_user_session');
@@ -154,7 +146,7 @@ export const StoreProvider = ({ children }) => {
         }));
         setStudents(normalizedStudents);
       }
-          if (classesData?.length > 0) {
+      if (classesData?.length > 0) {
             console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
             setClasses(classesData);
           }
@@ -247,6 +239,148 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       };
       loadData();
     }
+  }, [isOnline]);
+
+  useEffect(() => {
+    if (!isOnline || !supabase || typeof supabase.channel !== 'function') return;
+
+    const handleUpsert = (setter, normalize) => (payload) => {
+      if (payload.eventType === 'DELETE') {
+        setter(prev => prev.filter(item => item.id !== payload.old.id));
+      } else if (payload.new) {
+        const normalized = normalize ? normalize(payload.new) : payload.new;
+        setter(prev => {
+          const exists = prev.find(item => item.id === normalized.id);
+          if (exists) {
+            return prev.map(item => item.id === normalized.id ? { ...item, ...normalized, _syncedAt: Date.now() } : item);
+          }
+          return [...prev, { ...normalized, _syncedAt: Date.now() }];
+        });
+      }
+    };
+
+    const channel = supabase.channel('db-changes');
+
+    // -- Simple tables (passthrough) --
+    const simple = [
+      ['users', setUsers],
+      ['classes', setClasses],
+      ['attendance', setAttendance],
+      ['diagnostic_evaluations', setDiagnosticEvaluations],
+      ['events', setEvents],
+      ['behavior', setBehavior],
+    ];
+    simple.forEach(([table, setter]) => {
+      channel.on('postgres_changes', { event: '*', schema: 'public', table }, handleUpsert(setter));
+    });
+
+    // -- students --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, handleUpsert(setStudents, (d) => ({
+      ...d,
+      gradeLevel: d.grade_level || d.gradeLevel || d.grade || d.class_id,
+      classId: d.class_id || d.classId,
+      guardianName: d.guardian_name || d.guardianName,
+      guardianDni: d.guardian_dni || d.guardianDni,
+      guardianPhone: d.guardian_phone || d.guardianPhone,
+      birthDate: d.birth_date || d.birthDate,
+      photo_url: d.photo_url || d.photoUrl,
+    })));
+
+    // -- subjects --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'subjects' }, handleUpsert(setSubjects, (d) => ({
+      ...d,
+      competencies: typeof d.competencies === 'string' ? JSON.parse(d.competencies) : (d.competencies || []),
+    })));
+
+    // -- grades --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'grades' }, handleUpsert(setGrades, (d) => ({
+      ...d,
+      studentId: d.student_id,
+      competencyId: d.competency_id,
+    })));
+
+    // -- instruments --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instruments' }, handleUpsert(setInstruments, (d) => ({
+      ...d,
+      instrumentId: d.instrument_id,
+      subjectId: d.subject_id,
+      classId: d.class_id,
+      criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
+    })));
+
+    // -- instrument_evaluations --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instrument_evaluations' }, handleUpsert(setInstrumentEvaluations, (d) => ({
+      ...d,
+      instrumentId: d.instrument_id,
+      studentId: d.student_id,
+      studentName: d.student_name,
+      competencyId: d.competency_id,
+      subjectId: d.subject_id,
+      subjectName: d.subject_name,
+      classId: d.class_id,
+      maxPossible: d.max_possible,
+      activityName: d.activity_name || '',
+      userId: d.user_id,
+      scores: typeof d.scores === 'string' ? JSON.parse(d.scores) : (d.scores || {}),
+      criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
+      instrumentType: d.instrument_type,
+      createdAt: d.created_at,
+    })));
+
+    // -- schedule --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'schedule' }, handleUpsert(setSchedule, (d) => ({
+      ...d,
+      userId: d.user_id,
+      classId: d.class_id,
+      subjectId: d.subject_id,
+    })));
+
+    // -- planning_documents --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'planning_documents' }, handleUpsert(setPlanningDocuments, (d) => normalizeDocSections({
+      ...d,
+      fileData: d.file_data || d.fileData,
+      uploadedBy: d.uploaded_by,
+      uploadedById: d.uploaded_by_id,
+    })));
+
+    // -- learning_sessions --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'learning_sessions' }, handleUpsert(setLearningSessions, (d) => normalizeDocSections({
+      ...d,
+      uploadedBy: d.uploaded_by,
+      uploadedById: d.uploaded_by_id,
+    })));
+
+    // -- login_history --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'login_history' }, handleUpsert(setLoginHistory, (d) => ({
+      ...d,
+      userId: d.user_id,
+      userName: d.user_name,
+      loginAt: d.login_at,
+      logoutAt: d.logout_at,
+    })));
+
+    // -- period_dates (stored as object map not array) --
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'period_dates' }, (payload) => {
+      if (payload.eventType === 'DELETE') {
+        setPeriodDates(prev => {
+          const next = { ...prev };
+          delete next[payload.old.id];
+          return next;
+        });
+      } else if (payload.new) {
+        setPeriodDates(prev => ({
+          ...prev,
+          [payload.new.id]: { start: payload.new.start_date, end: payload.new.end_date }
+        }));
+      }
+    });
+
+    channel.subscribe();
+    realtimeChannelsRef.current.push(channel);
+    return () => {
+      realtimeChannelsRef.current = realtimeChannelsRef.current.filter(ch => ch !== channel);
+      try { supabase.removeChannel(channel); } catch (e) { /* ignore */ }
+    };
   }, [isOnline]);
 
   useEffect(() => {
@@ -814,7 +948,13 @@ if (studentsData?.length > 0) {
       criteria: [],
       createdAt: new Date().toISOString()
     };
-    setInstrumentEvaluations(prev => [...prev, newEval]);
+    setInstrumentEvaluations(prev => {
+      const exists = prev.find(e => e.id === newEval.id);
+      if (exists) {
+        return prev.map(e => e.id === newEval.id ? { ...e, ...newEval } : e);
+      }
+      return [...prev, newEval];
+    });
     if (isOnline) {
       try {
         await supabase.from('instrument_evaluations').upsert({
@@ -841,7 +981,13 @@ if (studentsData?.length > 0) {
   const saveInstrumentEvaluation = async (evaluation) => {
     const newEvaluation = { ...evaluation, id: evaluation.id || generateId(), createdAt: new Date().toISOString() };
     console.log('Saving evaluation locally:', newEvaluation.id, '| isOnline:', isOnline);
-    setInstrumentEvaluations(prev => [...prev, newEvaluation]);
+    setInstrumentEvaluations(prev => {
+      const exists = prev.find(e => e.id === newEvaluation.id);
+      if (exists) {
+        return prev.map(e => e.id === newEvaluation.id ? { ...e, ...newEvaluation } : e);
+      }
+      return [...prev, newEvaluation];
+    });
     
     if (isOnline) {
       try {
