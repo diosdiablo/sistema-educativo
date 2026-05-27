@@ -73,6 +73,15 @@ export const StoreProvider = ({ children }) => {
   const [syncStatus, setSyncStatus] = useState('checking');
   const realtimeChannelsRef = useRef([]);
 
+  const [users, setUsers] = useState(() => loadData('edu_users', []));
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loginHistory, setLoginHistory] = useState(() => loadData('edu_login_history', []));
+  const [students, setStudents] = useState(() => loadData('edu_students', []));
+  const [attendance, setAttendance] = useState(() =>
+    loadData('edu_attendance', []).map(r => r.id ? r : { ...r, id: generateId() })
+  );
+  const [grades, setGrades] = useState(() => loadData('edu_grades', []));
+
   useEffect(() => {
     const savedUser = sessionStorage.getItem('edu_current_user_session') || localStorage.getItem('edu_current_user_session');
     if (savedUser) {
