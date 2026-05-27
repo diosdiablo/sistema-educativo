@@ -280,13 +280,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       ['behavior', setBehavior],
     ];
     simple.forEach(([table, setter]) => {
-      const handler = table === 'events' || table === 'instrument_evaluations'
-        ? (payload) => {
-            console.log(`Realtime ${table} ${payload.eventType}:`, payload.new?.id);
-            handleUpsert(setter)(payload);
-          }
-        : handleUpsert(setter);
-      channel.on('postgres_changes', { event: '*', schema: 'public', table }, handler);
+      channel.on('postgres_changes', { event: '*', schema: 'public', table }, handleUpsert(setter));
     });
 
     // -- students --
@@ -390,31 +384,12 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       }
     });
 
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') console.log('Realtime channel connected (db-changes)');
-    });
+    channel.subscribe();
     realtimeChannelsRef.current.push(channel);
     return () => {
       realtimeChannelsRef.current = realtimeChannelsRef.current.filter(ch => ch !== channel);
       try { supabase.removeChannel(channel); } catch (e) { /* ignore */ }
     };
-  }, [isOnline]);
-
-  // Periodic poll for events as Realtime fallback
-  useEffect(() => {
-    if (!isOnline) return;
-    let mounted = true;
-    const poll = async () => {
-      try {
-        const { data } = await supabase.from('events').select('*');
-        if (mounted && data?.length > 0) {
-          setEvents(data);
-        }
-      } catch {}
-    };
-    poll();
-    const id = setInterval(poll, 15000);
-    return () => { mounted = false; clearInterval(id); };
   }, [isOnline]);
 
   useEffect(() => {
