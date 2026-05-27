@@ -128,7 +128,7 @@ const Reports = () => {
       });
       
       subject.competencies.forEach(comp => {
-        const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id);
+        const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id || ev.competencyId === '__all__');
         const scores = compEvals.map(ev => ev.score).filter(s => typeof s === 'number');
         
         if (scores.length > 0) {
