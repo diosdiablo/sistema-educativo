@@ -271,6 +271,11 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
 
     const channel = supabase.channel('db-changes');
 
+    // Debug: log ALL postgres changes
+    channel.on('postgres_changes', { event: '*', schema: '*' }, (payload) => {
+      console.log('REALTIME ALL:', payload.eventType, 'table:', payload.table, 'id:', payload.new?.id);
+    });
+
     // -- Simple tables (passthrough) --
     const simple = [
       ['users', setUsers],
