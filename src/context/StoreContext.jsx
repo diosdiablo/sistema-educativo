@@ -630,11 +630,15 @@ if (studentsData?.length > 0) {
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
-    const { error } = await supabase.from(table).upsert(
-      data.map(item => prepareForSupabase(item)),
-      { onConflict: 'id' }
-    );
-    if (error) throw error;
+    const prepared = data.map(item => prepareForSupabase(item));
+    if (prepared.length > 0) {
+      console.log(`Syncing ${table}:`, prepared.length, 'rows, sample keys:', Object.keys(prepared[0]));
+    }
+    const { error } = await supabase.from(table).upsert(prepared, { onConflict: 'id' });
+    if (error) {
+      console.error(`Supabase error for ${table}:`, JSON.stringify(error));
+      throw error;
+    }
   }, [isOnline, prepareForSupabase]);
 
   const deleteFromSupabase = useCallback(async (table, id) => {
@@ -1316,7 +1320,7 @@ if (studentsData?.length > 0) {
     const errors = results.map(r => r.value).filter(v => v?.status === 'error');
     if (errors.length > 0) {
       errors.forEach(e => console.error(`Error sync ${e.table}:`, e.error));
-      alert(`Error en: ${errors.map(e => e.table).join(', ')}. Revisa la consola (F12).`);
+      alert(`Error en: ${errors.map(e => `${e.table} (${e.error})`).join('\n')}. Revisa la consola (F12).`);
     } else {
       alert(`✓ Todos los datos sincronizados (${tables.length} tablas)`);
     }
