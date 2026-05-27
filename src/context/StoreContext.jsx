@@ -394,7 +394,9 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       }
     });
 
-    channel.subscribe();
+    channel.subscribe((status) => {
+      console.log('Realtime db-changes status:', status);
+    });
     realtimeChannelsRef.current.push(channel);
     return () => {
       realtimeChannelsRef.current = realtimeChannelsRef.current.filter(ch => ch !== channel);
