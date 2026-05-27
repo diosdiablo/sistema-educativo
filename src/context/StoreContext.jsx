@@ -254,6 +254,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     if (!isOnline || !supabase || typeof supabase.channel !== 'function') return;
 
     const handleUpsert = (setter, normalize) => (payload) => {
+      console.log('Realtime event:', JSON.stringify({ eventType: payload.eventType, table: payload.table, id: payload.new?.id }));
       if (payload.eventType === 'DELETE') {
         setter(prev => prev.filter(item => item.id !== payload.old.id));
       } else if (payload.new) {
