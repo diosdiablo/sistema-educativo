@@ -193,9 +193,10 @@ export const buildAuxiliaryRegisterData = (students, instrumentEvaluations, subj
     };
     
     subject.competencies.forEach(comp => {
-      const compEvals = studentEvals.filter(ev => 
-        ev.competencyId === comp.id || ev.competencyId === '__all__'
-      );
+      const compEvals = studentEvals.filter(ev => {
+        const cid = ev.competencyId || ev.competency_id;
+        return cid === comp.id || cid === '__all__';
+      });
       
       const scores = compEvals.map(ev => ev.score !== null && ev.score !== undefined ? ev.score : ev.qualitative);
       
@@ -292,7 +293,10 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
     const studentEvals = getStudentEvals(student);
     
     subject.competencies.forEach(comp => {
-      const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id || ev.competencyId === '__all__');
+      const compEvals = studentEvals.filter(ev => {
+        const cid = ev.competencyId || ev.competency_id;
+        return cid === comp.id || cid === '__all__';
+      });
       const compCount = compEvals.length;
       if (!maxGradesPerCompetency[comp.id] || compCount > maxGradesPerCompetency[comp.id]) {
         maxGradesPerCompetency[comp.id] = compCount;
@@ -324,7 +328,10 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
     const row = [student.name];
     
     subject.competencies.forEach(comp => {
-      const compEvals = studentEvals.filter(ev => ev.competencyId === comp.id || ev.competencyId === '__all__');
+      const compEvals = studentEvals.filter(ev => {
+        const cid = ev.competencyId || ev.competency_id;
+        return cid === comp.id || cid === '__all__';
+      });
       const numCols = maxGradesPerCompetency[comp.id] || 1;
       const compQualitatives = [];
       
