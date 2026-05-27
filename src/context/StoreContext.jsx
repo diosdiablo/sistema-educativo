@@ -280,7 +280,13 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       ['behavior', setBehavior],
     ];
     simple.forEach(([table, setter]) => {
-      channel.on('postgres_changes', { event: '*', schema: 'public', table }, handleUpsert(setter));
+      channel.on('postgres_changes', { event: '*', schema: 'public', table }, table === 'events'
+        ? (payload) => {
+            console.log('Realtime event received:', table, payload.eventType, payload.new?.id);
+            handleUpsert(setter)(payload);
+          }
+        : handleUpsert(setter)
+      );
     });
 
     // -- students --
@@ -1397,10 +1403,14 @@ if (studentsData?.length > 0) {
     localStorage.clear();
   };
 
-  const addEvent = (event) => {
+  const addEvent = async (event) => {
     const newEvent = { ...event, id: generateId(), created_at: new Date().toISOString() };
     setEvents(prev => [...prev, newEvent]);
-    syncToSupabase('events', [newEvent]);
+    try {
+      await syncToSupabase('events', [newEvent]);
+    } catch (err) {
+      console.error('Error syncing event to Supabase:', err);
+    }
     if (currentUser?.role === 'admin' || currentUser?.username === 'admin') {
       const dateStr = new Date(event.date + 'T00:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long' });
       const notification = {
@@ -1422,14 +1432,23 @@ if (studentsData?.length > 0) {
     return newEvent;
   };
 
-  const updateEvent = (id, updates) => {
+  const updateEvent = async (id, updates) => {
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
-    syncToSupabase('events', [{ id, ...updates }]);
+    try {
+      await syncToSupabase('events', [{ id, ...updates }]);
+    } catch (err) {
+      console.error('Error syncing event update to Supabase:', err);
+    }
   };
 
-  const deleteEvent = (id) => {
+  const deleteEvent = async (id) => {
     setEvents(prev => prev.filter(e => e.id !== id));
-    deleteFromSupabase('events', id);
+    try {
+      if (!isOnline) return;
+      await supabase.from('events').delete().eq('id', id);
+    } catch (err) {
+      console.error(`Error deleting from events:`, err);
+    }
   };
 
   const markNotificationRead = (notificationId) => {
