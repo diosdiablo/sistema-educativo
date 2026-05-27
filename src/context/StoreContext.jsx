@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 
 const StoreContext = createContext();
@@ -611,26 +611,47 @@ if (studentsData?.length > 0) {
 
   const toSnakeCase = useCallback((str) => str.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`), []);
 
-  const prepareForSupabase = useCallback((item) => {
-    const result = { updated_at: new Date().toISOString() };
+  const TABLE_COLUMNS = useMemo(() => ({
+    users: ['id', 'username', 'password', 'name', 'role', 'created_at'],
+    students: ['id', 'name', 'dni', 'grade', 'grade_level', 'class_id', 'guardian_name', 'guardian_dni', 'guardian_phone', 'birth_date', 'address', 'phone', 'photo_url', 'created_at'],
+    subjects: ['id', 'name', 'competencies', 'created_at'],
+    classes: ['id', 'name', 'color', 'created_at'],
+    grades: ['id', 'student_id', 'subject_id', 'competency_id', 'period', 'score', 'qualitative', 'class_id', 'created_at'],
+    attendance: ['id', 'date', 'records', 'created_at'],
+    instruments: ['id', 'title', 'instrument_id', 'subject_id', 'class_id', 'type', 'criteria', 'period', 'max_score', 'user_id', 'created_at'],
+    instrument_evaluations: ['id', 'instrument_id', 'instrument_type', 'criteria', 'activity_name', 'scores', 'score', 'max_possible', 'qualitative', 'subject_id', 'competency_id', 'period', 'class_id', 'student_id', 'student_name', 'user_id', 'created_at', 'date'],
+    schedule: ['id', 'user_id', 'class_id', 'subject_id', 'day', 'time', 'color', 'created_at'],
+    diagnostic_evaluations: ['id', 'student_id', 'subject_id', 'result', 'period', 'created_at'],
+    period_dates: ['id', 'start_date', 'end_date'],
+    planning_documents: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'created_at'],
+    learning_sessions: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'created_at'],
+    login_history: ['id', 'user_id', 'user_name', 'login_at', 'logout_at'],
+    events: ['id', 'title', 'description', 'date', 'created_at'],
+    behavior: ['id', 'student_id', 'type', 'description', 'date', 'created_at'],
+  }), []);
+
+  const prepareForSupabase = useCallback((item, table) => {
+    const allowed = TABLE_COLUMNS[table];
+    if (!allowed) return { ...item };
+    const result = {};
     for (const key of Object.keys(item || {})) {
-      if (key === 'updated_at' || key.startsWith('_')) continue;
+      if (key.startsWith('_')) continue;
+      const snakeKey = toSnakeCase(key);
+      if (!allowed.includes(snakeKey)) continue;
       const val = item[key];
-      if (val !== null && val !== undefined) {
-        const snakeKey = toSnakeCase(key);
-        if (typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date) && !(val instanceof File)) {
-          try { result[snakeKey] = JSON.stringify(val); } catch { result[snakeKey] = val; }
-        } else {
-          result[snakeKey] = val;
-        }
+      if (val === null || val === undefined) continue;
+      if (typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date) && !(val instanceof File)) {
+        try { result[snakeKey] = JSON.stringify(val); } catch { result[snakeKey] = val; }
+      } else {
+        result[snakeKey] = val;
       }
     }
     return result;
-  }, [toSnakeCase]);
+  }, [toSnakeCase, TABLE_COLUMNS]);
 
   const syncToSupabase = useCallback(async (table, data) => {
     if (!isOnline) return;
-    const prepared = data.map(item => prepareForSupabase(item));
+    const prepared = data.map(item => prepareForSupabase(item, table));
     if (prepared.length > 0) {
       console.log(`Syncing ${table}:`, prepared.length, 'rows, sample keys:', Object.keys(prepared[0]));
     }
@@ -1320,7 +1341,10 @@ if (studentsData?.length > 0) {
     const errors = results.map(r => r.value).filter(v => v?.status === 'error');
     if (errors.length > 0) {
       errors.forEach(e => console.error(`Error sync ${e.table}:`, e.error));
-      alert(`Error en: ${errors.map(e => `${e.table} (${e.error})`).join('\n')}. Revisa la consola (F12).`);
+      const rlsHint = errors.some(e => e.error?.includes?.('row-level security'))
+        ? '\n\n(Sugerencia: ve a Supabase Dashboard → Authentication → Policies y deshabilita RLS en las tablas que fallan)'
+        : '';
+      alert(`Error en:\n${errors.map(e => `- ${e.table}: ${e.error}`).join('\n')}${rlsHint}`);
     } else {
       alert(`✓ Todos los datos sincronizados (${tables.length} tablas)`);
     }
