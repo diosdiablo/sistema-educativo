@@ -197,7 +197,7 @@ export const buildAuxiliaryRegisterData = (students, instrumentEvaluations, subj
         ev.competencyId === comp.id
       );
       
-      const scores = compEvals.map(ev => ev.score);
+      const scores = compEvals.map(ev => ev.score !== null && ev.score !== undefined ? ev.score : ev.qualitative);
       
       row[comp.name] = getAverageQualitative(scores);
     });
