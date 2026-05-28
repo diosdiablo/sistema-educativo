@@ -255,7 +255,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     if (!isOnline || !supabase || typeof supabase.channel !== 'function') return;
 
     const handleUpsert = (setter, normalize) => (payload) => {
-      console.log('Realtime event:', JSON.stringify({ eventType: payload.eventType, table: payload.table, id: payload.new?.id }));
       if (payload.eventType === 'DELETE') {
         setter(prev => prev.filter(item => item.id !== payload.old.id));
       } else if (payload.new) {
@@ -271,11 +270,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     };
 
     const channel = supabase.channel('db-changes');
-
-    // Debug: log ALL postgres changes
-    channel.on('postgres_changes', { event: '*', schema: '*' }, (payload) => {
-      console.log('REALTIME ALL:', payload.eventType, 'table:', payload.table, 'id:', payload.new?.id);
-    });
 
     // -- Simple tables (passthrough) --
     const simple = [
@@ -407,7 +401,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     broadcastChannelRef.current = null;
     const bc = supabase.channel('broadcast-sync');
     bc.on('broadcast', { event: 'sync' }, (payload) => {
-      console.log('Broadcast received full payload:', JSON.stringify(payload));
       const msg = payload?.payload || payload;
       const { table, action, data } = msg;
       if (table === 'instruments' && (action === 'INSERT' || action === 'UPDATE')) {
@@ -726,7 +719,6 @@ if (studentsData?.length > 0) {
   }, [isOnline]);
 
   const sendBroadcast = useCallback((table, action, data) => {
-    console.log('sendBroadcast called:', table, action, 'channel exists:', !!broadcastChannelRef.current);
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.send({
         type: 'broadcast',
