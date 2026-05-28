@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck, History, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 export default function Attendance() {
-  const { students, classes, attendance, saveAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
+  const { students, classes, attendance, saveAttendanceDate, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
   const [searchParams] = useSearchParams();
   
   const availableClasses = useMemo(() => {
@@ -1111,6 +1111,15 @@ export default function Attendance() {
                     }}>
                       % Asistencia
                     </th>
+                    <th style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: 'white',
+                      padding: '1rem',
+                      width: '60px',
+                      textAlign: 'center'
+                    }}>
+                      Acción
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1247,10 +1256,34 @@ export default function Attendance() {
                               {attendanceRate}%
                             </span>
                           </td>
+                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm(`¿Eliminar asistencia del ${new Date(dateStr + 'T00:00:00').toLocaleDateString('es-PE')}?`))
+                                  deleteAttendanceDate(dateStr);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: '#ef4444',
+                                padding: '6px',
+                                borderRadius: '6px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background 0.2s ease'
+                              }}
+                              title="Eliminar esta fecha"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
                         </tr>
                         {isExpanded && (
                           <tr>
-                            <td colSpan="7" style={{ padding: 0, background: '#f8fafc' }}>
+                            <td colSpan="8" style={{ padding: 0, background: '#f8fafc' }}>
                               <div style={{ padding: '1rem' }}>
                                 <h4 style={{ 
                                   fontSize: '0.85rem', 

@@ -1035,6 +1035,14 @@ if (studentsData?.length > 0) {
     });
   };
 
+  const deleteAttendanceDate = (date) => {
+    setAttendance(prev => {
+      const record = prev.find(a => a.date === date);
+      if (record?.id) deleteFromSupabase('attendance', record.id);
+      return prev.filter(a => a.date !== date);
+    });
+  };
+
   const saveGrade = (studentId, subject, competencyId, period, score, conclusion) => {
     setGrades(prev => {
       const existing = prev.find(g =>
@@ -1637,7 +1645,7 @@ if (studentsData?.length > 0) {
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-      saveAttendanceDate, saveGrade,
+      saveAttendanceDate, deleteAttendanceDate, saveGrade,
       calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
       schedule, saveScheduleItem, deleteScheduleItem,
       periodDates, updatePeriodDates,
