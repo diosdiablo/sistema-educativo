@@ -1144,12 +1144,12 @@ if (studentsData?.length > 0) {
           competency_id: newEval.competencyId,
           period, class_id: classId, score: null, max_possible: 20,
           qualitative, activity_name: activityName,
-          instrument_type: 'quick', user_id: currentUser?.id,
+          instrument_type: 'quick',
           date: newEval.date, scores: newEval.scores, criteria: [],
           created_at: newEval.createdAt
         }, { onConflict: 'id' });
-        sendBroadcast('instrument_evaluations', 'INSERT', newEval);
       } catch (err) { console.error('Error syncing quick grade:', err); }
+      sendBroadcast('instrument_evaluations', 'INSERT', newEval);
     }
     return newEval;
   };
@@ -1185,7 +1185,6 @@ if (studentsData?.length > 0) {
           period: newEvaluation.period,
           activity_name: newEvaluation.activityName,
           instrument_type: newEvaluation.instrumentType,
-          user_id: newEvaluation.userId,
           scores: typeof newEvaluation.scores === 'object' ? JSON.stringify(newEvaluation.scores) : newEvaluation.scores,
           criteria: typeof newEvaluation.criteria === 'object' ? JSON.stringify(newEvaluation.criteria) : newEvaluation.criteria,
           date: newEvaluation.date || new Date().toISOString().split('T')[0]
@@ -1193,12 +1192,11 @@ if (studentsData?.length > 0) {
         const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
         if (error) {
           console.error('Error saving evaluation to Supabase:', error, error.details);
-        } else {
-          console.log('Evaluation saved to Supabase:', newEvaluation.id);
-          sendBroadcast('instrument_evaluations', 'INSERT', newEvaluation);
         }
+        sendBroadcast('instrument_evaluations', 'INSERT', newEvaluation);
       } catch (err) {
         console.error('Supabase sync error:', err);
+        sendBroadcast('instrument_evaluations', 'INSERT', newEvaluation);
       }
     }
   };
