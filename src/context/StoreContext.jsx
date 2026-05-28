@@ -455,6 +455,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
             handleUpsert(setEvents);
           }
           break;
+        case 'notifications': handleUpsert(setNotifications); break;
       }
     });
     bc.subscribe((status) => {
@@ -1289,15 +1290,11 @@ if (studentsData?.length > 0) {
     const adminUsers = users.filter(u => u.role === 'admin' || u.username === 'admin');
     adminUsers.forEach(admin => {
       if (admin.id !== currentUser?.id) {
-        const notif = {
-          id: generateId(),
-          type: 'planning',
-          title: 'Nuevo documento de planificación',
-          message: `${currentUser?.name || 'Un docente'} subió: ${newDoc.title}`,
-          createdAt: new Date().toISOString(),
-          readBy: []
-        };
-        setNotifications(prev => [notif, ...prev]);
+        addNotification(
+          'Nuevo documento de planificación',
+          `${currentUser?.name || 'Un docente'} subió: ${newDoc.title}`,
+          'planning'
+        );
       }
     });
 
@@ -1521,16 +1518,7 @@ if (studentsData?.length > 0) {
     }
     if (currentUser?.role === 'admin' || currentUser?.username === 'admin') {
       const dateStr = new Date(event.date + 'T00:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long' });
-      const notification = {
-        id: generateId(),
-        type: 'event_created',
-        eventId: newEvent.id,
-        title: 'Nuevo evento',
-        message: `${event.title} - ${dateStr}`,
-        createdAt: new Date().toISOString(),
-        readBy: []
-      };
-      setNotifications(prev => [notification, ...prev]);
+      addNotification('Nuevo evento', `${event.title} - ${dateStr}`, 'event_created');
       fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1608,6 +1596,7 @@ if (studentsData?.length > 0) {
       readBy: []
     };
     setNotifications(prev => [notification, ...prev]);
+    sendBroadcast('notifications', 'INSERT', notification);
     return notification;
   };
 
