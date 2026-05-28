@@ -407,8 +407,9 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     broadcastChannelRef.current = null;
     const bc = supabase.channel('broadcast-sync');
     bc.on('broadcast', { event: 'sync' }, (payload) => {
-      console.log('Broadcast received:', payload?.table, payload?.action, payload?.data?.id);
-      const { table, action, data } = payload;
+      console.log('Broadcast received full payload:', JSON.stringify(payload));
+      const msg = payload?.payload || payload;
+      const { table, action, data } = msg;
       if (table === 'instruments' && (action === 'INSERT' || action === 'UPDATE')) {
         setInstruments(prev => {
           const exists = prev.find(i => i.id === data.id);
