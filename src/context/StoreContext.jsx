@@ -1559,11 +1559,14 @@ if (studentsData?.length > 0) {
 
   const markNotificationRead = (notificationId) => {
     if (!currentUser) return;
-    setNotifications(prev => prev.map(n =>
-      n.id === notificationId && !n.readBy.includes(currentUser.id)
-        ? { ...n, readBy: [...n.readBy, currentUser.id] }
-        : n
-    ));
+    let updatedNotif = null;
+    setNotifications(prev => {
+      const target = prev.find(n => n.id === notificationId && !n.readBy.includes(currentUser.id));
+      if (!target) return prev;
+      updatedNotif = { ...target, readBy: [...target.readBy, currentUser.id] };
+      return prev.map(n => n.id === notificationId ? updatedNotif : n);
+    });
+    if (updatedNotif) sendBroadcast('notifications', 'UPDATE', updatedNotif);
   };
 
   const deleteNotification = (notificationId) => {
