@@ -241,7 +241,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         setPeriodDates(periodDatesMap);
       }
       if (eventsData?.length > 0) setEvents(eventsData);
-      else if (events.length > 0) await syncToSupabase('events', events);
+      else if (events.length > 0) await syncToSupabase('events', events, true);
       
       setSyncStatus('synced');
         } catch (err) {
@@ -405,30 +405,56 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     bc.on('broadcast', { event: 'sync' }, (payload) => {
       const msg = payload?.payload || payload;
       const { table, action, data } = msg;
-      if (table === 'instruments' && (action === 'INSERT' || action === 'UPDATE')) {
-        setInstruments(prev => {
-          const exists = prev.find(i => i.id === data.id);
-          if (exists) return prev.map(i => i.id === data.id ? { ...i, ...data, _syncedAt: Date.now() } : i);
-          return [...prev, { ...data, _syncedAt: Date.now() }];
-        });
-      } else if (table === 'instruments' && action === 'DELETE') {
-        setInstruments(prev => prev.filter(i => i.id !== data.id));
-      } else if (table === 'events' && (action === 'INSERT' || action === 'UPDATE')) {
-        if (data._batch) {
-          setEvents(prev => {
-            const existingTitles = new Set(prev.map(e => e.title));
-            const filtered = data._batch.filter(ev => !existingTitles.has(ev.title));
-            return [...prev, ...filtered];
-          });
-        } else {
-          setEvents(prev => {
+
+      const handleUpsert = (setter) => {
+        if (action === 'DELETE') {
+          setter(prev => prev.filter(i => i.id !== data.id));
+        } else if (action === 'INSERT' || action === 'UPDATE') {
+          setter(prev => {
             const exists = prev.find(i => i.id === data.id);
             if (exists) return prev.map(i => i.id === data.id ? { ...i, ...data, _syncedAt: Date.now() } : i);
             return [...prev, { ...data, _syncedAt: Date.now() }];
           });
         }
-      } else if (table === 'events' && action === 'DELETE') {
-        setEvents(prev => prev.filter(i => i.id !== data.id));
+      };
+
+      switch (table) {
+        case 'users': handleUpsert(setUsers); break;
+        case 'students': handleUpsert(setStudents); break;
+        case 'subjects': handleUpsert(setSubjects); break;
+        case 'classes': handleUpsert(setClasses); break;
+        case 'grades': handleUpsert(setGrades); break;
+        case 'attendance': handleUpsert(setAttendance); break;
+        case 'instruments': handleUpsert(setInstruments); break;
+        case 'instrument_evaluations': handleUpsert(setInstrumentEvaluations); break;
+        case 'schedule': handleUpsert(setSchedule); break;
+        case 'diagnostic_evaluations': handleUpsert(setDiagnosticEvaluations); break;
+        case 'planning_documents': handleUpsert(setPlanningDocuments); break;
+        case 'learning_sessions': handleUpsert(setLearningSessions); break;
+        case 'login_history': handleUpsert(setLoginHistory); break;
+        case 'behavior': handleUpsert(setBehavior); break;
+        case 'period_dates':
+          if (action === 'DELETE') {
+            setPeriodDates(prev => { const n = { ...prev }; delete n[data.id]; return n; });
+          } else if (data._batch) {
+            // Batch seed for events uses events table
+          } else {
+            setPeriodDates(prev => ({ ...prev, [data.id]: { start: data.start, end: data.end } }));
+          }
+          break;
+        case 'events':
+          if (action === 'DELETE') {
+            setEvents(prev => prev.filter(i => i.id !== data.id));
+          } else if (data._batch) {
+            setEvents(prev => {
+              const existingTitles = new Set(prev.map(e => e.title));
+              const filtered = data._batch.filter(ev => !existingTitles.has(ev.title));
+              return [...prev, ...filtered];
+            });
+          } else {
+            handleUpsert(setEvents);
+          }
+          break;
       }
     });
     bc.subscribe((status) => {
@@ -612,7 +638,7 @@ if (studentsData?.length > 0) {
       }
       
       if (eventsData?.length > 0) setEvents(eventsData);
-      else if (events.length > 0) await syncToSupabase('events', events);
+      else if (events.length > 0) await syncToSupabase('events', events, true);
       if (behaviorData?.length > 0) setBehavior(behaviorData);
       
       console.log('Loaded:', studentsData?.length, 'students');
@@ -707,7 +733,7 @@ if (studentsData?.length > 0) {
     return result;
   }, [toSnakeCase, TABLE_COLUMNS]);
 
-  const syncToSupabase = useCallback(async (table, data) => {
+  const syncToSupabase = useCallback(async (table, data, skipBroadcast = false) => {
     if (!isOnline) return;
     const prepared = data.map(item => prepareForSupabase(item, table));
     if (prepared.length > 0) {
@@ -718,12 +744,18 @@ if (studentsData?.length > 0) {
       console.error(`Supabase error for ${table}:`, JSON.stringify(error));
       throw error;
     }
+    if (!skipBroadcast) {
+      for (const item of data) {
+        sendBroadcast(table, 'INSERT', item);
+      }
+    }
   }, [isOnline, prepareForSupabase]);
 
   const deleteFromSupabase = useCallback(async (table, id) => {
     if (!isOnline) return;
     try {
       await supabase.from(table).delete().eq('id', id);
+      sendBroadcast(table, 'DELETE', { id });
     } catch (err) {
       console.error(`Error deleting from ${table}:`, err);
     }
@@ -868,10 +900,10 @@ if (studentsData?.length > 0) {
     deleteFromSupabase('students', id);
   };
 
-  const importStudentsBulk = (data) => {
+  const importStudentsBulk = async (data) => {
     const newStudents = data.map(s => ({ ...s, id: generateId(), createdAt: new Date().toISOString() }));
     setStudents(prev => [...prev, ...newStudents]);
-    syncToSupabase('students', newStudents);
+    await syncToSupabase('students', newStudents, true);
     return newStudents.length;
   };
 
@@ -1036,7 +1068,6 @@ if (studentsData?.length > 0) {
     setInstruments(prev => [...prev, newInstrument]);
     try {
       await syncToSupabase('instruments', [newInstrument]);
-      sendBroadcast('instruments', 'INSERT', newInstrument);
     } catch (err) {
       console.error('Error syncing instrument to Supabase:', err);
     }
@@ -1047,7 +1078,6 @@ if (studentsData?.length > 0) {
     setInstruments(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     try {
       await syncToSupabase('instruments', [{ id, ...updates }]);
-      sendBroadcast('instruments', 'UPDATE', { id, ...updates });
     } catch (err) {
       console.error('Error syncing instrument update to Supabase:', err);
     }
@@ -1055,7 +1085,6 @@ if (studentsData?.length > 0) {
 
   const deleteInstrument = (id) => {
     setInstruments(prev => prev.filter(i => i.id !== id));
-    sendBroadcast('instruments', 'DELETE', { id });
     deleteFromSupabase('instruments', id);
   };
 
@@ -1095,6 +1124,7 @@ if (studentsData?.length > 0) {
           date: newEval.date, scores: newEval.scores, criteria: [],
           created_at: newEval.createdAt
         }, { onConflict: 'id' });
+        sendBroadcast('instrument_evaluations', 'INSERT', newEval);
       } catch (err) { console.error('Error syncing quick grade:', err); }
     }
     return newEval;
@@ -1141,6 +1171,7 @@ if (studentsData?.length > 0) {
           console.error('Error saving evaluation to Supabase:', error, error.details);
         } else {
           console.log('Evaluation saved to Supabase:', newEvaluation.id);
+          sendBroadcast('instrument_evaluations', 'INSERT', newEvaluation);
         }
       } catch (err) {
         console.error('Supabase sync error:', err);
@@ -1183,6 +1214,7 @@ if (studentsData?.length > 0) {
         color: newItem.color
       };
       await supabase.from('schedule').upsert(supabaseItem, { onConflict: 'id' });
+      sendBroadcast('schedule', 'INSERT', newItem);
     }
     return newItem;
   };
@@ -1407,7 +1439,7 @@ if (studentsData?.length > 0) {
     ];
     const results = await Promise.allSettled(
       tables.map(t =>
-        syncToSupabase(t.name, t.data)
+        syncToSupabase(t.name, t.data, true)
           .then(() => ({ table: t.name, status: 'ok' }))
           .catch(err => ({ table: t.name, status: 'error', error: err.message }))
       )
@@ -1476,7 +1508,6 @@ if (studentsData?.length > 0) {
     setEvents(prev => [...prev, newEvent]);
     try {
       await syncToSupabase('events', [newEvent]);
-      sendBroadcast('events', 'INSERT', newEvent);
     } catch (err) {
       console.error('Error syncing event to Supabase:', err);
     }
@@ -1505,7 +1536,6 @@ if (studentsData?.length > 0) {
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
     try {
       await syncToSupabase('events', [{ id, ...updates }]);
-      sendBroadcast('events', 'UPDATE', { id, ...updates });
     } catch (err) {
       console.error('Error syncing event update to Supabase:', err);
     }
@@ -1513,13 +1543,7 @@ if (studentsData?.length > 0) {
 
   const deleteEvent = async (id) => {
     setEvents(prev => prev.filter(e => e.id !== id));
-    sendBroadcast('events', 'DELETE', { id });
-    try {
-      if (!isOnline) return;
-      await supabase.from('events').delete().eq('id', id);
-    } catch (err) {
-      console.error(`Error deleting from events:`, err);
-    }
+    deleteFromSupabase('events', id);
   };
 
   const seedEvents = async (eventsToSeed) => {
@@ -1530,7 +1554,7 @@ if (studentsData?.length > 0) {
       return [...prev, ...filtered];
     });
     try {
-      await syncToSupabase('events', newEvents);
+      await syncToSupabase('events', newEvents, true);
       sendBroadcast('events', 'INSERT', { _batch: newEvents });
     } catch (err) {
       console.error('Error seeding events:', err);
