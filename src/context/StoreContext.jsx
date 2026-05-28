@@ -72,6 +72,7 @@ export const StoreProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('checking');
   const realtimeChannelsRef = useRef([]);
+  const broadcastChannelRef = useRef(null);
 
   const [users, setUsers] = useState(() => loadData('edu_users', []));
   const [currentUser, setCurrentUser] = useState(null);
@@ -403,9 +404,38 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       console.log('Realtime db-changes status:', status);
     });
     realtimeChannelsRef.current.push(channel);
+    broadcastChannelRef.current = null;
+    const bc = supabase.channel('broadcast-sync');
+    bc.on('broadcast', { event: 'sync' }, (payload) => {
+      const { table, action, data } = payload;
+      if (table === 'instruments' && (action === 'INSERT' || action === 'UPDATE')) {
+        setInstruments(prev => {
+          const exists = prev.find(i => i.id === data.id);
+          if (exists) return prev.map(i => i.id === data.id ? { ...i, ...data, _syncedAt: Date.now() } : i);
+          return [...prev, { ...data, _syncedAt: Date.now() }];
+        });
+      } else if (table === 'instruments' && action === 'DELETE') {
+        setInstruments(prev => prev.filter(i => i.id !== data.id));
+      } else if (table === 'events' && (action === 'INSERT' || action === 'UPDATE')) {
+        setEvents(prev => {
+          const exists = prev.find(i => i.id === data.id);
+          if (exists) return prev.map(i => i.id === data.id ? { ...i, ...data, _syncedAt: Date.now() } : i);
+          return [...prev, { ...data, _syncedAt: Date.now() }];
+        });
+      } else if (table === 'events' && action === 'DELETE') {
+        setEvents(prev => prev.filter(i => i.id !== data.id));
+      }
+    });
+    bc.subscribe((status) => {
+      if (status === 'SUBSCRIBED') broadcastChannelRef.current = bc;
+    });
+    realtimeChannelsRef.current.push(bc);
+
     return () => {
-      realtimeChannelsRef.current = realtimeChannelsRef.current.filter(ch => ch !== channel);
+      realtimeChannelsRef.current = realtimeChannelsRef.current.filter(ch => ch !== channel && ch !== bc);
       try { supabase.removeChannel(channel); } catch (e) { /* ignore */ }
+      try { supabase.removeChannel(bc); } catch (e) { /* ignore */ }
+      broadcastChannelRef.current = null;
     };
   }, [isOnline]);
 
@@ -691,6 +721,16 @@ if (studentsData?.length > 0) {
       console.error(`Error deleting from ${table}:`, err);
     }
   }, [isOnline]);
+
+  const sendBroadcast = useCallback((table, action, data) => {
+    if (broadcastChannelRef.current) {
+      broadcastChannelRef.current.send({
+        type: 'broadcast',
+        event: 'sync',
+        payload: { table, action, data }
+      });
+    }
+  }, []);
 
   const login = async (username, password) => {
     let loggedInUser = null;
@@ -989,6 +1029,7 @@ if (studentsData?.length > 0) {
     setInstruments(prev => [...prev, newInstrument]);
     try {
       await syncToSupabase('instruments', [newInstrument]);
+      sendBroadcast('instruments', 'INSERT', newInstrument);
     } catch (err) {
       console.error('Error syncing instrument to Supabase:', err);
     }
@@ -999,6 +1040,7 @@ if (studentsData?.length > 0) {
     setInstruments(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     try {
       await syncToSupabase('instruments', [{ id, ...updates }]);
+      sendBroadcast('instruments', 'UPDATE', { id, ...updates });
     } catch (err) {
       console.error('Error syncing instrument update to Supabase:', err);
     }
@@ -1006,6 +1048,7 @@ if (studentsData?.length > 0) {
 
   const deleteInstrument = (id) => {
     setInstruments(prev => prev.filter(i => i.id !== id));
+    sendBroadcast('instruments', 'DELETE', { id });
     deleteFromSupabase('instruments', id);
   };
 
@@ -1426,6 +1469,7 @@ if (studentsData?.length > 0) {
     setEvents(prev => [...prev, newEvent]);
     try {
       await syncToSupabase('events', [newEvent]);
+      sendBroadcast('events', 'INSERT', newEvent);
     } catch (err) {
       console.error('Error syncing event to Supabase:', err);
     }
@@ -1454,6 +1498,7 @@ if (studentsData?.length > 0) {
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
     try {
       await syncToSupabase('events', [{ id, ...updates }]);
+      sendBroadcast('events', 'UPDATE', { id, ...updates });
     } catch (err) {
       console.error('Error syncing event update to Supabase:', err);
     }
@@ -1461,6 +1506,7 @@ if (studentsData?.length > 0) {
 
   const deleteEvent = async (id) => {
     setEvents(prev => prev.filter(e => e.id !== id));
+    sendBroadcast('events', 'DELETE', { id });
     try {
       if (!isOnline) return;
       await supabase.from('events').delete().eq('id', id);
