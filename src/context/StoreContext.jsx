@@ -407,6 +407,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     broadcastChannelRef.current = null;
     const bc = supabase.channel('broadcast-sync');
     bc.on('broadcast', { event: 'sync' }, (payload) => {
+      console.log('Broadcast received:', payload?.table, payload?.action, payload?.data?.id);
       const { table, action, data } = payload;
       if (table === 'instruments' && (action === 'INSERT' || action === 'UPDATE')) {
         setInstruments(prev => {
@@ -427,6 +428,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       }
     });
     bc.subscribe((status) => {
+      console.log('Broadcast channel status:', status);
       if (status === 'SUBSCRIBED') broadcastChannelRef.current = bc;
     });
     realtimeChannelsRef.current.push(bc);
@@ -723,6 +725,7 @@ if (studentsData?.length > 0) {
   }, [isOnline]);
 
   const sendBroadcast = useCallback((table, action, data) => {
+    console.log('sendBroadcast called:', table, action, 'channel exists:', !!broadcastChannelRef.current);
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.send({
         type: 'broadcast',
