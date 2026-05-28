@@ -412,11 +412,19 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       } else if (table === 'instruments' && action === 'DELETE') {
         setInstruments(prev => prev.filter(i => i.id !== data.id));
       } else if (table === 'events' && (action === 'INSERT' || action === 'UPDATE')) {
-        setEvents(prev => {
-          const exists = prev.find(i => i.id === data.id);
-          if (exists) return prev.map(i => i.id === data.id ? { ...i, ...data, _syncedAt: Date.now() } : i);
-          return [...prev, { ...data, _syncedAt: Date.now() }];
-        });
+        if (data._batch) {
+          setEvents(prev => {
+            const existingTitles = new Set(prev.map(e => e.title));
+            const filtered = data._batch.filter(ev => !existingTitles.has(ev.title));
+            return [...prev, ...filtered];
+          });
+        } else {
+          setEvents(prev => {
+            const exists = prev.find(i => i.id === data.id);
+            if (exists) return prev.map(i => i.id === data.id ? { ...i, ...data, _syncedAt: Date.now() } : i);
+            return [...prev, { ...data, _syncedAt: Date.now() }];
+          });
+        }
       } else if (table === 'events' && action === 'DELETE') {
         setEvents(prev => prev.filter(i => i.id !== data.id));
       }
@@ -1512,6 +1520,21 @@ if (studentsData?.length > 0) {
     }
   };
 
+  const seedEvents = async (eventsToSeed) => {
+    const newEvents = eventsToSeed.map(ev => ({ ...ev, id: generateId(), created_at: new Date().toISOString() }));
+    setEvents(prev => {
+      const existingTitles = new Set(prev.map(e => e.title));
+      const filtered = newEvents.filter(ev => !existingTitles.has(ev.title));
+      return [...prev, ...filtered];
+    });
+    try {
+      await syncToSupabase('events', newEvents);
+      sendBroadcast('events', 'INSERT', { _batch: newEvents });
+    } catch (err) {
+      console.error('Error seeding events:', err);
+    }
+  };
+
   const markNotificationRead = (notificationId) => {
     if (!currentUser) return;
     setNotifications(prev => prev.map(n =>
@@ -1595,7 +1618,7 @@ if (studentsData?.length > 0) {
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
       planningDocuments, addPlanningDocument, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
-      events, addEvent, updateEvent, deleteEvent,
+      events, addEvent, updateEvent, deleteEvent, seedEvents,
       notifications, markNotificationRead, addNotification, deleteNotification,
       behavior, addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,

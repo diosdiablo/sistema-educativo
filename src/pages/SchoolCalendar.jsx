@@ -31,7 +31,7 @@ const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export default function SchoolCalendar() {
-  const { events, addEvent, updateEvent, deleteEvent } = useStore();
+  const { events, addEvent, updateEvent, deleteEvent, seedEvents } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -45,20 +45,15 @@ export default function SchoolCalendar() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const loadCivicCalendar = () => {
+  const loadCivicCalendar = async () => {
     const existingTitles = new Set(events.map(e => e.title));
-    let count = 0;
-    CALENDARIO_CIVICO.forEach(ev => {
-      if (!existingTitles.has(ev.title)) {
-        addEvent(ev);
-        count++;
-      }
-    });
-    if (count > 0) {
-      alert(`Se agregaron ${count} fechas del Calendario Cívico Escolar`);
-    } else {
+    const toAdd = CALENDARIO_CIVICO.filter(ev => !existingTitles.has(ev.title));
+    if (toAdd.length === 0) {
       alert('El Calendario Cívico ya está cargado');
+      return;
     }
+    await seedEvents(toAdd);
+    alert(`Se agregaron ${toAdd.length} fechas del Calendario Cívico Escolar`);
   };
 
   const year = currentDate.getFullYear();
