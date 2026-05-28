@@ -455,6 +455,24 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
             handleUpsert(setEvents);
           }
           break;
+        case 'notifications':
+          console.log('Broadcast received notifications:', action, data?.id, data?.title);
+          handleUpsert(setNotifications);
+          break;
+          break;
+        case 'events':
+          if (action === 'DELETE') {
+            setEvents(prev => prev.filter(i => i.id !== data.id));
+          } else if (data._batch) {
+            setEvents(prev => {
+              const existingTitles = new Set(prev.map(e => e.title));
+              const filtered = data._batch.filter(ev => !existingTitles.has(ev.title));
+              return [...prev, ...filtered];
+            });
+          } else {
+            handleUpsert(setEvents);
+          }
+          break;
         case 'notifications': handleUpsert(setNotifications); break;
       }
     });
@@ -763,6 +781,7 @@ if (studentsData?.length > 0) {
   }, [isOnline]);
 
   const sendBroadcast = useCallback((table, action, data) => {
+    console.log('sendBroadcast called:', table, action, data?.id || data?.title?.slice(0,30));
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.send({
         type: 'broadcast',
@@ -1597,6 +1616,7 @@ if (studentsData?.length > 0) {
       readBy: []
     };
     setNotifications(prev => [notification, ...prev]);
+    console.log('addNotification broadcast:', type, notification.id, notification.title);
     sendBroadcast('notifications', 'INSERT', notification);
     return notification;
   };
