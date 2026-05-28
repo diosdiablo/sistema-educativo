@@ -240,6 +240,8 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         });
         setPeriodDates(periodDatesMap);
       }
+      if (eventsData?.length > 0) setEvents(eventsData);
+      else if (events.length > 0) await syncToSupabase('events', events);
       
       setSyncStatus('synced');
         } catch (err) {
