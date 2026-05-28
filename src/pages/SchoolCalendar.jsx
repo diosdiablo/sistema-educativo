@@ -395,7 +395,7 @@ export default function SchoolCalendar() {
 
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
               {editingEvent && (
-                <button onClick={() => { deleteEvent(editingEvent.id); setShowForm(false); }} style={{
+                <button onClick={() => { if (window.confirm('¿Eliminar este evento?')) { deleteEvent(editingEvent.id); setShowForm(false); } }} style={{
                   padding: '0.75rem 1rem', borderRadius: '12px',
                   background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
                   fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
