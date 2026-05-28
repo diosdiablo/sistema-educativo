@@ -602,6 +602,7 @@ if (studentsData?.length > 0) {
       }
       
       if (eventsData?.length > 0) setEvents(eventsData);
+      else if (events.length > 0) await syncToSupabase('events', events);
       if (behaviorData?.length > 0) setBehavior(behaviorData);
       
       console.log('Loaded:', studentsData?.length, 'students');
