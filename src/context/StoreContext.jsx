@@ -455,10 +455,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
             handleUpsert(setEvents);
           }
           break;
-        case 'notifications':
-          console.log('Broadcast received notifications:', action, data?.id, data?.title);
-          handleUpsert(setNotifications);
-          break;
+        case 'notifications': handleUpsert(setNotifications); break;
           break;
         case 'events':
           if (action === 'DELETE') {
@@ -781,7 +778,6 @@ if (studentsData?.length > 0) {
   }, [isOnline]);
 
   const sendBroadcast = useCallback((table, action, data) => {
-    console.log('sendBroadcast called:', table, action, data?.id || data?.title?.slice(0,30));
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.send({
         type: 'broadcast',
@@ -1616,7 +1612,6 @@ if (studentsData?.length > 0) {
       readBy: []
     };
     setNotifications(prev => [notification, ...prev]);
-    console.log('addNotification broadcast:', type, notification.id, notification.title);
     sendBroadcast('notifications', 'INSERT', notification);
     return notification;
   };
