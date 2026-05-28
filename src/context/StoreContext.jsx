@@ -426,7 +426,9 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         case 'grades': handleUpsert(setGrades); break;
         case 'attendance': handleUpsert(setAttendance); break;
         case 'instruments': handleUpsert(setInstruments); break;
-        case 'instrument_evaluations': handleUpsert(setInstrumentEvaluations); break;
+        case 'instrument_evaluations': 
+          if (action === 'DELETE') console.log('Broadcast DELETE instrument_evaluations:', data?.id);
+          handleUpsert(setInstrumentEvaluations); break;
         case 'schedule': handleUpsert(setSchedule); break;
         case 'diagnostic_evaluations': handleUpsert(setDiagnosticEvaluations); break;
         case 'planning_documents': handleUpsert(setPlanningDocuments); break;
