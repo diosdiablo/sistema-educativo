@@ -1559,18 +1559,16 @@ if (studentsData?.length > 0) {
 
   const markNotificationRead = (notificationId) => {
     if (!currentUser) return;
-    let updatedNotif = null;
-    setNotifications(prev => {
-      const target = prev.find(n => n.id === notificationId && !n.readBy.includes(currentUser.id));
-      if (!target) return prev;
-      updatedNotif = { ...target, readBy: [...target.readBy, currentUser.id] };
-      return prev.map(n => n.id === notificationId ? updatedNotif : n);
-    });
-    if (updatedNotif) sendBroadcast('notifications', 'UPDATE', updatedNotif);
+    const target = notifications.find(n => n.id === notificationId && !n.readBy.includes(currentUser.id));
+    if (!target) return;
+    const updated = { ...target, readBy: [...target.readBy, currentUser.id] };
+    setNotifications(prev => prev.map(n => n.id === notificationId ? updated : n));
+    sendBroadcast('notifications', 'UPDATE', updated);
   };
 
   const deleteNotification = (notificationId) => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    sendBroadcast('notifications', 'DELETE', { id: notificationId });
   };
 
   const addBehaviorRecord = (record) => {
