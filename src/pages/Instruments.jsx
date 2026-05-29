@@ -137,6 +137,7 @@ export default function Instruments() {
     }
     return '1';
   };
+  console.log('periodDates:', JSON.stringify(periodDates), '| defaultPeriod:', getDefaultPeriod());
 
   const [view, setView] = useState('list');
   const [editingInstrument, setEditingInstrument] = useState(null);
