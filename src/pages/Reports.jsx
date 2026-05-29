@@ -6,14 +6,23 @@ import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAver
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
+
+  const currentPeriod = () => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [id, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return id;
+    }
+    return '1';
+  };
+
   const [selectedClassAttendance, setSelectedClassAttendance] = useState('');
-  const [selectedPeriodAttendance, setSelectedPeriodAttendance] = useState('1');
+  const [selectedPeriodAttendance, setSelectedPeriodAttendance] = useState(currentPeriod);
   const [selectedClassAux, setSelectedClassAux] = useState('');
   const [selectedSubjectAux, setSelectedSubjectAux] = useState('');
-  const [selectedPeriodAux, setSelectedPeriodAux] = useState('1');
+  const [selectedPeriodAux, setSelectedPeriodAux] = useState(currentPeriod);
   const [selectedClassFinal, setSelectedClassFinal] = useState('');
   const [selectedSubjectFinal, setSelectedSubjectFinal] = useState('');
-  const [selectedPeriodFinal, setSelectedPeriodFinal] = useState('1');
+  const [selectedPeriodFinal, setSelectedPeriodFinal] = useState(currentPeriod);
 
   const periods = ['1', '2', '3', '4'];
 

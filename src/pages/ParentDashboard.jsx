@@ -7,11 +7,17 @@ const PERIODS = ['I Bimestre', 'II Bimestre', 'III Bimestre', 'IV Bimestre'];
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
-  const { students, grades, attendance, subjects, classes, behavior } = useStore();
+  const { students, grades, attendance, subjects, classes, behavior, periodDates } = useStore();
   const parentDni = sessionStorage.getItem('edu_parent_dni');
   const [selectedStudentIdx, setSelectedStudentIdx] = useState(0);
   const [view, setView] = useState('grades');
-  const [selectedPeriod, setSelectedPeriod] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState(() => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [id, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return Number(id) - 1;
+    }
+    return 0;
+  });
 
   const children = useMemo(() => {
     if (!parentDni) return [];

@@ -44,7 +44,15 @@ const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Ini
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates } = useStore();
+
+  const currentPeriod = () => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [id, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return id;
+    }
+    return '1';
+  };
 
   const availableClasses = useMemo(() => {
     if (isAdmin) return classes;
@@ -54,7 +62,7 @@ export default function Grades() {
   }, [isAdmin, currentUser, classes]);
 
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('1');
+  const [selectedPeriod, setSelectedPeriod] = useState(currentPeriod);
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
 
   // Subjects available for this class (teacher-filtered or all for admin)
