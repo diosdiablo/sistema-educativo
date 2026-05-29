@@ -127,10 +127,18 @@ export default function Instruments() {
   const { 
     instruments, instrumentEvaluations, students, classes, subjects = [],
     addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation,
-    currentUser, isAdmin
+    currentUser, isAdmin, periodDates
   } = useStore();
 
-  const [view, setView] = useState('list'); // 'list' | 'create' | 'apply'
+  const getDefaultPeriod = () => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [id, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return id;
+    }
+    return '1';
+  };
+
+  const [view, setView] = useState('list');
   const [editingInstrument, setEditingInstrument] = useState(null);
   const [applyingInstrument, setApplyingInstrument] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
@@ -143,28 +151,16 @@ export default function Instruments() {
     setTempGroups([]);
   };
 
-  useEffect(() => {
-    resetToList();
-  }, [refreshKey]);
-  
-  // ── Create form state ──
-  const [instrumentType, setInstrumentType] = useState('checklist');
-  const [title, setTitle] = useState('');
-  const [criteria, setCriteria] = useState([{ id: '1', text: '' }]);
-
-  // ── Apply state ──
+  const [tempGroups, setTempGroups] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState('');
-  const [activityName, setActivityName] = useState('');
-  const [evaluationScores, setEvaluationScores] = useState({});
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [selectedCompetencyId, setSelectedCompetencyId] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('1');
+  const [selectedStudent, setSelectedStudent] = useState('');
+  const [activityName, setActivityName] = useState('');
+  const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedPeriod, setSelectedPeriod] = useState(getDefaultPeriod);
   const [applyMode, setApplyMode] = useState('individual');
   const [selectedGroupIdx, setSelectedGroupIdx] = useState(null);
-  const [tempGroups, setTempGroups] = useState([]);
-  const [randomStudent, setRandomStudent] = useState(null);
-  const [isPicking, setIsPicking] = useState(false);
   const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
   const [studentNamesFromSupabase, setStudentNamesFromSupabase] = useState({});
   const [studentsByName, setStudentsByName] = useState({});
