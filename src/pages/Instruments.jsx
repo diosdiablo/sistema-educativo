@@ -314,12 +314,20 @@ export default function Instruments() {
     setSelectedStudent('');
     setSelectedSubjectId('');
     setSelectedCompetencyId('');
-    setSelectedPeriod('1');
+    setSelectedPeriod(currentPeriod());
     setApplyMode('individual');
     setSelectedGroupIdx(null);
     setTempGroups([]);
     setSavedGroupMembers(new Set());
     setView('apply');
+  };
+
+  const currentPeriod = () => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [id, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return id;
+    }
+    return '1';
   };
 
   const handleSaveEvaluation = () => {
