@@ -27,3 +27,4 @@ backup/
 *.sw?
 
 .vercel
+public/version.json
