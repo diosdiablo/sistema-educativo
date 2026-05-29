@@ -97,6 +97,26 @@ export const StoreProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
+  // Auto-refresh when new version is deployed
+  useEffect(() => {
+    let buildVersion = null;
+    const check = async () => {
+      try {
+        const res = await fetch('/version.json?v=' + Date.now());
+        const data = await res.json();
+        if (buildVersion === null) {
+          buildVersion = data.v;
+        } else if (data.v !== buildVersion) {
+          console.log('New version detected, reloading...');
+          window.location.reload(true);
+        }
+      } catch (e) {}
+    };
+    check();
+    const interval = setInterval(check, 120000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     console.log('DEBUG useEffect: isOnline:', isOnline);
     if (isOnline) {
