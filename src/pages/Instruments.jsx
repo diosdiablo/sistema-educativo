@@ -172,11 +172,8 @@ export default function Instruments() {
   // Auto-select current bimestre based on periodDates
   useEffect(() => {
     const now = new Date().toISOString().split('T')[0];
-    console.log('periodDates:', JSON.stringify(periodDates), '| now:', now);
     for (const [id, { start, end }] of Object.entries(periodDates)) {
-      console.log('  checking', id, start, end, now >= start, now <= end);
       if (now >= start && now <= end) {
-        console.log('  -> selected', id);
         setSelectedPeriod(id);
         return;
       }
