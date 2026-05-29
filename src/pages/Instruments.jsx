@@ -151,16 +151,29 @@ export default function Instruments() {
     setTempGroups([]);
   };
 
+  useEffect(() => {
+    resetToList();
+  }, [refreshKey]);
+  
+  // ── Create form state ──
+  const [instrumentType, setInstrumentType] = useState('checklist');
+  const [title, setTitle] = useState('');
+  const [criteria, setCriteria] = useState([{ id: '1', text: '' }]);
+
+  // ── Apply state ──
   const [tempGroups, setTempGroups] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedSubjectId, setSelectedSubjectId] = useState('');
-  const [selectedCompetencyId, setSelectedCompetencyId] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
   const [activityName, setActivityName] = useState('');
+  const [evaluationScores, setEvaluationScores] = useState({});
+  const [selectedSubjectId, setSelectedSubjectId] = useState('');
+  const [selectedCompetencyId, setSelectedCompetencyId] = useState('');
   const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedPeriod, setSelectedPeriod] = useState(getDefaultPeriod);
   const [applyMode, setApplyMode] = useState('individual');
   const [selectedGroupIdx, setSelectedGroupIdx] = useState(null);
+  const [randomStudent, setRandomStudent] = useState(null);
+  const [isPicking, setIsPicking] = useState(false);
   const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
   const [studentNamesFromSupabase, setStudentNamesFromSupabase] = useState({});
   const [studentsByName, setStudentsByName] = useState({});
