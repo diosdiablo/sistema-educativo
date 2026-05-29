@@ -340,7 +340,8 @@ export default function Instruments() {
         classId: classes.find(c => c.name === selectedClass)?.id || '',
         studentId: student.id,
         studentName: student.name,
-        userId: currentUser?.id
+        userId: currentUser?.id,
+        date: new Date().toISOString().split('T')[0]
       };
       console.log('[SAVE] Evaluando:', student.name, '| score:', score, '| qualitative:', qualitative, '| scores:', JSON.stringify(evalData.scores));
       return evalData;
