@@ -130,15 +130,6 @@ export default function Instruments() {
     currentUser, isAdmin, periodDates
   } = useStore();
 
-  const getDefaultPeriod = () => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [id, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return id;
-    }
-    return '1';
-  };
-  console.log('periodDates:', JSON.stringify(periodDates), '| defaultPeriod:', getDefaultPeriod());
-
   const [view, setView] = useState('list');
   const [editingInstrument, setEditingInstrument] = useState(null);
   const [applyingInstrument, setApplyingInstrument] = useState(null);
@@ -170,13 +161,27 @@ export default function Instruments() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [selectedCompetencyId, setSelectedCompetencyId] = useState('');
   const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedPeriod, setSelectedPeriod] = useState(getDefaultPeriod);
+  const [selectedPeriod, setSelectedPeriod] = useState('1');
   const [applyMode, setApplyMode] = useState('individual');
   const [selectedGroupIdx, setSelectedGroupIdx] = useState(null);
   const [randomStudent, setRandomStudent] = useState(null);
   const [isPicking, setIsPicking] = useState(false);
   const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
   const [studentNamesFromSupabase, setStudentNamesFromSupabase] = useState({});
+
+  // Auto-select current bimestre based on periodDates
+  useEffect(() => {
+    const now = new Date().toISOString().split('T')[0];
+    console.log('periodDates:', JSON.stringify(periodDates), '| now:', now);
+    for (const [id, { start, end }] of Object.entries(periodDates)) {
+      console.log('  checking', id, start, end, now >= start, now <= end);
+      if (now >= start && now <= end) {
+        console.log('  -> selected', id);
+        setSelectedPeriod(id);
+        return;
+      }
+    }
+  }, []);
   const [studentsByName, setStudentsByName] = useState({});
 
   // Cargar nombres de estudiantes desde Supabase para evaluaciones sin nombre
