@@ -103,8 +103,10 @@ export default function Grades() {
   const LITERAL_GRADES = ['AD', 'A', 'B', 'C'];
   const [quickGradeSaving, setQuickGradeSaving] = useState(false);
   const [quickGradeMsg, setQuickGradeMsg] = useState('');
-  const [quickAzarAnim, setQuickAzarAnim] = useState(false);
-  const quickAzarRef = useRef(null);
+  const [quickAzarOpen, setQuickAzarOpen] = useState(false);
+  const [quickAzarSpinning, setQuickAzarSpinning] = useState(false);
+  const [quickAzarDeg, setQuickAzarDeg] = useState(0);
+  const [quickAzarWinner, setQuickAzarWinner] = useState(null);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -1293,42 +1295,27 @@ export default function Grades() {
                         <option value="">Seleccionar estudiante...</option>
                         {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
-                      <button ref={quickAzarRef} onClick={() => {
+                      <button onClick={() => {
                         const available = filteredStudents.filter(s => s.id !== quickGrade.studentId);
-                        if (available.length === 0 || quickAzarAnim) return;
-                        setQuickAzarAnim(true);
-                        let count = 0;
-                        const maxSteps = 12;
-                        const interval = setInterval(() => {
-                          const temp = available[Math.floor(Math.random() * available.length)];
-                          setQuickGrade(prev => ({ ...prev, studentId: temp.id }));
-                          count++;
-                          if (count >= maxSteps) {
-                            clearInterval(interval);
-                            const final = available[Math.floor(Math.random() * available.length)];
-                            setQuickGrade(prev => ({ ...prev, studentId: final.id }));
-                            setQuickAzarAnim(false);
-                            if (quickAzarRef.current) {
-                              quickAzarRef.current.style.transition = 'all 0.3s ease';
-                              quickAzarRef.current.style.background = '#dbeafe';
-                              quickAzarRef.current.style.borderColor = '#3b82f6';
-                              setTimeout(() => {
-                                if (quickAzarRef.current) {
-                                  quickAzarRef.current.style.background = '#f8fafc';
-                                  quickAzarRef.current.style.borderColor = '#e2e8f0';
-                                }
-                              }, 600);
-                            }
-                          }
-                        }, 80);
+                        if (available.length === 0 || quickAzarSpinning) return;
+                        const winner = available[Math.floor(Math.random() * available.length)];
+                        const n = available.length;
+                        const idx = available.indexOf(winner);
+                        const segment = 360 / n;
+                        const target = 360 * 5 + (360 - idx * segment - segment / 2);
+                        setQuickAzarDeg(target);
+                        setQuickAzarWinner(winner);
+                        setQuickAzarSpinning(true);
+                        setQuickAzarOpen(true);
+                        setTimeout(() => {
+                          setQuickAzarSpinning(false);
+                          setQuickGrade(prev => ({ ...prev, studentId: winner.id }));
+                        }, 4000);
                       }} title="Alumno al azar" style={{
                         padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                        background: quickAzarAnim ? '#dbeafe' : '#f8fafc',
-                        cursor: quickAzarAnim ? 'wait' : 'pointer',
-                        fontSize: '0.85rem', color: quickAzarAnim ? '#3b82f6' : '#64748b',
-                        whiteSpace: 'nowrap', transition: 'all 0.15s',
-                        animation: quickAzarAnim ? 'quickShake 0.15s infinite' : 'none'
-                      }}>{quickAzarAnim ? '🎰' : '🎲'} {quickAzarAnim ? '' : 'Azar'}</button>
+                        background: '#f8fafc', cursor: 'pointer', fontSize: '0.85rem',
+                        color: '#64748b', whiteSpace: 'nowrap'
+                      }}>🎲 Azar</button>
                     </div>
                   </div>
 
@@ -1435,6 +1422,65 @@ export default function Grades() {
           100% { transform: rotate(0deg); }
         }
       `}</style>
+
+      {/* Azar wheel overlay */}
+      {quickAzarOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.75)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexDirection: 'column'
+        }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
+          <div style={{
+            width: '300px', height: '300px', borderRadius: '50%',
+            position: 'relative', overflow: 'hidden',
+            transform: `rotate(${quickAzarDeg}deg)`,
+            transition: quickAzarSpinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+            background: (() => {
+              const students = filteredStudents.filter(s => s.id !== quickGrade.studentId);
+              if (students.length === 0) return '#ccc';
+              const seg = 360 / students.length;
+              const colors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6'];
+              return `conic-gradient(${students.map((_, i) => `${colors[i % colors.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})`;
+            })()
+          }}>
+            <div style={{
+              position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
+              width: 0, height: 0, zIndex: 10,
+              borderLeft: '14px solid transparent', borderRight: '14px solid transparent',
+              borderTop: '24px solid #1e293b', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            }} />
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+              width: '60px', height: '60px', borderRadius: '50%',
+              background: '#1e293b', zIndex: 5,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontWeight: 800, fontSize: '0.8rem'
+            }}>🎯</div>
+          </div>
+          {quickAzarWinner && !quickAzarSpinning && (
+            <div style={{
+              marginTop: '2rem', background: 'white', borderRadius: '16px',
+              padding: '1rem 2rem', textAlign: 'center',
+              animation: 'bounceIn 0.5s ease'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🎉</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+            </div>
+          )}
+          {quickAzarSpinning && (
+            <div style={{ color: 'white', fontSize: '1rem', marginTop: '1.5rem', fontWeight: 600 }}>Sorteando...</div>
+          )}
+          {!quickAzarSpinning && (
+            <button onClick={() => setQuickAzarOpen(false)} style={{
+              marginTop: '1.5rem', padding: '0.6rem 1.5rem', borderRadius: '10px',
+              border: 'none', background: 'white', color: '#1e293b', fontWeight: 600,
+              cursor: 'pointer', fontSize: '0.9rem'
+            }}>Cerrar</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
