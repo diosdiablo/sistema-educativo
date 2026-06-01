@@ -1433,80 +1433,82 @@ export default function Grades() {
         const n = azarStudents.length;
         const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
+        const fontSize = n <= 6 ? '0.8rem' : n <= 10 ? '0.7rem' : '0.6rem';
         return (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          position: 'fixed', inset: 0,
           background: 'rgba(0,0,0,0.8)', zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexDirection: 'column'
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
         }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
-          {/* Pointer */}
-          <div style={{
-            width: 0, height: 0, zIndex: 10, marginBottom: '-2px',
-            borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
-            borderTop: '28px solid #fbbf24',
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
-          }} />
-          {/* Wheel */}
-          <div style={{
-            width: wheelSize, height: wheelSize, borderRadius: '50%',
-            position: 'relative', overflow: 'hidden', flexShrink: 0,
-            transform: `rotate(${quickAzarDeg}deg)`,
-            transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
-            background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
-            boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
-          }}>
-            {/* Student name labels around the wheel */}
-            {azarStudents.map((s, i) => {
-              const angle = i * seg + seg / 2;
-              const rad = (angle - 90) * Math.PI / 180;
-              const r = wheelSize * 0.37;
-              const x = wheelSize / 2 + r * Math.cos(rad) - 40;
-              const y = wheelSize / 2 + r * Math.sin(rad) - 8;
-              return (
-                <div key={s.id} style={{
-                  position: 'absolute', left: x, top: y, width: '80px', textAlign: 'center',
-                  fontSize: '0.7rem', fontWeight: 700, color: 'white',
-                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  transform: `rotate(${angle}deg)`,
-                  pointerEvents: 'none'
-                }}>{s.name.split(' ')[0]}</div>
-              );
-            })}
-            {/* Center hub */}
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* Pointer (absolute, above wheel) */}
             <div style={{
-              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-              width: '70px', height: '70px', borderRadius: '50%',
-              background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 800, fontSize: '1.2rem',
-              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
-            }}>🎯</div>
-          </div>
-          {quickAzarWinner && !quickAzarSpinning && (
+              position: 'absolute', top: '-10px', left: '50%',
+              transform: 'translateX(-50%)', zIndex: 10,
+              width: 0, height: 0,
+              borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
+              borderTop: '28px solid #fbbf24',
+              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
+            }} />
+            {/* Wheel */}
             <div style={{
-              marginTop: '1.5rem', background: 'white', borderRadius: '16px',
-              padding: '1rem 2.5rem', textAlign: 'center',
-              animation: 'bounceIn 0.5s ease',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+              width: wheelSize, height: wheelSize, borderRadius: '50%',
+              position: 'relative', overflow: 'hidden',
+              transform: `rotate(${quickAzarDeg}deg)`,
+              transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
+              background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
+              boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
             }}>
-              <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
-              <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+              {/* Student name labels along each segment */}
+              {azarStudents.map((s, i) => {
+                const mid = i * seg + seg / 2;
+                const flip = mid > 90 && mid < 270;
+                return (
+                  <div key={s.id} style={{
+                    position: 'absolute', left: '50%', top: '50%',
+                    transform: `rotate(${mid}deg) translate(0, -${wheelSize * 0.29}px) rotate(${flip ? 180 : 0}deg)`,
+                    transformOrigin: 'center center',
+                    fontSize, fontWeight: 700, color: 'white',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                    whiteSpace: 'nowrap', pointerEvents: 'none',
+                    lineHeight: 1.2
+                  }}>{s.name.split(' ')[0]}</div>
+                );
+              })}
+              {/* Center hub */}
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+                width: '70px', height: '70px', borderRadius: '50%',
+                background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 800, fontSize: '1.2rem',
+                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
+              }}>🎯</div>
             </div>
-          )}
-          {quickAzarSpinning && (
-            <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
-          )}
-          {!quickAzarSpinning && (
-            <button onClick={() => setQuickAzarOpen(false)} style={{
-              marginTop: '1.5rem', padding: '0.7rem 2rem', borderRadius: '12px',
-              border: 'none', background: 'white', color: '#1e293b', fontWeight: 700,
-              cursor: 'pointer', fontSize: '0.95rem',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
-            }}>Cerrar</button>
-          )}
+            {quickAzarWinner && !quickAzarSpinning && (
+              <div style={{
+                marginTop: '1.5rem', background: 'white', borderRadius: '16px',
+                padding: '1rem 2.5rem', textAlign: 'center',
+                animation: 'bounceIn 0.5s ease',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+              }}>
+                <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
+                <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+              </div>
+            )}
+            {quickAzarSpinning && (
+              <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
+            )}
+            {!quickAzarSpinning && (
+              <button onClick={() => setQuickAzarOpen(false)} style={{
+                marginTop: '1.5rem', padding: '0.7rem 2rem', borderRadius: '12px',
+                border: 'none', background: 'white', color: '#1e293b', fontWeight: 700,
+                cursor: 'pointer', fontSize: '0.95rem',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+              }}>Cerrar</button>
+            )}
+          </div>
         </div>);
       })()}
     </div>
