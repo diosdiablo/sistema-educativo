@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2 } from 'lucide-react';
 
@@ -108,65 +108,6 @@ export default function Grades() {
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
-  const wheelCanvasRef = useRef(null);
-
-  useEffect(() => {
-    if (!quickAzarOpen) return;
-    const canvas = wheelCanvasRef.current;
-    if (!canvas) return;
-    const azarStudents = filteredStudents.filter(s => s.id !== quickGrade.studentId);
-    const n = azarStudents.length;
-    if (n === 0) return;
-    const dpr = window.devicePixelRatio || 1;
-    const size = Math.min(window.innerWidth * 0.85, 380);
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    canvas.style.width = size + 'px';
-    canvas.style.height = size + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    const cx = size / 2, cy = size / 2, r = size / 2;
-    const segAngle = (2 * Math.PI) / n;
-    for (let i = 0; i < n; i++) {
-      const a1 = -Math.PI / 2 + i * segAngle;
-      const a2 = a1 + segAngle;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, a1, a2);
-      ctx.closePath();
-      ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-    for (let i = 0; i < n; i++) {
-      const midAngle = -Math.PI / 2 + i * segAngle + segAngle / 2;
-      const texto = azarStudents[i].name.split(' ')[0];
-      const radioTexto = r * 0.7;
-      const x = cx + Math.cos(midAngle) * radioTexto;
-      const y = cy + Math.sin(midAngle) * radioTexto;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(midAngle + Math.PI / 2);
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      let fontSize = 20;
-      ctx.font = `bold ${fontSize}px Arial`;
-      let textWidth = ctx.measureText(texto).width;
-      const maxWidth = r * 0.4;
-      while (textWidth > maxWidth && fontSize > 10) {
-        fontSize--;
-        ctx.font = `bold ${fontSize}px Arial`;
-        textWidth = ctx.measureText(texto).width;
-      }
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 3;
-      ctx.fillText(texto, 0, 0);
-      ctx.restore();
-    }
-  }, [quickAzarOpen, filteredStudents, quickGrade.studentId]);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -1362,7 +1303,7 @@ export default function Grades() {
                         const n = available.length;
                         const idx = available.indexOf(winner);
                         const seg = 360 / n;
-                        const target = 360 * 5 + (360 - idx * seg - seg / 2);
+                        const target = 360 * 5 + idx * seg + seg / 2;
                         setQuickAzarWinner(winner);
                         setQuickAzarDeg(0);
                         setQuickAzarSpinning(false);
@@ -1488,7 +1429,18 @@ export default function Grades() {
 
       {/* Azar wheel overlay */}
       {quickAzarOpen && (() => {
+        const azarStudents = filteredStudents.filter(s => s.id !== quickGrade.studentId);
+        const n = azarStudents.length;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
+        const seg = 360 / (n || 1);
+        const cx = wheelSize / 2, cy = wheelSize / 2;
+        const innerR = wheelSize * 0.28;
+        const ringR = wheelSize * 0.40;
+        const cardW = Math.min(88, Math.max(44, 2 * Math.PI * ringR / (n || 1) * 0.72));
+        const cardH = 28;
+        const gradientStops = azarStudents.map((_, i) =>
+          `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`
+        ).join(', ');
         return (
         <div style={{
           position: 'fixed', inset: 0,
@@ -1497,36 +1449,57 @@ export default function Grades() {
           paddingTop: '2rem', overflow: 'auto'
         }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
           <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Pointer (absolute, above wheel) */}
-            <div style={{
-              position: 'absolute', top: '-10px', left: '50%',
-              transform: 'translateX(-50%)', zIndex: 10,
-              width: 0, height: 0,
-              borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
-              borderTop: '28px solid #fbbf24',
-              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
-            }} />
-            {/* Wheel */}
-            <div style={{
-              width: wheelSize, height: wheelSize, borderRadius: '50%',
-              position: 'relative', overflow: 'hidden',
-              boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
-            }}>
-              <canvas ref={wheelCanvasRef}
-                style={{
-                  display: 'block',
-                  transform: `rotate(${quickAzarDeg}deg)`,
-                  transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
-                  borderRadius: '50%'
-                }}
-              />
+            {/* Wheel + Cards container */}
+            <div style={{ position: 'relative', width: wheelSize, height: wheelSize }}>
+              {/* Pointer */}
+              <div style={{
+                position: 'absolute', top: `${cy - innerR - 28}px`, left: '50%',
+                transform: 'translateX(-50%)', zIndex: 10,
+                width: 0, height: 0,
+                borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
+                borderTop: '28px solid #fbbf24',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
+              }} />
+              {/* Inner spinning wheel */}
+              <div style={{
+                position: 'absolute', left: '50%', top: '50%',
+                width: innerR * 2, height: innerR * 2, borderRadius: '50%',
+                transform: `translate(-50%,-50%) rotate(${quickAzarDeg}deg)`,
+                transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
+                background: n > 0 ? `conic-gradient(from -90deg, ${gradientStops})` : '#94a3b8',
+                boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
+              }} />
+              {/* Name cards */}
+              {azarStudents.map((s, i) => {
+                const a = ((-90 + i * seg + seg / 2) * Math.PI) / 180;
+                const l = cx + Math.cos(a) * ringR - cardW / 2;
+                const t = cy + Math.sin(a) * ringR - cardH / 2;
+                const isWinner = quickAzarWinner?.id === s.id;
+                return (
+                  <div key={s.id} style={{
+                    position: 'absolute', left: l, top: t,
+                    width: cardW, height: cardH, borderRadius: '8px',
+                    background: isWinner ? '#fbbf24' : 'white',
+                    border: isWinner ? '3px solid #f59e0b' : '2px solid #e2e8f0',
+                    boxShadow: isWinner
+                      ? '0 0 0 3px rgba(251,191,36,0.4), 0 4px 16px rgba(0,0,0,0.25)'
+                      : '0 2px 8px rgba(0,0,0,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: cardW < 55 ? '0.6rem' : cardW < 70 ? '0.65rem' : '0.7rem',
+                    fontWeight: 700, color: isWinner ? '#1e293b' : '#334155',
+                    transition: 'all 0.3s ease', zIndex: 2,
+                    whiteSpace: 'nowrap', overflow: 'hidden',
+                    textOverflow: 'ellipsis', padding: '0 4px'
+                  }}>{s.name.split(' ')[0]}</div>
+                );
+              })}
               {/* Center hub */}
               <div style={{
                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-                width: '70px', height: '70px', borderRadius: '50%',
+                width: '60px', height: '60px', borderRadius: '50%',
                 background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 800, fontSize: '1.2rem',
+                color: 'white', fontWeight: 800, fontSize: '1.1rem',
                 boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
               }}>🎯</div>
             </div>
