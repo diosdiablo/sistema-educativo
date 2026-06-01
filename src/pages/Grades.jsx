@@ -1414,12 +1414,11 @@ export default function Grades() {
         </>
       )}
       <style>{`
-        @keyframes quickShake {
-          0% { transform: rotate(0deg); }
-          25% { transform: rotate(-8deg); }
-          50% { transform: rotate(0deg); }
-          75% { transform: rotate(8deg); }
-          100% { transform: rotate(0deg); }
+        @keyframes bounceIn {
+          0% { transform: scale(0.3); opacity: 0; }
+          50% { transform: scale(1.05); }
+          70% { transform: scale(0.9); }
+          100% { transform: scale(1); opacity: 1; }
         }
       `}</style>
 
