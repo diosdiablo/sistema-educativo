@@ -1460,14 +1460,13 @@ export default function Grades() {
               background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
               boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
             }}>
-              {/* Student name labels along each segment */}
+              {/* Student name labels - radial orientation */}
               {azarStudents.map((s, i) => {
                 const mid = i * seg + seg / 2;
-                const flip = mid > 90 && mid < 270;
                 return (
                   <div key={s.id} style={{
                     position: 'absolute', left: '50%', top: '50%',
-                    transform: `rotate(${mid}deg) translate(0, -${wheelSize * 0.38}px) rotate(${flip ? 180 : 0}deg)`,
+                    transform: `translateY(-${wheelSize * 0.33}px) rotate(${mid}deg) rotate(-90deg)`,
                     transformOrigin: 'center center',
                     fontSize, fontWeight: 700, color: 'white',
                     textShadow: '0 1px 3px rgba(0,0,0,0.6)',
