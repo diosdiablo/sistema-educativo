@@ -107,6 +107,7 @@ export default function Grades() {
   const [quickAzarSpinning, setQuickAzarSpinning] = useState(false);
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
+  const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -1301,20 +1302,24 @@ export default function Grades() {
                         const winner = available[Math.floor(Math.random() * available.length)];
                         const n = available.length;
                         const idx = available.indexOf(winner);
-                        const segment = 360 / n;
-                        const target = 360 * 5 + (360 - idx * segment - segment / 2);
-                        setQuickAzarDeg(target);
+                        const seg = 360 / n;
+                        const target = 360 * 5 + (360 - idx * seg - seg / 2);
                         setQuickAzarWinner(winner);
-                        setQuickAzarSpinning(true);
+                        setQuickAzarDeg(0);
+                        setQuickAzarSpinning(false);
                         setQuickAzarOpen(true);
+                        setTimeout(() => {
+                          setQuickAzarSpinning(true);
+                          setQuickAzarDeg(target);
+                        }, 50);
                         setTimeout(() => {
                           setQuickAzarSpinning(false);
                           setQuickGrade(prev => ({ ...prev, studentId: winner.id }));
-                        }, 4000);
+                        }, 4050);
                       }} title="Alumno al azar" style={{
                         padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
                         background: '#f8fafc', cursor: 'pointer', fontSize: '0.85rem',
-                        color: '#64748b', whiteSpace: 'nowrap'
+                        color: '#64748b', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px'
                       }}>🎲 Azar</button>
                     </div>
                   </div>
@@ -1423,63 +1428,87 @@ export default function Grades() {
       `}</style>
 
       {/* Azar wheel overlay */}
-      {quickAzarOpen && (
+      {quickAzarOpen && (() => {
+        const azarStudents = filteredStudents.filter(s => s.id !== quickGrade.studentId);
+        const n = azarStudents.length;
+        const seg = n > 0 ? 360 / n : 360;
+        const wheelSize = Math.min(window.innerWidth * 0.85, 380);
+        return (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.75)', zIndex: 9999,
+          background: 'rgba(0,0,0,0.8)', zIndex: 9999,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexDirection: 'column'
         }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
+          {/* Pointer */}
           <div style={{
-            width: '300px', height: '300px', borderRadius: '50%',
-            position: 'relative', overflow: 'hidden',
+            width: 0, height: 0, zIndex: 10, marginBottom: '-2px',
+            borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
+            borderTop: '28px solid #fbbf24',
+            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
+          }} />
+          {/* Wheel */}
+          <div style={{
+            width: wheelSize, height: wheelSize, borderRadius: '50%',
+            position: 'relative', overflow: 'hidden', flexShrink: 0,
             transform: `rotate(${quickAzarDeg}deg)`,
-            transition: quickAzarSpinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
-            background: (() => {
-              const students = filteredStudents.filter(s => s.id !== quickGrade.studentId);
-              if (students.length === 0) return '#ccc';
-              const seg = 360 / students.length;
-              const colors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6'];
-              return `conic-gradient(${students.map((_, i) => `${colors[i % colors.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})`;
-            })()
+            transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
+            background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
+            boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
           }}>
-            <div style={{
-              position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-              width: 0, height: 0, zIndex: 10,
-              borderLeft: '14px solid transparent', borderRight: '14px solid transparent',
-              borderTop: '24px solid #1e293b', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-            }} />
+            {/* Student name labels around the wheel */}
+            {azarStudents.map((s, i) => {
+              const angle = i * seg + seg / 2;
+              const rad = (angle - 90) * Math.PI / 180;
+              const r = wheelSize * 0.37;
+              const x = wheelSize / 2 + r * Math.cos(rad) - 40;
+              const y = wheelSize / 2 + r * Math.sin(rad) - 8;
+              return (
+                <div key={s.id} style={{
+                  position: 'absolute', left: x, top: y, width: '80px', textAlign: 'center',
+                  fontSize: '0.7rem', fontWeight: 700, color: 'white',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  transform: `rotate(${angle}deg)`,
+                  pointerEvents: 'none'
+                }}>{s.name.split(' ')[0]}</div>
+              );
+            })}
+            {/* Center hub */}
             <div style={{
               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-              width: '60px', height: '60px', borderRadius: '50%',
-              background: '#1e293b', zIndex: 5,
+              width: '70px', height: '70px', borderRadius: '50%',
+              background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 800, fontSize: '0.8rem'
+              color: 'white', fontWeight: 800, fontSize: '1.2rem',
+              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
             }}>🎯</div>
           </div>
           {quickAzarWinner && !quickAzarSpinning && (
             <div style={{
-              marginTop: '2rem', background: 'white', borderRadius: '16px',
-              padding: '1rem 2rem', textAlign: 'center',
-              animation: 'bounceIn 0.5s ease'
+              marginTop: '1.5rem', background: 'white', borderRadius: '16px',
+              padding: '1rem 2.5rem', textAlign: 'center',
+              animation: 'bounceIn 0.5s ease',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🎉</div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
-              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+              <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
+              <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
             </div>
           )}
           {quickAzarSpinning && (
-            <div style={{ color: 'white', fontSize: '1rem', marginTop: '1.5rem', fontWeight: 600 }}>Sorteando...</div>
+            <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
           )}
           {!quickAzarSpinning && (
             <button onClick={() => setQuickAzarOpen(false)} style={{
-              marginTop: '1.5rem', padding: '0.6rem 1.5rem', borderRadius: '10px',
-              border: 'none', background: 'white', color: '#1e293b', fontWeight: 600,
-              cursor: 'pointer', fontSize: '0.9rem'
+              marginTop: '1.5rem', padding: '0.7rem 2rem', borderRadius: '12px',
+              border: 'none', background: 'white', color: '#1e293b', fontWeight: 700,
+              cursor: 'pointer', fontSize: '0.95rem',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
             }}>Cerrar</button>
           )}
-        </div>
-      )}
+        </div>);
+      })()}
     </div>
   );
 }
