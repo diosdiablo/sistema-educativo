@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2 } from 'lucide-react';
 
@@ -108,6 +108,65 @@ export default function Grades() {
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
+  const wheelCanvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!quickAzarOpen) return;
+    const canvas = wheelCanvasRef.current;
+    if (!canvas) return;
+    const azarStudents = filteredStudents.filter(s => s.id !== quickGrade.studentId);
+    const n = azarStudents.length;
+    if (n === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    const size = Math.min(window.innerWidth * 0.85, 380);
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const cx = size / 2, cy = size / 2, r = size / 2;
+    const segAngle = (2 * Math.PI) / n;
+    for (let i = 0; i < n; i++) {
+      const a1 = -Math.PI / 2 + i * segAngle;
+      const a2 = a1 + segAngle;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, a1, a2);
+      ctx.closePath();
+      ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    for (let i = 0; i < n; i++) {
+      const midAngle = -Math.PI / 2 + i * segAngle + segAngle / 2;
+      const texto = azarStudents[i].name.split(' ')[0];
+      const radioTexto = r * 0.7;
+      const x = cx + Math.cos(midAngle) * radioTexto;
+      const y = cy + Math.sin(midAngle) * radioTexto;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(midAngle + Math.PI / 2);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      let fontSize = 20;
+      ctx.font = `bold ${fontSize}px Arial`;
+      let textWidth = ctx.measureText(texto).width;
+      const maxWidth = r * 0.4;
+      while (textWidth > maxWidth && fontSize > 10) {
+        fontSize--;
+        ctx.font = `bold ${fontSize}px Arial`;
+        textWidth = ctx.measureText(texto).width;
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 3;
+      ctx.fillText(texto, 0, 0);
+      ctx.restore();
+    }
+  }, [quickAzarOpen, filteredStudents, quickGrade.studentId]);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -1429,11 +1488,7 @@ export default function Grades() {
 
       {/* Azar wheel overlay */}
       {quickAzarOpen && (() => {
-        const azarStudents = filteredStudents.filter(s => s.id !== quickGrade.studentId);
-        const n = azarStudents.length;
-        const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
-        const fontSize = n <= 6 ? '0.8rem' : n <= 10 ? '0.7rem' : '0.6rem';
         return (
         <div style={{
           position: 'fixed', inset: 0,
@@ -1455,27 +1510,16 @@ export default function Grades() {
             <div style={{
               width: wheelSize, height: wheelSize, borderRadius: '50%',
               position: 'relative', overflow: 'hidden',
-              transform: `rotate(${quickAzarDeg}deg)`,
-              transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
-              background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
               boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
             }}>
-              {/* Student name labels along each segment */}
-              {azarStudents.map((s, i) => {
-                const mid = i * seg + seg / 2;
-                const flip = mid > 90 && mid < 270;
-                return (
-                  <div key={s.id} style={{
-                    position: 'absolute', left: '50%', top: '50%',
-                    transform: `rotate(${mid}deg) translate(0, -${wheelSize * 0.38}px) rotate(${flip ? 180 : 0}deg)`,
-                    transformOrigin: 'center center',
-                    fontSize, fontWeight: 700, color: 'white',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.6)',
-                    whiteSpace: 'nowrap', pointerEvents: 'none',
-                    lineHeight: 1.2
-                  }}>{s.name.split(' ')[0]}</div>
-                );
-              })}
+              <canvas ref={wheelCanvasRef}
+                style={{
+                  display: 'block',
+                  transform: `rotate(${quickAzarDeg}deg)`,
+                  transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
+                  borderRadius: '50%'
+                }}
+              />
               {/* Center hub */}
               <div style={{
                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
