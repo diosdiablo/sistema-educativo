@@ -1466,7 +1466,7 @@ export default function Grades() {
                 return (
                   <div key={s.id} style={{
                     position: 'absolute', left: '50%', top: '50%',
-                    transform: `translateY(-${wheelSize * 0.33}px) rotate(${mid}deg) rotate(-90deg)`,
+                    transform: `rotate(${mid}deg) translate(0, -${wheelSize * 0.33}px) rotate(-90deg)`,
                     transformOrigin: 'center center',
                     fontSize, fontWeight: 700, color: 'white',
                     textShadow: '0 1px 3px rgba(0,0,0,0.6)',
