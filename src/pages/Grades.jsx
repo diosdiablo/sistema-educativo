@@ -107,6 +107,7 @@ export default function Grades() {
   const [quickAzarSpinning, setQuickAzarSpinning] = useState(false);
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
+  const [quickAzarStudents, setQuickAzarStudents] = useState([]);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Función para obtener la posición del tooltip en hover
@@ -1299,6 +1300,7 @@ export default function Grades() {
                       <button onClick={() => {
                         const available = filteredStudents.filter(s => s.id !== quickGrade.studentId);
                         if (available.length === 0 || quickAzarSpinning) return;
+                        setQuickAzarStudents(available);
                         const winner = available[Math.floor(Math.random() * available.length)];
                         const n = available.length;
                         const idx = available.indexOf(winner);
@@ -1429,7 +1431,7 @@ export default function Grades() {
 
       {/* Azar wheel overlay */}
       {quickAzarOpen && (() => {
-        const azarStudents = filteredStudents.filter(s => s.id !== quickGrade.studentId);
+        const azarStudents = quickAzarStudents;
         const n = azarStudents.length;
         const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
