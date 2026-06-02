@@ -112,7 +112,50 @@ const calcScore = (type, scores, criteria) => {
   return { score: 0, max: 0 };
 };
 
-const numToQualitative = (score, max) => {
+const numToQualitative = (score, max, type, scores, criteria) => {
+  if (type && criteria && criteria.length > 0 && ['checklist', 'scale', 'rubric', 'selfeval', 'observation'].includes(type)) {
+    const N = criteria.length;
+    if (N >= 3) {
+      const scoring = typeMap[type]?.scoring;
+      let positives = 0;
+      criteria.forEach(c => {
+        const val = scores?.[c.id];
+        if (scoring === 'binary') {
+          if (val === true) positives++;
+        } else if (scoring === 'qualitative') {
+          if (Number(val) >= 3) positives++; // A or AD
+        } else if (scoring === 'frequency') {
+          if (Number(val) === 3) positives++; // Siempre
+        }
+      });
+
+      const total = N + 1;
+      const baseSize = Math.floor(total / 4);
+      const remainder = total % 4;
+
+      let sC = baseSize;
+      let sB = baseSize;
+      let sA = baseSize;
+      let sAD = baseSize;
+
+      if (remainder === 1) {
+        sA += 1;
+      } else if (remainder === 2) {
+        sB += 1;
+        sA += 1;
+      } else if (remainder === 3) {
+        sC += 1;
+        sB += 1;
+        sA += 1;
+      }
+
+      if (positives < sC) return 'C';
+      if (positives < sC + sB) return 'B';
+      if (positives < sC + sB + sA) return 'A';
+      return 'AD';
+    }
+  }
+
   if (max === 0) return 'C';
   const pct = (score / max) * 100;
   if (pct >= 87.5) return 'AD';
@@ -339,7 +382,7 @@ export default function Instruments() {
     }
 
     const { score, max, direct } = calcScore(applyingInstrument.type, evaluationScores, applyingInstrument.criteria);
-    const qualitative = direct ?? numToQualitative(score, max);
+    const qualitative = direct ?? numToQualitative(score, max, applyingInstrument.type, evaluationScores, applyingInstrument.criteria);
 
     const buildEvaluationData = (student) => {
       const evalData = {
