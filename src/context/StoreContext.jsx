@@ -78,9 +78,16 @@ export const StoreProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loginHistory, setLoginHistory] = useState(() => loadData('edu_login_history', []));
   const [students, setStudents] = useState(() => loadData('edu_students', []));
-  const [attendance, setAttendance] = useState(() =>
-    loadData('edu_attendance', []).map(r => r.id ? r : { ...r, id: generateId() })
-  );
+  const [attendance, setAttendance] = useState(() => {
+    const data = loadData('edu_attendance', []).map(r => r.id ? r : { ...r, id: generateId() });
+    return data.map(r => {
+      let records = r.records;
+      if (typeof records === 'string') {
+        try { records = JSON.parse(records); } catch { records = {}; }
+      }
+      return { ...r, records: records && typeof records === 'object' ? records : {} };
+    });
+  });
   const [grades, setGrades] = useState(() => loadData('edu_grades', []));
 
   useEffect(() => {
@@ -190,7 +197,15 @@ export const StoreProvider = ({ children }) => {
             studentId: g.student_id,
             competencyId: g.competency_id
           })));
-          if (attendanceData?.length > 0) setAttendance(attendanceData);
+          if (attendanceData?.length > 0) {
+            setAttendance(attendanceData.map(a => {
+              let records = a.records;
+              if (typeof records === 'string') {
+                try { records = JSON.parse(records); } catch { records = {}; }
+              }
+              return { ...a, records: records || {} };
+            }));
+          }
           if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
             ...i,
             instrumentId: i.instrument_id,
@@ -582,7 +597,15 @@ if (studentsData?.length > 0) {
         studentId: g.student_id,
         competencyId: g.competency_id
       })));
-      if (attendanceData?.length > 0) setAttendance(attendanceData);
+      if (attendanceData?.length > 0) {
+        setAttendance(attendanceData.map(a => {
+          let records = a.records;
+          if (typeof records === 'string') {
+            try { records = JSON.parse(records); } catch { records = {}; }
+          }
+          return { ...a, records: records || {} };
+        }));
+      }
       if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
         ...i,
         instrumentId: i.instrument_id,
