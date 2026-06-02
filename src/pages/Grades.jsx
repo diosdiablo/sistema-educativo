@@ -1433,7 +1433,8 @@ export default function Grades() {
         const n = azarStudents.length;
         const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
-        const fontSize = n <= 6 ? '0.8rem' : n <= 10 ? '0.7rem' : '0.6rem';
+        // Responsive font size that dynamically scales based on student count
+        const fontSize = n <= 8 ? '0.9rem' : n <= 15 ? '0.75rem' : n <= 25 ? '0.65rem' : '0.55rem';
         return (
         <div style={{
           position: 'fixed', inset: 0,
@@ -1465,14 +1466,26 @@ export default function Grades() {
                 const mid = i * seg + seg / 2;
                 return (
                   <div key={s.id} style={{
-                    position: 'absolute', left: '50%', top: '50%',
-                    transform: `rotate(${mid}deg) translate(0, -${wheelSize * 0.33}px) rotate(-90deg)`,
-                    transformOrigin: 'center center',
-                    fontSize, fontWeight: 700, color: 'white',
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    width: `${wheelSize / 2 - 50}px`,
+                    height: '24px',
+                    marginTop: '-12px',
+                    transform: `rotate(${mid - 90}deg) translate(40px)`,
+                    transformOrigin: 'left center',
+                    fontSize,
+                    fontWeight: 700,
+                    color: 'white',
                     textShadow: '0 1px 3px rgba(0,0,0,0.6)',
-                    whiteSpace: 'nowrap', pointerEvents: 'none',
-                    lineHeight: 1.2
-                  }}>{s.name.split(' ')[0]}</div>
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    textAlign: 'left'
+                  }}>{s.name}</div>
                 );
               })}
               {/* Center hub */}
