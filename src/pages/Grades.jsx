@@ -32,7 +32,52 @@ const NUM_TO_GRADE = (n) => {
   if (n >= 1.5) return 'B';
   return 'C';
 };
-const numToQualitative = (score, max) => {
+const numToQualitative = (score, max, type, scores, criteria) => {
+  if (type && criteria && criteria.length > 0 && ['checklist', 'scale', 'rubric', 'selfeval', 'observation'].includes(type)) {
+    const N = criteria.length;
+    if (N >= 3) {
+      const scoring = type === 'checklist' ? 'binary' 
+                    : type === 'observation' ? 'frequency' 
+                    : 'qualitative';
+      let positives = 0;
+      criteria.forEach(c => {
+        const val = scores?.[c.id];
+        if (scoring === 'binary') {
+          if (val === true) positives++;
+        } else if (scoring === 'qualitative') {
+          if (Number(val) >= 3) positives++; // A or AD
+        } else if (scoring === 'frequency') {
+          if (Number(val) === 3) positives++; // Siempre
+        }
+      });
+
+      const total = N + 1;
+      const baseSize = Math.floor(total / 4);
+      const remainder = total % 4;
+
+      let sC = baseSize;
+      let sB = baseSize;
+      let sA = baseSize;
+      let sAD = baseSize;
+
+      if (remainder === 1) {
+        sA += 1;
+      } else if (remainder === 2) {
+        sB += 1;
+        sA += 1;
+      } else if (remainder === 3) {
+        sC += 1;
+        sB += 1;
+        sA += 1;
+      }
+
+      if (positives < sC) return 'C';
+      if (positives < sC + sB) return 'B';
+      if (positives < sC + sB + sA) return 'A';
+      return 'AD';
+    }
+  }
+
   if (!max || max === 0) return 'C';
   const pct = (score / max) * 100;
   if (pct >= 87.5) return 'AD';
@@ -40,11 +85,42 @@ const numToQualitative = (score, max) => {
   if (pct >= 37.5) return 'B';
   return 'C';
 };
+
+const calcScore = (type, scores, criteria) => {
+  const scoring = type === 'checklist' ? 'binary'
+                : type === 'observation' ? 'frequency'
+                : type === 'written' ? 'numeric'
+                : (type === 'portfolio' || type === 'anecdotal') ? 'direct'
+                : 'qualitative';
+  if (scoring === 'binary') {
+    const score = Object.values(scores).filter(v => v === true).length;
+    const max = criteria.length;
+    return { score, max };
+  }
+  if (scoring === 'qualitative') {
+    const score = Object.values(scores).reduce((a, b) => a + Number(b || 0), 0);
+    const max = criteria?.length ? criteria.length * 4 : 0;
+    return { score, max };
+  }
+  if (scoring === 'frequency') {
+    const score = Object.values(scores).reduce((a, b) => a + Number(b || 0), 0);
+    const max = criteria?.length ? criteria.length * 3 : 0;
+    return { score, max };
+  }
+  if (scoring === 'numeric') {
+    const score = Number(scores['__numeric__'] || 0);
+    return { score, max: 20 };
+  }
+  if (scoring === 'direct') {
+    return { score: null, max: null, direct: scores['__direct__'] || null };
+  }
+  return { score: 0, max: 0 };
+};
 const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -96,6 +172,17 @@ export default function Grades() {
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
   const [hoveredEval, setHoveredEval] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
+  const [editingEvaluation, setEditingEvaluation] = useState(null);
+  const [editScores, setEditScores] = useState({});
+
+  useEffect(() => {
+    if (editingEvaluation) {
+      setEditScores(editingEvaluation.scores || {});
+    } else {
+      setEditScores({});
+    }
+  }, [editingEvaluation]);
+
   const [showQuickGrade, setShowQuickGrade] = useState(false);
   const [quickGrade, setQuickGrade] = useState({
     studentId: '', activityName: '', score: '', date: new Date().toISOString().split('T')[0], note: '', competencyId: ''
@@ -683,10 +770,20 @@ export default function Grades() {
               evs.forEach(ev => {
                 const key = ev.activityName || ev.instrumentId;
                 if (!uniqueInstruments[key]) {
+                  const originalInstr = instruments.find(i => i.id === ev.instrumentId);
                   uniqueInstruments[key] = {
                     id: key,
-                    title: ev.activityName || instruments.find(i => i.id === ev.instrumentId)?.title || 'Sin título',
-                    instrumentType: ev.instrumentType
+                    instrumentId: ev.instrumentId,
+                    title: ev.activityName || originalInstr?.title || 'Sin título',
+                    instrumentType: ev.instrumentType,
+                    criteria: ev.criteria || originalInstr?.criteria || [],
+                    subjectId: ev.subjectId,
+                    subjectName: ev.subjectName,
+                    competencyId: ev.competencyId,
+                    competencyName: ev.competencyName,
+                    period: ev.period,
+                    classId: ev.classId,
+                    activityName: ev.activityName,
                   };
                 }
               });
@@ -855,8 +952,42 @@ export default function Grades() {
                             });
                             if (!ev) {
                               return (
-                                <td key={inst.id} style={{ textAlign: 'center' }}>
-                                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
+                                <td key={inst.id}
+                                  title="Sin calificación — click para evaluar"
+                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
+                                  onClick={() => {
+                                    const newEval = {
+                                      id: null,
+                                      instrumentId: inst.instrumentId,
+                                      instrumentTitle: inst.title,
+                                      instrumentType: inst.instrumentType,
+                                      criteria: inst.criteria || [],
+                                      activityName: inst.activityName || inst.title,
+                                      scores: {},
+                                      score: null,
+                                      maxPossible: null,
+                                      qualitative: null,
+                                      subjectId: inst.subjectId,
+                                      subjectName: inst.subjectName,
+                                      competencyId: inst.competencyId,
+                                      competencyName: inst.competencyName,
+                                      period: inst.period,
+                                      classId: inst.classId,
+                                      studentId: student.id,
+                                      studentName: student.name,
+                                      date: new Date().toISOString().split('T')[0],
+                                      userId: currentUser?.id,
+                                      _isNew: true,
+                                    };
+                                    setEditingEvaluation(newEval);
+                                  }}
+                                >
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    width: '28px', height: '28px', borderRadius: '6px',
+                                    border: '1.5px dashed #cbd5e1', color: '#94a3b8', fontSize: '1rem',
+                                    transition: 'all 0.15s'
+                                  }}>+</span>
                                 </td>
                               );
                             }
@@ -1239,6 +1370,16 @@ export default function Grades() {
                     background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                   }}>Cerrar</button>
                   <button onClick={() => {
+                    setEditingEvaluation({ ...viewingEvaluation });
+                    setViewingEvaluation(null);
+                  }} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    padding: '0.75rem 1rem', borderRadius: '10px', border: 'none',
+                    background: '#eff6ff', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  }}>
+                    ✏️ Modificar
+                  </button>
+                  <button onClick={() => {
                     if (confirm('¿Eliminar esta evaluación?')) {
                       deleteInstrumentEvaluation(viewingEvaluation.id);
                       setViewingEvaluation(null);
@@ -1254,6 +1395,209 @@ export default function Grades() {
               </div>
             </div>
           )}
+
+          {/* ── Modal editor de evaluación (modificar o crear nueva) ── */}
+          {editingEvaluation && (() => {
+            const evType = editingEvaluation.instrumentType || 'checklist';
+            const evCriteria = editingEvaluation.criteria || [];
+            const isNew = editingEvaluation._isNew;
+            const gradeColor = { AD: '#10b981', A: '#3b82f6', B: '#f59e0b', C: '#ef4444' };
+            const gradeLabel = { AD: 'Logro Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
+
+            const { score, max, direct } = calcScore(evType, editScores, evCriteria);
+            const previewQual = direct ?? numToQualitative(score, max, evType, editScores, evCriteria);
+
+            const handleSaveEdit = async () => {
+              const { score: s, max: m, direct: d } = calcScore(evType, editScores, evCriteria);
+              const qual = d ?? numToQualitative(s, m, evType, editScores, evCriteria);
+              const evalData = {
+                ...editingEvaluation,
+                id: editingEvaluation.id || (Date.now().toString()),
+                scores: { ...editScores },
+                score: s,
+                maxPossible: m,
+                qualitative: qual,
+                date: editingEvaluation.date || new Date().toISOString().split('T')[0],
+              };
+              delete evalData._isNew;
+              await saveInstrumentEvaluation(evalData);
+              setEditingEvaluation(null);
+            };
+
+            return (
+              <div className="modal-overlay animate-fade-in" style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
+                display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+                padding: '2rem 1rem', zIndex: 1001, overflowY: 'auto'
+              }}>
+                <div className="card shadow-glass" style={{ maxWidth: '680px', width: '100%' }}>
+                  {/* Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                    <div>
+                      <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.25rem' }}>
+                        {isNew ? '➕ Nueva Evaluación' : '✏️ Modificar Evaluación'}
+                      </h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        {editingEvaluation.studentName} · {editingEvaluation.activityName || editingEvaluation.instrumentTitle || ''}
+                      </p>
+                    </div>
+                    <button onClick={() => setEditingEvaluation(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <X size={24} color="var(--text-secondary)" />
+                    </button>
+                  </div>
+
+                  {/* Previsualización de calificación */}
+                  {previewQual && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '1rem',
+                      padding: '0.75rem 1rem', borderRadius: '12px', marginBottom: '1.25rem',
+                      background: gradeColor[previewQual] + '18',
+                      border: `1px solid ${gradeColor[previewQual]}40`
+                    }}>
+                      <div style={{
+                        width: '44px', height: '44px', borderRadius: '10px',
+                        background: gradeColor[previewQual],
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.2rem', fontWeight: 800, color: 'white', flexShrink: 0
+                      }}>{previewQual}</div>
+                      <div>
+                        <div style={{ fontWeight: 700 }}>{gradeLabel[previewQual]}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Calificación resultante</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Criterios / controles según tipo */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+
+                    {/* CHECKLIST */}
+                    {evType === 'checklist' && evCriteria.map((c, idx) => (
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
+                        <div style={{ display: 'flex', gap: '0.6rem' }}>
+                          {[{ val: true, label: '✅ Logrado', color: '#10b981' }, { val: false, label: '❌ No Logrado', color: '#ef4444' }].map(opt => (
+                            <button key={String(opt.val)}
+                              onClick={() => setEditScores(s => ({ ...s, [c.id]: opt.val }))}
+                              style={{
+                                flex: 1, padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                                border: `2px solid ${editScores[c.id] === opt.val ? opt.color : '#e2e8f0'}`,
+                                background: editScores[c.id] === opt.val ? opt.color + '18' : 'white',
+                                color: editScores[c.id] === opt.val ? opt.color : '#64748b'
+                              }}>{opt.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* OBSERVATION */}
+                    {evType === 'observation' && evCriteria.map((c, idx) => (
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.5rem' }}>
+                          {[{ v: 3, l: '🟢 Siempre', color: '#10b981' }, { v: 2, l: '🟡 A veces', color: '#f59e0b' }, { v: 1, l: '🔴 Nunca', color: '#ef4444' }].map(opt => (
+                            <button key={opt.v}
+                              onClick={() => setEditScores(s => ({ ...s, [c.id]: opt.v }))}
+                              style={{
+                                padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
+                                border: `2px solid ${editScores[c.id] === opt.v ? opt.color : '#e2e8f0'}`,
+                                background: editScores[c.id] === opt.v ? opt.color + '18' : 'white',
+                                color: editScores[c.id] === opt.v ? opt.color : '#64748b'
+                              }}>{opt.l}</button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* QUALITATIVE (scale, rubric, selfeval) */}
+                    {['scale', 'rubric', 'selfeval'].includes(evType) && evCriteria.map((c, idx) => (
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
+                          {[{ v: 4, g: 'AD', l: 'Destacado', color: '#10b981' }, { v: 3, g: 'A', l: 'Logrado', color: '#3b82f6' }, { v: 2, g: 'B', l: 'En Proceso', color: '#f59e0b' }, { v: 1, g: 'C', l: 'En Inicio', color: '#ef4444' }].map(lv => (
+                            <button key={lv.v}
+                              onClick={() => setEditScores(s => ({ ...s, [c.id]: lv.v }))}
+                              style={{
+                                padding: '0.5rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
+                                border: `2px solid ${editScores[c.id] === lv.v ? lv.color : '#e2e8f0'}`,
+                                background: editScores[c.id] === lv.v ? lv.color + '18' : 'white',
+                                color: editScores[c.id] === lv.v ? lv.color : '#64748b',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
+                              }}>
+                              <span style={{ fontSize: '1rem' }}>{lv.g}</span>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 500 }}>{lv.l}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* WRITTEN / NUMERIC */}
+                    {evType === 'written' && (
+                      <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontWeight: 600, marginBottom: '0.6rem' }}>Puntaje obtenido (0 – 20)</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <input type="number" min="0" max="20"
+                            style={{ width: '90px', fontSize: '2rem', textAlign: 'center', fontWeight: 700, padding: '0.5rem', borderRadius: '8px', border: '2px solid #e2e8f0' }}
+                            value={editScores['__numeric__'] ?? ''}
+                            onChange={e => setEditScores({ __numeric__: Math.min(20, Math.max(0, Number(e.target.value))) })}
+                          />
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>/ 20 puntos</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PORTFOLIO / ANECDOTAL / DIRECT */}
+                    {['portfolio', 'anecdotal'].includes(evType) && (
+                      <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
+                          {['AD', 'A', 'B', 'C'].map(g => (
+                            <button key={g}
+                              onClick={() => setEditScores({ ...editScores, __direct__: g })}
+                              style={{
+                                padding: '0.75rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
+                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#e2e8f0'}`,
+                                background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'white',
+                                color: editScores['__direct__'] === g ? gradeColor[g] : '#64748b',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
+                              }}>
+                              <span style={{ fontSize: '1.1rem' }}>{g}</span>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 500 }}>{gradeLabel[g]}</span>
+                            </button>
+                          ))}
+                        </div>
+                        {evType === 'anecdotal' && (
+                          <div style={{ marginTop: '0.75rem' }}>
+                            <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Descripción del hecho observado</label>
+                            <textarea rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', resize: 'vertical', fontSize: '0.85rem' }}
+                              value={editScores['__note__'] || ''}
+                              onChange={e => setEditScores(s => ({ ...s, __note__: e.target.value }))}
+                              placeholder="Describe brevemente la situación observada..."
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer botones */}
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button onClick={() => setEditingEvaluation(null)} style={{
+                      flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+                      background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    }}>Cancelar</button>
+                    <button onClick={handleSaveEdit} style={{
+                      flex: 2, padding: '0.75rem', borderRadius: '10px', border: 'none',
+                      background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: 'white',
+                      fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                    }}>💾 Guardar Calificación</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Modal de calificación rápida */}
           {showQuickGrade && (
