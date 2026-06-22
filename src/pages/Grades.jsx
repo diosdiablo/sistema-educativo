@@ -169,6 +169,12 @@ export default function Grades() {
     }).sort((a, b) => a.name.localeCompare(b.name));
   }, [students, selectedClass]);
 
+  // Instruments filtered by current subject (fallback to all if no subjectId)
+  const instrumentsBySubject = useMemo(() => {
+    if (!selectedSubjectId) return instruments;
+    return instruments.filter(i => !i.subjectId || i.subjectId === selectedSubjectId);
+  }, [instruments, selectedSubjectId]);
+
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
   const [hoveredEval, setHoveredEval] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
@@ -196,6 +202,11 @@ export default function Grades() {
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
+
+  // Instruments added on-the-fly per competency via the "+" button
+  const [extraInstruments, setExtraInstruments] = useState({}); // { [compId]: [ { instrument, activityName?, ... } ] }
+  const [instrumentPickerOpen, setInstrumentPickerOpen] = useState(false); // compId | null
+  const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -802,7 +813,7 @@ export default function Grades() {
             return (
               <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                 <div className="table-container" style={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                  <table className="styled-table" style={{ tableLayout: 'auto', minWidth: '600px' }}>
+                  <table className="styled-table" style={{ tableLayout: 'auto', minWidth: '600px', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
                       <th style={{ 
@@ -831,33 +842,19 @@ export default function Grades() {
                         </div>
                       </th>
                       {currentSubject.competencies.map((comp, idx) => {
-                        const instruments = getInstrumentsForCompetency(comp.id);
+                        const existingInstruments = getInstrumentsForCompetency(comp.id);
+                        const extra = extraInstruments[comp.id] || [];
+                        const totalCols = (existingInstruments.length || 0) + extra.length + 1;
                         const [color1, color2] = gradientColors[idx % gradientColors.length];
-                        if (instruments.length === 0) {
-                          return (
-                            <th key={comp.id} style={{ 
-                              textAlign: 'center', 
-                              minWidth: '70px', 
-                              fontSize: '0.8rem',
-                              background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
-                              color: 'white',
-                              padding: '1rem'
-                            }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                                <Target size={14} />
-                                {comp.name}
-                              </div>
-                            </th>
-                          );
-                        }
                         return (
-                          <th key={comp.id} colSpan={instruments.length} style={{ 
-                            textAlign: 'center', 
-                            minWidth: instruments.length * 80, 
+                          <th key={comp.id} colSpan={totalCols} style={{
+                            textAlign: 'center',
+                            minWidth: Math.max(totalCols * 70, 70),
                             fontSize: '0.8rem',
                             background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
                             color: 'white',
-                            padding: '1rem'
+                            padding: '1rem',
+                            borderRight: '3px solid #94a3b8'
                           }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                               <Target size={14} />
@@ -874,6 +871,7 @@ export default function Grades() {
                         background: '#f8fafc', 
                         padding: '0.75rem 1rem',
                         borderBottom: '2px solid #e2e8f0',
+                        borderRight: '3px solid #94a3b8',
                         textAlign: 'center'
                       }}>
                         <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>#</span>
@@ -882,43 +880,59 @@ export default function Grades() {
                         minWidth: '150px', 
                         background: '#f8fafc', 
                         padding: '0.75rem 1rem',
-                        borderBottom: '2px solid #e2e8f0'
+                        borderBottom: '2px solid #e2e8f0',
+                        borderRight: '3px solid #94a3b8'
                       }}>
                         <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>Instrumentos aplicados</span>
                       </th>
                       {currentSubject.competencies.map((comp, idx) => {
-                        const instruments = getInstrumentsForCompetency(comp.id);
+                        const existingInstruments = getInstrumentsForCompetency(comp.id);
+                        const extra = extraInstruments[comp.id] || [];
+                        const items = existingInstruments.length > 0
+                          ? [...existingInstruments, ...extra, { _isPlus: true }]
+                          : [...extra, { _isPlus: true }];
                         const [color1, color2] = gradientColors[idx % gradientColors.length];
-                        if (instruments.length === 0) {
+                        return items.map((inst, j) => {
+                          if (inst._isPlus) {
+                            return (
+                              <th key={'plus-' + comp.id} style={{
+                                textAlign: 'center', minWidth: '36px', fontSize: '0.7rem',
+                                color: '#64748b', background: '#f8fafc',
+                                padding: '0.75rem 0.25rem',
+                                borderBottom: '2px solid #e2e8f0',
+                                borderRight: '3px solid #94a3b8'
+                              }}>
+                                <button
+                                  title="Añadir instrumento"
+                                  onClick={() => { setPickerCompetencyId(comp.id); setInstrumentPickerOpen(true); }}
+                                  style={{
+                                    background: '#e2e8f0', border: 'none', borderRadius: '6px',
+                                    width: '24px', height: '24px', cursor: 'pointer',
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: 700, fontSize: '1rem', color: '#64748b',
+                                    transition: 'all 0.15s'
+                                  }}
+                                >+</button>
+                              </th>
+                            );
+                          }
                           return (
-                            <th key={comp.id} style={{ 
-                              textAlign: 'center', 
-                              fontSize: '0.7rem', 
-                              color: '#64748b',
-                              background: '#f8fafc',
+                            <th key={inst.id || inst.instrumentId} style={{
+                              textAlign: 'center', minWidth: '60px', fontSize: '0.7rem',
+                              color: '#64748b', background: '#f8fafc',
                               padding: '0.75rem',
-                              borderBottom: '2px solid #e2e8f0'
+                              borderBottom: '2px solid #e2e8f0',
+                              borderRight: '1px solid #e2e8f0'
                             }}>
-                              —
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                <ClipboardCheck size={12} />
+                                {(inst.title || inst.activityName || '').length > 12
+                                  ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
+                                  : (inst.title || inst.activityName || '')}
+                              </div>
                             </th>
                           );
-                        }
-                        return instruments.map(inst => (
-                          <th key={inst.id} style={{ 
-                            textAlign: 'center', 
-                            minWidth: '60px', 
-                            fontSize: '0.7rem', 
-                            color: '#64748b',
-                            background: '#f8fafc',
-                            padding: '0.75rem',
-                            borderBottom: '2px solid #e2e8f0'
-                          }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                              <ClipboardCheck size={12} />
-                              {inst.title.length > 12 ? inst.title.substring(0, 12) + '...' : inst.title}
-                            </div>
-                          </th>
-                        ));
+                        });
                       })}
                     </tr>
                   </thead>
@@ -932,18 +946,21 @@ export default function Grades() {
                     )}
                     {filteredStudents.map((student, studentIdx) => (
                       <tr key={student.id}>
-                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px' }}>{studentIdx + 1}</td>
-                        <td style={{ fontWeight: 600, minWidth: '150px' }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '3px solid #94a3b8' }}>{studentIdx + 1}</td>
+                        <td style={{ fontWeight: 600, minWidth: '150px', borderRight: '3px solid #94a3b8' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
-                          const instruments = getInstrumentsForCompetency(comp.id);
-                          if (instruments.length === 0) {
-                            return (
-                              <td key={comp.id} style={{ textAlign: 'center' }}>
-                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>—</span>
-                              </td>
-                            );
-                          }
-                          return instruments.map(inst => {
+                          const existingInstruments = getInstrumentsForCompetency(comp.id);
+                          const extra = extraInstruments[comp.id] || [];
+                          const items = existingInstruments.length > 0
+                            ? [...existingInstruments, ...extra, { _isPlus: true }]
+                            : [...extra, { _isPlus: true }];
+                          return items.map(inst => {
+                            if (inst._isPlus) {
+                              return (
+                                <td key={'plus-' + comp.id} style={{ textAlign: 'center', padding: '0.25rem', borderRight: '3px solid #94a3b8' }}>
+                                </td>
+                              );
+                            }
                             const ev = instrumentEvaluations.find(e => {
                               if (e.period !== selectedPeriod || e.competencyId !== comp.id) return false;
                               const instMatch = (e.activityName || e.instrumentId) === inst.id;
@@ -952,27 +969,27 @@ export default function Grades() {
                             });
                             if (!ev) {
                               return (
-                                <td key={inst.id}
+                                <td key={inst.id || inst.instrumentId}
                                   title="Sin calificación — click para evaluar"
-                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
+                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                   onClick={() => {
                                     const newEval = {
                                       id: null,
-                                      instrumentId: inst.instrumentId,
-                                      instrumentTitle: inst.title,
-                                      instrumentType: inst.instrumentType,
+                                      instrumentId: inst.instrumentId || inst.id,
+                                      instrumentTitle: inst.title || inst.activityName || '',
+                                      instrumentType: inst.instrumentType || 'checklist',
                                       criteria: inst.criteria || [],
-                                      activityName: inst.activityName || inst.title,
+                                      activityName: inst.activityName || inst.title || '',
                                       scores: {},
                                       score: null,
                                       maxPossible: null,
                                       qualitative: null,
-                                      subjectId: inst.subjectId,
-                                      subjectName: inst.subjectName,
-                                      competencyId: inst.competencyId,
-                                      competencyName: inst.competencyName,
-                                      period: inst.period,
-                                      classId: inst.classId,
+                                      subjectId: selectedSubjectId,
+                                      subjectName: currentSubject?.name || '',
+                                      competencyId: comp.id,
+                                      competencyName: comp.name,
+                                      period: selectedPeriod,
+                                      classId: classes.find(c => c.name === selectedClass)?.id || '',
                                       studentId: student.id,
                                       studentName: student.name,
                                       date: new Date().toISOString().split('T')[0],
@@ -992,7 +1009,7 @@ export default function Grades() {
                               );
                             }
                             return (
-                              <td key={inst.id} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem' }}
+                              <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
                                 onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
@@ -1594,6 +1611,77 @@ export default function Grades() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
                     }}>💾 Guardar Calificación</button>
                   </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Instrument picker modal */}
+          {instrumentPickerOpen && pickerCompetencyId && (() => {
+            const comp = currentSubject?.competencies?.find(c => c.id === pickerCompetencyId);
+            const alreadyAdded = (extraInstruments[pickerCompetencyId] || []).map(i => i.instrumentId || i.id);
+            const pickable = instrumentsBySubject.filter(i => !alreadyAdded.includes(i.id));
+            return (
+              <div className="modal-overlay animate-fade-in" style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
+                display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+                padding: '2rem 1rem', zIndex: 1002, overflowY: 'auto'
+              }}>
+                <div className="card shadow-glass" style={{ maxWidth: '500px', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ color: 'var(--accent-primary)', marginBottom: 0 }}>Seleccionar Instrumento</h3>
+                    <button onClick={() => { setInstrumentPickerOpen(false); setPickerCompetencyId(null); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <X size={24} color="var(--text-secondary)" />
+                    </button>
+                  </div>
+                  {comp && <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Para la competencia: <strong>{comp.name}</strong></p>}
+                  {pickable.length === 0 ? (
+                    <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                      No hay instrumentos disponibles para esta área.
+                      <br /><span style={{ fontSize: '0.8rem' }}>Crea uno desde la página de Instrumentos.</span>
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '60vh', overflowY: 'auto' }}>
+                      {pickable.map(inst => (
+                        <button key={inst.id} onClick={() => {
+                          setExtraInstruments(prev => {
+                            const current = prev[pickerCompetencyId] || [];
+                            return { ...prev, [pickerCompetencyId]: [...current, {
+                              id: inst.id,
+                              instrumentId: inst.id,
+                              title: inst.title || inst.name || '',
+                              instrumentType: inst.type,
+                              criteria: inst.criteria || [],
+                              activityName: inst.title || inst.name || '',
+                              subjectId: selectedSubjectId,
+                              competencyId: pickerCompetencyId,
+                              period: selectedPeriod,
+                            }] };
+                          });
+                          setInstrumentPickerOpen(false);
+                          setPickerCompetencyId(null);
+                        }} style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px',
+                          padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0',
+                          background: 'white', cursor: 'pointer', textAlign: 'left', width: '100%',
+                          transition: 'all 0.15s'
+                        }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
+                            {inst.title || inst.name || 'Sin título'}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                            {inst.type || '—'} · {inst.criteria?.length || 0} criterio(s)
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={() => { setInstrumentPickerOpen(false); setPickerCompetencyId(null); }}
+                    style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
+                    Cancelar
+                  </button>
                 </div>
               </div>
             );

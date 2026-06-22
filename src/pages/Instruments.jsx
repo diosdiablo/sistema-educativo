@@ -194,6 +194,7 @@ export default function Instruments() {
   const [instrumentType, setInstrumentType] = useState('checklist');
   const [title, setTitle] = useState('');
   const [criteria, setCriteria] = useState([{ id: '1', text: '' }]);
+  const [instrumentSubjectId, setInstrumentSubjectId] = useState('');
 
   // ── Apply state ──
   const [tempGroups, setTempGroups] = useState([]);
@@ -308,7 +309,7 @@ export default function Instruments() {
     }, 100);
   };
 
-  const resetForm = () => { setTitle(''); setInstrumentType('checklist'); setCriteria([{ id: '1', text: '' }]); };
+  const resetForm = () => { setTitle(''); setInstrumentType('checklist'); setCriteria([{ id: '1', text: '' }]); setInstrumentSubjectId(''); };
 
   const handleSaveInstrument = () => {
     if (!title) { alert('Escribe el título del instrumento.'); return; }
@@ -319,9 +320,9 @@ export default function Instruments() {
     }
     
     if (editingInstrument) {
-      updateInstrument(editingInstrument.id, { title, type: instrumentType, criteria });
+      updateInstrument(editingInstrument.id, { title, type: instrumentType, criteria, subjectId: instrumentSubjectId || undefined });
     } else {
-      addInstrument({ title, type: instrumentType, criteria, userId: currentUser?.id });
+      addInstrument({ title, type: instrumentType, criteria, subjectId: instrumentSubjectId || undefined, userId: currentUser?.id });
     }
     
     setView('list');
@@ -622,6 +623,24 @@ export default function Instruments() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Área curricular */}
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem', color: '#1e293b' }}>
+                Área Curricular
+              </label>
+              <select
+                value={instrumentSubjectId}
+                onChange={e => setInstrumentSubjectId(e.target.value)}
+                className="input-field"
+                style={{ padding: '1rem', fontSize: '1rem', borderRadius: '12px', background: '#f8fafc', width: '100%' }}
+              >
+                <option value="">-- Sin área específica --</option>
+                {availableSubjects.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* Criterios — solo si el tipo los requiere */}

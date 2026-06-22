@@ -181,7 +181,16 @@ export const StoreProvider = ({ children }) => {
           phone: s.phone,
           photo_url: s.photo_url || s.photoUrl
         }));
-        setStudents(normalizedStudents);
+        setStudents(prev => {
+          const merged = [...normalizedStudents];
+          const supabaseIds = new Set(normalizedStudents.map(s => s.id));
+          for (const ls of prev) {
+            if (!supabaseIds.has(ls.id)) {
+              merged.push(ls);
+            }
+          }
+          return merged;
+        });
       }
       if (classesData?.length > 0) {
             console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
@@ -581,7 +590,16 @@ if (studentsData?.length > 0) {
           phone: s.phone,
           photo_url: s.photo_url || s.photoUrl
         }));
-        setStudents(normalizedStudents);
+        setStudents(prev => {
+          const merged = [...normalizedStudents];
+          const supabaseIds = new Set(normalizedStudents.map(s => s.id));
+          for (const ls of prev) {
+            if (!supabaseIds.has(ls.id)) {
+              merged.push(ls);
+            }
+          }
+          return merged;
+        });
       }
       if (classesData?.length > 0) {
         console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
@@ -942,10 +960,14 @@ if (studentsData?.length > 0) {
     localStorage.removeItem('edu_current_user_session');
   };
 
-  const addStudent = (student) => {
+  const addStudent = async (student) => {
     const newStudent = { ...student, id: generateId(), createdAt: new Date().toISOString() };
     setStudents(prev => [...prev, newStudent]);
-    syncToSupabase('students', [newStudent]);
+    try {
+      await syncToSupabase('students', [newStudent]);
+    } catch (err) {
+      console.error('Error syncing student to Supabase:', err);
+    }
     return newStudent;
   };
 

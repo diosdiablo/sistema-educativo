@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink, Camera, Cloud, WifiOff } from 'lucide-react';
+import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, Search, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink, Camera, Cloud, WifiOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { supabase } from '../lib/supabase';
 
@@ -18,6 +18,7 @@ export default function Students() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentStudentId, setCurrentStudentId] = useState(null);
   const [viewingStudent, setViewingStudent] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('Todos');
   const [isFilterHovered, setIsFilterHovered] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -171,6 +172,14 @@ export default function Students() {
       ));
     }
     
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      baseList = baseList.filter(s =>
+        (s.name || '').toLowerCase().includes(q) ||
+        (s.dni || '').includes(q)
+      );
+    }
+    
     if (filterClass === 'Todos') {
       return baseList.sort((a, b) => {
         const numGradeA = parseInt(a.gradeLevel?.match(/\d+/)?.[0] || '0');
@@ -195,7 +204,7 @@ export default function Students() {
       const lastNameB = b.name.split(',')[0]?.trim().toLowerCase() || b.name.toLowerCase();
       return lastNameA.localeCompare(lastNameB);
     });
-  }, [students, filterClass, isAdmin, assignedClassNames]);
+  }, [students, filterClass, searchTerm, isAdmin, assignedClassNames]);
 
   const availableClassesForFilter = useMemo(() => {
     if (isAdmin) return classes;
@@ -373,6 +382,53 @@ export default function Students() {
                     <option value="Todos">{isAdmin ? 'Todos los grados' : 'Mis grados'}</option>
                     {availableClassesForFilter.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
+                </div>
+              </div>
+              <div style={{ 
+                marginLeft: '0.5rem',
+                paddingLeft: '1rem',
+                borderLeft: '1px solid rgba(255,255,255,0.3)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Buscar
+                </span>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Search size={14} style={{ 
+                    position: 'absolute', 
+                    left: '12px', 
+                    color: '#94a3b8',
+                    pointerEvents: 'none'
+                  }} />
+                  <input
+                    type="text"
+                    placeholder="Nombre o DNI..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="input-field"
+                    style={{
+                      paddingLeft: '2.5rem',
+                      minWidth: '200px',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      background: 'rgba(255,255,255,0.9)',
+                      fontWeight: 500,
+                      fontSize: '0.85rem'
+                    }}
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      style={{
+                        position: 'absolute', right: '8px',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: '#94a3b8', padding: '4px'
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
