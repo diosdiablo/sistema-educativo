@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, Search, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink, Camera, Cloud, WifiOff, ClipboardCheck, Target, TrendingUp, Trophy, BookMarked, Send, Pencil, Info, BookOpen } from 'lucide-react';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
