@@ -211,6 +211,7 @@ export default function Grades() {
   const [extraInstruments, setExtraInstruments] = useState({}); // { [compId]: [ { instrument, activityName?, ... } ] }
   const [instrumentPickerOpen, setInstrumentPickerOpen] = useState(false); // compId | null
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
+  const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -892,6 +893,7 @@ export default function Grades() {
                       {currentSubject.competencies.map((comp, idx) => {
                         const existingInstruments = getInstrumentsForCompetency(comp.id);
                         const extra = extraInstruments[comp.id] || [];
+                        const extraIds = new Set(extra.map(i => i.instrumentId || i.id));
                         const items = existingInstruments.length > 0
                           ? [...existingInstruments, ...extra, { _isPlus: true }]
                           : [...extra, { _isPlus: true }];
@@ -920,20 +922,53 @@ export default function Grades() {
                               </th>
                             );
                           }
+                          const isExtra = extraIds.has(inst.instrumentId || inst.id);
+                          const renaming = renamingColumn && renamingColumn.competencyId === comp.id && renamingColumn.instrumentId === (inst.instrumentId || inst.id);
                           return (
                             <th key={inst.id || inst.instrumentId} style={{
                               textAlign: 'center', minWidth: '60px', fontSize: '0.7rem',
                               color: '#64748b', background: '#f8fafc',
                               padding: '0.75rem',
                               borderBottom: '2px solid #e2e8f0',
-                              borderRight: '1px solid #e2e8f0'
-                            }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                <ClipboardCheck size={12} />
-                                {(inst.title || inst.activityName || '').length > 12
-                                  ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
-                                  : (inst.title || inst.activityName || '')}
-                              </div>
+                              borderRight: '1px solid #e2e8f0',
+                              cursor: isExtra ? 'pointer' : 'default'
+                            }}
+                              onClick={isExtra ? () => setRenamingColumn({ competencyId: comp.id, instrumentId: inst.instrumentId || inst.id, name: inst.title || inst.activityName || '' }) : undefined}
+                            >
+                              {renaming ? (
+                                <input
+                                  type="text"
+                                  value={renamingColumn.name}
+                                  onChange={e => setRenamingColumn(prev => ({ ...prev, name: e.target.value }))}
+                                  onBlur={() => {
+                                    if (renamingColumn.name.trim()) {
+                                      setExtraInstruments(prev => {
+                                        const current = [...(prev[comp.id] || [])];
+                                        const idx = current.findIndex(i => (i.instrumentId || i.id) === renamingColumn.instrumentId);
+                                        if (idx !== -1) {
+                                          current[idx] = { ...current[idx], title: renamingColumn.name.trim(), activityName: renamingColumn.name.trim() };
+                                        }
+                                        return { ...prev, [comp.id]: current };
+                                      });
+                                    }
+                                    setRenamingColumn(null);
+                                  }}
+                                  onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setRenamingColumn(null); }}
+                                  autoFocus
+                                  style={{
+                                    width: '60px', fontSize: '0.7rem', textAlign: 'center',
+                                    border: '1px solid #6366f1', borderRadius: '4px',
+                                    padding: '2px', outline: 'none'
+                                  }}
+                                />
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                  <ClipboardCheck size={12} />
+                                  {(inst.title || inst.activityName || '').length > 12
+                                    ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
+                                    : (inst.title || inst.activityName || '')}
+                                </div>
+                              )}
                             </th>
                           );
                         });
