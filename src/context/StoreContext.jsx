@@ -181,7 +181,7 @@ export const StoreProvider = ({ children }) => {
           phone: s.phone,
           photo_url: s.photo_url || s.photoUrl
         }));
-        setStudents(prev => {
+setStudents(prev => {
           const merged = [...normalizedStudents];
           const supabaseIds = new Set(normalizedStudents.map(s => s.id));
           for (const ls of prev) {
@@ -189,6 +189,7 @@ export const StoreProvider = ({ children }) => {
               merged.push(ls);
             }
           }
+          localStorage.setItem('edu_students', JSON.stringify(merged));
           return merged;
         });
       }
@@ -598,6 +599,7 @@ if (studentsData?.length > 0) {
               merged.push(ls);
             }
           }
+          localStorage.setItem('edu_students', JSON.stringify(merged));
           return merged;
         });
       }
@@ -962,7 +964,11 @@ if (studentsData?.length > 0) {
 
   const addStudent = async (student) => {
     const newStudent = { ...student, id: generateId(), createdAt: new Date().toISOString() };
-    setStudents(prev => [...prev, newStudent]);
+    setStudents(prev => {
+      const updated = [...prev, newStudent];
+      localStorage.setItem('edu_students', JSON.stringify(updated));
+      return updated;
+    });
     try {
       await syncToSupabase('students', [newStudent]);
     } catch (err) {
@@ -972,18 +978,30 @@ if (studentsData?.length > 0) {
   };
 
   const updateStudent = (id, updates) => {
-    setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    setStudents(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+      localStorage.setItem('edu_students', JSON.stringify(updated));
+      return updated;
+    });
     syncToSupabase('students', [{ id, ...updates }]);
   };
 
   const deleteStudent = (id) => {
-    setStudents(prev => prev.filter(s => s.id !== id));
+    setStudents(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      localStorage.setItem('edu_students', JSON.stringify(updated));
+      return updated;
+    });
     deleteFromSupabase('students', id);
   };
 
   const importStudentsBulk = async (data) => {
     const newStudents = data.map(s => ({ ...s, id: generateId(), createdAt: new Date().toISOString() }));
-    setStudents(prev => [...prev, ...newStudents]);
+    setStudents(prev => {
+      const updated = [...prev, ...newStudents];
+      localStorage.setItem('edu_students', JSON.stringify(updated));
+      return updated;
+    });
     await syncToSupabase('students', newStudents, true);
     return newStudents.length;
   };
