@@ -87,6 +87,9 @@ const numToQualitative = (score, max, type, scores, criteria) => {
 };
 
 const calcScore = (type, scores, criteria) => {
+  if (scores && scores['__direct__']) {
+    return { score: null, max: null, direct: scores['__direct__'] };
+  }
   const scoring = type === 'checklist' ? 'binary'
                 : type === 'observation' ? 'frequency'
                 : type === 'written' ? 'numeric'
@@ -1594,6 +1597,34 @@ export default function Grades() {
                             />
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {/* Fallback: calificación directa AD/A/B/C cuando no hay criteria */}
+                    {evCriteria.length === 0 && !['portfolio', 'anecdotal', 'written'].includes(evType) && (
+                      <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
+                          {['AD', 'A', 'B', 'C'].map(g => (
+                            <button key={g}
+                              onClick={() => {
+                                const newScores = { ...editScores };
+                                Object.keys(newScores).forEach(k => delete newScores[k]);
+                                newScores['__direct__'] = g;
+                                setEditScores(newScores);
+                              }}
+                              style={{
+                                padding: '0.75rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
+                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#e2e8f0'}`,
+                                background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'white',
+                                color: editScores['__direct__'] === g ? gradeColor[g] : '#64748b',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
+                              }}>
+                              <span style={{ fontSize: '1.1rem' }}>{g}</span>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 500 }}>{gradeLabel[g]}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
