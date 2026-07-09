@@ -809,6 +809,9 @@ if (studentsData?.length > 0) {
     if (table === 'instruments' && !result.name && result.title) {
       result.name = result.title;
     }
+    if (table === 'students' && !result.class_id && result.grade_level) {
+      result.class_id = result.grade_level;
+    }
     return result;
   }, [toSnakeCase, TABLE_COLUMNS]);
 
