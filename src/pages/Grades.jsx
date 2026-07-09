@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, Search, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink, Camera, Cloud, WifiOff, ClipboardCheck, Target, TrendingUp, Trophy, BookMarked, Send, Pencil, Info, BookOpen } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -924,18 +924,14 @@ export default function Grades() {
                           const isExtra = j >= existingInstruments.length;
                           const renamingKey = comp.id + '-' + (inst.id || inst.instrumentId || j);
                           const renaming = renamingColumn === renamingKey;
-                          const handleRename = isExtra ? () => setRenamingColumn(renamingKey) : undefined;
                           return (
                             <th key={inst.id || inst.instrumentId} style={{
                               textAlign: 'center', minWidth: '60px', fontSize: '0.7rem',
                               color: '#64748b', background: '#f8fafc',
                               padding: '0.75rem',
                               borderBottom: '2px solid #e2e8f0',
-                              borderRight: '1px solid #e2e8f0',
-                              cursor: isExtra ? 'pointer' : 'default'
-                            }}
-                              onClick={handleRename}
-                            >
+                              borderRight: '1px solid #e2e8f0'
+                            }}>
                               {renaming ? (
                                 <input
                                   type="text"
@@ -957,21 +953,35 @@ export default function Grades() {
                                   onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') { setRenamingColumn(null); e.currentTarget.blur(); } }}
                                   autoFocus
                                   style={{
-                                    width: '60px', fontSize: '0.7rem', textAlign: 'center',
+                                    width: '56px', fontSize: '0.7rem', textAlign: 'center',
                                     border: '1px solid #6366f1', borderRadius: '4px',
                                     padding: '2px', outline: 'none'
                                   }}
                                 />
                               ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', position: 'relative' }}>
                                   <ClipboardCheck size={12} />
                                   {(inst.title || inst.activityName || '').length > 12
                                     ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
                                     : (inst.title || inst.activityName || '')}
+                                  {isExtra && (
+                                    <button
+                                      title="Renombrar columna"
+                                      onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
+                                      style={{
+                                        position: 'absolute', top: '-4px', right: '-4px',
+                                        background: '#e2e8f0', border: 'none', borderRadius: '50%',
+                                        width: '16px', height: '16px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        padding: 0, lineHeight: 1
+                                      }}
+                                    >
+                                      <Pencil size={10} color="#64748b" />
+                                    </button>
+                                  )}
                                 </div>
                               )}
-                            </th>
-                          );
+                            </th>);
                         });
                       })}
                     </tr>
