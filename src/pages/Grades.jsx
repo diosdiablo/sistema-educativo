@@ -893,7 +893,6 @@ export default function Grades() {
                       {currentSubject.competencies.map((comp, idx) => {
                         const existingInstruments = getInstrumentsForCompetency(comp.id);
                         const extra = extraInstruments[comp.id] || [];
-                        const extraIds = new Set(extra.map(i => i.instrumentId || i.id));
                         const items = existingInstruments.length > 0
                           ? [...existingInstruments, ...extra, { _isPlus: true }]
                           : [...extra, { _isPlus: true }];
@@ -922,8 +921,10 @@ export default function Grades() {
                               </th>
                             );
                           }
-                          const isExtra = extraIds.has(inst.instrumentId || inst.id);
-                          const renaming = renamingColumn && renamingColumn.competencyId === comp.id && renamingColumn.instrumentId === (inst.instrumentId || inst.id);
+                          const isExtra = j >= existingInstruments.length;
+                          const renamingKey = comp.id + '-' + (inst.id || inst.instrumentId || j);
+                          const renaming = renamingColumn === renamingKey;
+                          const handleRename = isExtra ? () => setRenamingColumn(renamingKey) : undefined;
                           return (
                             <th key={inst.id || inst.instrumentId} style={{
                               textAlign: 'center', minWidth: '60px', fontSize: '0.7rem',
@@ -933,27 +934,27 @@ export default function Grades() {
                               borderRight: '1px solid #e2e8f0',
                               cursor: isExtra ? 'pointer' : 'default'
                             }}
-                              onClick={isExtra ? () => setRenamingColumn({ competencyId: comp.id, instrumentId: inst.instrumentId || inst.id, name: inst.title || inst.activityName || '' }) : undefined}
+                              onClick={handleRename}
                             >
                               {renaming ? (
                                 <input
                                   type="text"
-                                  value={renamingColumn.name}
-                                  onChange={e => setRenamingColumn(prev => ({ ...prev, name: e.target.value }))}
-                                  onBlur={() => {
-                                    if (renamingColumn.name.trim()) {
+                                  defaultValue={inst.title || inst.activityName || ''}
+                                  onBlur={(e) => {
+                                    const val = e.target.value.trim();
+                                    if (val) {
+                                      const itemIdx = j - (existingInstruments.length > 0 ? existingInstruments.length : 0);
                                       setExtraInstruments(prev => {
                                         const current = [...(prev[comp.id] || [])];
-                                        const idx = current.findIndex(i => (i.instrumentId || i.id) === renamingColumn.instrumentId);
-                                        if (idx !== -1) {
-                                          current[idx] = { ...current[idx], title: renamingColumn.name.trim(), activityName: renamingColumn.name.trim() };
+                                        if (current[itemIdx]) {
+                                          current[itemIdx] = { ...current[itemIdx], title: val, activityName: val };
                                         }
                                         return { ...prev, [comp.id]: current };
                                       });
                                     }
                                     setRenamingColumn(null);
                                   }}
-                                  onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setRenamingColumn(null); }}
+                                  onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') { setRenamingColumn(null); e.currentTarget.blur(); } }}
                                   autoFocus
                                   style={{
                                     width: '60px', fontSize: '0.7rem', textAlign: 'center',
