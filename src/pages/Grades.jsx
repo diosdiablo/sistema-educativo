@@ -87,7 +87,8 @@ const numToQualitative = (score, max, type, scores, criteria) => {
 };
 
 const calcScore = (type, scores, criteria) => {
-  if (scores && scores['__direct__']) {
+  // Allow direct override for any type when __direct__ is set (e.g., quick grade without criteria)
+  if (scores && typeof scores === 'object' && scores['__direct__']) {
     return { score: null, max: null, direct: scores['__direct__'] };
   }
   const scoring = type === 'checklist' ? 'binary'
@@ -1600,7 +1601,6 @@ export default function Grades() {
                       </div>
                     )}
 
-                    {/* Fallback: calificación directa AD/A/B/C cuando no hay criteria */}
                     {evCriteria.length === 0 && !['portfolio', 'anecdotal', 'written'].includes(evType) && (
                       <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
@@ -1627,7 +1627,8 @@ export default function Grades() {
                         </div>
                       </div>
                     )}
-                  </div>
+
+                    </div>
 
                   {/* Footer botones */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
