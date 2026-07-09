@@ -124,7 +124,7 @@ const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Ini
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -922,6 +922,8 @@ export default function Grades() {
                             );
                           }
                           const isExtra = j >= existingInstruments.length;
+                          const isQuickGrade = !instruments.find(i => i.id === inst.instrumentId);
+                          const canRename = isExtra || isQuickGrade;
                           const renamingKey = comp.id + '-' + (inst.id || inst.instrumentId || j);
                           const renaming = renamingColumn === renamingKey;
                           return (
@@ -938,15 +940,26 @@ export default function Grades() {
                                   defaultValue={inst.title || inst.activityName || ''}
                                   onBlur={(e) => {
                                     const val = e.target.value.trim();
-                                    if (val) {
-                                      const itemIdx = j - (existingInstruments.length > 0 ? existingInstruments.length : 0);
-                                      setExtraInstruments(prev => {
-                                        const current = [...(prev[comp.id] || [])];
-                                        if (current[itemIdx]) {
-                                          current[itemIdx] = { ...current[itemIdx], title: val, activityName: val };
-                                        }
-                                        return { ...prev, [comp.id]: current };
-                                      });
+                                    if (val && val !== (inst.title || inst.activityName || '')) {
+                                      if (isExtra) {
+                                        const itemIdx = j - (existingInstruments.length > 0 ? existingInstruments.length : 0);
+                                        setExtraInstruments(prev => {
+                                          const current = [...(prev[comp.id] || [])];
+                                          if (current[itemIdx]) {
+                                            current[itemIdx] = { ...current[itemIdx], title: val, activityName: val };
+                                          }
+                                          return { ...prev, [comp.id]: current };
+                                        });
+                                      } else {
+                                        const oldName = inst.activityName || inst.title || '';
+                                        setInstrumentEvaluations(prev =>
+                                          prev.map(ev =>
+                                            (ev.activityName || ev.instrumentId) === oldName && ev.competencyId === comp.id && ev.period === selectedPeriod
+                                              ? { ...ev, activityName: val }
+                                              : ev
+                                          )
+                                        );
+                                      }
                                     }
                                     setRenamingColumn(null);
                                   }}
@@ -964,7 +977,7 @@ export default function Grades() {
                                   {(inst.title || inst.activityName || '').length > 12
                                     ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
                                     : (inst.title || inst.activityName || '')}
-                                  {isExtra && (
+                                  {canRename && (
                                     <button
                                       title="Renombrar columna"
                                       onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
