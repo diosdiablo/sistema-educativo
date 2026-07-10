@@ -206,6 +206,7 @@ export default function Grades() {
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
+  const [quickAzarPicked, setQuickAzarPicked] = useState(new Set());
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
@@ -213,6 +214,8 @@ export default function Grades() {
   const [instrumentPickerOpen, setInstrumentPickerOpen] = useState(false); // compId | null
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
   const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
+
+  useEffect(() => { setQuickAzarPicked(new Set()); }, [selectedClass]);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -762,12 +765,19 @@ export default function Grades() {
           {/* Botón de calificación rápida */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem' }}>
             <button onClick={() => {
-              const available = [...filteredStudents];
-              if (available.length === 0) return;
-              setQuickAzarStudents(available);
-              const winner = available[Math.floor(Math.random() * available.length)];
-              const n = available.length;
-              const idx = available.indexOf(winner);
+              const all = [...filteredStudents];
+              if (all.length === 0) return;
+              setQuickAzarStudents(all);
+              // Filter out already picked students for fair cycle
+              let unpicked = all.filter(s => !quickAzarPicked.has(s.id));
+              if (unpicked.length === 0) {
+                // All picked - reset cycle
+                setQuickAzarPicked(new Set());
+                unpicked = [...all];
+              }
+              const winner = unpicked[Math.floor(Math.random() * unpicked.length)];
+              const n = all.length;
+              const idx = all.findIndex(s => s.id === winner.id);
               const seg = 360 / n;
               const target = 360 * 5 + (360 - idx * seg - seg / 2);
               setQuickAzarWinner(winner);
@@ -776,7 +786,10 @@ export default function Grades() {
               setQuickAzarOpen(true);
               setTimeout(() => setQuickAzarSpinning(true), 10);
               setTimeout(() => setQuickAzarDeg(target), 100);
-              setTimeout(() => setQuickAzarSpinning(false), 4050);
+              setTimeout(() => {
+                setQuickAzarSpinning(false);
+                setQuickAzarPicked(prev => new Set([...prev, winner.id]));
+              }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.7rem 1.25rem', border: 'none', borderRadius: '12px',
@@ -1916,6 +1929,7 @@ export default function Grades() {
       {quickAzarOpen && (() => {
         const azarStudents = quickAzarStudents;
         const n = azarStudents.length;
+        const pickedCount = quickAzarPicked.size;
         const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
         const fontSize = n <= 8 ? '0.9rem' : n <= 15 ? '0.75rem' : n <= 25 ? '0.65rem' : '0.55rem';
@@ -1984,11 +1998,21 @@ export default function Grades() {
                 <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
                 <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
-                <button onClick={() => setQuickAzarOpen(false)} style={{
-                  marginTop: '1rem', padding: '0.6rem 2rem', borderRadius: '10px',
-                  border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)',
-                  color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
-                }}>OK</button>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.35rem' }}>{pickedCount}/{n} alumnos sorteados</div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                  <button onClick={() => setQuickAzarOpen(false)} style={{
+                    padding: '0.6rem 1.5rem', borderRadius: '10px',
+                    border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)',
+                    color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  }}>OK</button>
+                  {pickedCount >= n && (
+                    <button onClick={() => { setQuickAzarPicked(new Set()); setQuickAzarOpen(false); }} style={{
+                      padding: '0.6rem 1.5rem', borderRadius: '10px',
+                      border: '1px solid #e2e8f0', background: 'white',
+                      color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    }}>Reiniciar ciclo</button>
+                  )}
+                </div>
               </div>
             )}
           </div>
