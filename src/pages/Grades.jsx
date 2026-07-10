@@ -124,7 +124,7 @@ const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Ini
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -207,9 +207,6 @@ export default function Grades() {
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
-  const [azarGrade, setAzarGrade] = useState({ activityName: '', score: '', date: '', note: '', competencyId: '' });
-  const [azarGradeSaving, setAzarGradeSaving] = useState(false);
-  const [azarGradeMsg, setAzarGradeMsg] = useState('');
 
   // Instruments added on-the-fly per competency via the "+" button
   const [extraInstruments, setExtraInstruments] = useState({}); // { [compId]: [ { instrument, activityName?, ... } ] }
@@ -777,10 +774,9 @@ export default function Grades() {
               setQuickAzarDeg(0);
               setQuickAzarSpinning(false);
               setQuickAzarOpen(true);
-              setAzarGrade({ activityName: '', score: '', date: '', note: '', competencyId: currentSubject?.competencies?.[0]?.id || '' });
-              setAzarGradeMsg('');
-              setTimeout(() => { setQuickAzarSpinning(true); setQuickAzarDeg(target); }, 50);
-              setTimeout(() => { setQuickAzarSpinning(false); }, 4050);
+              setTimeout(() => setQuickAzarSpinning(true), 10);
+              setTimeout(() => setQuickAzarDeg(target), 100);
+              setTimeout(() => setQuickAzarSpinning(false), 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.7rem 1.25rem', border: 'none', borderRadius: '12px',
@@ -1916,175 +1912,83 @@ export default function Grades() {
         </>
       )}
 
-      {/* Azar wheel + grade overlay */}
+      {/* Azar wheel overlay */}
       {quickAzarOpen && (() => {
         const azarStudents = quickAzarStudents;
         const n = azarStudents.length;
         const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.85, 380);
         const fontSize = n <= 8 ? '0.9rem' : n <= 15 ? '0.75rem' : n <= 25 ? '0.65rem' : '0.55rem';
-        const showForm = !quickAzarSpinning && quickAzarWinner;
+        const stopped = !quickAzarSpinning && quickAzarWinner;
         return (
         <div style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.8)', zIndex: 9999,
+          background: 'rgba(0,0,0,0.85)', zIndex: 9999,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
           paddingTop: '2rem', overflow: 'auto'
         }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
-          <div onClick={e => e.stopPropagation()} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {!showForm ? (
-              <>
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute', top: '-10px', left: '50%',
+                transform: 'translateX(-50%)', zIndex: 10,
+                width: 0, height: 0,
+                borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
+                borderTop: '28px solid #fbbf24',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
+              }} />
+              <div style={{
+                width: wheelSize, height: wheelSize, borderRadius: '50%',
+                position: 'relative', overflow: 'hidden',
+                transform: `rotate(${quickAzarDeg}deg)`,
+                transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
+                background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
+                boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
+              }}>
+                {azarStudents.map((s, i) => {
+                  const mid = i * seg + seg / 2;
+                  return (
+                    <div key={s.id} style={{
+                      position: 'absolute', left: '50%', top: '50%',
+                      width: `${wheelSize / 2 - 50}px`, height: '24px',
+                      marginTop: '-12px',
+                      transform: `rotate(${mid - 90}deg) translate(40px)`,
+                      transformOrigin: 'left center',
+                      fontSize, fontWeight: 700, color: 'white',
+                      textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      pointerEvents: 'none', display: 'flex', alignItems: 'center', textAlign: 'left'
+                    }}>{s.name}</div>
+                  );
+                })}
                 <div style={{
-                  position: 'absolute', top: '-10px', left: '50%',
-                  transform: 'translateX(-50%)', zIndex: 10,
-                  width: 0, height: 0,
-                  borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
-                  borderTop: '28px solid #fbbf24',
-                  filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
-                }} />
-                <div style={{
-                  width: wheelSize, height: wheelSize, borderRadius: '50%',
-                  position: 'relative', overflow: 'hidden',
-                  transform: `rotate(${quickAzarDeg}deg)`,
-                  transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
-                  background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
-                  boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
-                }}>
-                  {azarStudents.map((s, i) => {
-                    const mid = i * seg + seg / 2;
-                    return (
-                      <div key={s.id} style={{
-                        position: 'absolute', left: '50%', top: '50%',
-                        width: `${wheelSize / 2 - 50}px`, height: '24px',
-                        marginTop: '-12px',
-                        transform: `rotate(${mid - 90}deg) translate(40px)`,
-                        transformOrigin: 'left center',
-                        fontSize, fontWeight: 700, color: 'white',
-                        textShadow: '0 1px 3px rgba(0,0,0,0.6)',
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        pointerEvents: 'none', display: 'flex', alignItems: 'center', textAlign: 'left'
-                      }}>{s.name}</div>
-                    );
-                  })}
-                  <div style={{
-                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-                    width: '70px', height: '70px', borderRadius: '50%',
-                    background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontWeight: 800, fontSize: '1.2rem',
-                    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
-                  }}>🎯</div>
-                </div>
-                {quickAzarSpinning && (
-                  <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
-                )}
-              </>
-            ) : (
-              <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🎉</div>
-                    <h3 style={{ margin: 0, fontSize: '1.15rem' }}>{quickAzarWinner.name}</h3>
-                    <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>Calificar al estudiante</div>
-                  </div>
-                  <button onClick={() => setQuickAzarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
-                    <X size={20} color="var(--text-secondary)" />
-                  </button>
-                </div>
-
-                {azarGradeMsg && (
-                  <div style={{
-                    padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '1rem',
-                    background: azarGradeMsg.startsWith('✓') ? '#dcfce7' : '#fef2f2',
-                    color: azarGradeMsg.startsWith('✓') ? '#16a34a' : '#dc2626',
-                    fontSize: '0.85rem', fontWeight: 500
-                  }}>{azarGradeMsg}</div>
-                )}
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
-                    <input type="text" className="input-field" placeholder="Ej: Participación oral..." value={azarGrade.activityName}
-                      onChange={e => setAzarGrade(prev => ({ ...prev, activityName: e.target.value }))} style={{ width: '100%' }} />
-                  </div>
-                  {currentSubject?.competencies?.length > 0 && (
-                    <div>
-                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Competencia</label>
-                      <select value={azarGrade.competencyId} onChange={e => setAzarGrade(prev => ({ ...prev, competencyId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
-                        <option value="">Todas las competencias</option>
-                        {currentSubject.competencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </div>
-                  )}
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Nota</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      {['AD', 'A', 'B', 'C'].map(g => {
-                        const colors = { AD: { bg: '#dcfce7', text: '#16a34a' }, A: { bg: '#dbeafe', text: '#2563eb' }, B: { bg: '#fef9c3', text: '#ca8a04' }, C: { bg: '#fee2e2', text: '#dc2626' } };
-                        return (
-                          <button key={g} onClick={() => setAzarGrade(prev => ({ ...prev, score: g }))} style={{
-                            flex: 1, padding: '0.6rem', borderRadius: '10px', border: azarGrade.score === g ? `2px solid ${colors[g].text}` : '1.5px solid #e2e8f0',
-                            background: azarGrade.score === g ? colors[g].bg : 'white',
-                            color: colors[g].text, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
-                            transition: 'all 0.15s'
-                          }}>{g}</button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
-                    <input type="date" className="input-field" value={azarGrade.date || new Date().toISOString().split('T')[0]}
-                      onChange={e => setAzarGrade(prev => ({ ...prev, date: e.target.value }))} style={{ width: '100%' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Comentario <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
-                    <textarea className="input-field" rows={3} placeholder="Nota u observación..." value={azarGrade.note}
-                      onChange={e => setAzarGrade(prev => ({ ...prev, note: e.target.value }))} style={{ width: '100%', resize: 'vertical' }} />
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-                  <button onClick={() => setQuickAzarOpen(false)} style={{
-                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                    background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
-                  }}>Cerrar</button>
-                  <button onClick={async () => {
-                    if (!azarGrade.activityName.trim()) { setAzarGradeMsg('Ingresa el nombre de la actividad'); return; }
-                    if (!azarGrade.score) { setAzarGradeMsg('Selecciona una nota (AD/A/B/C)'); return; }
-                    setAzarGradeSaving(true);
-                    setAzarGradeMsg('');
-                    try {
-                      await saveQuickGrade({
-                        studentId: quickAzarWinner.id,
-                        studentName: quickAzarWinner.name,
-                        subjectId: selectedSubjectId,
-                        subjectName: currentSubject?.name || '',
-                        competencyId: azarGrade.competencyId || undefined,
-                        period: selectedPeriod,
-                        classId: quickAzarWinner.classId || '',
-                        score: azarGrade.score,
-                        activityName: azarGrade.activityName.trim(),
-                        date: azarGrade.date || new Date().toISOString().split('T')[0],
-                        note: azarGrade.note.trim() || undefined
-                      });
-                      setAzarGradeMsg('✓ Calificación guardada');
-                      setAzarGrade({ activityName: '', score: '', date: '', note: '', competencyId: '' });
-                    } catch (err) {
-                      setAzarGradeMsg('Error al guardar');
-                      console.error(err);
-                    } finally {
-                      setAzarGradeSaving(false);
-                    }
-                  }} disabled={azarGradeSaving || !azarGrade.score} style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                    padding: '0.75rem', borderRadius: '10px', border: 'none',
-                    background: azarGradeSaving ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
-                    color: 'white', fontWeight: 600, cursor: azarGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
-                  }}>
-                    <Send size={16} /> {azarGradeSaving ? 'Guardando...' : 'Guardar'}
-                  </button>
-                </div>
+                  position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+                  width: '70px', height: '70px', borderRadius: '50%',
+                  background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 800, fontSize: '1.2rem',
+                  boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
+                }}>🎯</div>
+              </div>
+            </div>
+            {quickAzarSpinning && (
+              <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
+            )}
+            {stopped && (
+              <div style={{
+                marginTop: '1.5rem', background: 'white', borderRadius: '16px',
+                padding: '1.2rem 2.5rem', textAlign: 'center',
+                animation: 'bounceIn 0.5s ease',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+              }}>
+                <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
+                <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+                <button onClick={() => setQuickAzarOpen(false)} style={{
+                  marginTop: '1rem', padding: '0.6rem 2rem', borderRadius: '10px',
+                  border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                }}>OK</button>
               </div>
             )}
           </div>
