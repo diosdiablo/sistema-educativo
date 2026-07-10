@@ -1931,7 +1931,7 @@ export default function Grades() {
         const n = azarStudents.length;
         const pickedCount = quickAzarPicked.size;
         const seg = n > 0 ? 360 / n : 360;
-        const wheelSize = Math.min(window.innerWidth * 0.85, 380);
+        const wheelSize = Math.min(window.innerWidth * 0.9, 520);
         const fontSize = n <= 8 ? '0.9rem' : n <= 15 ? '0.75rem' : n <= 25 ? '0.65rem' : '0.55rem';
         const stopped = !quickAzarSpinning && quickAzarWinner;
         return (
@@ -1947,8 +1947,8 @@ export default function Grades() {
                 position: 'absolute', top: '-10px', left: '50%',
                 transform: 'translateX(-50%)', zIndex: 10,
                 width: 0, height: 0,
-                borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
-                borderTop: '28px solid #fbbf24',
+                  borderLeft: '18px solid transparent', borderRight: '18px solid transparent',
+                  borderTop: '32px solid #fbbf24',
                 filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
               }} />
               <div style={{
@@ -1977,7 +1977,7 @@ export default function Grades() {
                 })}
                 <div style={{
                   position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-                  width: '70px', height: '70px', borderRadius: '50%',
+                    width: '90px', height: '90px', borderRadius: '50%',
                   background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontWeight: 800, fontSize: '1.2rem',
