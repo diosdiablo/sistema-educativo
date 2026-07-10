@@ -124,7 +124,7 @@ const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Ini
 const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, saveQuickGrade, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -195,17 +195,11 @@ export default function Grades() {
 
   const [showQuickGrade, setShowQuickGrade] = useState(false);
   const [quickGrade, setQuickGrade] = useState({
-    studentId: '', activityName: '', score: '', date: new Date().toISOString().split('T')[0], note: '', competencyId: ''
+    activityName: '', date: new Date().toISOString().split('T')[0], competencyId: ''
   });
-  const LITERAL_GRADES = ['AD', 'A', 'B', 'C'];
+
   const [quickGradeSaving, setQuickGradeSaving] = useState(false);
   const [quickGradeMsg, setQuickGradeMsg] = useState('');
-  const [quickAzarOpen, setQuickAzarOpen] = useState(false);
-  const [quickAzarSpinning, setQuickAzarSpinning] = useState(false);
-  const [quickAzarDeg, setQuickAzarDeg] = useState(0);
-  const [quickAzarWinner, setQuickAzarWinner] = useState(null);
-  const [quickAzarStudents, setQuickAzarStudents] = useState([]);
-  const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
   const [extraInstruments, setExtraInstruments] = useState({}); // { [compId]: [ { instrument, activityName?, ... } ] }
@@ -760,7 +754,7 @@ export default function Grades() {
 
           {/* Botón de calificación rápida */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button onClick={() => { setQuickGrade({ studentId: '', activityName: '', score: '', date: new Date().toISOString().split('T')[0], note: '', competencyId: currentSubject?.competencies?.[0]?.id || '' }); setQuickGradeMsg(''); setShowQuickGrade(true); }} style={{
+            <button onClick={() => { setQuickGrade({ activityName: '', date: new Date().toISOString().split('T')[0], competencyId: currentSubject?.competencies?.[0]?.id || '' }); setQuickGradeMsg(''); setShowQuickGrade(true); }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.7rem 1.25rem', border: 'none', borderRadius: '12px',
               background: 'linear-gradient(135deg, #10b981, #059669)',
@@ -1796,7 +1790,7 @@ export default function Grades() {
                     }}>
                       <Plus size={20} color="#10b981" />
                     </div>
-                    <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Calificación Rápida</h3>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Nueva Columna</h3>
                   </div>
                   <button onClick={() => setShowQuickGrade(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
                     <X size={20} color="var(--text-secondary)" />
@@ -1814,42 +1808,6 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Estudiante</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <select value={quickGrade.studentId} onChange={e => setQuickGrade(prev => ({ ...prev, studentId: e.target.value }))} className="input-field" style={{ flex: 1 }}>
-                        <option value="">Seleccionar estudiante...</option>
-                        {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                      </select>
-                      <button onClick={() => {
-                        const available = filteredStudents.filter(s => s.id !== quickGrade.studentId);
-                        if (available.length === 0 || quickAzarSpinning) return;
-                        setQuickAzarStudents(available);
-                        const winner = available[Math.floor(Math.random() * available.length)];
-                        const n = available.length;
-                        const idx = available.indexOf(winner);
-                        const seg = 360 / n;
-                        const target = 360 * 5 + (360 - idx * seg - seg / 2);
-                        setQuickAzarWinner(winner);
-                        setQuickAzarDeg(0);
-                        setQuickAzarSpinning(false);
-                        setQuickAzarOpen(true);
-                        setTimeout(() => {
-                          setQuickAzarSpinning(true);
-                          setQuickAzarDeg(target);
-                        }, 50);
-                        setTimeout(() => {
-                          setQuickAzarSpinning(false);
-                          setQuickGrade(prev => ({ ...prev, studentId: winner.id }));
-                        }, 4050);
-                      }} title="Alumno al azar" style={{
-                        padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                        background: '#f8fafc', cursor: 'pointer', fontSize: '0.85rem',
-                        color: '#64748b', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px'
-                      }}>🎲 Azar</button>
-                    </div>
-                  </div>
-
-                  <div>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
                     <input type="text" className="input-field" placeholder="Ej: Participación oral, Actividad en pizarra..." value={quickGrade.activityName}
                       onChange={e => setQuickGrade(prev => ({ ...prev, activityName: e.target.value }))} style={{ width: '100%' }} />
@@ -1866,32 +1824,9 @@ export default function Grades() {
                   )}
 
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Nota</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      {LITERAL_GRADES.map(g => {
-                        const colors = { AD: { bg: '#dcfce7', text: '#16a34a' }, A: { bg: '#dbeafe', text: '#2563eb' }, B: { bg: '#fef9c3', text: '#ca8a04' }, C: { bg: '#fee2e2', text: '#dc2626' } };
-                        return (
-                          <button key={g} onClick={() => setQuickGrade(prev => ({ ...prev, score: g }))} style={{
-                            flex: 1, padding: '0.6rem', borderRadius: '10px', border: quickGrade.score === g ? `2px solid ${colors[g].text}` : '1.5px solid #e2e8f0',
-                            background: quickGrade.score === g ? colors[g].bg : 'white',
-                            color: colors[g].text, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
-                            transition: 'all 0.15s'
-                          }}>{g}</button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
                     <input type="date" className="input-field" value={quickGrade.date}
                       onChange={e => setQuickGrade(prev => ({ ...prev, date: e.target.value }))} style={{ width: '100%' }} />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Comentario <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
-                    <textarea className="input-field" rows={3} placeholder="Nota u observación..." value={quickGrade.note}
-                      onChange={e => setQuickGrade(prev => ({ ...prev, note: e.target.value }))} style={{ width: '100%', resize: 'vertical' }} />
                   </div>
                 </div>
 
@@ -1901,30 +1836,31 @@ export default function Grades() {
                     background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                   }}>Cancelar</button>
                   <button onClick={async () => {
-                    if (!quickGrade.studentId) { setQuickGradeMsg('Selecciona un estudiante'); return; }
                     if (!quickGrade.activityName.trim()) { setQuickGradeMsg('Ingresa el nombre de la actividad'); return; }
-                    if (!quickGrade.score) { setQuickGradeMsg('Selecciona una nota (AD/A/B/C)'); return; }
                     setQuickGradeSaving(true);
                     setQuickGradeMsg('');
                     try {
-                      const student = students.find(s => s.id === quickGrade.studentId);
-                      await saveQuickGrade({
-                        studentId: quickGrade.studentId,
-                        studentName: student?.name || 'Desconocido',
-                        subjectId: selectedSubjectId,
-                        subjectName: currentSubject?.name || '',
-                        competencyId: quickGrade.competencyId || undefined,
-                        period: selectedPeriod,
-                        classId: student?.classId || '',
-                        score: quickGrade.score,
+                      const compId = quickGrade.competencyId || currentSubject?.competencies?.[0]?.id || '';
+                      const newInstr = {
+                        id: 'qg-' + Date.now(),
+                        instrumentId: null,
+                        title: quickGrade.activityName.trim(),
                         activityName: quickGrade.activityName.trim(),
+                        instrumentType: 'quick_grade',
+                        criteria: [],
+                        competencyId: compId,
+                        subjectId: currentSubject?.id || '',
                         date: quickGrade.date,
-                        note: quickGrade.note.trim() || undefined
+                      };
+                      setExtraInstruments(prev => {
+                        const current = [...(prev[compId] || [])];
+                        current.push(newInstr);
+                        return { ...prev, [compId]: current };
                       });
-                      setQuickGradeMsg('✓ Calificación guardada correctamente');
-                      setQuickGrade(prev => ({ ...prev, studentId: '', activityName: '', score: '', note: '' }));
+                      setQuickGradeMsg('✓ Columna creada correctamente');
+                      setQuickGrade(prev => ({ ...prev, activityName: '' }));
                     } catch (err) {
-                      setQuickGradeMsg('Error al guardar la calificación');
+                      setQuickGradeMsg('Error al crear la columna');
                       console.error(err);
                     } finally {
                       setQuickGradeSaving(false);
@@ -1935,7 +1871,7 @@ export default function Grades() {
                     background: quickGradeSaving ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
                     color: 'white', fontWeight: 600, cursor: quickGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
                   }}>
-                    <Send size={16} /> {quickGradeSaving ? 'Guardando...' : 'Guardar'}
+                    <Send size={16} /> {quickGradeSaving ? 'Creando...' : 'Crear columna'}
                   </button>
                 </div>
               </div>
@@ -1952,103 +1888,6 @@ export default function Grades() {
         }
       `}</style>
 
-      {/* Azar wheel overlay */}
-      {quickAzarOpen && (() => {
-        const azarStudents = quickAzarStudents;
-        const n = azarStudents.length;
-        const seg = n > 0 ? 360 / n : 360;
-        const wheelSize = Math.min(window.innerWidth * 0.85, 380);
-        // Responsive font size that dynamically scales based on student count
-        const fontSize = n <= 8 ? '0.9rem' : n <= 15 ? '0.75rem' : n <= 25 ? '0.65rem' : '0.55rem';
-        return (
-        <div style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.8)', zIndex: 9999,
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-          paddingTop: '2rem', overflow: 'auto'
-        }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
-          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Pointer (absolute, above wheel) */}
-            <div style={{
-              position: 'absolute', top: '-10px', left: '50%',
-              transform: 'translateX(-50%)', zIndex: 10,
-              width: 0, height: 0,
-              borderLeft: '16px solid transparent', borderRight: '16px solid transparent',
-              borderTop: '28px solid #fbbf24',
-              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
-            }} />
-            {/* Wheel */}
-            <div style={{
-              width: wheelSize, height: wheelSize, borderRadius: '50%',
-              position: 'relative', overflow: 'hidden',
-              transform: `rotate(${quickAzarDeg}deg)`,
-              transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
-              background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
-              boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
-            }}>
-              {/* Student name labels - radial orientation */}
-              {azarStudents.map((s, i) => {
-                const mid = i * seg + seg / 2;
-                return (
-                  <div key={s.id} style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '50%',
-                    width: `${wheelSize / 2 - 50}px`,
-                    height: '24px',
-                    marginTop: '-12px',
-                    transform: `rotate(${mid - 90}deg) translate(40px)`,
-                    transformOrigin: 'left center',
-                    fontSize,
-                    fontWeight: 700,
-                    color: 'white',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.6)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    pointerEvents: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    textAlign: 'left'
-                  }}>{s.name}</div>
-                );
-              })}
-              {/* Center hub */}
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-                width: '70px', height: '70px', borderRadius: '50%',
-                background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 800, fontSize: '1.2rem',
-                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
-              }}>🎯</div>
-            </div>
-            {quickAzarWinner && !quickAzarSpinning && (
-              <div style={{
-                marginTop: '1.5rem', background: 'white', borderRadius: '16px',
-                padding: '1rem 2.5rem', textAlign: 'center',
-                animation: 'bounceIn 0.5s ease',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-              }}>
-                <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
-                <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
-              </div>
-            )}
-            {quickAzarSpinning && (
-              <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
-            )}
-            {!quickAzarSpinning && (
-              <button onClick={() => setQuickAzarOpen(false)} style={{
-                marginTop: '1.5rem', padding: '0.7rem 2rem', borderRadius: '12px',
-                border: 'none', background: 'white', color: '#1e293b', fontWeight: 700,
-                cursor: 'pointer', fontSize: '0.95rem',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
-              }}>Cerrar</button>
-            )}
-          </div>
-        </div>);
-      })()}
     </div>
   );
 }
