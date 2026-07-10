@@ -991,6 +991,9 @@ export default function Grades() {
                                         });
                                       } else {
                                         const oldName = inst.activityName || inst.title || '';
+                                        const matching = instrumentEvaluations.filter(ev =>
+                                          (ev.activityName || ev.instrumentId) === oldName && ev.competencyId === comp.id && ev.period === selectedPeriod
+                                        );
                                         setInstrumentEvaluations(prev =>
                                           prev.map(ev =>
                                             (ev.activityName || ev.instrumentId) === oldName && ev.competencyId === comp.id && ev.period === selectedPeriod
@@ -998,6 +1001,9 @@ export default function Grades() {
                                               : ev
                                           )
                                         );
+                                        matching.forEach(ev => {
+                                          saveInstrumentEvaluation({ ...ev, activityName: val });
+                                        });
                                       }
                                     }
                                     setRenamingColumn(null);
