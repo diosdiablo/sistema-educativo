@@ -208,7 +208,15 @@ export default function Grades() {
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
-  const [quickAzarPicked, setQuickAzarPicked] = useState(new Set());
+  const [quickAzarPicked, setQuickAzarPicked] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('edu_azar_picked') || '{}');
+      if (stored.ts && Date.now() - stored.ts < 90 * 60 * 1000) {
+        return new Set(stored.ids || []);
+      }
+    } catch {}
+    return new Set();
+  });
   const [quickAzarHighlighted, setQuickAzarHighlighted] = useState(null);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
@@ -218,7 +226,10 @@ export default function Grades() {
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
   const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
 
-  useEffect(() => { setQuickAzarPicked(new Set()); }, [selectedClass]);
+  useEffect(() => { setQuickAzarPicked(new Set()); localStorage.removeItem('edu_azar_picked'); }, [selectedClass]);
+  useEffect(() => {
+    try { localStorage.setItem('edu_azar_picked', JSON.stringify({ ids: [...quickAzarPicked], ts: Date.now() })); } catch {}
+  }, [quickAzarPicked]);
   useEffect(() => { try { localStorage.setItem('edu_extra_instruments', JSON.stringify(extraInstruments)); } catch {} }, [extraInstruments]);
   useEffect(() => {
     (async () => {
