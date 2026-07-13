@@ -1,6 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { supabase } from '../lib/supabase';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
 
 const TYPE_ICONS = {
@@ -176,9 +175,8 @@ export default function Grades() {
 
   // Instruments filtered by current subject (fallback to all if no subjectId)
   const instrumentsBySubject = useMemo(() => {
-    const filtered = instruments.filter(i => i.type !== 'quick_column');
-    if (!selectedSubjectId) return filtered;
-    return filtered.filter(i => !i.subjectId || i.subjectId === selectedSubjectId);
+    if (!selectedSubjectId) return instruments;
+    return instruments.filter(i => !i.subjectId || i.subjectId === selectedSubjectId);
   }, [instruments, selectedSubjectId]);
 
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
@@ -208,65 +206,16 @@ export default function Grades() {
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
-  const [quickAzarPicked, setQuickAzarPicked] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('edu_azar_picked') || '{}');
-      if (stored.ts && Date.now() - stored.ts < 90 * 60 * 1000) {
-        return new Set(stored.ids || []);
-      }
-    } catch {}
-    return new Set();
-  });
-  const [quickAzarHighlighted, setQuickAzarHighlighted] = useState(null);
+  const [quickAzarPicked, setQuickAzarPicked] = useState(new Set());
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
-  const [extraInstruments, setExtraInstruments] = useState(() => { try { return JSON.parse(localStorage.getItem('edu_extra_instruments') || '{}'); } catch { return {}; } });
+  const [extraInstruments, setExtraInstruments] = useState({}); // { [compId]: [ { instrument, activityName?, ... } ] }
   const [instrumentPickerOpen, setInstrumentPickerOpen] = useState(false); // compId | null
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
   const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
 
-  useEffect(() => { setQuickAzarPicked(new Set()); localStorage.removeItem('edu_azar_picked'); }, [selectedClass]);
-  useEffect(() => {
-    try { localStorage.setItem('edu_azar_picked', JSON.stringify({ ids: [...quickAzarPicked], ts: Date.now() })); } catch {}
-  }, [quickAzarPicked]);
-  useEffect(() => { try { localStorage.setItem('edu_extra_instruments', JSON.stringify(extraInstruments)); } catch {} }, [extraInstruments]);
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await supabase.from('instruments').select('*').eq('type', 'quick_column');
-        if (data?.length > 0) {
-          const grouped = {};
-          data.forEach(inst => {
-            const compId = inst.competency_id || inst.class_id || '';
-            if (!grouped[compId]) grouped[compId] = [];
-            grouped[compId].push({
-              id: inst.id,
-              instrumentId: null,
-              title: inst.title || inst.name || '',
-              activityName: inst.title || inst.name || '',
-              instrumentType: 'quick_grade',
-              criteria: typeof inst.criteria === 'string' ? JSON.parse(inst.criteria) : (inst.criteria || []),
-              competencyId: compId,
-              subjectId: inst.subject_id || '',
-              date: inst.date || '',
-            });
-          });
-          setExtraInstruments(prev => {
-            const merged = { ...prev };
-            Object.keys(grouped).forEach(compId => {
-              const existingIds = new Set((merged[compId] || []).map(i => i.id));
-              const newItems = grouped[compId].filter(i => !existingIds.has(i.id));
-              if (newItems.length > 0) {
-                merged[compId] = [...(merged[compId] || []), ...newItems];
-              }
-            });
-            return merged;
-          });
-        }
-      } catch (e) { console.warn('Error loading extra instruments:', e); }
-    })();
-  }, []);
+  useEffect(() => { setQuickAzarPicked(new Set()); }, [selectedClass]);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -840,7 +789,6 @@ export default function Grades() {
               setTimeout(() => {
                 setQuickAzarSpinning(false);
                 setQuickAzarPicked(prev => new Set([...prev, winner.id]));
-                setQuickAzarHighlighted(winner.id);
               }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -865,6 +813,7 @@ export default function Grades() {
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
             const getInstrumentsForCompetency = (competencyId) => {
+              // Solo obtener evaluaciones de estudiantes de la clase seleccionada
               const studentIds = new Set(filteredStudents.map(s => s.id));
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && 
@@ -1074,49 +1023,19 @@ export default function Grades() {
                                     ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
                                     : (inst.title || inst.activityName || '')}
                                   {canRename && (
-                                    <>
-                                      <button
-                                        title="Renombrar columna"
-                                        onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
-                                        style={{
-                                          position: 'absolute', top: '-4px', right: '-4px',
-                                          background: '#e2e8f0', border: 'none', borderRadius: '50%',
-                                          width: '16px', height: '16px', cursor: 'pointer',
-                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                          padding: 0, lineHeight: 1
-                                        }}
-                                      >
-                                        <Pencil size={10} color="#64748b" />
-                                      </button>
-                                      {isExtra && (
-                                        <button
-                                          title="Eliminar columna"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (!confirm('¿Eliminar esta columna?')) return;
-                                            const itemIdx = j - (existingInstruments.length > 0 ? existingInstruments.length : 0);
-                                            const removed = (extraInstruments[comp.id] || [])[itemIdx];
-                                            setExtraInstruments(prev => {
-                                              const current = [...(prev[comp.id] || [])];
-                                              current.splice(itemIdx, 1);
-                                              return { ...prev, [comp.id]: current };
-                                            });
-                                            if (removed?.id) {
-                                              supabase.from('instruments').delete().eq('id', removed.id).catch(e => console.warn('Error deleting extra instrument:', e));
-                                            }
-                                          }}
-                                          style={{
-                                            position: 'absolute', top: '-4px', left: '-4px',
-                                            background: '#fee2e2', border: 'none', borderRadius: '50%',
-                                            width: '16px', height: '16px', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            padding: 0, lineHeight: 1
-                                          }}
-                                        >
-                                          <X size={10} color="#dc2626" />
-                                        </button>
-                                      )}
-                                    </>
+                                    <button
+                                      title="Renombrar columna"
+                                      onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
+                                      style={{
+                                        position: 'absolute', top: '-4px', right: '-4px',
+                                        background: '#e2e8f0', border: 'none', borderRadius: '50%',
+                                        width: '16px', height: '16px', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        padding: 0, lineHeight: 1
+                                      }}
+                                    >
+                                      <Pencil size={10} color="#64748b" />
+                                    </button>
                                   )}
                                 </div>
                               )}
@@ -1133,19 +1052,15 @@ export default function Grades() {
                         </td>
                       </tr>
                     )}
-                    {filteredStudents.map((student, studentIdx) => {
-                      const isHighlighted = quickAzarHighlighted === student.id;
-                      return (
-                      <tr key={student.id} style={isHighlighted ? { background: 'linear-gradient(90deg, #fef9c3, #fde68a, #fef9c3)', animation: 'highlightPulse 1s ease-in-out 3' } : {}}>
+                    {filteredStudents.map((student, studentIdx) => (
+                      <tr key={student.id}>
                         <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '3px solid #94a3b8' }}>{studentIdx + 1}</td>
                         <td style={{ fontWeight: 600, minWidth: '150px', borderRight: '3px solid #94a3b8' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const existingInstruments = getInstrumentsForCompetency(comp.id);
                           const extra = extraInstruments[comp.id] || [];
-                          const existingIds = new Set(existingInstruments.map(i => i.instrumentId).filter(Boolean));
-                          const filteredExtra = extra.filter(e => !existingIds.has(e.instrumentId || e.id));
                           const items = existingInstruments.length > 0
-                            ? [...existingInstruments, ...filteredExtra, { _isPlus: true }]
+                            ? [...existingInstruments, ...extra, { _isPlus: true }]
                             : [...extra, { _isPlus: true }];
                           return items.map(inst => {
                             if (inst._isPlus) {
@@ -1156,7 +1071,7 @@ export default function Grades() {
                             }
                             const ev = instrumentEvaluations.find(e => {
                               if (e.period !== selectedPeriod || e.competencyId !== comp.id) return false;
-                              const instMatch = (e.activityName || e.instrumentId) === inst.id || (inst.instrumentId && e.instrumentId === inst.instrumentId);
+                              const instMatch = (e.activityName || e.instrumentId) === inst.id;
                               const idMatch = e.studentId === student.id || e.student_id === student.id;
                               return instMatch && (idMatch || e.student_name === student.name);
                             });
@@ -1166,7 +1081,6 @@ export default function Grades() {
                                   title="Sin calificación — click para evaluar"
                                   style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                   onClick={() => {
-                                    setQuickAzarHighlighted(null);
                                     const newEval = {
                                       id: null,
                                       instrumentId: inst.instrumentId || inst.id,
@@ -1206,7 +1120,7 @@ export default function Grades() {
                               <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
-                                onClick={() => { setQuickAzarHighlighted(null); setViewingEvaluation(ev); setHoveredEval(null); }}
+                                onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
                               >
                                 <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>{ev.qualitative}</span>
                               </td>
@@ -1214,8 +1128,7 @@ export default function Grades() {
                           });
                         })}
                       </tr>
-                      );
-                    })}
+                    ))}
                   </tbody>
                 </table>
                 </div>
@@ -1995,16 +1908,6 @@ export default function Grades() {
                         current.push(newInstr);
                         return { ...prev, [compId]: current };
                       });
-                      supabase.from('instruments').upsert({
-                        id: newInstr.id,
-                        name: newInstr.title,
-                        title: newInstr.title,
-                        type: 'quick_column',
-                        subject_id: currentSubject?.id || null,
-                        criteria: JSON.stringify([]),
-                        date: quickGrade.date || new Date().toISOString().split('T')[0],
-                        created_at: new Date().toISOString(),
-                      }, { onConflict: 'id' }).catch(e => console.warn('Error saving extra instrument:', e));
                       setQuickGradeMsg('✓ Columna creada correctamente');
                       setQuickGrade(prev => ({ ...prev, activityName: '' }));
                     } catch (err) {
@@ -2128,10 +2031,6 @@ export default function Grades() {
           50% { transform: scale(1.05); }
           70% { transform: scale(0.9); }
           100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes highlightPulse {
-          0%, 100% { background-color: #fef9c3; }
-          50% { background-color: #fde68a; }
         }
       `}</style>
 
