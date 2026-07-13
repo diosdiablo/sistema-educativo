@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
+import { supabase } from '../lib/supabase';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
 
 const TYPE_ICONS = {
@@ -175,8 +176,9 @@ export default function Grades() {
 
   // Instruments filtered by current subject (fallback to all if no subjectId)
   const instrumentsBySubject = useMemo(() => {
-    if (!selectedSubjectId) return instruments;
-    return instruments.filter(i => !i.subjectId || i.subjectId === selectedSubjectId);
+    const filtered = instruments.filter(i => i.type !== 'quick_column');
+    if (!selectedSubjectId) return filtered;
+    return filtered.filter(i => !i.subjectId || i.subjectId === selectedSubjectId);
   }, [instruments, selectedSubjectId]);
 
   const [tooltip, setTooltip] = useState(null); // { studentId, competencyId, evs, position: { x, y } }
@@ -218,6 +220,42 @@ export default function Grades() {
 
   useEffect(() => { setQuickAzarPicked(new Set()); }, [selectedClass]);
   useEffect(() => { try { localStorage.setItem('edu_extra_instruments', JSON.stringify(extraInstruments)); } catch {} }, [extraInstruments]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.from('instruments').select('*').eq('type', 'quick_column');
+        if (data?.length > 0) {
+          const grouped = {};
+          data.forEach(inst => {
+            const compId = inst.competency_id || inst.class_id || '';
+            if (!grouped[compId]) grouped[compId] = [];
+            grouped[compId].push({
+              id: inst.id,
+              instrumentId: null,
+              title: inst.title || inst.name || '',
+              activityName: inst.title || inst.name || '',
+              instrumentType: 'quick_grade',
+              criteria: typeof inst.criteria === 'string' ? JSON.parse(inst.criteria) : (inst.criteria || []),
+              competencyId: compId,
+              subjectId: inst.subject_id || '',
+              date: inst.date || '',
+            });
+          });
+          setExtraInstruments(prev => {
+            const merged = { ...prev };
+            Object.keys(grouped).forEach(compId => {
+              const existingIds = new Set((merged[compId] || []).map(i => i.id));
+              const newItems = grouped[compId].filter(i => !existingIds.has(i.id));
+              if (newItems.length > 0) {
+                merged[compId] = [...(merged[compId] || []), ...newItems];
+              }
+            });
+            return merged;
+          });
+        }
+      } catch (e) { console.warn('Error loading extra instruments:', e); }
+    })();
+  }, []);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -1915,6 +1953,16 @@ export default function Grades() {
                         current.push(newInstr);
                         return { ...prev, [compId]: current };
                       });
+                      supabase.from('instruments').upsert({
+                        id: newInstr.id,
+                        name: newInstr.title,
+                        title: newInstr.title,
+                        type: 'quick_column',
+                        subject_id: currentSubject?.id || null,
+                        criteria: JSON.stringify([]),
+                        date: quickGrade.date || new Date().toISOString().split('T')[0],
+                        created_at: new Date().toISOString(),
+                      }, { onConflict: 'id' }).catch(e => console.warn('Error saving extra instrument:', e));
                       setQuickGradeMsg('✓ Columna creada correctamente');
                       setQuickGrade(prev => ({ ...prev, activityName: '' }));
                     } catch (err) {
