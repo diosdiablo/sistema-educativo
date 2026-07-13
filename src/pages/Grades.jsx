@@ -211,12 +211,13 @@ export default function Grades() {
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
-  const [extraInstruments, setExtraInstruments] = useState({}); // { [compId]: [ { instrument, activityName?, ... } ] }
+  const [extraInstruments, setExtraInstruments] = useState(() => { try { return JSON.parse(localStorage.getItem('edu_extra_instruments') || '{}'); } catch { return {}; } });
   const [instrumentPickerOpen, setInstrumentPickerOpen] = useState(false); // compId | null
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
   const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
 
   useEffect(() => { setQuickAzarPicked(new Set()); }, [selectedClass]);
+  useEffect(() => { try { localStorage.setItem('edu_extra_instruments', JSON.stringify(extraInstruments)); } catch {} }, [extraInstruments]);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
