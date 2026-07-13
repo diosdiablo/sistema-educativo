@@ -855,12 +855,14 @@ export default function Grades() {
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
             const getInstrumentsForCompetency = (competencyId) => {
-              // Solo obtener evaluaciones de estudiantes de la clase seleccionada
+              const extraForComp = extraInstruments[competencyId] || [];
+              const extraNames = new Set(extraForComp.map(e => e.activityName || e.title || '').filter(Boolean));
               const studentIds = new Set(filteredStudents.map(s => s.id));
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && 
                       ev.period === selectedPeriod &&
-                      studentIds.has(ev.studentId)
+                      studentIds.has(ev.studentId) &&
+                      !extraNames.has(ev.activityName || '')
               );
               
               const uniqueInstruments = {};
