@@ -207,6 +207,7 @@ export default function Grades() {
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
   const [quickAzarPicked, setQuickAzarPicked] = useState(new Set());
+  const [quickAzarHighlighted, setQuickAzarHighlighted] = useState(null);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
@@ -789,6 +790,8 @@ export default function Grades() {
               setTimeout(() => {
                 setQuickAzarSpinning(false);
                 setQuickAzarPicked(prev => new Set([...prev, winner.id]));
+                setQuickAzarHighlighted(winner.id);
+                setTimeout(() => setQuickAzarHighlighted(null), 5000);
               }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1052,8 +1055,10 @@ export default function Grades() {
                         </td>
                       </tr>
                     )}
-                    {filteredStudents.map((student, studentIdx) => (
-                      <tr key={student.id}>
+                    {filteredStudents.map((student, studentIdx) => {
+                      const isHighlighted = quickAzarHighlighted === student.id;
+                      return (
+                      <tr key={student.id} style={isHighlighted ? { background: 'linear-gradient(90deg, #fef9c3, #fde68a, #fef9c3)', animation: 'highlightPulse 1s ease-in-out 3' } : {}}>
                         <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '3px solid #94a3b8' }}>{studentIdx + 1}</td>
                         <td style={{ fontWeight: 600, minWidth: '150px', borderRight: '3px solid #94a3b8' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
@@ -1128,7 +1133,8 @@ export default function Grades() {
                           });
                         })}
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
                 </div>
@@ -2031,6 +2037,10 @@ export default function Grades() {
           50% { transform: scale(1.05); }
           70% { transform: scale(0.9); }
           100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes highlightPulse {
+          0%, 100% { background-color: #fef9c3; }
+          50% { background-color: #fde68a; }
         }
       `}</style>
 
