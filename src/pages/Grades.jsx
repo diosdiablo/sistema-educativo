@@ -865,14 +865,11 @@ export default function Grades() {
           {/* Obtener todas las evaluaciones agrupadas por estudiante y competencia */}
           {(() => {
             const getInstrumentsForCompetency = (competencyId) => {
-              const extraForComp = extraInstruments[competencyId] || [];
-              const extraNames = new Set(extraForComp.map(e => e.activityName || e.title || '').filter(Boolean));
               const studentIds = new Set(filteredStudents.map(s => s.id));
               const evs = instrumentEvaluations.filter(
                 ev => ev.competencyId === competencyId && 
                       ev.period === selectedPeriod &&
-                      studentIds.has(ev.studentId) &&
-                      !extraNames.has(ev.activityName || '')
+                      studentIds.has(ev.studentId)
               );
               
               const uniqueInstruments = {};
@@ -1145,8 +1142,10 @@ export default function Grades() {
                         {currentSubject.competencies.map(comp => {
                           const existingInstruments = getInstrumentsForCompetency(comp.id);
                           const extra = extraInstruments[comp.id] || [];
+                          const existingIds = new Set(existingInstruments.map(i => i.instrumentId).filter(Boolean));
+                          const filteredExtra = extra.filter(e => !existingIds.has(e.instrumentId || e.id));
                           const items = existingInstruments.length > 0
-                            ? [...existingInstruments, ...extra, { _isPlus: true }]
+                            ? [...existingInstruments, ...filteredExtra, { _isPlus: true }]
                             : [...extra, { _isPlus: true }];
                           return items.map(inst => {
                             if (inst._isPlus) {
@@ -1157,7 +1156,7 @@ export default function Grades() {
                             }
                             const ev = instrumentEvaluations.find(e => {
                               if (e.period !== selectedPeriod || e.competencyId !== comp.id) return false;
-                              const instMatch = (e.activityName || e.instrumentId) === inst.id;
+                              const instMatch = (e.activityName || e.instrumentId) === inst.id || (inst.instrumentId && e.instrumentId === inst.instrumentId);
                               const idMatch = e.studentId === student.id || e.student_id === student.id;
                               return instMatch && (idMatch || e.student_name === student.name);
                             });
