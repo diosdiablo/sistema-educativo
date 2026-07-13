@@ -830,7 +830,6 @@ export default function Grades() {
                 setQuickAzarSpinning(false);
                 setQuickAzarPicked(prev => new Set([...prev, winner.id]));
                 setQuickAzarHighlighted(winner.id);
-                setTimeout(() => setQuickAzarHighlighted(null), 5000);
               }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1157,6 +1156,7 @@ export default function Grades() {
                                   title="Sin calificación — click para evaluar"
                                   style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                   onClick={() => {
+                                    setQuickAzarHighlighted(null);
                                     const newEval = {
                                       id: null,
                                       instrumentId: inst.instrumentId || inst.id,
@@ -1196,7 +1196,7 @@ export default function Grades() {
                               <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
-                                onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
+                                onClick={() => { setQuickAzarHighlighted(null); setViewingEvaluation(ev); setHoveredEval(null); }}
                               >
                                 <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>{ev.qualitative}</span>
                               </td>
