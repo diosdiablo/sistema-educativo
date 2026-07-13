@@ -1032,19 +1032,58 @@ export default function Grades() {
                                     ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
                                     : (inst.title || inst.activityName || '')}
                                   {canRename && (
-                                    <button
-                                      title="Renombrar columna"
-                                      onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
-                                      style={{
-                                        position: 'absolute', top: '-4px', right: '-4px',
-                                        background: '#e2e8f0', border: 'none', borderRadius: '50%',
-                                        width: '16px', height: '16px', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        padding: 0, lineHeight: 1
-                                      }}
-                                    >
-                                      <Pencil size={10} color="#64748b" />
-                                    </button>
+                                    <>
+                                      <button
+                                        title="Renombrar columna"
+                                        onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
+                                        style={{
+                                          position: 'absolute', top: '-4px', right: '-4px',
+                                          background: '#e2e8f0', border: 'none', borderRadius: '50%',
+                                          width: '16px', height: '16px', cursor: 'pointer',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                          padding: 0, lineHeight: 1
+                                        }}
+                                      >
+                                        <Pencil size={10} color="#64748b" />
+                                      </button>
+                                      <button
+                                        title="Eliminar columna"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (!confirm('¿Eliminar esta columna y todas sus calificaciones?')) return;
+                                          if (isExtra) {
+                                            const itemIdx = j - (existingInstruments.length > 0 ? existingInstruments.length : 0);
+                                            const removed = (extraInstruments[comp.id] || [])[itemIdx];
+                                            setExtraInstruments(prev => {
+                                              const current = [...(prev[comp.id] || [])];
+                                              current.splice(itemIdx, 1);
+                                              return { ...prev, [comp.id]: current };
+                                            });
+                                            if (removed?.id) {
+                                              supabase.from('instruments').delete().eq('id', removed.id).catch(e => console.warn('Error deleting extra instrument:', e));
+                                            }
+                                          } else {
+                                            const name = inst.activityName || inst.title || '';
+                                            const toDelete = instrumentEvaluations.filter(e =>
+                                              (e.activityName || e.instrumentId) === name && e.competencyId === comp.id && e.period === selectedPeriod
+                                            );
+                                            setInstrumentEvaluations(prev => prev.filter(e => !toDelete.find(d => d.id === e.id)));
+                                            toDelete.forEach(e => {
+                                              supabase.from('instrument_evaluations').delete().eq('id', e.id).catch(() => {});
+                                            });
+                                          }
+                                        }}
+                                        style={{
+                                          position: 'absolute', top: '-4px', left: '-4px',
+                                          background: '#fee2e2', border: 'none', borderRadius: '50%',
+                                          width: '16px', height: '16px', cursor: 'pointer',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                          padding: 0, lineHeight: 1
+                                        }}
+                                      >
+                                        <Trash2 size={10} color="#dc2626" />
+                                      </button>
+                                    </>
                                   )}
                                 </div>
                               )}
