@@ -206,7 +206,14 @@ export default function Grades() {
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
   const [quickAzarWinner, setQuickAzarWinner] = useState(null);
   const [quickAzarStudents, setQuickAzarStudents] = useState([]);
-  const [quickAzarPicked, setQuickAzarPicked] = useState(new Set());
+  const [quickAzarPicked, setQuickAzarPicked] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('edu_azar_picked') || '{}');
+      if (stored.ts && Date.now() - stored.ts < 90 * 60 * 1000) return new Set(stored.ids || []);
+    } catch {}
+    return new Set();
+  });
+  const [quickAzarHighlighted, setQuickAzarHighlighted] = useState(null);
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
@@ -215,7 +222,8 @@ export default function Grades() {
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
   const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
 
-  useEffect(() => { setQuickAzarPicked(new Set()); }, [selectedClass]);
+  useEffect(() => { setQuickAzarPicked(new Set()); localStorage.removeItem('edu_azar_picked'); }, [selectedClass]);
+  useEffect(() => { try { localStorage.setItem('edu_azar_picked', JSON.stringify({ ids: [...quickAzarPicked], ts: Date.now() })); } catch {} }, [quickAzarPicked]);
 
   // Función para obtener la posición del tooltip en hover
   const handleMouseEnterCell = (e, evaluations) => {
@@ -789,6 +797,7 @@ export default function Grades() {
               setTimeout(() => {
                 setQuickAzarSpinning(false);
                 setQuickAzarPicked(prev => new Set([...prev, winner.id]));
+                setQuickAzarHighlighted(winner.id);
               }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1052,8 +1061,10 @@ export default function Grades() {
                         </td>
                       </tr>
                     )}
-                    {filteredStudents.map((student, studentIdx) => (
-                      <tr key={student.id}>
+                    {filteredStudents.map((student, studentIdx) => {
+                      const isHighlighted = quickAzarHighlighted === student.id;
+                      return (
+                      <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : {}}>
                         <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '3px solid #94a3b8' }}>{studentIdx + 1}</td>
                         <td style={{ fontWeight: 600, minWidth: '150px', borderRight: '3px solid #94a3b8' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
@@ -1081,6 +1092,7 @@ export default function Grades() {
                                   title="Sin calificación — click para evaluar"
                                   style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                   onClick={() => {
+                                    setQuickAzarHighlighted(null);
                                     const newEval = {
                                       id: null,
                                       instrumentId: inst.instrumentId || inst.id,
@@ -1120,7 +1132,7 @@ export default function Grades() {
                               <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
-                                onClick={() => { setViewingEvaluation(ev); setHoveredEval(null); }}
+                                onClick={() => { setQuickAzarHighlighted(null); setViewingEvaluation(ev); setHoveredEval(null); }}
                               >
                                 <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>{ev.qualitative}</span>
                               </td>
@@ -1128,7 +1140,8 @@ export default function Grades() {
                           });
                         })}
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
                 </div>
