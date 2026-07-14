@@ -897,7 +897,9 @@ export default function Grades() {
                       {currentSubject.competencies.map((comp, idx) => {
                         const existingInstruments = getInstrumentsForCompetency(comp.id);
                         const extra = extraInstruments[comp.id] || [];
-                        const totalCols = (existingInstruments.length || 0) + extra.length + 1;
+                        const existingKeys = new Set(existingInstruments.map(i => i.id));
+                        const dedupedExtra = extra.filter(e => !existingKeys.has(e.activityName || e.id));
+                        const totalCols = (existingInstruments.length || 0) + dedupedExtra.length + 1;
                         const [color1, color2] = gradientColors[idx % gradientColors.length];
                         return (
                           <th key={comp.id} colSpan={totalCols} style={{
@@ -941,9 +943,11 @@ export default function Grades() {
                       {currentSubject.competencies.map((comp, idx) => {
                         const existingInstruments = getInstrumentsForCompetency(comp.id);
                         const extra = extraInstruments[comp.id] || [];
+                        const existingKeys = new Set(existingInstruments.map(i => i.id));
+                        const dedupedExtra = extra.filter(e => !existingKeys.has(e.activityName || e.id));
                         const items = existingInstruments.length > 0
-                          ? [...existingInstruments, ...extra, { _isPlus: true }]
-                          : [...extra, { _isPlus: true }];
+                          ? [...existingInstruments, ...dedupedExtra, { _isPlus: true }]
+                          : [...dedupedExtra, { _isPlus: true }];
                         const [color1, color2] = gradientColors[idx % gradientColors.length];
                         return items.map((inst, j) => {
                           if (inst._isPlus) {
@@ -1109,9 +1113,11 @@ export default function Grades() {
                         {currentSubject.competencies.map(comp => {
                           const existingInstruments = getInstrumentsForCompetency(comp.id);
                           const extra = extraInstruments[comp.id] || [];
+                          const existingKeys = new Set(existingInstruments.map(i => i.id));
+                          const dedupedExtra = extra.filter(e => !existingKeys.has(e.activityName || e.id));
                           const items = existingInstruments.length > 0
-                            ? [...existingInstruments, ...extra, { _isPlus: true }]
-                            : [...extra, { _isPlus: true }];
+                            ? [...existingInstruments, ...dedupedExtra, { _isPlus: true }]
+                            : [...dedupedExtra, { _isPlus: true }];
                           return items.map(inst => {
                             if (inst._isPlus) {
                               return (
