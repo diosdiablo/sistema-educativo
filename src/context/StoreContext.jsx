@@ -301,6 +301,15 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
   useEffect(() => {
     if (!isOnline || !supabase || typeof supabase.channel !== 'function') return;
 
+    let channel, bc;
+    try {
+      channel = supabase.channel('db-changes');
+      bc = supabase.channel('broadcast-sync');
+    } catch (e) {
+      console.error('Failed to create Realtime channels:', e);
+      return;
+    }
+
     const handleUpsert = (setter, normalize) => (payload) => {
       if (payload.eventType === 'DELETE') {
         setter(prev => prev.filter(item => item.id !== payload.old.id));
@@ -315,8 +324,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
         });
       }
     };
-
-    const channel = supabase.channel('db-changes');
 
     // -- Simple tables (passthrough) --
     const simple = [
@@ -446,7 +453,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     });
     realtimeChannelsRef.current.push(channel);
     broadcastChannelRef.current = null;
-    const bc = supabase.channel('broadcast-sync');
     bc.on('broadcast', { event: 'sync' }, (payload) => {
       const msg = payload?.payload || payload;
       const { table, action, data } = msg;
@@ -486,21 +492,6 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
           } else {
             setPeriodDates(prev => ({ ...prev, [data.id]: { start: data.start, end: data.end } }));
           }
-          break;
-        case 'events':
-          if (action === 'DELETE') {
-            setEvents(prev => prev.filter(i => i.id !== data.id));
-          } else if (data._batch) {
-            setEvents(prev => {
-              const existingTitles = new Set(prev.map(e => e.title));
-              const filtered = data._batch.filter(ev => !existingTitles.has(ev.title));
-              return [...prev, ...filtered];
-            });
-          } else {
-            handleUpsert(setEvents);
-          }
-          break;
-        case 'notifications': handleUpsert(setNotifications); break;
           break;
         case 'events':
           if (action === 'DELETE') {
@@ -1658,7 +1649,7 @@ if (studentsData?.length > 0) {
 
   const markNotificationRead = (notificationId) => {
     if (!currentUser) return;
-    const target = notifications.find(n => n.id === notificationId && !n.readBy.includes(currentUser.id));
+    const target = notifications.find(n => n.id === notificationId && !(n.readBy || []).includes(currentUser.id));
     if (!target) return;
     const updated = { ...target, readBy: [...target.readBy, currentUser.id] };
     setNotifications(prev => prev.map(n => n.id === notificationId ? updated : n));

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle, ThumbsUp } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
@@ -176,7 +176,7 @@ function AppContent() {
     }
   }, [isLoading]);
 
-  const unreadCount = notifications.filter(n => !n.readBy.includes(currentUser?.id)).length;
+  const unreadCount = notifications.filter(n => !(n.readBy || []).includes(currentUser?.id)).length;
 
   const toggleNotifs = (e) => {
     e.stopPropagation();
@@ -251,7 +251,7 @@ function AppContent() {
             </div>
           ) : (
             notifications.slice(0, 20).map(n => {
-              const isUnread = !n.readBy.includes(currentUser?.id);
+                  const isUnread = !(n.readBy || []).includes(currentUser?.id);
               return (
                 <div key={n.id} onClick={() => { markNotificationRead(n.id); setTimeout(() => deleteNotification(n.id), 300); }}
                   onTouchStart={e => { touchStartX.current = e.touches[0].clientX; e.currentTarget.style.transition = 'none'; }}
@@ -321,15 +321,45 @@ function AppContent() {
 
 import { ToastProvider } from './components/Toast';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('ErrorBoundary caught:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <h1 style={{ color: '#dc2626' }}>Algo salió mal</h1>
+          <p style={{ color: '#64748b' }}>La aplicación encontró un error inesperado.</p>
+          <pre style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '8px', fontSize: '0.8rem', color: '#475569', maxWidth: '600px', margin: '1rem auto', overflow: 'auto' }}>{this.state.error?.message}</pre>
+          <button onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }} style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', background: '#0d9488', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' }}>
+            Recargar página
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
-    <BrowserRouter>
-      <StoreProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
-      </StoreProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <StoreProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </StoreProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
