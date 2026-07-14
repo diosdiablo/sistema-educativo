@@ -741,9 +741,9 @@ if (studentsData?.length > 0) {
   const [notifications, setNotifications] = useState(() => loadData('edu_notifications', []));
   const [behavior, setBehavior] = useState(() => loadData('edu_behavior', []));
 
-  useEffect(() => { localStorage.setItem('edu_students', JSON.stringify(students)); }, [students]);
-  useEffect(() => { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); }, [attendance]);
-  useEffect(() => { localStorage.setItem('edu_period_dates', JSON.stringify(periodDates)); }, [periodDates]);
+  useEffect(() => { try { localStorage.setItem('edu_students', JSON.stringify(students)); } catch(e) { console.warn('localStorage edu_students error:', e.message); } }, [students]);
+  useEffect(() => { try { localStorage.setItem('edu_attendance', JSON.stringify(attendance)); } catch(e) { console.warn('localStorage edu_attendance error:', e.message); } }, [attendance]);
+  useEffect(() => { try { localStorage.setItem('edu_period_dates', JSON.stringify(periodDates)); } catch(e) { console.warn('localStorage edu_period_dates error:', e.message); } }, [periodDates]);
   useEffect(() => { try { localStorage.setItem('edu_grades', JSON.stringify(grades)); } catch(e) { console.warn('localStorage edu_grades error:', e.message); } }, [grades]);
   useEffect(() => { try { localStorage.setItem('edu_subjects', JSON.stringify(subjects)); } catch(e) { console.warn('localStorage edu_subjects error:', e.message); } }, [subjects]);
   useEffect(() => { try { localStorage.setItem('edu_classes', JSON.stringify(classes)); } catch(e) { console.warn('localStorage edu_classes error:', e.message); } }, [classes]);
