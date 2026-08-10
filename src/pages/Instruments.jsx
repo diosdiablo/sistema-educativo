@@ -345,10 +345,20 @@ export default function Instruments() {
       if (!list.length) { alert('El archivo no contiene instrumentos.'); return; }
 
       const validSubjectIds = new Set(subjects.map(s => s.id));
+      const existing = new Set(
+        (instruments || []).filter(i => i && i.title).map(i => `${i.title}__${i.type}`)
+      );
       const added = [];
+      const skipped = [];
       for (const item of list) {
         if (!item || !item.title) continue;
         const type = typeMap[item.type] ? item.type : 'checklist';
+        const key = `${item.title}__${type}`;
+        if (existing.has(key)) {
+          skipped.push(item.title);
+          continue;
+        }
+        existing.add(key);
         const rawCriteria = Array.isArray(item.criteria) ? item.criteria : [];
         const criteria = rawCriteria.length
           ? rawCriteria.map((c, idx) => ({
@@ -370,11 +380,18 @@ export default function Instruments() {
         await addInstrument({ title: item.title, type, criteria, subjectId, userId: currentUser?.id });
         added.push(item.title);
       }
-      if (!added.length) {
+      if (!added.length && !skipped.length) {
         alert('No se encontró ningún instrumento válido en el archivo.');
         return;
       }
-      alert(`${added.length} instrumento(s) importado(s):\n` + added.map(t => `• ${t}`).join('\n'));
+      let msg = added.length
+        ? `${added.length} instrumento(s) importado(s):\n` + added.map(t => `• ${t}`).join('\n')
+        : 'No se importó ningún instrumento nuevo.';
+      if (skipped.length) {
+        msg += `\n\nSe omitieron ${skipped.length} duplicado(s) (ya existen en el sistema)` +
+          (skipped.length <= 10 ? ':\n' + skipped.map(t => `• ${t}`).join('\n') : '');
+      }
+      alert(msg);
     } catch (err) {
       alert('Error al importar: ' + err.message);
     }
