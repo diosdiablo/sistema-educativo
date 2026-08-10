@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
 import { supabase } from '../lib/supabase';
 import { 
@@ -6,7 +6,7 @@ import {
   CheckSquare, BarChart2, Grid, ChevronLeft, 
   PlusCircle, Save, User, Activity, CheckCircle2,
   Dices, Users, Eye, BookOpen, FileText, MessageSquare, Star,
-  X, FileSearch, Edit2, CheckCircle as CheckCircleIcon, UserCheck
+  X, FileSearch, Edit2, CheckCircle as CheckCircleIcon, UserCheck, Upload
 } from 'lucide-react';
 
 // ─── Definición de tipos DCNEB ──────────────────────────────────────────────
@@ -178,6 +178,7 @@ export default function Instruments() {
   const [applyingInstrument, setApplyingInstrument] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const fileInputRef = useRef(null);
 
   const resetToList = () => {
     setView('list');
@@ -334,6 +335,49 @@ export default function Instruments() {
     setView('list');
     setApplyingInstrument(null);
     setTempGroups([]);
+  };
+
+  const handleImportInstruments = async (file) => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const list = Array.isArray(data) ? data : (data.instruments || []);
+      if (!list.length) { alert('El archivo no contiene instrumentos.'); return; }
+
+      const validSubjectIds = new Set(subjects.map(s => s.id));
+      const added = [];
+      for (const item of list) {
+        if (!item || !item.title) continue;
+        const type = typeMap[item.type] ? item.type : 'checklist';
+        const rawCriteria = Array.isArray(item.criteria) ? item.criteria : [];
+        const criteria = rawCriteria.length
+          ? rawCriteria.map((c, idx) => ({
+              id: `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
+              text: typeof c === 'string' ? c : (c.text || ''),
+              descriptors: c && typeof c === 'object' ? {
+                AD: c.descriptors?.AD || '',
+                A: c.descriptors?.A || '',
+                B: c.descriptors?.B || '',
+                C: c.descriptors?.C || ''
+              } : { AD: '', A: '', B: '', C: '' }
+            }))
+          : [{ id: `${Date.now()}-0`, text: '', descriptors: { AD: '', A: '', B: '', C: '' } }];
+        const subjectId = validSubjectIds.has(item.subjectId)
+          ? item.subjectId
+          : item.subjectName
+            ? (subjects.find(s => s.name?.toLowerCase() === String(item.subjectName).toLowerCase())?.id || undefined)
+            : undefined;
+        await addInstrument({ title: item.title, type, criteria, subjectId, userId: currentUser?.id });
+        added.push(item.title);
+      }
+      if (!added.length) {
+        alert('No se encontró ningún instrumento válido en el archivo.');
+        return;
+      }
+      alert(`${added.length} instrumento(s) importado(s):\n` + added.map(t => `• ${t}`).join('\n'));
+    } catch (err) {
+      alert('Error al importar: ' + err.message);
+    }
   };
 
   const handleEditInstrument = (ins) => {
@@ -1493,17 +1537,48 @@ export default function Instruments() {
               <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Crea y aplica herramientas según el DCNEB</p>
             </div>
           </div>
-          <button className="btn-primary" onClick={() => setView('create')} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            background: 'white',
-            color: '#8b5cf6',
-            border: 'none',
-            fontWeight: 600
-          }}>
-            <Plus size={18} /> Nuevo Instrumento
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImportInstruments(f);
+                e.target.value = '';
+              }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255,255,255,0.15)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.4)',
+                borderRadius: '10px',
+                padding: '0.6rem 1rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                backdropFilter: 'blur(4px)'
+              }}
+            >
+              <Upload size={18} /> Importar JSON
+            </button>
+            <button className="btn-primary" onClick={() => setView('create')} style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              background: 'white',
+              color: '#8b5cf6',
+              border: 'none',
+              fontWeight: 600
+            }}>
+              <Plus size={18} /> Nuevo Instrumento
+            </button>
+          </div>
         </div>
       </div>
 
