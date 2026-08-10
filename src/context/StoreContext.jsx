@@ -129,6 +129,18 @@ export const StoreProvider = ({ children }) => {
     if (isOnline) {
       const loadData = async () => {
         setSyncStatus('syncing');
+        supabase.from('instruments').select('*').then(({ data, error }) => {
+          if (error || !data?.length) return;
+          try {
+            setInstruments(data.map(i => ({
+              ...i,
+              instrumentId: i.instrument_id,
+              subjectId: i.subject_id,
+              classId: i.class_id,
+              criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
+            })));
+          } catch { /* noop */ }
+        });
         try {
           const [
             { data: studentsData },
