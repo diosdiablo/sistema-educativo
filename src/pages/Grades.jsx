@@ -169,6 +169,8 @@ export default function Grades() {
     return new Set();
   });
   const [quickAzarHighlighted, setQuickAzarHighlighted] = useState(null);
+  const [quickAzarTotal, setQuickAzarTotal] = useState(0);
+  const prevClassRef = useRef('');
   const WHEEL_COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6','#e11d48','#0891b2'];
 
   // Instruments added on-the-fly per competency via the "+" button
@@ -177,7 +179,14 @@ export default function Grades() {
   const [pickerCompetencyId, setPickerCompetencyId] = useState(null);
   const [renamingColumn, setRenamingColumn] = useState(null); // { competencyId, instrumentId, name } | null
 
-  useEffect(() => { setQuickAzarPicked(new Set()); localStorage.removeItem('edu_azar_picked'); }, [selectedClass]);
+  // Reset del ciclo solo al CAMBIAR de clase (no en el montaje, para que persista con localStorage)
+  useEffect(() => {
+    if (prevClassRef.current && prevClassRef.current !== selectedClass) {
+      setQuickAzarPicked(new Set());
+      localStorage.removeItem('edu_azar_picked');
+    }
+    prevClassRef.current = selectedClass;
+  }, [selectedClass]);
   useEffect(() => { try { localStorage.setItem('edu_azar_picked', JSON.stringify({ ids: [...quickAzarPicked], ts: Date.now() })); } catch {} }, [quickAzarPicked]);
 
   // Función para obtener la posición del tooltip en hover
@@ -730,7 +739,7 @@ export default function Grades() {
             <button onClick={() => {
               const all = [...filteredStudents];
               if (all.length === 0) return;
-              setQuickAzarStudents(all);
+              setQuickAzarTotal(all.length);
               // Filter out already picked students for fair cycle
               let unpicked = all.filter(s => !quickAzarPicked.has(s.id));
               if (unpicked.length === 0) {
@@ -738,9 +747,11 @@ export default function Grades() {
                 setQuickAzarPicked(new Set());
                 unpicked = [...all];
               }
+              // La ruleta solo muestra los estudiantes que faltan por sortear
+              setQuickAzarStudents(unpicked);
               const winner = unpicked[Math.floor(Math.random() * unpicked.length)];
-              const n = all.length;
-              const idx = all.findIndex(s => s.id === winner.id);
+              const n = unpicked.length;
+              const idx = unpicked.findIndex(s => s.id === winner.id);
               const seg = 360 / n;
               const target = 360 * 5 + (360 - idx * seg - seg / 2);
               setQuickAzarWinner(winner);
@@ -1949,6 +1960,7 @@ export default function Grades() {
         const azarStudents = quickAzarStudents;
         const n = azarStudents.length;
         const pickedCount = quickAzarPicked.size;
+        const total = quickAzarTotal || n;
         const seg = n > 0 ? 360 / n : 360;
         const wheelSize = Math.min(window.innerWidth * 0.9, 520);
         const fontSize = n <= 8 ? '0.9rem' : n <= 15 ? '0.75rem' : n <= 25 ? '0.65rem' : '0.55rem';
@@ -2017,14 +2029,14 @@ export default function Grades() {
                 <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
                 <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.35rem' }}>{pickedCount}/{n} alumnos sorteados</div>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.35rem' }}>{pickedCount}/{total} alumnos sorteados</div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                   <button onClick={() => setQuickAzarOpen(false)} style={{
                     padding: '0.6rem 1.5rem', borderRadius: '10px',
                     border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)',
                     color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                   }}>OK</button>
-                  {pickedCount >= n && (
+                  {pickedCount >= total && (
                     <button onClick={() => { setQuickAzarPicked(new Set()); setQuickAzarOpen(false); }} style={{
                       padding: '0.6rem 1.5rem', borderRadius: '10px',
                       border: '1px solid #e2e8f0', background: 'white',
