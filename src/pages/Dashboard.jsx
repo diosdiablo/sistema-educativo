@@ -243,8 +243,26 @@ export default function Dashboard() {
     const today = new Date();
     const todayMonth = today.getMonth();
     const todayDay = today.getDate();
+
+    const parseDate = (dateStr) => {
+      if (!dateStr) return null;
+      // Try ISO format: YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return new Date(dateStr);
+      // Try DD/MM/YYYY or DD-MM-YYYY
+      const match = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (match) return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+      // Try DD/MM/YY
+      const match2 = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/);
+      if (match2) {
+        const year = parseInt(match2[3]) + (parseInt(match2[3]) > 50 ? 1900 : 2000);
+        return new Date(year, parseInt(match2[2]) - 1, parseInt(match2[1]));
+      }
+      return null;
+    };
+
     const withBirthday = students.filter(s => s.birthDate).map(s => {
-      const bd = new Date(s.birthDate);
+      const bd = parseDate(s.birthDate);
+      if (!bd || isNaN(bd.getTime())) return null;
       const month = bd.getMonth();
       const day = bd.getDate();
       const isToday = month === todayMonth && day === todayDay;
@@ -252,7 +270,8 @@ export default function Dashboard() {
       if (nextBirthday < today) nextBirthday.setFullYear(today.getFullYear() + 1);
       const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
       return { ...s, month, day, isToday, daysUntil };
-    });
+    }).filter(Boolean);
+
     const todayBirthdays = withBirthday.filter(s => s.isToday);
     const thisWeek = withBirthday.filter(s => s.daysUntil <= 7 && !s.isToday);
     const thisMonth = withBirthday.filter(s => s.month === todayMonth && !s.isToday);
@@ -642,6 +661,7 @@ export default function Dashboard() {
                     padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b'
                   }}>
                     {student.name}
+                    {student.gradeLevel && <span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#92400e', marginLeft: '0.5rem' }}>{student.gradeLevel}</span>}
                   </div>
                 ))}
               </div>
@@ -657,6 +677,7 @@ export default function Dashboard() {
                     padding: '0.4rem 0.85rem', fontSize: '0.8rem', border: '1px solid rgba(236, 72, 153, 0.15)'
                   }}>
                     <span style={{ fontWeight: 600 }}>{student.name}</span>
+                    {student.gradeLevel && <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#9d174d', marginLeft: '0.35rem', opacity: 0.7 }}>{student.gradeLevel}</span>}
                     <span style={{ color: '#db2777', marginLeft: '0.4rem', fontWeight: 600, fontSize: '0.75rem' }}>
                       {student.daysUntil === 1 ? 'Manana!' : `En ${student.daysUntil} dias`}
                     </span>
