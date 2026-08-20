@@ -720,7 +720,7 @@ export default function Dashboard() {
                 const startTime = item.time.split(' - ')[0];
                 const [h, m] = startTime.split(':').map(Number);
                 const classTime = h < 7 ? (h + 12) * 60 + m : h * 60 + m;
-                const isPast = classTime < now;
+                const isPast = classTime + 15 < now;
                 return (
                   <motion.div
                     key={idx}
