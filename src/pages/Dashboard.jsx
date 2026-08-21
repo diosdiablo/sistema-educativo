@@ -739,7 +739,7 @@ export default function Dashboard() {
                         {subjectName && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{subjectName}</div>}
                       </div>
                     </div>
-                    {!isPast && (
+                    {!isPast ? (
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -752,6 +752,15 @@ export default function Dashboard() {
                       >
                         <CalendarCheck size={12} /> Asistencia
                       </motion.button>
+                    ) : (
+                      <div style={{
+                        padding: '0.4rem 0.85rem', background: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px',
+                        color: '#059669', fontSize: '0.7rem', fontWeight: 600,
+                        display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer'
+                      }} onClick={() => navigate(`/attendance?class=${encodeURIComponent(className)}`)}>
+                        <CheckCircle size={12} /> Asistencia registrada
+                      </div>
                     )}
                   </motion.div>
                 );
