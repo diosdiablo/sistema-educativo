@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Clock, X, Save, Edit3, User, Calendar, LayoutGrid } from 'lucide-react';
+import { Plus, Trash2, X, Save, User, LayoutGrid } from 'lucide-react';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 const TIMES = [
@@ -21,7 +21,7 @@ export default function Schedule() {
     time: TIMES[0],
     classId: '',
     subjectId: '',
-    color: '#10b981',
+    color: '#039BE5',
     userId: ''
   });
 
@@ -66,7 +66,7 @@ export default function Schedule() {
         time: item.time,
         classId: item.classId,
         subjectId: item.subjectId,
-        color: item.color || '#10b981',
+        color: item.color || '#039BE5',
         userId: item.userId
       });
     } else {
@@ -76,7 +76,7 @@ export default function Schedule() {
         time,
         classId: '',
         subjectId: '',
-        color: '#10b981',
+        color: '#039BE5',
         userId: selectedUserId === 'all' ? '' : viewedUser?.id || currentUser?.id
       });
     }
@@ -109,158 +109,115 @@ export default function Schedule() {
   };
 
   const colors = [
-    { name: 'Esmeralda',   value: '#10b981' },
-    { name: 'Verde Lima',  value: '#84cc16' },
-    { name: 'Bosque',      value: '#16a34a' },
-    { name: 'Menta',       value: '#2dd4bf' },
-    { name: 'Azul',        value: '#3b82f6' },
-    { name: 'Celeste',     value: '#38bdf8' },
-    { name: 'Índigo',      value: '#6366f1' },
-    { name: 'Marino',      value: '#1d4ed8' },
-    { name: 'Violeta',     value: '#8b5cf6' },
-    { name: 'Malva',       value: '#a855f7' },
-    { name: 'Rosa',        value: '#ec4899' },
-    { name: 'Fucsia',      value: '#e879f9' },
-    { name: 'Rojo',        value: '#ef4444' },
-    { name: 'Coral',       value: '#f97316' },
-    { name: 'Ámbar',       value: '#f59e0b' },
-    { name: 'Amarillo',    value: '#eab308' },
-    { name: 'Slate',       value: '#64748b' },
-    { name: 'Gris Azul',   value: '#4b6a8a' },
-    { name: 'Cobre',       value: '#c2410c' },
-    { name: 'Lima Oscuro', value: '#65a30d' },
+    { name: 'Tomate',     value: '#D50000' },
+    { name: 'Flamenco',   value: '#E67C73' },
+    { name: 'Mandarina',  value: '#F4511E' },
+    { name: 'Banana',     value: '#F6BF26' },
+    { name: 'Salvia',     value: '#33B679' },
+    { name: 'Albahaca',   value: '#0B8043' },
+    { name: 'Pavo Real',  value: '#039BE5' },
+    { name: 'Arándano',   value: '#3F51B5' },
+    { name: 'Uva',        value: '#8E24AA' },
+    { name: 'Lavanda',    value: '#7986CB' },
+    { name: 'Grafito',    value: '#616161' },
   ];
-
-  const headerGradient = ['#06b6d4', '#0891b2'];
 
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Toolbar */}
       <div style={{
-        background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #22d3ee 100%)',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
-        marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: '0.75rem',
+        background: 'white', border: '1px solid #dadce0', borderRadius: '12px',
+        padding: '1rem 1.5rem', marginBottom: '0.75rem'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em' }}>
+            Horario Escolar
+          </h2>
+          <p style={{ fontSize: '0.82rem', color: '#5f6368', margin: '0.15rem 0 0 0' }}>
+            {isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase'}
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {isAdmin && (
             <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)'
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: 'white', padding: '0.45rem 0.9rem',
+              borderRadius: '20px', border: '1px solid #dadce0'
             }}>
-              <Calendar size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Horario Escolar</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>
-                {isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase'}
-              </p>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            {isAdmin && (
-              <div style={{ 
-                display: 'flex', alignItems: 'center', gap: '0.5rem', 
-                background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', 
-                borderRadius: '12px', border: '1px solid rgba(255,255,255,0.3)',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <User size={18} />
-                <select 
-                  value={selectedUserId} 
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  style={{ 
-                    background: 'transparent', border: 'none', color: 'white', 
-                    outline: 'none', fontWeight: 600, fontSize: '0.9rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="all" style={{ color: '#1e293b' }}>Todos los Docentes</option>
-                  <option value={currentUser.id} style={{ color: '#1e293b' }}>Mi Horario (Admin)</option>
-                  {teachers.map(t => (
-                    <option key={t.id} value={t.id} style={{ color: '#1e293b' }}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <button 
-                style={{ 
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'white', color: '#0891b2', border: 'none',
-                  padding: '0.75rem 1.25rem', borderRadius: '12px', fontWeight: 600, 
-                  cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                  transition: 'all 0.3s ease'
+              <User size={16} color="#5f6368" />
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                style={{
+                  background: 'transparent', border: 'none', color: '#3c4043',
+                  outline: 'none', fontWeight: 500, fontSize: '0.85rem',
+                  cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
-                onClick={() => handleOpenModal()}
               >
-                <Plus size={18} /> Agregar Bloque
-              </button>
-          </div>
+                <option value="all">Todos los Docentes</option>
+                <option value={currentUser.id}>Mi Horario (Admin)</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <button
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              background: 'white', color: '#3c4043', border: '1px solid #dadce0',
+              padding: '0.55rem 1.1rem', borderRadius: '20px', fontWeight: 500,
+              cursor: 'pointer', fontSize: '0.85rem',
+              boxShadow: '0 1px 2px rgba(60,64,67,0.15)',
+              transition: 'box-shadow 0.2s ease, background 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'white'; }}
+            onClick={() => handleOpenModal()}
+          >
+            <Plus size={18} /> Agregar Bloque
+          </button>
         </div>
       </div>
 
-      {/* Grid de horario moderno */}
+      {/* Grid de horario */}
       <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <div style={{ 
-          borderRadius: '20px', 
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          background: 'white'
+        <div style={{
+          borderRadius: '12px',
+          border: '1px solid #dadce0',
+          background: 'white',
+          overflow: 'hidden'
         }}>
-        <table className="styled-table" style={{ tableLayout: 'fixed', minWidth: '1000px' }}>
+        <table style={{ tableLayout: 'fixed', minWidth: '1000px', width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th style={{ 
-                width: '150px', 
-                background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', 
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                padding: '1rem'
+              <th style={{
+                width: '110px',
+                borderBottom: '1px solid #dadce0',
+                color: '#70757a',
+                fontWeight: 500,
+                fontSize: '0.72rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                padding: '0.7rem 0.5rem',
+                textAlign: 'center'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                  <Clock size={16} />
-                  Hora
-                </div>
+                Hora
               </th>
               {DAYS.map((day, idx) => (
-                <th key={day} style={{ 
+                <th key={day} style={{
                   textAlign: 'center',
-                  background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem'
+                  borderBottom: '1px solid #dadce0',
+                  borderLeft: idx > 0 ? '1px solid #dadce0' : 'none',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.78rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.7rem 0.5rem'
                 }}>
                   {day}
                 </th>
@@ -268,91 +225,114 @@ export default function Schedule() {
             </tr>
           </thead>
           <tbody>
-            {TIMES.map(time => (
-              <tr key={time} style={{ height: time.includes('DESCANSO') ? '40px' : '100px' }}>
-                <td style={{ 
-                  fontWeight: 600, 
-                  fontSize: '0.8rem', 
-                  backgroundColor: '#f8fafc',
-                  color: time.includes('DESCANSO') ? 'var(--text-secondary)' : 'var(--text-primary)',
-                  textAlign: 'center'
-                }}>
-                  {time}
-                </td>
+            {TIMES.map(time => {
+              const isBreak = time.includes('DESCANSO');
+              if (isBreak) {
+                return (
+                  <tr key={time} style={{ height: '36px' }}>
+                    <td style={{
+                      fontSize: '0.68rem', fontWeight: 400, color: '#70757a',
+                      backgroundColor: '#f8f9fa', textAlign: 'center',
+                      borderTop: '1px solid #dadce0'
+                    }}>{time}</td>
+                    <td colSpan={DAYS.length} style={{
+                      backgroundColor: '#f8f9fa', textAlign: 'center',
+                      fontSize: '0.66rem', color: '#bdc1c6', fontStyle: 'italic',
+                      letterSpacing: '0.1em', borderTop: '1px solid #dadce0'
+                    }}>D E S C A N S O</td>
+                  </tr>
+                );
+              }
+              return (
+                <tr key={time} style={{ height: '92px' }}>
+                  <td style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 400,
+                    color: '#70757a',
+                    textAlign: 'center',
+                    verticalAlign: 'middle',
+                    borderTop: '1px solid #dadce0'
+                  }}>
+                    {time}
+                  </td>
                 {DAYS.map(day => {
                   const item = getSlotContent(day, time);
-                  const isBreak = time.includes('DESCANSO');
-                  
-                  if (isBreak) {
-                    return <td key={day} style={{ backgroundColor: '#f1f5f9', textAlign: 'center' }}></td>;
-                  }
+                  const readOnly = isAdmin && selectedUserId === 'all';
 
                   return (
-                    <td 
-                      key={day} 
+                    <td
+                      key={day}
                       onClick={() => {
-                        if (isAdmin && selectedUserId === 'all') return;
+                        if (readOnly) return;
                         handleOpenModal(day, time, item);
                       }}
-                      style={{ 
-                        cursor: (isAdmin && selectedUserId === 'all') ? 'default' : 'pointer',
-                        padding: '6px',
-                        transition: 'all 0.2s'
+                      style={{
+                        cursor: readOnly ? 'default' : 'pointer',
+                        padding: '3px',
+                        verticalAlign: 'top',
+                        borderTop: '1px solid #dadce0',
+                        transition: 'background 0.15s ease'
                       }}
+                      onMouseEnter={e => { if (!item && !readOnly) e.currentTarget.style.background = '#f8f9fa'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
                     >
                       {item ? (
-                        <div style={{ 
-                          backgroundColor: item.color, 
-                          color: 'white', 
-                          padding: '10px', 
-                          borderRadius: '12px',
+                        <div style={{
+                          backgroundColor: item.color,
+                          color: 'white',
+                          padding: '6px 8px',
+                          borderRadius: '6px',
                           display: 'flex',
                           flexDirection: 'column',
+                          gap: '1px',
                           height: '100%',
                           justifyContent: 'center',
-                          alignItems: 'center',
-                          textAlign: 'center',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          position: 'relative'
-                        }}>
+                          boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
+                          transition: 'filter 0.15s ease'
+                        }}
+                          onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.88)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
+                        >
                           {isAdmin && selectedUserId === 'all' && (
-                            <span style={{ fontSize: '0.6rem', opacity: 0.9, fontWeight: 700, marginBottom: '2px' }}>
-                              👤 {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
+                            <span style={{ fontSize: '0.6rem', opacity: 0.85, fontWeight: 500, marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2, textAlign: 'center', display: 'block' }}>
+                          <span style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.25, letterSpacing: '0.02em', display: 'block' }}>
                             {item.classId === '__ATENCION__' ? 'ATENCION AL PADRE DE FAMILIA' : item.classId === '__TRABAJO__' ? 'TRABAJO COLEGIADO' : classes.find(c => c.id === item.classId)?.name || 'Grado...'}
                           </span>
                           {(item.classId !== '__ATENCION__' && item.classId !== '__TRABAJO__') && (
-                            <span style={{ fontSize: '0.8rem', fontWeight: 500, lineHeight: 1.2, textAlign: 'center', display: 'block' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 500, lineHeight: 1.2, opacity: 0.95, display: 'block' }}>
                               {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
                             </span>
                           )}
                         </div>
                       ) : (
-                        !(isAdmin && selectedUserId === 'all') && (
-                          <div style={{ 
-                            height: '100%', 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        !readOnly && (
+                          <div style={{
+                            height: '100%',
+                            minHeight: '60px',
+                            display: 'flex',
+                            alignItems: 'center',
                             justifyContent: 'center',
-                            border: '2px dashed #e2e8f0',
-                            borderRadius: '12px',
-                            color: '#cbd5e1',
-                            transition: 'all 0.2s ease'
+                            border: '1px dashed #dadce0',
+                            borderRadius: '6px',
+                            color: '#bdc1c6',
+                            transition: 'border-color 0.15s ease, color 0.15s ease'
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#06b6d4'; e.currentTarget.style.color = '#06b6d4'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#cbd5e1'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.color = '#1a73e8'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#dadce0'; e.currentTarget.style.color = '#bdc1c6'; }}
                           >
-                            <Plus size={20} />
+                            <Plus size={18} />
                           </div>
                         )
                       )}
                     </td>
                   );
                 })}
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         </div>
@@ -366,20 +346,13 @@ export default function Schedule() {
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '4rem 1rem', zIndex: 1100
         }}>
-          <div style={{ 
-            maxWidth: '480px', width: '100%', 
-            background: 'white', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+          <div style={{
+            maxWidth: '480px', width: '100%',
+            background: 'white', borderRadius: '16px', padding: '2rem',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: `${formData.color}20`,
-              borderRadius: '50%'
-            }} />
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
                   width: '48px',
@@ -526,16 +499,16 @@ export default function Schedule() {
                     <Trash2 size={18} /> Eliminar
                   </button>
                 )}
-                <button 
-                  type="submit" 
-                  style={{ 
+                <button
+                  type="submit"
+                  style={{
                     flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     background: formData.color, color: 'white', border: 'none',
-                    padding: '0.75rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 600,
-                    transition: 'all 0.3s ease'
+                    padding: '0.7rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 500,
+                    transition: 'filter 0.15s ease'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${formData.color}40`; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.9)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
                 >
                   <Save size={18} /> {editingItem ? 'Actualizar' : 'Guardar'}
                 </button>
