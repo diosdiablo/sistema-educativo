@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, Edit2, Check, Eye, X, Filter, Search, ChevronDown, Users, GraduationCap, UserCheck, Calendar, Phone, MapPin, FileText, Save, Shuffle, ExternalLink, Camera, Cloud, WifiOff } from 'lucide-react';
+import { Plus, Trash2, Upload, Edit2, X, Search, Users, GraduationCap, UserCheck, Save, Shuffle, ExternalLink, Camera } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { supabase } from '../lib/supabase';
 
@@ -20,7 +20,6 @@ export default function Students() {
   const [viewingStudent, setViewingStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('Todos');
-  const [isFilterHovered, setIsFilterHovered] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showRandomModal, setShowRandomModal] = useState(false);
   const [randomStudent, setRandomStudent] = useState(null);
@@ -211,269 +210,194 @@ export default function Students() {
     return classes.filter(c => assignedClassNames.includes(c.name));
   }, [isAdmin, classes, assignedClassNames]);
 
-  const gradientColors = [
-    ['#22c55e', '#16a34a'],
-    ['#3b82f6', '#2563eb'],
-    ['#f59e0b', '#d97706'],
-    ['#ef4444', '#dc2626'],
-    ['#8b5cf6', '#7c3aed'],
-    ['#ec4899', '#db2777']
+  const classTints = [
+    ['#e6f4ea', '#188038'],
+    ['#e8f0fe', '#1967d2'],
+    ['#fef7e0', '#b06000'],
+    ['#fce8e6', '#c5221f'],
+    ['#f3e8fd', '#7627bb'],
+    ['#e4f7fb', '#007b83']
   ];
 
   return (
     <>
       <div className="animate-fade-in">
-        {/* Header con gradiente */}
+        {/* Barra de herramientas */}
         <div style={{
-          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #4ade80 100%)',
-          borderRadius: '20px',
-          padding: '2rem 2.5rem',
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '1rem 1.5rem',
           marginBottom: '1.5rem',
-          color: 'white',
-          position: 'relative',
-          overflow: 'hidden'
+          border: '1px solid #dadce0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          flexWrap: 'wrap'
         }}>
-          <div style={{
-            position: 'absolute',
-            top: '-50%',
-            right: '-10%',
-            width: '300px',
-            height: '300px',
-            background: 'rgba(255,255,255,0.1)',
-            borderRadius: '50%'
-          }} />
-          <div style={{
-            position: 'absolute',
-            bottom: '-30%',
-            left: '-5%',
-            width: '200px',
-            height: '200px',
-            background: 'rgba(255,255,255,0.05)',
-            borderRadius: '50%'
-          }} />
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{
-                width: '56px',
-                height: '56px',
-                background: 'rgba(255,255,255,0.2)',
-                borderRadius: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <Users size={28} />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Estudiantes</h2>
-                <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona el registro de alumnos</p>
-              </div>
-            </div>
-            
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              {isAdmin && students.length > 0 && (
-                <button 
-                  onClick={handleClearAll}
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
-                    padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-                    backdropFilter: 'blur(10px)', transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                  <Trash2 size={18} /> Vaciar
-                </button>
-              )}
-
-              <button 
-                onClick={pickRandomStudent}
-                disabled={filteredStudents.length === 0}
-                style={{ 
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'rgba(255,255,255,0.2)', color: filteredStudents.length === 0 ? 'rgba(255,255,255,0.5)' : 'white', border: '1px solid rgba(255,255,255,0.3)',
-                  padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: filteredStudents.length === 0 ? 'not-allowed' : 'pointer',
-                  backdropFilter: 'blur(10px)', transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => { if (filteredStudents.length > 0) { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-              >
-                <Shuffle size={18} /> Sorteo
-              </button>
-
-              <input 
-                type="file" 
-                accept=".xlsx, .xls" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
-                onChange={handleFileUpload}
-              />
-              {isAdmin && (
-                <button 
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
-                    padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-                    backdropFilter: 'blur(10px)', transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload size={18} /> Excel
-                </button>
-              )}
-              
-              {isAdmin && (
-                <button 
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    background: 'white', color: '#16a34a', border: 'none',
-                    padding: '0.75rem 1.25rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-                    transition: 'all 0.3s ease', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
-                  onClick={() => setShowForm(!showForm)}
-                >
-                  <Plus size={18} /> Nuevo
-                </button>
-              )}
-
-              <div style={{ 
-                marginLeft: '0.5rem',
-                paddingLeft: '1rem',
-                borderLeft: '1px solid rgba(255,255,255,0.3)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px'
-              }}>
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Filtrar
-                </span>
-                <div 
-                  style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
-                  onMouseEnter={() => setIsFilterHovered(true)}
-                  onMouseLeave={() => setIsFilterHovered(false)}
-                >
-                  <Filter size={14} style={{ 
-                    position: 'absolute', 
-                    left: '12px', 
-                    color: isFilterHovered ? '#16a34a' : '#22c55e', 
-                    pointerEvents: 'none'
-                  }} />
-                  <select 
-                    className="input-field" 
-                    style={{ 
-                      paddingLeft: '2.5rem', 
-                      minWidth: '180px', 
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      background: 'rgba(255,255,255,0.9)',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      fontSize: '0.85rem'
-                    }}
-                    value={filterClass}
-                    onChange={e => setFilterClass(e.target.value)}
-                  >
-                    <option value="Todos">{isAdmin ? 'Todos los grados' : 'Mis grados'}</option>
-                    {availableClassesForFilter.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div style={{ 
-                marginLeft: '0.5rem',
-                paddingLeft: '1rem',
-                borderLeft: '1px solid rgba(255,255,255,0.3)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px'
-              }}>
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Buscar
-                </span>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <Search size={14} style={{ 
-                    position: 'absolute', 
-                    left: '12px', 
-                    color: '#94a3b8',
-                    pointerEvents: 'none'
-                  }} />
-                  <input
-                    type="text"
-                    placeholder="Nombre o DNI..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="input-field"
-                    style={{
-                      paddingLeft: '2.5rem',
-                      minWidth: '200px',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      background: 'rgba(255,255,255,0.9)',
-                      fontWeight: 500,
-                      fontSize: '0.85rem'
-                    }}
-                  />
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm('')}
-                      style={{
-                        position: 'absolute', right: '8px',
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: '#94a3b8', padding: '4px'
-                      }}
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+          <div style={{ marginRight: 'auto' }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Estudiantes</h2>
+            <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: '#5f6368' }}>Gestiona el registro de alumnos</p>
           </div>
+
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={14} style={{
+              position: 'absolute',
+              left: '12px',
+              color: '#9aa0a6',
+              pointerEvents: 'none'
+            }} />
+            <input
+              type="text"
+              placeholder="Nombre o DNI..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{
+                paddingLeft: '2.2rem',
+                paddingRight: searchTerm ? '2rem' : '1rem',
+                minWidth: '190px',
+                paddingTop: '0.55rem',
+                paddingBottom: '0.55rem',
+                borderRadius: '20px',
+                border: '1px solid #dadce0',
+                background: '#ffffff',
+                fontWeight: 500,
+                fontSize: '0.85rem',
+                color: '#3c4043',
+                outline: 'none'
+              }}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                style={{
+                  position: 'absolute', right: '8px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#9aa0a6', padding: '4px'
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={filterClass}
+            onChange={e => setFilterClass(e.target.value)}
+            aria-label="Filtrar por grado"
+            style={{
+              padding: '0.55rem 1rem',
+              borderRadius: '20px',
+              border: '1px solid #dadce0',
+              background: '#ffffff',
+              fontWeight: 500,
+              fontSize: '0.85rem',
+              color: '#3c4043',
+              cursor: 'pointer',
+              outline: 'none',
+              minWidth: '150px'
+            }}
+          >
+            <option value="Todos">{isAdmin ? 'Todos los grados' : 'Mis grados'}</option>
+            {availableClassesForFilter.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+          </select>
+
+          {isAdmin && students.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: '#ffffff', color: '#d93025', border: '1px solid #dadce0',
+                padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem'
+              }}
+            >
+              <Trash2 size={16} /> Vaciar
+            </button>
+          )}
+
+          <button
+            onClick={pickRandomStudent}
+            disabled={filteredStudents.length === 0}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: '#ffffff', color: filteredStudents.length === 0 ? '#9aa0a6' : '#3c4043', border: '1px solid #dadce0',
+              padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, cursor: filteredStudents.length === 0 ? 'not-allowed' : 'pointer', fontSize: '0.875rem'
+            }}
+          >
+            <Shuffle size={16} /> Sorteo
+          </button>
+
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileUpload}
+          />
+          {isAdmin && (
+            <button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: '#ffffff', color: '#3c4043', border: '1px solid #dadce0',
+                padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem'
+              }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload size={16} /> Excel
+            </button>
+          )}
+
+          {isAdmin && (
+            <button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: '#1a73e8', color: 'white', border: 'none',
+                padding: '0.55rem 1.25rem', borderRadius: '20px', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem'
+              }}
+              onClick={() => setShowForm(!showForm)}
+            >
+              <Plus size={16} /> Nuevo
+            </button>
+          )}
         </div>
 
-        {/* Formulario moderno */}
+        {/* Formulario */}
         {showForm && (
           <div style={{
             background: 'white',
-            borderRadius: '20px',
+            borderRadius: '12px',
             padding: '1.5rem',
             marginBottom: '1.5rem',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            border: isEditing ? '2px solid #22c55e' : '1px solid rgba(34, 197, 94, 0.2)'
+            border: '1px solid #dadce0'
           }} className="animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
                   width: '40px',
                   height: '40px',
-                  borderRadius: '10px',
-                  background: isEditing ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  borderRadius: '50%',
+                  background: isEditing ? '#fef7e0' : '#e6f4ea',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {isEditing ? <Edit2 size={20} color="white" /> : <UserCheck size={20} color="white" />}
+                  {isEditing ? <Edit2 size={20} color="#b06000" /> : <UserCheck size={20} color="#188038" />}
                 </div>
                 <div>
-                  <h3 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>{isEditing ? 'Editar Estudiante' : 'Agregar Estudiante'}</h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Ingresa los datos del alumno</p>
+                  <h3 style={{ fontWeight: 500, margin: 0, fontSize: '1.1rem', color: '#3c4043' }}>{isEditing ? 'Editar Estudiante' : 'Agregar Estudiante'}</h3>
+                  <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>Ingresa los datos del alumno</p>
                 </div>
               </div>
               {isEditing && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={resetForm}
-                  style={{ 
-                    padding: '0.5rem 1rem', 
-                    borderRadius: '8px',
-                    background: '#f1f5f9',
-                    border: '1px solid #e2e8f0',
-                    color: 'var(--text-secondary)',
-                    fontWeight: 600,
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '20px',
+                    background: '#ffffff',
+                    border: '1px solid #dadce0',
+                    color: '#5f6368',
+                    fontWeight: 500,
                     cursor: 'pointer',
                     fontSize: '0.85rem'
                   }}
@@ -554,12 +478,12 @@ export default function Students() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
                   <div style={{
                     width: '80px', height: '80px', borderRadius: '50%',
-                    background: newStudent.photo_url ? `url(${newStudent.photo_url}) center/cover` : '#f1f5f9',
-                    border: '2px dashed #cbd5e1',
+                    background: newStudent.photo_url ? `url(${newStudent.photo_url}) center/cover` : '#f1f3f4',
+                    border: '2px dashed #dadce0',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     overflow: 'hidden', flexShrink: 0
                   }}>
-                    {!newStudent.photo_url && <Camera size={24} color="#94a3b8" />}
+                    {!newStudent.photo_url && <Camera size={24} color="#9aa0a6" />}
                   </div>
                   <div style={{ flex: 1 }}>
                     <input
@@ -597,12 +521,12 @@ export default function Students() {
                     <label htmlFor="student-photo-input" style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                       padding: '0.6rem 1rem', borderRadius: '10px',
-                      background: '#f1f5f9', border: '1px solid #e2e8f0',
-                      cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', color: '#64748b'
+                      background: '#f1f3f4', border: '1px solid #dadce0',
+                      cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem', color: '#5f6368'
                     }}>
                       {photoUploading ? (
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span className="spinner" style={{ width: 14, height: 14, border: '2px solid #e2e8f0', borderTopColor: '#22c55e', borderRadius: '50%', display: 'inline-block' }} /> Subiendo...
+                          <span className="spinner" style={{ width: 14, height: 14, border: '2px solid #dadce0', borderTopColor: '#188038', borderRadius: '50%', display: 'inline-block' }} /> Subiendo...
                         </span>
                       ) : (
                         <><Camera size={16} /> {newStudent.photo_url ? 'Cambiar foto' : 'Subir foto'}</>
@@ -611,8 +535,8 @@ export default function Students() {
                     {newStudent.photo_url && (
                       <button type="button" onClick={() => setNewStudent(prev => ({...prev, photo_url: ''}))} style={{
                         marginLeft: '0.5rem', padding: '0.6rem 1rem', borderRadius: '10px',
-                        background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                        cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', color: '#ef4444'
+                        background: '#fce8e6', border: 'none',
+                        cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem', color: '#d93025'
                       }}>
                         Quitar
                       </button>
@@ -620,8 +544,8 @@ export default function Students() {
                   </div>
                 </div>
               </div>
-              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                <h4 style={{ marginBottom: '1rem', color: '#22c55e', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #dadce0', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                <h4 style={{ marginBottom: '1rem', color: '#188038', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <UserCheck size={18} /> Información del Apoderado
                 </h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -660,16 +584,16 @@ export default function Students() {
               </div>
             </div>
             <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-              <button 
+              <button
                 type="submit"
                 onClick={handleSubmit}
                 style={{
-                  background: isEditing ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  background: isEditing ? '#e37400' : '#1a73e8',
                   color: 'white',
                   border: 'none',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '12px',
-                  fontWeight: 600,
+                  padding: '0.65rem 1.5rem',
+                  borderRadius: '20px',
+                  fontWeight: 500,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -683,175 +607,168 @@ export default function Students() {
           </div>
         )}
 
-        {/* Tabla moderna */}
+        {/* Tabla */}
         <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div className="table-container" style={{ borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <table className="styled-table" style={{ tableLayout: 'auto' }}>
+          <div className="table-container" style={{ borderRadius: '12px', border: '1px solid #dadce0' }}>
+            <table style={{ tableLayout: 'auto', width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={{ 
+                <th style={{
                   width: '60px',
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0',
                   textAlign: 'center'
                 }}>N°</th>
-                <th style={{ 
+                <th style={{
                   width: '64px',
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0',
                   textAlign: 'center'
                 }}>Foto</th>
-                <th style={{ 
-                  minWidth: '120px', 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FileText size={16} />
-                    DNI
-                  </div>
-                </th>
-                <th style={{ 
-                  minWidth: '200px', 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Users size={16} />
-                    Apellidos y Nombre
-                  </div>
-                </th>
-                <th style={{ 
-                  minWidth: '150px', 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <GraduationCap size={16} />
-                    Grado
-                  </div>
-                </th>
-                <th style={{ 
-                  minWidth: '150px', 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Calendar size={16} />
-                    Nacimiento
-                  </div>
-                </th>
-                <th style={{ 
-                  minWidth: '140px', 
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  padding: '1rem',
+                <th style={{
+                  minWidth: '120px',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0'
+                }}>DNI</th>
+                <th style={{
+                  minWidth: '200px',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0'
+                }}>Apellidos y Nombre</th>
+                <th style={{
+                  minWidth: '150px',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0'
+                }}>Grado</th>
+                <th style={{
+                  minWidth: '150px',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0'
+                }}>Nacimiento</th>
+                <th style={{
+                  minWidth: '140px',
+                  background: '#f8f9fa',
+                  color: '#70757a',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '0.85rem 1rem',
+                  borderBottom: '1px solid #dadce0',
                   textAlign: 'center'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <UserCheck size={16} />
-                    Acciones
-                  </div>
-                </th>
+                }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#5f6368' }}>
                     No hay estudiantes registrados.
                   </td>
                 </tr>
               ) : (
                 filteredStudents.map((student, idx) => {
-                  const [color1, color2] = gradientColors[idx % gradientColors.length];
+                  const [tintBg, tintFg] = classTints[idx % classTints.length];
                   return (
                     <tr key={student.id}>
-                      <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)' }}>{idx + 1}</td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center', fontWeight: 500, color: '#5f6368', borderBottom: '1px solid #e8eaed' }}>{idx + 1}</td>
+                      <td style={{ textAlign: 'center', borderBottom: '1px solid #e8eaed' }}>
                         {student.photo_url ? (
                           <img src={student.photo_url} alt="" style={{
                             width: '40px', height: '40px', borderRadius: '50%',
-                            objectFit: 'cover', border: '2px solid #e2e8f0'
+                            objectFit: 'cover', border: '1px solid #dadce0'
                           }} />
                         ) : (
                           <div style={{
                             width: '40px', height: '40px', borderRadius: '50%',
-                            background: '#f1f5f9', display: 'flex', alignItems: 'center',
+                            background: '#f1f3f4', display: 'flex', alignItems: 'center',
                             justifyContent: 'center', margin: '0 auto'
                           }}>
-                            <Camera size={16} color="#94a3b8" />
+                            <Camera size={16} color="#9aa0a6" />
                           </div>
                         )}
                       </td>
-                      <td>
-                        <code style={{ 
-                          background: '#f1f5f9', 
-                          padding: '4px 10px', 
-                          borderRadius: '6px', 
-                          color: '#64748b',
+                      <td style={{ borderBottom: '1px solid #e8eaed' }}>
+                        <code style={{
+                          background: '#f1f3f4',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          color: '#5f6368',
                           fontSize: '0.85rem',
-                          fontWeight: 600
+                          fontWeight: 500
                         }}>
                           {student.dni || '-'}
                         </code>
                       </td>
-                      <td style={{ fontWeight: 600 }}>{student.name}</td>
-                      <td>
-                        <span style={{ 
+                      <td style={{ fontWeight: 500, color: '#3c4043', borderBottom: '1px solid #e8eaed' }}>{student.name}</td>
+                      <td style={{ borderBottom: '1px solid #e8eaed' }}>
+                        <span style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '0.5rem',
                           padding: '0.35rem 0.75rem',
-                          borderRadius: '8px',
-                          background: `linear-gradient(135deg, ${color1}15, ${color2}15)`,
-                          border: `1px solid ${color1}30`,
+                          borderRadius: '12px',
+                          background: tintBg,
                           fontSize: '0.85rem',
-                          fontWeight: 600,
-                          color: color1
+                          fontWeight: 500,
+                          color: tintFg
                         }}>
                           <GraduationCap size={14} />
                           {student.gradeLevel || 'Sin asignar'}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{student.birthDate || '-'}</td>
-                      <td>
+                      <td style={{ fontSize: '0.85rem', color: '#5f6368', borderBottom: '1px solid #e8eaed' }}>{student.birthDate || '-'}</td>
+                      <td style={{ borderBottom: '1px solid #e8eaed' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                          <button 
-                            style={{ 
-                              padding: '8px', 
-                              borderRadius: '10px', 
-                              background: 'rgba(59, 130, 246, 0.1)',
-                              border: '1px solid rgba(59, 130, 246, 0.3)',
-                              color: '#3b82f6',
+                          <button
+                            style={{
+                              padding: '8px',
+                              borderRadius: '50%',
+                              background: '#e8f0fe',
+                              border: 'none',
+                              color: '#1967d2',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center'
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
                             onClick={() => navigate(`/students/${student.id}`)}
                             title="Ficha del Estudiante"
                           >
@@ -860,41 +777,37 @@ export default function Students() {
                           
                           {isAdmin && (
                             <>
-                              <button 
-                                style={{ 
-                                  padding: '8px', 
-                                  borderRadius: '10px', 
-                                  background: 'rgba(245, 158, 11, 0.1)',
-                                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                                  color: '#f59e0b',
+                              <button
+                                style={{
+                                  padding: '8px',
+                                  borderRadius: '50%',
+                                  background: '#fef7e0',
+                                  border: 'none',
+                                  color: '#b06000',
                                   cursor: 'pointer',
                                   transition: 'all 0.2s ease',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center'
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
                                 onClick={() => handleEdit(student)}
                                 title="Editar"
                               >
                                 <Edit2 size={18} />
                               </button>
-                              <button 
-                                style={{ 
-                                  padding: '8px', 
-                                  borderRadius: '10px', 
-                                  background: 'rgba(239, 68, 68, 0.1)',
-                                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                                  color: '#ef4444',
+                              <button
+                                style={{
+                                  padding: '8px',
+                                  borderRadius: '50%',
+                                  background: '#fce8e6',
+                                  border: 'none',
+                                  color: '#d93025',
                                   cursor: 'pointer',
                                   transition: 'all 0.2s ease',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center'
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
                                 onClick={() => { if(window.confirm('¿Eliminar estudiante?')) deleteStudent(student.id); }}
                                 title="Eliminar"
                               >
@@ -924,93 +837,84 @@ export default function Students() {
           alignItems: 'flex-start', padding: '4rem 1rem',
           zIndex: 1000
         }}>
-          <div style={{ 
-            maxWidth: '450px', width: '100%', 
-            background: 'white', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+          <div style={{
+            maxWidth: '450px', width: '100%',
+            background: 'white', borderRadius: '16px', padding: '2rem',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: 'linear-gradient(135deg, #22c55e20, #16a34a20)',
-              borderRadius: '50%'
-            }} />
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
                   width: '48px',
                   height: '48px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  borderRadius: '50%',
+                  background: '#e8f0fe',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Users size={24} color="white" />
+                  <Users size={24} color="#1967d2" />
                 </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Detalles del Estudiante</h3>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 500, margin: 0, color: '#3c4043' }}>Detalles del Estudiante</h3>
               </div>
-              <button 
-                onClick={() => setViewingStudent(null)} 
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem' }}
+              <button
+                onClick={() => setViewingStudent(null)}
+                style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', padding: '0.5rem' }}
               >
                 <X size={24} />
               </button>
             </div>
-            
+
             {viewingStudent.photo_url && (
               <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                 <img src={viewingStudent.photo_url} alt="" style={{
                   width: '100px', height: '100px', borderRadius: '50%',
-                  objectFit: 'cover', border: '3px solid #22c55e',
-                  boxShadow: '0 4px 15px rgba(34,197,94,0.3)'
+                  objectFit: 'cover', border: '1px solid #dadce0'
                 }} />
               </div>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>DNI</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>DNI</span>
                 <span style={{ fontWeight: 600 }}>{viewingStudent.dni || '-'}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>APELLIDOS Y NOMBRE</span>
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>APELLIDOS Y NOMBRE</span>
                 <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewingStudent.name}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>GRADO Y SECCIÓN</span>
-                <span style={{ fontWeight: 600, color: '#22c55e' }}>{viewingStudent.gradeLevel}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>GRADO Y SECCIÓN</span>
+                <span style={{ fontWeight: 500, color: '#188038' }}>{viewingStudent.gradeLevel}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>FECHA DE NACIMIENTO</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>FECHA DE NACIMIENTO</span>
                 <span>{viewingStudent.birthDate || '-'}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>APODERADO</span>
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>APODERADO</span>
                 <span style={{ fontWeight: 600 }}>{viewingStudent.guardianName || '-'}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>DNI APODERADO</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>DNI APODERADO</span>
                 <span>{viewingStudent.guardianDni || '-'}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>DIRECCIÓN</span>
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>DIRECCIÓN</span>
                 <span style={{ fontSize: '0.9rem' }}>{viewingStudent.address || '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>TELÉFONO</span>
+                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>TELÉFONO</span>
                 <span style={{ fontWeight: 600 }}>{viewingStudent.phone || '-'}</span>
               </div>
             </div>
             
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <button 
-                style={{ 
+              <button
+                style={{
                   width: '100%', padding: '0.75rem',
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                  color: 'white', border: 'none', borderRadius: '12px',
-                  fontWeight: 600, cursor: 'pointer'
+                  background: '#1a73e8',
+                  color: 'white', border: 'none', borderRadius: '20px',
+                  fontWeight: 500, cursor: 'pointer'
                 }}
                 onClick={() => setViewingStudent(null)}
               >
@@ -1032,58 +936,49 @@ export default function Students() {
           zIndex: 1100,
           padding: '4rem 1rem'
         }}>
-          <div style={{ 
-            maxWidth: '400px', 
-            width: '100%', 
-            textAlign: 'center', 
+          <div style={{
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
             padding: '2rem',
             background: 'white',
-            borderRadius: '24px',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            borderRadius: '16px',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '120px', height: '120px',
-              background: 'linear-gradient(135deg, #ef444420, #dc262620)',
-              borderRadius: '50%'
-            }} />
-            
-            <div style={{ 
-              width: '64px', 
-              height: '64px', 
-              background: 'rgba(239, 68, 68, 0.1)', 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: '#fce8e6',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1.5rem auto'
             }}>
-              <Trash2 size={32} color="#ef4444" />
+              <Trash2 size={32} color="#d93025" />
             </div>
-            
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>¿Confirmar acción?</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
+
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#202124', fontWeight: 500 }}>¿Confirmar acción?</h3>
+            <p style={{ color: '#5f6368', marginBottom: '2rem', lineHeight: '1.6' }}>
               Estás a punto de eliminar a <strong>TODOS</strong> los estudiantes de manera definitiva. Esta acción no se puede deshacer.
             </p>
-            
+
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button 
-                style={{ 
-                  flex: 1, padding: '0.8rem', borderRadius: '12px',
-                  background: '#f1f5f9', color: 'var(--text-secondary)',
-                  border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600
+              <button
+                style={{
+                  flex: 1, padding: '0.8rem', borderRadius: '20px',
+                  background: '#ffffff', color: '#5f6368',
+                  border: '1px solid #dadce0', cursor: 'pointer', fontWeight: 500
                 }}
                 onClick={() => setShowConfirmModal(false)}
               >
                 Cancelar
               </button>
-              <button 
-                style={{ 
-                  flex: 1, padding: '0.8rem', borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600,
-                  boxShadow: '0 4px 14px 0 rgba(239, 68, 68, 0.3)'
+              <button
+                style={{
+                  flex: 1, padding: '0.8rem', borderRadius: '20px',
+                  background: '#d93025',
+                  color: 'white', border: 'none', cursor: 'pointer', fontWeight: 500
                 }}
                 onClick={confirmClearAll}
               >
@@ -1104,27 +999,13 @@ export default function Students() {
           alignItems: 'center', padding: '1rem',
           zIndex: 1200
         }} onClick={() => !isPicking && setShowRandomModal(false)}>
-          <div style={{ 
-            maxWidth: '500px', width: '100%', 
-            background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)', borderRadius: '24px', padding: '2.5rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+          <div style={{
+            maxWidth: '500px', width: '100%',
+            background: 'white', borderRadius: '16px', padding: '2.5rem',
             position: 'relative',
             textAlign: 'center',
             overflow: 'hidden'
           }} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
-            {/* Decoración */}
-            <div style={{ 
-              position: 'absolute', top: '-40%', right: '-20%',
-              width: '200px', height: '200px',
-              background: 'linear-gradient(135deg, #22c55e20, #16a34a20)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ 
-              position: 'absolute', bottom: '-30%', left: '-15%',
-              width: '150px', height: '150px',
-              background: 'linear-gradient(135deg, #3b82f615, #2563eb15)',
-              borderRadius: '50%'
-            }} />
 
             <div style={{ position: 'relative', zIndex: 1 }}>
               {/* Header */}
@@ -1132,24 +1013,21 @@ export default function Students() {
                 <div style={{
                   width: '72px',
                   height: '72px',
-                  borderRadius: '18px',
-                  background: isPicking 
-                    ? 'linear-gradient(135deg, #f59e0b, #d97706)' 
-                    : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  borderRadius: '50%',
+                  background: isPicking ? '#fef7e0' : '#e6f4ea',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: isPicking ? '0 0 30px rgba(245, 158, 11, 0.4)' : '0 0 30px rgba(34, 197, 94, 0.4)',
                   transition: 'all 0.3s ease'
                 }}>
-                  <Shuffle size={36} color="white" style={{ transform: isPicking ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }} />
+                  <Shuffle size={36} color={isPicking ? '#b06000' : '#188038'} style={{ transform: isPicking ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }} />
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#1e293b' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#202124' }}>
                 {isPicking ? 'Sorteando...' : '¡Estudiante Seleccionado!'}
               </h3>
-              <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.9rem', color: '#5f6368', marginBottom: '2rem' }}>
                 {isPicking ? 'El sorteo está en curso' : `Sección: ${filterClass === 'Todos' ? 'Todas las secciones' : filterClass}`}
               </p>
 
@@ -1160,17 +1038,15 @@ export default function Students() {
                   borderRadius: '16px',
                   padding: '1.5rem',
                   marginBottom: '2rem',
-                  border: isPicking ? '2px dashed #e2e8f0' : '2px solid #22c55e',
-                  boxShadow: isPicking ? 'none' : '0 8px 24px rgba(34, 197, 94, 0.15)',
+                  border: isPicking ? '2px dashed #dadce0' : '2px solid #188038',
+                  boxShadow: isPicking ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
                   transition: 'all 0.3s ease'
                 }}>
                   <div style={{
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
-                    background: isPicking 
-                      ? 'linear-gradient(135deg, #f59e0b30, #d9770630)' 
-                      : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    background: isPicking ? '#fef7e0' : '#188038',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1178,7 +1054,7 @@ export default function Students() {
                     transition: 'all 0.3s ease'
                   }}>
                     {isPicking ? (
-                      <Users size={28} color="#d97706" />
+                      <Users size={28} color="#b06000" />
                     ) : (
                       <span style={{ color: 'white', fontWeight: 800, fontSize: '1.25rem' }}>
                         {randomStudent.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
@@ -1188,14 +1064,14 @@ export default function Students() {
                   <div style={{ 
                     fontSize: '1.25rem', 
                     fontWeight: 700, 
-                    color: isPicking ? '#94a3b8' : '#1e293b',
+                    color: isPicking ? '#9aa0a6' : '#202124',
                     transition: 'all 0.3s ease'
                   }}>
                     {randomStudent.name}
                   </div>
                   <div style={{ 
                     fontSize: '0.85rem', 
-                    color: isPicking ? '#cbd5e1' : '#64748b', 
+                    color: isPicking ? '#dadce0' : '#5f6368', 
                     marginTop: '0.25rem',
                     display: 'flex',
                     alignItems: 'center',
@@ -1208,7 +1084,7 @@ export default function Students() {
                   {randomStudent.dni && !isPicking && (
                     <div style={{ 
                       fontSize: '0.8rem', 
-                      color: '#94a3b8', 
+                      color: '#9aa0a6', 
                       marginTop: '0.5rem',
                       fontFamily: 'monospace'
                     }}>
@@ -1220,11 +1096,11 @@ export default function Students() {
 
               {/* Botones */}
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button 
-                  style={{ 
-                    flex: 1, padding: '0.8rem', borderRadius: '12px',
-                    background: '#f1f5f9', color: '#64748b',
-                    border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600,
+                <button
+                  style={{
+                    flex: 1, padding: '0.8rem', borderRadius: '20px',
+                    background: '#ffffff', color: '#5f6368',
+                    border: '1px solid #dadce0', cursor: 'pointer', fontWeight: 500,
                     fontSize: '0.9rem',
                     transition: 'all 0.2s ease'
                   }}
@@ -1233,13 +1109,12 @@ export default function Students() {
                   Cerrar
                 </button>
                 {!isPicking && (
-                  <button 
-                    style={{ 
-                      flex: 1, padding: '0.8rem', borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                      color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600,
+                  <button
+                    style={{
+                      flex: 1, padding: '0.8rem', borderRadius: '20px',
+                      background: '#188038',
+                      color: 'white', border: 'none', cursor: 'pointer', fontWeight: 500,
                       fontSize: '0.9rem',
-                      boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.3)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
