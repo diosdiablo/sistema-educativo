@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, Calendar, GraduationCap, Users, BookMarked, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, GraduationCap, Users, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
 
 const TYPE_ICONS = {
   checklist: CheckSquare,
@@ -76,7 +77,33 @@ const calcScore = (type, scores, criteria) => {
   return { score: 0, max: 0 };
 };
 const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
-const BADGE_THEME = { AD: 'badge-ad', A: 'badge-a', B: 'badge-b', C: 'badge-c' };
+const GRADE_CHIP_COLOR = { AD: '#188038', A: '#1967d2', B: '#b06000', C: '#d93025' };
+const GRADE_CHIP_BG = { AD: '#e6f4ea', A: '#e8f0fe', B: '#fef7e0', C: '#fce8e6' };
+
+const gradeChipStyle = (qualitative, fontSize = '0.85rem') => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: '34px',
+  padding: '0.25rem 0.6rem',
+  borderRadius: '12px',
+  background: GRADE_CHIP_BG[qualitative] || '#f1f3f4',
+  color: GRADE_CHIP_COLOR[qualitative] || '#5f6368',
+  fontWeight: 500,
+  fontSize
+});
+
+const selectPillStyle = {
+  padding: '0.55rem 1rem',
+  borderRadius: '20px',
+  border: '1px solid #dadce0',
+  background: '#ffffff',
+  fontWeight: 500,
+  fontSize: '0.875rem',
+  color: '#3c4043',
+  cursor: 'pointer',
+  outline: 'none'
+};
 
 export default function Grades() {
   const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
@@ -243,437 +270,135 @@ export default function Grades() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Barra de herramientas */}
       <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
+        background: '#ffffff',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid #dadce0',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        flexWrap: 'wrap'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <GraduationCap size={28} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Calificaciones</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Visualiza las evaluaciones por estudiante</p>
-          </div>
+        <div style={{ marginRight: 'auto' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Calificaciones</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: '#5f6368' }}>Visualiza las evaluaciones por estudiante</p>
         </div>
+        <select
+          value={selectedClass}
+          onChange={e => { setSelectedClass(e.target.value); setSelectedSubjectId(''); }}
+          style={selectPillStyle}
+          aria-label="Sección"
+        >
+          <option value="">Seleccionar sección...</option>
+          {availableClasses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+        </select>
+        <div style={{
+          display: 'flex',
+          border: '1px solid #dadce0',
+          borderRadius: '20px',
+          overflow: 'hidden'
+        }} aria-label="Bimestre">
+          {[1, 2, 3, 4].map(p => (
+            <button
+              key={p}
+              onClick={() => setSelectedPeriod(String(p))}
+              style={{
+                padding: '0.55rem 0.9rem',
+                border: 'none',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                background: selectedPeriod === String(p) ? '#e8f0fe' : '#ffffff',
+                color: selectedPeriod === String(p) ? '#1967d2' : '#5f6368'
+              }}
+            >
+              B{p}
+            </button>
+          ))}
+        </div>
+        <select
+          value={selectedSubjectId}
+          onChange={e => setSelectedSubjectId(e.target.value)}
+          disabled={!selectedClass}
+          style={{ ...selectPillStyle, opacity: selectedClass ? 1 : 0.5, cursor: selectedClass ? 'pointer' : 'not-allowed' }}
+          aria-label="Área Curricular"
+        >
+          <option value="">Seleccionar materia...</option>
+          {availableSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
       </div>
 
-      {/* Tarjetas de selección */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem'
-      }}>
-        {/* Tarjeta de Sección */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid',
-          borderColor: selectedClass ? '#10b981' : '#e2e8f0',
-          transition: 'all 0.3s ease',
-          boxShadow: selectedClass ? '0 4px 20px rgba(16, 185, 129, 0.15)' : '0 2px 8px rgba(0,0,0,0.04)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: selectedClass ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Users size={20} color={selectedClass ? '#10b981' : '#6366f1'} />
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Sección</label>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Grado y sección</div>
-            </div>
-          </div>
-          <select
-            className="input-field"
-            value={selectedClass}
-            onChange={e => { setSelectedClass(e.target.value); setSelectedSubjectId(''); }}
-            style={{ borderColor: selectedClass ? '#10b981' : '#e2e8f0' }}
-          >
-            <option value="">Seleccionar sección...</option>
-            {availableClasses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
-        </div>
-
-        {/* Tarjeta de Bimestre */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid #e2e8f0',
-          transition: 'all 0.3s ease',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'rgba(245, 158, 11, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Calendar size={20} color="#f59e0b" />
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Bimestre</label>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Periodo de evaluación</div>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
-            {[1, 2, 3, 4].map(p => (
-              <button
-                key={p}
-                onClick={() => setSelectedPeriod(String(p))}
-                style={{
-                  padding: '0.6rem',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  background: selectedPeriod === String(p) ? '#f59e0b' : '#f1f5f9',
-                  color: selectedPeriod === String(p) ? 'white' : 'var(--text-secondary)'
-                }}
-              >
-                B{p}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tarjeta de Materia */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid',
-          borderColor: selectedSubjectId ? '#8b5cf6' : '#e2e8f0',
-          transition: 'all 0.3s ease',
-          boxShadow: selectedSubjectId ? '0 4px 20px rgba(139, 92, 246, 0.15)' : '0 2px 8px rgba(0,0,0,0.04)',
-          opacity: !selectedClass ? 0.6 : 1
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: selectedSubjectId ? 'rgba(139, 92, 246, 0.15)' : 'rgba(99, 102, 241, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <BookMarked size={20} color={selectedSubjectId ? '#8b5cf6' : '#6366f1'} />
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Área Curricular</label>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Materia a evaluar</div>
-            </div>
-          </div>
-          <select
-            className="input-field"
-            value={selectedSubjectId}
-            onChange={e => setSelectedSubjectId(e.target.value)}
-            disabled={!selectedClass}
-            style={{ borderColor: selectedSubjectId ? '#8b5cf6' : '#e2e8f0' }}
-          >
-            <option value="">Seleccionar materia...</option>
-            {availableSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-      </div>
-
-      {/* Widgets de estadísticas animados */}
+      {/* Widgets de estadísticas */}
       {selectedClass && selectedSubjectId && gradeStats && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1.25rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
           marginBottom: '1.5rem'
         }}>
-          {/* Total de evaluaciones */}
-          <div style={{
-            background: 'linear-gradient(145deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: '20px',
-            padding: '1.5rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(102, 126, 234, 0.5)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.4)'; }}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '-20%',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '-20%',
-              left: '-10%',
-              width: '80px',
-              height: '80px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
+          {[
+            { label: 'Evaluaciones', value: gradeStats.total, color: '#1967d2', bg: '#e8f0fe', Icon: ClipboardCheck },
+            { label: 'Alumnos Evaluados', value: gradeStats.evaluatedStudents, color: '#188038', bg: '#e6f4ea', Icon: Users },
+            { label: 'Tasa de Éxito', value: `${gradeStats.successRate}%`, color: '#b06000', bg: '#fef7e0', Icon: TrendingUp },
+            { label: 'Nivel AD', value: `${gradeStats.adRate}%`, color: '#7627bb', bg: '#f3e8fd', Icon: Trophy }
+          ].map(({ label, value, color, bg, Icon }) => (
+            <div key={label} style={{
+              background: '#ffffff',
+              border: '1px solid #dadce0',
+              borderRadius: '12px',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.9rem'
+            }}>
               <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '14px',
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: bg,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <ClipboardCheck size={28} color="white" />
+                <Icon size={20} color={color} />
               </div>
               <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.total}</div>
-                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Evaluaciones</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 500, color: '#3c4043', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '0.78rem', color: '#5f6368', marginTop: '0.25rem' }}>{label}</div>
               </div>
             </div>
-          </div>
-
-          {/* Alumnos evaluados */}
-          <div style={{
-            background: 'linear-gradient(145deg, #10b981 0%, #059669 100%)',
-            borderRadius: '20px',
-            padding: '1.5rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            boxShadow: '0 10px 30px rgba(16, 185, 129, 0.4)',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.5)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(16, 185, 129, 0.4)'; }}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '-20%',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '-20%',
-              left: '-10%',
-              width: '80px',
-              height: '80px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '14px',
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Users size={28} color="white" />
-              </div>
-              <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.evaluatedStudents}</div>
-                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Alumnos Evaluados</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tasa de éxito */}
-          <div style={{
-            background: 'linear-gradient(145deg, #f59e0b 0%, #d97706 100%)',
-            borderRadius: '20px',
-            padding: '1.5rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(245, 158, 11, 0.5)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 158, 11, 0.4)'; }}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '-20%',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '-20%',
-              left: '-10%',
-              width: '80px',
-              height: '80px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '14px',
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <TrendingUp size={28} color="white" />
-              </div>
-              <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.successRate}%</div>
-                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Tasa de Éxito</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Nivel destacado */}
-          <div style={{
-            background: 'linear-gradient(145deg, #ec4899 0%, #db2777 100%)',
-            borderRadius: '20px',
-            padding: '1.5rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            boxShadow: '0 10px 30px rgba(236, 72, 153, 0.4)',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(236, 72, 153, 0.5)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(236, 72, 153, 0.4)'; }}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '-20%',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '-20%',
-              left: '-10%',
-              width: '80px',
-              height: '80px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '14px',
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Trophy size={28} color="white" />
-              </div>
-              <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1 }}>{gradeStats.adRate}%</div>
-                <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 500 }}>Nivel AD</div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
       {/* Empty states */}
       {!selectedClass && (
         <div style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
-          borderRadius: '20px',
+          background: '#ffffff',
+          borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '2px dashed #cbd5e1'
+          border: '1px dashed #dadce0'
         }}>
           <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            width: '64px',
+            height: '64px',
+            background: '#e8f0fe',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 1.5rem'
+            margin: '0 auto 1.25rem'
           }}>
-            <GraduationCap size={40} color="white" />
+            <GraduationCap size={30} color="#1a73e8" />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#3c4043', marginBottom: '0.5rem' }}>
             Bienvenido al módulo de calificaciones
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: '#5f6368', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
             Selecciona una sección para comenzar a visualizar las calificaciones de tus estudiantes
           </p>
         </div>
@@ -681,28 +406,28 @@ export default function Grades() {
 
       {selectedClass && !selectedSubjectId && (
         <div style={{
-          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-          borderRadius: '20px',
+          background: '#ffffff',
+          borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '2px solid #fbbf24'
+          border: '1px dashed #dadce0'
         }}>
           <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            width: '64px',
+            height: '64px',
+            background: '#fef7e0',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 1.5rem'
+            margin: '0 auto 1.25rem'
           }}>
-            <BookOpen size={40} color="white" />
+            <BookOpen size={30} color="#b06000" />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#3c4043', marginBottom: '0.5rem' }}>
             Selecciona una materia
           </h3>
-          <p style={{ color: '#92400e', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: '#5f6368', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
             Elige el área curricular para ver las competencias y evaluaciones disponibles
           </p>
         </div>
@@ -711,27 +436,15 @@ export default function Grades() {
       {/* Main table */}
       {selectedClass && selectedSubjectId && currentSubject && (
         <>
-          {/* Info banner moderno */}
+          {/* Info banner */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: '12px',
-            background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
-            border: '1px solid rgba(102, 126, 234, 0.2)',
-            borderRadius: '16px', padding: '1rem 1.5rem', marginBottom: '1.5rem',
-            fontSize: '0.9rem', color: 'var(--text-secondary)'
+            background: '#e8f0fe',
+            borderRadius: '12px', padding: '0.9rem 1.25rem', marginBottom: '1.5rem',
+            fontSize: '0.9rem', color: '#3c4043'
           }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <Info size={18} color="white" />
-            </div>
-            <span>Cada columna representa un instrumento aplicado. <strong style={{ color: '#667eea' }}>Haz clic en la nota</strong> para ver el detalle.</span>
+            <Info size={20} color="#1967d2" />
+            <span>Cada columna representa un instrumento aplicado. <strong style={{ color: '#1967d2' }}>Haz clic en la nota</strong> para ver el detalle.</span>
           </div>
 
           {/* Botón de calificación rápida */}
@@ -767,19 +480,17 @@ export default function Grades() {
               }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.7rem 1.25rem', border: 'none', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              color: 'white', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-              boxShadow: '0 4px 15px rgba(245,158,11,0.3)'
+              padding: '0.55rem 1.25rem', border: '1px solid #dadce0', borderRadius: '20px',
+              background: '#ffffff',
+              color: '#3c4043', fontWeight: 500, fontSize: '0.85rem', cursor: 'pointer'
             }}>
               🎲 Azar
             </button>
             <button onClick={() => { setQuickGrade({ activityName: '', date: new Date().toISOString().split('T')[0], competencyId: currentSubject?.competencies?.[0]?.id || '' }); setQuickGradeMsg(''); setShowQuickGrade(true); }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.7rem 1.25rem', border: 'none', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: 'white', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-              boxShadow: '0 4px 15px rgba(16,185,129,0.3)'
+              padding: '0.55rem 1.25rem', border: 'none', borderRadius: '20px',
+              background: '#1a73e8',
+              color: 'white', fontWeight: 500, fontSize: '0.85rem', cursor: 'pointer'
             }}>
               <Plus size={18} /> Calificación Rápida
             </button>
@@ -825,43 +536,50 @@ export default function Grades() {
               });
             };
 
-            const gradientColors = [
-              ['#10b981', '#059669'],
-              ['#3b82f6', '#2563eb'],
-              ['#f59e0b', '#d97706'],
-              ['#ef4444', '#dc2626'],
-              ['#8b5cf6', '#7c3aed'],
-              ['#ec4899', '#db2777']
+            const compTints = [
+              ['#e6f4ea', '#188038'],
+              ['#e8f0fe', '#1967d2'],
+              ['#fef7e0', '#b06000'],
+              ['#fce8e6', '#c5221f'],
+              ['#f3e8fd', '#7627bb'],
+              ['#e4f7fb', '#007b83']
             ];
 
             return (
               <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                <div className="table-container" style={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                  <table className="styled-table" style={{ tableLayout: 'auto', minWidth: '600px', borderCollapse: 'collapse' }}>
+                <div className="table-container" style={{ borderRadius: '12px', border: '1px solid #dadce0' }}>
+                  <table style={{ tableLayout: 'auto', minWidth: '600px', borderCollapse: 'collapse', width: '100%' }}>
                   <thead>
                     <tr>
-                      <th style={{ 
+                      <th style={{
                         width: '50px',
                         minWidth: '50px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        padding: '1rem',
+                        background: '#f8f9fa',
+                        color: '#70757a',
+                        fontWeight: 500,
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        padding: '0.85rem 1rem',
+                        borderBottom: '1px solid #dadce0',
+                        borderRight: '2px solid #dadce0',
                         textAlign: 'center'
                       }}>
                         N°
                       </th>
-                      <th style={{ 
-                        minWidth: '150px', 
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        padding: '1rem'
+                      <th style={{
+                        minWidth: '150px',
+                        background: '#f8f9fa',
+                        color: '#70757a',
+                        fontWeight: 500,
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        padding: '0.85rem 1rem',
+                        borderBottom: '1px solid #dadce0',
+                        borderRight: '2px solid #dadce0'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Users size={16} />
                           Estudiante
                         </div>
                       </th>
@@ -871,19 +589,21 @@ export default function Grades() {
                         const existingKeys = new Set(existingInstruments.map(i => i.id));
                         const dedupedExtra = extra.filter(e => !existingKeys.has(e.activityName || e.id));
                         const totalCols = (existingInstruments.length || 0) + dedupedExtra.length + 1;
-                        const [color1, color2] = gradientColors[idx % gradientColors.length];
+                        const [tintBg, tintFg] = compTints[idx % compTints.length];
                         return (
                           <th key={comp.id} colSpan={totalCols} style={{
                             textAlign: 'center',
                             minWidth: Math.max(totalCols * 70, 70),
-                            fontSize: '0.8rem',
-                            background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
-                            color: 'white',
-                            padding: '1rem',
-                            borderRight: '3px solid #94a3b8'
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            background: tintBg,
+                            color: tintFg,
+                            padding: '0.85rem 1rem',
+                            borderBottom: '1px solid #dadce0',
+                            borderRight: '2px solid #dadce0'
                           }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                              <Target size={14} />
+                              <Target size={13} />
                               {comp.name}
                             </div>
                           </th>
@@ -891,25 +611,25 @@ export default function Grades() {
                       })}
                     </tr>
                     <tr>
-                      <th style={{ 
+                      <th style={{
                         width: '50px',
                         minWidth: '50px',
-                        background: '#f8fafc', 
+                        background: '#f8f9fa',
                         padding: '0.75rem 1rem',
-                        borderBottom: '2px solid #e2e8f0',
-                        borderRight: '3px solid #94a3b8',
+                        borderBottom: '1px solid #dadce0',
+                        borderRight: '2px solid #dadce0',
                         textAlign: 'center'
                       }}>
-                        <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>#</span>
+                        <span style={{ fontSize: '0.7rem', color: '#70757a', fontWeight: 500 }}>#</span>
                       </th>
-                      <th style={{ 
-                        minWidth: '150px', 
-                        background: '#f8fafc', 
+                      <th style={{
+                        minWidth: '150px',
+                        background: '#f8f9fa',
                         padding: '0.75rem 1rem',
-                        borderBottom: '2px solid #e2e8f0',
-                        borderRight: '3px solid #94a3b8'
+                        borderBottom: '1px solid #dadce0',
+                        borderRight: '2px solid #dadce0'
                       }}>
-                        <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>Instrumentos aplicados</span>
+                        <span style={{ fontSize: '0.7rem', color: '#70757a', fontWeight: 500 }}>Instrumentos aplicados</span>
                       </th>
                       {currentSubject.competencies.map((comp, idx) => {
                         const existingInstruments = getInstrumentsForCompetency(comp.id);
@@ -919,25 +639,24 @@ export default function Grades() {
                         const items = existingInstruments.length > 0
                           ? [...existingInstruments, ...dedupedExtra, { _isPlus: true }]
                           : [...dedupedExtra, { _isPlus: true }];
-                        const [color1, color2] = gradientColors[idx % gradientColors.length];
                         return items.map((inst, j) => {
                           if (inst._isPlus) {
                             return (
                               <th key={'plus-' + comp.id} style={{
                                 textAlign: 'center', minWidth: '36px', fontSize: '0.7rem',
-                                color: '#64748b', background: '#f8fafc',
+                                color: '#5f6368', background: '#f8f9fa',
                                 padding: '0.75rem 0.25rem',
-                                borderBottom: '2px solid #e2e8f0',
-                                borderRight: '3px solid #94a3b8'
+                                borderBottom: '1px solid #dadce0',
+                                borderRight: '2px solid #dadce0'
                               }}>
                                 <button
                                   title="Añadir instrumento"
                                   onClick={() => { setPickerCompetencyId(comp.id); setInstrumentPickerOpen(true); }}
                                   style={{
-                                    background: '#e2e8f0', border: 'none', borderRadius: '6px',
+                                    background: '#f1f3f4', border: 'none', borderRadius: '6px',
                                     width: '24px', height: '24px', cursor: 'pointer',
                                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                    fontWeight: 700, fontSize: '1rem', color: '#64748b',
+                                    fontWeight: 700, fontSize: '1rem', color: '#5f6368',
                                     transition: 'all 0.15s'
                                   }}
                                 >+</button>
@@ -952,10 +671,10 @@ export default function Grades() {
                           return (
                             <th key={inst.id || inst.instrumentId} style={{
                               textAlign: 'center', minWidth: '60px', fontSize: '0.7rem',
-                              color: '#64748b', background: '#f8fafc',
+                              color: '#70757a', background: '#f8f9fa',
                               padding: '0.75rem',
-                              borderBottom: '2px solid #e2e8f0',
-                              borderRight: '1px solid #e2e8f0'
+                              borderBottom: '1px solid #dadce0',
+                              borderRight: '1px solid #e8eaed'
                             }}>
                               {renaming ? (
                                 <input
@@ -996,7 +715,7 @@ export default function Grades() {
                                   autoFocus
                                   style={{
                                     width: '56px', fontSize: '0.7rem', textAlign: 'center',
-                                    border: '1px solid #6366f1', borderRadius: '4px',
+                                    border: '1px solid #1a73e8', borderRadius: '4px',
                                     padding: '2px', outline: 'none'
                                   }}
                                 />
@@ -1037,13 +756,13 @@ export default function Grades() {
                                         onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
                                         style={{
                                           position: 'absolute', top: '-4px', right: '-4px',
-                                          background: '#e2e8f0', border: 'none', borderRadius: '50%',
+                                          background: '#f1f3f4', border: 'none', borderRadius: '50%',
                                           width: '16px', height: '16px', cursor: 'pointer',
                                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                                           padding: 0, lineHeight: 1
                                         }}
                                       >
-                                        <Pencil size={10} color="#64748b" />
+                                        <Pencil size={10} color="#5f6368" />
                                       </button>
                                       <button
                                         title="Eliminar columna"
@@ -1074,7 +793,7 @@ export default function Grades() {
                                         }}
                                         style={{
                                           position: 'absolute', top: '-4px', left: '-4px',
-                                          background: '#fee2e2', border: 'none', borderRadius: '50%',
+                                          background: '#fce8e6', border: 'none', borderRadius: '50%',
                                           width: '16px', height: '16px', cursor: 'pointer',
                                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                                           padding: 0, lineHeight: 1
@@ -1094,7 +813,7 @@ export default function Grades() {
                   <tbody>
                     {filteredStudents.length === 0 && (
                       <tr>
-                        <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                        <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: '#5f6368', borderBottom: '1px solid #e8eaed' }}>
                           No hay estudiantes matriculados en esta sección.
                         </td>
                       </tr>
@@ -1103,8 +822,8 @@ export default function Grades() {
                       const isHighlighted = quickAzarHighlighted === student.id;
                       return (
                       <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : {}}>
-                        <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '3px solid #94a3b8' }}>{studentIdx + 1}</td>
-                        <td style={{ fontWeight: 600, minWidth: '150px', borderRight: '3px solid #94a3b8' }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 500, color: '#5f6368', minWidth: '50px', borderRight: '2px solid #dadce0', borderBottom: '1px solid #e8eaed' }}>{studentIdx + 1}</td>
+                        <td style={{ fontWeight: 500, color: '#3c4043', minWidth: '150px', borderRight: '2px solid #dadce0', borderBottom: '1px solid #e8eaed' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const existingInstruments = getInstrumentsForCompetency(comp.id);
                           const extra = extraInstruments[comp.id] || [];
@@ -1116,7 +835,7 @@ export default function Grades() {
                           return items.map(inst => {
                             if (inst._isPlus) {
                               return (
-                                <td key={'plus-' + comp.id} style={{ textAlign: 'center', padding: '0.25rem', borderRight: '3px solid #94a3b8' }}>
+                                <td key={'plus-' + comp.id} style={{ textAlign: 'center', padding: '0.25rem', borderRight: '2px solid #dadce0', borderBottom: '1px solid #e8eaed' }}>
                                 </td>
                               );
                             }
@@ -1130,7 +849,7 @@ export default function Grades() {
                               return (
                                 <td key={inst.id || inst.instrumentId}
                                   title="Sin calificación — click para evaluar"
-                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
+                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e8eaed', borderBottom: '1px solid #e8eaed' }}
                                   onClick={() => {
                                     setQuickAzarHighlighted(null);
                                     const newEval = {
@@ -1162,19 +881,19 @@ export default function Grades() {
                                   <span style={{
                                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                     width: '28px', height: '28px', borderRadius: '6px',
-                                    border: '1.5px dashed #cbd5e1', color: '#94a3b8', fontSize: '1rem',
+                                    border: '1.5px dashed #dadce0', color: '#9aa0a6', fontSize: '1rem',
                                     transition: 'all 0.15s'
                                   }}>+</span>
                                 </td>
                               );
                             }
                             return (
-                              <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e2e8f0' }}
+                              <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e8eaed', borderBottom: '1px solid #e8eaed' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
                                 onClick={() => { setQuickAzarHighlighted(null); setViewingEvaluation(ev); setHoveredEval(null); }}
                               >
-                                <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '0.85rem' }}>{ev.qualitative}</span>
+                                <span style={gradeChipStyle(ev.qualitative)}>{ev.qualitative}</span>
                               </td>
                             );
                           });
@@ -1219,13 +938,12 @@ export default function Grades() {
                   overflowY: 'auto' 
                 }}>
                   {/* Header del modal */}
-                  <div style={{ 
+                  <div style={{
                     padding: '1.25rem 1.5rem',
-                    borderBottom: '1px solid var(--border-color)',
+                    borderBottom: '1px solid #dadce0',
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, transparent 100%)'
+                    alignItems: 'flex-start'
                   }}>
                     <div>
                       <h3 style={{ fontWeight: 700, marginBottom: '4px', fontSize: '1.2rem' }}>{tooltip.studentName}</h3>
@@ -1278,16 +996,16 @@ export default function Grades() {
                         const totalCriteria = evalCriteria.length;
 
                         const typeColors = {
-                          checklist: '#10b981',
-                          scale: '#3b82f6',
-                          rubric: '#8b5cf6',
-                          observation: '#f59e0b',
-                          written: '#ef4444',
-                          selfeval: '#ec4899',
-                          portfolio: '#14b8a6',
-                          anecdotal: '#6366f1'
+                          checklist: '#188038',
+                          scale: '#1967d2',
+                          rubric: '#7627bb',
+                          observation: '#e37400',
+                          written: '#d93025',
+                          selfeval: '#c2185b',
+                          portfolio: '#00796b',
+                          anecdotal: '#3949ab'
                         };
-                        const typeColor = typeColors[instrumentType] || '#6366f1';
+                        const typeColor = typeColors[instrumentType] || '#5f6368';
 
                         return (
                           <div key={ev.id} style={{ 
@@ -1317,7 +1035,7 @@ export default function Grades() {
                                 </div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <span className={`badge ${BADGE_THEME[ev.qualitative]}`} style={{ fontWeight: 700, fontSize: '1rem' }}>
+                                <span style={gradeChipStyle(ev.qualitative, '1rem')}>
                                   {ev.qualitative} – {GRADE_LABEL[ev.qualitative]}
                                 </span>
                               </div>
@@ -1335,14 +1053,14 @@ export default function Grades() {
 
                                     if (ev.instrumentType === 'checklist') {
                                       displayValue = scoreValue ? '✅' : '❌';
-                                      bgColor = scoreValue ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
-                                      borderColor = scoreValue ? '#10b98150' : '#ef444450';
+                                      bgColor = scoreValue ? '#e6f4ea' : '#fce8e6';
+                                      borderColor = scoreValue ? '#18803850' : '#d9302550';
                                     } else if (ev.instrumentType === 'observation') {
                                       displayValue = scoreValue === 3 ? '🟢' : scoreValue === 2 ? '🟡' : '🔴';
-                                      bgColor = scoreValue === 3 ? 'rgba(16,185,129,0.1)' : scoreValue === 2 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
+                                      bgColor = scoreValue === 3 ? '#e6f4ea' : scoreValue === 2 ? '#fef7e0' : '#fce8e6';
                                     } else if (typeof scoreValue === 'number') {
                                       const levelMap = { 4: 'AD', 3: 'A', 2: 'B', 1: 'C' };
-                                      const levelColors = { 4: '#10b981', 3: '#3b82f6', 2: '#f59e0b', 1: '#ef4444' };
+                                      const levelColors = { 4: '#188038', 3: '#1967d2', 2: '#b06000', 1: '#d93025' };
                                       displayValue = levelMap[scoreValue] || '—';
                                       bgColor = levelColors[scoreValue] ? `${levelColors[scoreValue]}15` : 'transparent';
                                       borderColor = levelColors[scoreValue] ? `${levelColors[scoreValue]}50` : 'var(--border-color)';
@@ -1366,12 +1084,12 @@ export default function Grades() {
                                   })}
                                 </div>
                                 {(ev.score !== null && ev.score !== undefined) && (
-                                  <div style={{ 
-                                    marginTop: '1rem', 
+                                  <div style={{
+                                    marginTop: '1rem',
                                     padding: '0.75rem',
                                     borderRadius: '8px',
-                                    background: 'rgba(0,0,0,0.2)',
-                                    display: 'flex', 
+                                    background: '#f1f3f4',
+                                    display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center'
                                   }}>
@@ -1386,11 +1104,11 @@ export default function Grades() {
 
                             {/* Para instrumentos sin criterios (prueba escrita, portafolio) */}
                             {evalCriteria.length === 0 && (
-                              <div style={{ 
+                              <div style={{
                                 marginTop: '0.5rem',
                                 padding: '0.75rem',
                                 borderRadius: '8px',
-                                background: 'rgba(0,0,0,0.15)'
+                                background: '#f8f9fa'
                               }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Puntaje</span>
@@ -1448,20 +1166,20 @@ export default function Grades() {
                   </button>
                 </div>
 
-                <div style={{ 
-                  display: 'flex', alignItems: 'center', gap: '1rem', 
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '1rem',
                   padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem',
-                  background: viewingEvaluation.qualitative === 'AD' ? 'rgba(16,185,129,0.1)' :
-                             viewingEvaluation.qualitative === 'A' ? 'rgba(59,130,246,0.1)' :
-                             viewingEvaluation.qualitative === 'B' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)'
+                  background: viewingEvaluation.qualitative === 'AD' ? '#e6f4ea' :
+                             viewingEvaluation.qualitative === 'A' ? '#e8f0fe' :
+                             viewingEvaluation.qualitative === 'B' ? '#fef7e0' : '#fce8e6'
                 }}>
-                  <div style={{ 
+                  <div style={{
                     width: '56px', height: '56px', borderRadius: '12px',
-                    background: viewingEvaluation.qualitative === 'AD' ? '#10b981' :
-                               viewingEvaluation.qualitative === 'A' ? '#3b82f6' :
-                               viewingEvaluation.qualitative === 'B' ? '#f59e0b' : '#ef4444',
+                    background: viewingEvaluation.qualitative === 'AD' ? '#188038' :
+                               viewingEvaluation.qualitative === 'A' ? '#1967d2' :
+                               viewingEvaluation.qualitative === 'B' ? '#e37400' : '#d93025',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1.5rem', fontWeight: 800, color: 'white'
+                    fontSize: '1.5rem', fontWeight: 500, color: 'white'
                   }}>
                     {viewingEvaluation.qualitative}
                   </div>
@@ -1491,17 +1209,17 @@ export default function Grades() {
                           : ['C', 'B', 'A', 'AD'][(score - 1)] || score;
                         
                         return (
-                          <div key={criterionId} style={{ 
+                          <div key={criterionId} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                            padding: '0.75rem', background: '#f8fafc', borderRadius: '8px',
-                            border: '1px solid var(--border-color)'
+                            padding: '0.75rem', background: '#f8f9fa', borderRadius: '8px',
+                            border: '1px solid #e8eaed'
                           }}>
                             <span style={{ flex: 1, fontSize: '0.9rem' }}>{criterion.text || criterionId}</span>
-                            <span style={{ 
-                              fontWeight: 700, marginLeft: '1rem',
-                              color: viewingEvaluation.instrumentType === 'checklist' 
-                                ? (score ? '#10b981' : '#ef4444')
-                                : score === 4 ? '#10b981' : score === 3 ? '#3b82f6' : score === 2 ? '#f59e0b' : '#ef4444'
+                            <span style={{
+                              fontWeight: 500, marginLeft: '1rem',
+                              color: viewingEvaluation.instrumentType === 'checklist'
+                                ? (score ? '#188038' : '#d93025')
+                                : score === 4 ? '#188038' : score === 3 ? '#1967d2' : score === 2 ? '#b06000' : '#d93025'
                             }}>
                               {scoreLabel}
                             </span>
@@ -1513,19 +1231,19 @@ export default function Grades() {
                 )}
 
                 {viewingEvaluation.scores?.__note__ && (
-                  <div style={{ 
-                    padding: '1rem', background: 'rgba(99,102,241,0.05)',
-                    border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px',
+                  <div style={{
+                    padding: '1rem', background: '#e8f0fe',
+                    borderRadius: '8px',
                     marginBottom: '1rem'
                   }}>
-                    <h4 style={{ fontSize: '0.85rem', color: '#6366f1', marginBottom: '0.5rem' }}>Nota del docente:</h4>
+                    <h4 style={{ fontSize: '0.85rem', color: '#1967d2', marginBottom: '0.5rem' }}>Nota del docente:</h4>
                     <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>{viewingEvaluation.scores.__note__}</p>
                   </div>
                 )}
 
-                <div style={{ 
+                <div style={{
                   display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                  gap: '0.75rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px',
+                  gap: '0.75rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px',
                   fontSize: '0.85rem'
                 }}>
                   <div>
@@ -1544,16 +1262,16 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
                   <button onClick={() => setViewingEvaluation(null)} style={{
-                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                    background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    flex: 1, padding: '0.75rem', borderRadius: '20px', border: '1px solid #dadce0',
+                    background: 'white', color: '#5f6368', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                   }}>Cerrar</button>
                   <button onClick={() => {
                     setEditingEvaluation({ ...viewingEvaluation });
                     setViewingEvaluation(null);
                   }} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                    padding: '0.75rem 1rem', borderRadius: '10px', border: 'none',
-                    background: '#eff6ff', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    padding: '0.75rem 1rem', borderRadius: '20px', border: 'none',
+                    background: '#e8f0fe', color: '#1967d2', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                   }}>
                     ✏️ Modificar
                   </button>
@@ -1564,8 +1282,8 @@ export default function Grades() {
                     }
                   }} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                    padding: '0.75rem 1rem', borderRadius: '10px', border: 'none',
-                    background: '#fee2e2', color: '#dc2626', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    padding: '0.75rem 1rem', borderRadius: '20px', border: 'none',
+                    background: '#fce8e6', color: '#d93025', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                   }}>
                     <Trash2 size={16} /> Eliminar
                   </button>
@@ -1579,7 +1297,7 @@ export default function Grades() {
             const evType = editingEvaluation.instrumentType || 'checklist';
             const evCriteria = editingEvaluation.criteria || [];
             const isNew = editingEvaluation._isNew;
-            const gradeColor = { AD: '#10b981', A: '#3b82f6', B: '#f59e0b', C: '#ef4444' };
+            const gradeColor = { AD: '#188038', A: '#1967d2', B: '#e37400', C: '#d93025' };
             const gradeLabel = { AD: 'Logro Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
 
             const { score, max, direct } = calcScore(evType, editScores, evCriteria);
@@ -1651,17 +1369,17 @@ export default function Grades() {
 
                     {/* CHECKLIST */}
                     {evType === 'checklist' && evCriteria.map((c, idx) => (
-                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
                         <div style={{ display: 'flex', gap: '0.6rem' }}>
-                          {[{ val: true, label: '✅ Logrado', color: '#10b981' }, { val: false, label: '❌ No Logrado', color: '#ef4444' }].map(opt => (
+                          {[{ val: true, label: '✅ Logrado', color: '#188038' }, { val: false, label: '❌ No Logrado', color: '#d93025' }].map(opt => (
                             <button key={String(opt.val)}
                               onClick={() => setEditScores(s => ({ ...s, [c.id]: opt.val }))}
                               style={{
                                 flex: 1, padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-                                border: `2px solid ${editScores[c.id] === opt.val ? opt.color : '#e2e8f0'}`,
+                                border: `2px solid ${editScores[c.id] === opt.val ? opt.color : '#dadce0'}`,
                                 background: editScores[c.id] === opt.val ? opt.color + '18' : 'white',
-                                color: editScores[c.id] === opt.val ? opt.color : '#64748b'
+                                color: editScores[c.id] === opt.val ? opt.color : '#5f6368'
                               }}>{opt.label}</button>
                           ))}
                         </div>
@@ -1670,17 +1388,17 @@ export default function Grades() {
 
                     {/* OBSERVATION */}
                     {evType === 'observation' && evCriteria.map((c, idx) => (
-                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.5rem' }}>
-                          {[{ v: 3, l: '🟢 Siempre', color: '#10b981' }, { v: 2, l: '🟡 A veces', color: '#f59e0b' }, { v: 1, l: '🔴 Nunca', color: '#ef4444' }].map(opt => (
+                          {[{ v: 3, l: '🟢 Siempre', color: '#188038' }, { v: 2, l: '🟡 A veces', color: '#e37400' }, { v: 1, l: '🔴 Nunca', color: '#d93025' }].map(opt => (
                             <button key={opt.v}
                               onClick={() => setEditScores(s => ({ ...s, [c.id]: opt.v }))}
                               style={{
                                 padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
-                                border: `2px solid ${editScores[c.id] === opt.v ? opt.color : '#e2e8f0'}`,
+                                border: `2px solid ${editScores[c.id] === opt.v ? opt.color : '#dadce0'}`,
                                 background: editScores[c.id] === opt.v ? opt.color + '18' : 'white',
-                                color: editScores[c.id] === opt.v ? opt.color : '#64748b'
+                                color: editScores[c.id] === opt.v ? opt.color : '#5f6368'
                               }}>{opt.l}</button>
                           ))}
                         </div>
@@ -1689,17 +1407,17 @@ export default function Grades() {
 
                     {/* QUALITATIVE (scale, rubric, selfeval) */}
                     {['scale', 'rubric', 'selfeval'].includes(evType) && evCriteria.map((c, idx) => (
-                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
-                          {[{ v: 4, g: 'AD', l: 'Destacado', color: '#10b981' }, { v: 3, g: 'A', l: 'Logrado', color: '#3b82f6' }, { v: 2, g: 'B', l: 'En Proceso', color: '#f59e0b' }, { v: 1, g: 'C', l: 'En Inicio', color: '#ef4444' }].map(lv => (
+                          {[{ v: 4, g: 'AD', l: 'Destacado', color: '#188038' }, { v: 3, g: 'A', l: 'Logrado', color: '#1967d2' }, { v: 2, g: 'B', l: 'En Proceso', color: '#e37400' }, { v: 1, g: 'C', l: 'En Inicio', color: '#d93025' }].map(lv => (
                             <button key={lv.v}
                               onClick={() => setEditScores(s => ({ ...s, [c.id]: lv.v }))}
                               style={{
                                 padding: '0.5rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
-                                border: `2px solid ${editScores[c.id] === lv.v ? lv.color : '#e2e8f0'}`,
+                                border: `2px solid ${editScores[c.id] === lv.v ? lv.color : '#dadce0'}`,
                                 background: editScores[c.id] === lv.v ? lv.color + '18' : 'white',
-                                color: editScores[c.id] === lv.v ? lv.color : '#64748b',
+                                color: editScores[c.id] === lv.v ? lv.color : '#5f6368',
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
                               }}>
                               <span style={{ fontSize: '1rem' }}>{lv.g}</span>
@@ -1712,11 +1430,11 @@ export default function Grades() {
 
                     {/* WRITTEN / NUMERIC */}
                     {evType === 'written' && (
-                      <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem' }}>Puntaje obtenido (0 – 20)</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <input type="number" min="0" max="20"
-                            style={{ width: '90px', fontSize: '2rem', textAlign: 'center', fontWeight: 700, padding: '0.5rem', borderRadius: '8px', border: '2px solid #e2e8f0' }}
+                            style={{ width: '90px', fontSize: '2rem', textAlign: 'center', fontWeight: 700, padding: '0.5rem', borderRadius: '8px', border: '2px solid #dadce0' }}
                             value={editScores['__numeric__'] ?? ''}
                             onChange={e => setEditScores({ __numeric__: Math.min(20, Math.max(0, Number(e.target.value))) })}
                           />
@@ -1727,7 +1445,7 @@ export default function Grades() {
 
                     {/* PORTFOLIO / ANECDOTAL / DIRECT */}
                     {['portfolio', 'anecdotal'].includes(evType) && (
-                      <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
                           {['AD', 'A', 'B', 'C'].map(g => (
@@ -1735,9 +1453,9 @@ export default function Grades() {
                               onClick={() => setEditScores({ ...editScores, __direct__: g })}
                               style={{
                                 padding: '0.75rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
-                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#e2e8f0'}`,
+                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#dadce0'}`,
                                 background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'white',
-                                color: editScores['__direct__'] === g ? gradeColor[g] : '#64748b',
+                                color: editScores['__direct__'] === g ? gradeColor[g] : '#5f6368',
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
                               }}>
                               <span style={{ fontSize: '1.1rem' }}>{g}</span>
@@ -1748,7 +1466,7 @@ export default function Grades() {
                         {evType === 'anecdotal' && (
                           <div style={{ marginTop: '0.75rem' }}>
                             <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Descripción del hecho observado</label>
-                            <textarea rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', resize: 'vertical', fontSize: '0.85rem' }}
+                            <textarea rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #dadce0', resize: 'vertical', fontSize: '0.85rem' }}
                               value={editScores['__note__'] || ''}
                               onChange={e => setEditScores(s => ({ ...s, __note__: e.target.value }))}
                               placeholder="Describe brevemente la situación observada..."
@@ -1759,7 +1477,7 @@ export default function Grades() {
                     )}
 
                     {evCriteria.length === 0 && !['portfolio', 'anecdotal', 'written'].includes(evType) && (
-                      <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
                           {['AD', 'A', 'B', 'C'].map(g => (
@@ -1772,9 +1490,9 @@ export default function Grades() {
                               }}
                               style={{
                                 padding: '0.75rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
-                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#e2e8f0'}`,
+                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#dadce0'}`,
                                 background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'white',
-                                color: editScores['__direct__'] === g ? gradeColor[g] : '#64748b',
+                                color: editScores['__direct__'] === g ? gradeColor[g] : '#5f6368',
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
                               }}>
                               <span style={{ fontSize: '1.1rem' }}>{g}</span>
@@ -1790,13 +1508,13 @@ export default function Grades() {
                   {/* Footer botones */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button onClick={() => setEditingEvaluation(null)} style={{
-                      flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                      background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                      flex: 1, padding: '0.75rem', borderRadius: '20px', border: '1px solid #dadce0',
+                      background: 'white', color: '#5f6368', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                     }}>Cancelar</button>
                     <button onClick={handleSaveEdit} style={{
-                      flex: 2, padding: '0.75rem', borderRadius: '10px', border: 'none',
-                      background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: 'white',
-                      fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
+                      flex: 2, padding: '0.75rem', borderRadius: '20px', border: 'none',
+                      background: '#1a73e8', color: 'white',
+                      fontWeight: 500, cursor: 'pointer', fontSize: '0.9rem',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
                     }}>💾 Guardar Calificación</button>
                   </div>
@@ -1853,14 +1571,14 @@ export default function Grades() {
                           setPickerCompetencyId(null);
                         }} style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px',
-                          padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0',
+                          padding: '1rem', borderRadius: '12px', border: '1px solid #dadce0',
                           background: 'white', cursor: 'pointer', textAlign: 'left', width: '100%',
                           transition: 'all 0.15s'
                         }}>
                           <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
                             {inst.title || inst.name || 'Sin título'}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          <span style={{ fontSize: '0.75rem', color: '#5f6368' }}>
                             {inst.type || '—'} · {inst.criteria?.length || 0} criterio(s)
                           </span>
                         </button>
@@ -1868,7 +1586,7 @@ export default function Grades() {
                     </div>
                   )}
                   <button onClick={() => { setInstrumentPickerOpen(false); setPickerCompetencyId(null); }}
-                    style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
+                    style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '10px', border: '1px solid #dadce0', background: 'white', color: '#5f6368', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
                     Cancelar
                   </button>
                 </div>
@@ -1889,10 +1607,10 @@ export default function Grades() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{
                       width: '40px', height: '40px', borderRadius: '10px',
-                      background: 'rgba(16,185,129,0.15)',
+                      background: '#e6f4ea',
                       display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
-                      <Plus size={20} color="#10b981" />
+                      <Plus size={20} color="#188038" />
                     </div>
                     <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Nueva Columna</h3>
                   </div>
@@ -1912,14 +1630,14 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5f6368', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
                     <input type="text" className="input-field" placeholder="Ej: Participación oral, Actividad en pizarra..." value={quickGrade.activityName}
                       onChange={e => setQuickGrade(prev => ({ ...prev, activityName: e.target.value }))} style={{ width: '100%' }} />
                   </div>
 
                   {currentSubject?.competencies?.length > 0 && (
                     <div>
-                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Competencia <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5f6368', display: 'block', marginBottom: '0.35rem' }}>Competencia <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
                       <select value={quickGrade.competencyId} onChange={e => setQuickGrade(prev => ({ ...prev, competencyId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
                         <option value="">Todas las competencias</option>
                         {currentSubject.competencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1928,7 +1646,7 @@ export default function Grades() {
                   )}
 
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5f6368', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
                     <input type="date" className="input-field" value={quickGrade.date}
                       onChange={e => setQuickGrade(prev => ({ ...prev, date: e.target.value }))} style={{ width: '100%' }} />
                   </div>
@@ -1936,8 +1654,8 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
                   <button onClick={() => setShowQuickGrade(false)} style={{
-                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                    background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #dadce0',
+                    background: 'white', color: '#5f6368', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                   }}>Cancelar</button>
                   <button onClick={async () => {
                     if (!quickGrade.activityName.trim()) { setQuickGradeMsg('Ingresa el nombre de la actividad'); return; }
@@ -1972,8 +1690,8 @@ export default function Grades() {
                   }} disabled={quickGradeSaving} style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                     padding: '0.75rem', borderRadius: '10px', border: 'none',
-                    background: quickGradeSaving ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
-                    color: 'white', fontWeight: 600, cursor: quickGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
+                    background: quickGradeSaving ? '#9aa0a6' : '#1a73e8',
+                    color: 'white', fontWeight: 500, cursor: quickGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
                   }}>
                     <Send size={16} /> {quickGradeSaving ? 'Creando...' : 'Crear columna'}
                   </button>
@@ -2057,19 +1775,19 @@ export default function Grades() {
               }}>
                 <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
-                <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+                <div style={{ fontSize: '0.9rem', color: '#5f6368', marginTop: '0.25rem' }}>¡Seleccionado!</div>
                 <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.35rem' }}>{pickedCount}/{total} alumnos sorteados</div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                   <button onClick={() => setQuickAzarOpen(false)} style={{
                     padding: '0.6rem 1.5rem', borderRadius: '10px',
-                    border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)',
+                    border: 'none', background: '#188038',
                     color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                   }}>OK</button>
                   {pickedCount >= total && (
                     <button onClick={() => { setQuickAzarPicked(new Set()); setQuickAzarOpen(false); }} style={{
                       padding: '0.6rem 1.5rem', borderRadius: '10px',
-                      border: '1px solid #e2e8f0', background: 'white',
-                      color: '#64748b', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                      border: '1px solid #dadce0', background: 'white',
+                      color: '#5f6368', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                     }}>Reiniciar ciclo</button>
                   )}
                 </div>
