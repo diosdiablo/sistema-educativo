@@ -354,6 +354,11 @@ select.input-field {
   animation: tooltipFadeIn 0.15s ease-out;
 }
 
+.event-tooltip-wrapper:hover .event-tooltip {
+  display: block !important;
+  animation: tooltipFadeIn 0.15s ease-out;
+}
+
 @keyframes tooltipFadeIn {
   from { opacity: 0; transform: translateX(-50%) translateY(4px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
