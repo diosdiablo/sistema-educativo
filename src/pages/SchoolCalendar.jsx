@@ -1,14 +1,14 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Bell, BookOpen, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
 
 const EVENT_COLORS = {
-  holiday: { solid: '#ef4444', soft: '#ef444420', text: '#ef4444' },
-  meeting: { solid: '#3b82f6', soft: '#3b82f620', text: '#3b82f6' },
-  event: { solid: '#10b981', soft: '#10b98120', text: '#10b981' },
-  exam: { solid: '#f59e0b', soft: '#f59e0b20', text: '#f59e0b' },
-  other: { solid: '#8b5cf6', soft: '#8b5cf620', text: '#8b5cf6' },
+  holiday: { bg: '#ef444420', text: '#ef4444', border: '#ef4444' },
+  meeting: { bg: '#3b82f620', text: '#3b82f6', border: '#3b82f6' },
+  event: { bg: '#10b98120', text: '#10b981', border: '#10b981' },
+  exam: { bg: '#f59e0b20', text: '#f59e0b', border: '#f59e0b' },
+  other: { bg: '#8b5cf620', text: '#8b5cf6', border: '#8b5cf6' },
 };
 
 const EVENT_TYPE_LABELS = {
@@ -30,41 +30,6 @@ const EVENT_TYPE_ICONS = {
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-function EventTooltip({ ev, targetRef }) {
-  if (!ev || !targetRef) return null;
-  const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
-  const rect = targetRef.getBoundingClientRect();
-  return (
-    <div style={{
-      position: 'fixed',
-      left: Math.min(Math.max(rect.left + rect.width / 2, 160), window.innerWidth - 160),
-      top: rect.top - 6,
-      transform: 'translate(-50%, -100%)',
-      background: '#1e293b', color: '#f1f5f9',
-      padding: '0.55rem 0.85rem', borderRadius: '10px', fontSize: '0.75rem',
-      zIndex: 9999, boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-      lineHeight: 1.4, textAlign: 'left',
-      pointerEvents: 'none', whiteSpace: 'nowrap', maxWidth: '320px',
-    }}>
-      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
-        <Icon size={12} /> {ev.title}
-      </div>
-      <div style={{ color: '#94a3b8', fontSize: '0.65rem', marginTop: '2px' }}>
-        {EVENT_TYPE_LABELS[ev.type] || 'Otro'} · {new Date(ev.date + 'T12:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}
-      </div>
-      {ev.description && (
-        <div style={{ color: '#cbd5e1', fontSize: '0.65rem', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4px', whiteSpace: 'normal' }}>
-          {ev.description.length > 90 ? ev.description.substring(0, 90) + '...' : ev.description}
-        </div>
-      )}
-      <div style={{
-        position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
-        width: '8px', height: '8px', background: '#1e293b'
-      }} />
-    </div>
-  );
-}
-
 export default function SchoolCalendar() {
   const { events, addEvent, updateEvent, deleteEvent, seedEvents } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -73,8 +38,6 @@ export default function SchoolCalendar() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
-  const [tooltip, setTooltip] = useState(null);
-  const tooltipTargetRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 600);
@@ -85,7 +48,10 @@ export default function SchoolCalendar() {
   const loadCivicCalendar = async () => {
     const existingTitles = new Set(events.map(e => e.title));
     const toAdd = CALENDARIO_CIVICO.filter(ev => !existingTitles.has(ev.title));
-    if (toAdd.length === 0) { alert('El Calendario Cívico ya está cargado'); return; }
+    if (toAdd.length === 0) {
+      alert('El Calendario Cívico ya está cargado');
+      return;
+    }
     await seedEvents(toAdd);
     alert(`Se agregaron ${toAdd.length} fechas del Calendario Cívico Escolar`);
   };
@@ -99,6 +65,7 @@ export default function SchoolCalendar() {
     const startPad = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
     const cells = [];
+
     for (let i = 0; i < startPad; i++) {
       const d = new Date(year, month, -startPad + i + 1);
       cells.push({ day: d.getDate(), date: formatDate(d), isOutside: true });
@@ -107,9 +74,10 @@ export default function SchoolCalendar() {
       const d = new Date(year, month, i);
       const today = new Date();
       cells.push({
-        day: i, date: formatDate(d), isOutside: false,
+        day: i,
+        date: formatDate(d),
+        isOutside: false,
         isToday: d.toDateString() === today.toDateString(),
-        isWeekend: d.getDay() === 0 || d.getDay() === 6,
       });
     }
     const remaining = 42 - cells.length;
@@ -131,15 +99,22 @@ export default function SchoolCalendar() {
     const map = {};
     events.forEach(ev => {
       if (!map[ev.date]) map[ev.date] = [];
-      const isDuplicate = map[ev.date].some(e => e.title === ev.title && e.type === ev.type);
-      if (!isDuplicate) map[ev.date].push(ev);
+      map[ev.date].push(ev);
     });
     return map;
   }, [events]);
 
-  function prevMonth() { setCurrentDate(new Date(year, month - 1, 1)); }
-  function nextMonth() { setCurrentDate(new Date(year, month + 1, 1)); }
-  function goToday() { setCurrentDate(new Date()); }
+  function prevMonth() {
+    setCurrentDate(new Date(year, month - 1, 1));
+  }
+
+  function nextMonth() {
+    setCurrentDate(new Date(year, month + 1, 1));
+  }
+
+  function goToday() {
+    setCurrentDate(new Date());
+  }
 
   function openAddForm(dateStr) {
     setEditingEvent(null);
@@ -157,21 +132,14 @@ export default function SchoolCalendar() {
 
   function handleSave() {
     if (!formData.title.trim()) return;
-    if (editingEvent) { updateEvent(editingEvent.id, formData); }
-    else { addEvent(formData); }
+    if (editingEvent) {
+      updateEvent(editingEvent.id, formData);
+    } else {
+      addEvent(formData);
+    }
     setShowForm(false);
     setEditingEvent(null);
   }
-
-  const showTooltip = useCallback((ev, e) => {
-    tooltipTargetRef.current = e.currentTarget;
-    setTooltip(ev);
-  }, []);
-
-  const hideTooltip = useCallback(() => {
-    tooltipTargetRef.current = null;
-    setTooltip(null);
-  }, []);
 
   return (
     <div className="animate-fade-in">
@@ -181,8 +149,10 @@ export default function SchoolCalendar() {
         borderRadius: '20px', padding: isMobile ? '1.25rem 1rem' : '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
-        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px',
+          background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px',
+          background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
           <div style={{
             width: '56px', height: '56px', borderRadius: '14px',
@@ -199,119 +169,138 @@ export default function SchoolCalendar() {
       </div>
 
       {/* Calendar card */}
-      <div style={{
-        background: 'white', borderRadius: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', overflow: 'hidden'
-      }}>
+      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
         {/* Navigation */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '1rem 1.5rem', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem'
+          padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.4rem' : '0.6rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', flexWrap: 'wrap' }}>
             <button onClick={prevMonth} style={{
-              padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0',
+              padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
               background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              color: '#64748b', transition: 'all 0.15s ease'
+              color: '#64748b', transition: 'all 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-            ><ChevronLeft size={18} /></button>
-            <h3 style={{ fontSize: isMobile ? '0.95rem' : '1.15rem', fontWeight: 700, margin: '0 4px', minWidth: isMobile ? 'auto' : '170px', color: '#1e293b' }}>
+              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
+            ><ChevronLeft size={20} /></button>
+            <h3 style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, margin: 0, minWidth: isMobile ? 'auto' : '180px' }}>
               {MONTHS[month]} {year}
             </h3>
             <button onClick={nextMonth} style={{
-              padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0',
+              padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
               background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              color: '#64748b', transition: 'all 0.15s ease'
+              color: '#64748b', transition: 'all 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-            ><ChevronRight size={18} /></button>
+              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
+            ><ChevronRight size={20} /></button>
             <button onClick={goToday} style={{
-              padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0',
-              background: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
-              color: '#64748b', transition: 'all 0.15s ease'
+              padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+              background: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              color: '#64748b', transition: 'all 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
             >Hoy</button>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button onClick={() => openAddForm(formatDate(new Date()))} style={{
-              display: 'flex', alignItems: 'center', gap: '0.4rem',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              color: 'white', border: 'none', padding: isMobile ? '0.45rem 0.7rem' : '0.6rem 1rem',
-              borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-              fontSize: isMobile ? '0.75rem' : '0.82rem',
-              boxShadow: '0 3px 12px rgba(245, 158, 11, 0.3)', transition: 'all 0.2s ease'
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              <Plus size={isMobile ? 14 : 16} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
-            </button>
-            <button onClick={loadCivicCalendar} style={{
-              display: 'flex', alignItems: 'center', gap: '0.4rem',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: 'white', border: 'none', padding: isMobile ? '0.45rem 0.7rem' : '0.6rem 1rem',
-              borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-              fontSize: isMobile ? '0.75rem' : '0.82rem',
-              boxShadow: '0 3px 12px rgba(16, 185, 129, 0.3)', transition: 'all 0.2s ease'
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              <Download size={isMobile ? 14 : 16} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
-            </button>
-          </div>
+          <button onClick={() => openAddForm(formatDate(new Date()))} style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
+            borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
+            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
+            transition: 'all 0.2s ease'
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.3)'; }}
+          >
+            <Plus size={isMobile ? 14 : 18} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
+          </button>
+          <button onClick={loadCivicCalendar} style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
+            borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
+            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+            transition: 'all 0.2s ease'
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.3)'; }}
+          >
+            <Download size={isMobile ? 14 : 18} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
+          </button>
         </div>
 
-        {/* Calendar grid */}
-        <div className="cal-grid">
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
+          width: '100%', minWidth: 0
+        }}>
+          {/* Day names */}
           {DAYS.map((d, idx) => (
-            <div key={'h' + idx} className="cal-dow" style={{ fontSize: isMobile ? '0.62rem' : undefined }}>{d}</div>
+            <div key={'h' + idx} style={{
+              textAlign: 'center', padding: isMobile ? '0.2rem' : '0.5rem',
+              fontWeight: 700, fontSize: isMobile ? '0.65rem' : '0.8rem', color: '#94a3b8',
+              boxSizing: 'border-box',
+              borderBottom: '1px solid #f1f5f9',
+              borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
+            }}>{d}</div>
           ))}
+          {/* Calendar cells */}
           {calendarDays.map((cell, idx) => {
             const dayEvents = eventsByDate[cell.date] || [];
-            const maxShow = isMobile ? 0 : 3;
+            const maxShow = isMobile ? 0 : 2;
             const remaining = dayEvents.length - maxShow;
-            const classes = ['cal-cell'];
-            if (cell.isToday) classes.push('cal-today');
-            else if (cell.isWeekend) classes.push('cal-weekend');
-            if (cell.isOutside) classes.push('cal-outside');
             return (
-              <div key={idx} className={classes.join(' ')} onClick={() => openAddForm(cell.date)}>
-                <div className="cal-daynum">{cell.day}</div>
-
-                {isMobile && dayEvents.length > 0 && (
-                  <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
-                    {dayEvents.slice(0, 4).map(ev => (
-                      <div key={ev.id} style={{
-                        width: '6px', height: '6px', borderRadius: '50%',
-                        background: EVENT_COLORS[ev.type]?.solid || '#8b5cf6'
-                      }} />
-                    ))}
-                  </div>
-                )}
-
-                {!isMobile && dayEvents.slice(0, maxShow).map(ev => {
+              <div key={idx} onClick={() => openAddForm(cell.date)} style={{
+                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.2rem' : '0.5rem',
+                overflow: 'hidden', boxSizing: 'border-box',
+                borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
+                borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
+                background: cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white',
+                cursor: 'pointer', transition: 'background 0.15s ease',
+                opacity: cell.isOutside ? 0.4 : 1,
+                position: 'relative'
+              }}
+                onMouseEnter={e => { if (!cell.isOutside) e.currentTarget.style.background = '#f8fafc'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white'; }}
+              >
+                <div style={{
+                  fontSize: isMobile ? '0.65rem' : '0.85rem', fontWeight: cell.isToday ? 800 : 600,
+                  color: cell.isToday ? '#d97706' : '#1e293b',
+                  width: isMobile ? '20px' : '28px', height: isMobile ? '20px' : '28px', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  borderRadius: '50%',
+                  background: cell.isToday ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
+                  marginBottom: '0.25rem'
+                }}>{cell.day}</div>
+                {dayEvents.slice(0, maxShow).map(ev => {
                   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
                   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
                   return (
-                    <div key={ev.id} className="cal-chip"
-                      onClick={(e) => { e.stopPropagation(); openEditForm(ev); }}
-                      onMouseEnter={e => showTooltip(ev, e)}
-                      onMouseMove={e => showTooltip(ev, e)}
-                      onMouseLeave={hideTooltip}
-                      style={{ background: colors.solid }}
+                    <div key={ev.id} onClick={(e) => { e.stopPropagation(); openEditForm(ev); }} style={{
+                      display: 'flex', alignItems: 'center', gap: '3px',
+                      padding: '2px 6px', borderRadius: '6px', marginBottom: '2px',
+                      background: colors.bg, color: colors.text,
+                      fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
+                      overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                      border: `1px solid ${colors.border}30`,
+                      transition: 'all 0.15s ease'
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = colors.border; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${colors.border}30`; }}
                     >
-                      <Icon size={10} style={{ flexShrink: 0 }} />
-                      <span>{ev.title}</span>
+                      <Icon size={10} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</span>
                     </div>
                   );
                 })}
                 {remaining > 0 && (
-                  <div className="cal-more">+{remaining} más</div>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, paddingLeft: '6px' }}>
+                    +{remaining} más
+                  </div>
                 )}
               </div>
             );
@@ -319,89 +308,83 @@ export default function SchoolCalendar() {
         </div>
       </div>
 
-      {/* Leyenda */}
+      {/* Leyenda de tipos */}
       <div style={{
         display: 'flex', gap: '1rem', marginTop: '1rem',
-        padding: '0.85rem 1.25rem', background: 'white', borderRadius: '14px',
-        boxShadow: '0 2px 16px rgba(0,0,0,0.06)', flexWrap: 'wrap', alignItems: 'center'
+        padding: '1rem 1.5rem', background: 'white', borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flexWrap: 'wrap',
+        alignItems: 'center'
       }}>
-        <span style={{ fontWeight: 600, fontSize: '0.8rem', color: '#94a3b8' }}>Tipos:</span>
+        <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#64748b' }}>Tipos de evento:</span>
         {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => {
           const colors = EVENT_COLORS[key];
+          const Icon = EVENT_TYPE_ICONS[key];
           return (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600, color: colors.text }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: colors.solid, display: 'inline-block' }} />
-              {label}
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: colors.text }}>
+              <Icon size={14} /> {label}
             </div>
           );
         })}
       </div>
 
-      {/* Tooltip */}
-      <EventTooltip ev={tooltip} targetRef={tooltipTargetRef.current} />
-
       {/* Modal de evento */}
       {showForm && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          padding: '1rem', zIndex: 1000
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+          padding: '4rem 1rem', zIndex: 1000
         }} onClick={() => setShowForm(false)}>
           <div style={{
-            maxWidth: '420px', width: '100%', background: 'white',
-            borderRadius: '20px', padding: '1.75rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-            position: 'relative', maxHeight: '90vh', overflow: 'auto'
+            maxWidth: '450px', width: '100%', background: 'white',
+            borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            position: 'relative'
           }} className="animate-fade-in" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
-                  width: '42px', height: '42px', borderRadius: '12px',
+                  width: '48px', height: '48px', borderRadius: '12px',
                   background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {editingEvent ? <Edit2 size={20} color="white" /> : <Plus size={20} color="white" />}
+                  {editingEvent ? <Edit2 size={22} color="white" /> : <Plus size={22} color="white" />}
                 </div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
                   {editingEvent ? 'Editar Evento' : 'Nuevo Evento'}
                 </h3>
               </div>
               <button onClick={() => setShowForm(false)} style={{
-                width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #e2e8f0',
-                background: 'white', color: '#64748b', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}><X size={18} /></button>
+                background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.5rem'
+              }}><X size={24} /></button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Título</label>
+                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Título</label>
                 <input className="input-field" type="text" placeholder="Ej. Día del Maestro"
                   value={formData.title}
                   onChange={e => setFormData({ ...formData, title: e.target.value })}
                   style={{ width: '100%' }} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                <div>
-                  <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Fecha</label>
-                  <input className="input-field" type="date"
-                    value={formData.date}
-                    onChange={e => setFormData({ ...formData, date: e.target.value })}
-                    style={{ width: '100%' }} />
-                </div>
-                <div>
-                  <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Tipo</label>
-                  <select className="input-field" value={formData.type}
-                    onChange={e => setFormData({ ...formData, type: e.target.value })}
-                    style={{ width: '100%' }}>
-                    {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>{label}</option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
+                <input className="input-field" type="date"
+                  value={formData.date}
+                  onChange={e => setFormData({ ...formData, date: e.target.value })}
+                  style={{ width: '100%' }} />
               </div>
               <div>
-                <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Descripción (opcional)</label>
+                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Tipo</label>
+                <select className="input-field" value={formData.type}
+                  onChange={e => setFormData({ ...formData, type: e.target.value })}
+                  style={{ width: '100%' }}>
+                  {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Descripción (opcional)</label>
                 <textarea className="input-field" placeholder="Descripción del evento..."
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -410,30 +393,30 @@ export default function SchoolCalendar() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.25rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
               {editingEvent && (
                 <button onClick={() => { if (window.confirm('¿Eliminar este evento?')) { deleteEvent(editingEvent.id); setShowForm(false); } }} style={{
-                  padding: '0.65rem 0.9rem', borderRadius: '10px',
+                  padding: '0.75rem 1rem', borderRadius: '12px',
                   background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
-                  fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem'
+                  fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
                 }}>
-                  <Trash2 size={16} /> Eliminar
+                  <Trash2 size={18} /> Eliminar
                 </button>
               )}
-              <div style={{ flex: 1, display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
+              <div style={{ flex: 1, display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button onClick={() => setShowForm(false)} style={{
-                  padding: '0.65rem 1.1rem', borderRadius: '10px',
+                  padding: '0.75rem 1.25rem', borderRadius: '12px',
                   background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0',
-                  fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem'
+                  fontWeight: 600, cursor: 'pointer'
                 }}>Cancelar</button>
                 <button onClick={handleSave} style={{
-                  padding: '0.65rem 1.1rem', borderRadius: '10px',
+                  padding: '0.75rem 1.25rem', borderRadius: '12px',
                   background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem',
-                  boxShadow: '0 3px 12px rgba(245, 158, 11, 0.3)'
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
                 }}>
-                  <Save size={16} /> {editingEvent ? 'Actualizar' : 'Guardar'}
+                  <Save size={18} /> {editingEvent ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>
             </div>
