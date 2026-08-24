@@ -5,11 +5,11 @@ import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon
 import CALENDARIO_CIVICO from '../data/calendario-civico';
 
 const EVENT_COLORS = {
-  holiday: { bg: '#ef444420', text: '#ef4444', border: '#ef4444' },
-  meeting: { bg: '#3b82f620', text: '#3b82f6', border: '#3b82f6' },
-  event: { bg: '#10b98120', text: '#10b981', border: '#10b981' },
-  exam: { bg: '#f59e0b20', text: '#f59e0b', border: '#f59e0b' },
-  other: { bg: '#8b5cf620', text: '#8b5cf6', border: '#8b5cf6' },
+  holiday: { bg: '#D50000', text: '#ffffff', dark: '#990000' },
+  meeting: { bg: '#039BE5', text: '#ffffff', dark: '#0277bd' },
+  event: { bg: '#0B8043', text: '#ffffff', dark: '#095c32' },
+  exam: { bg: '#F4511E', text: '#ffffff', dark: '#c33c10' },
+  other: { bg: '#8E24AA', text: '#ffffff', dark: '#6a1b9a' },
 };
 
 const EVENT_TYPE_LABELS = {
@@ -194,163 +194,143 @@ export default function SchoolCalendar() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
-        borderRadius: '20px', padding: isMobile ? '1.25rem 1rem' : '2rem 2.5rem', marginBottom: '1.5rem',
-        color: 'white', position: 'relative', overflow: 'hidden'
-      }}>
-        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px',
-          background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px',
-          background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-          <div style={{
-            width: '56px', height: '56px', borderRadius: '14px',
-            background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', backdropFilter: 'blur(10px)'
-          }}>
-            <CalendarIcon size={28} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Calendario Escolar</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona feriados, reuniones y eventos importantes</p>
-          </div>
-        </div>
-      </div>
-
       {/* Calendar card */}
-      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-        {/* Navigation */}
+      <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', border: '1px solid #dadce0', overflow: 'hidden' }}>
+        {/* Toolbar */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem'
+          padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', flexWrap: 'wrap', gap: '0.75rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', flexWrap: 'wrap' }}>
-            <button onClick={prevMonth} style={{
-              padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-              background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              color: '#64748b', transition: 'all 0.2s ease'
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
-            ><ChevronLeft size={20} /></button>
-            <h3 style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, margin: 0, minWidth: isMobile ? 'auto' : '180px' }}>
-              {MONTHS[month]} {year}
-            </h3>
-            <button onClick={nextMonth} style={{
-              padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-              background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              color: '#64748b', transition: 'all 0.2s ease'
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
-            ><ChevronRight size={20} /></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '1rem', flexWrap: 'wrap' }}>
+            <h2 style={{
+              fontSize: isMobile ? '1.25rem' : '1.75rem', fontWeight: 400, margin: 0,
+              color: '#3c4043', letterSpacing: '-0.02em'
+            }}>
+              {MONTHS[month]} <span style={{ fontWeight: 300, color: '#5f6368' }}>{year}</span>
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <button onClick={prevMonth} title="Mes anterior" style={{
+                padding: '0.45rem', borderRadius: '50%', border: 'none',
+                background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                color: '#5f6368', transition: 'background 0.2s ease'
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              ><ChevronLeft size={22} /></button>
+              <button onClick={nextMonth} title="Mes siguiente" style={{
+                padding: '0.45rem', borderRadius: '50%', border: 'none',
+                background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                color: '#5f6368', transition: 'background 0.2s ease'
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              ><ChevronRight size={22} /></button>
+            </div>
             <button onClick={goToday} style={{
-              padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-              background: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-              color: '#64748b', transition: 'all 0.2s ease'
+              padding: '0.45rem 1rem', borderRadius: '20px',
+              border: '1px solid #dadce0', background: 'white', cursor: 'pointer',
+              fontWeight: 500, fontSize: '0.85rem', color: '#3c4043',
+              transition: 'box-shadow 0.2s ease, background 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'white'; }}
             >Hoy</button>
           </div>
-          <button onClick={() => openAddForm(formatDate(new Date()))} style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
-            borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-            fontSize: isMobile ? '0.75rem' : '0.85rem',
-            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
-            transition: 'all 0.2s ease'
-          }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.3)'; }}
-          >
-            <Plus size={isMobile ? 14 : 18} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
-          </button>
-          <button onClick={loadCivicCalendar} style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
-            color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
-            borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-            fontSize: isMobile ? '0.75rem' : '0.85rem',
-            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
-            transition: 'all 0.2s ease'
-          }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.3)'; }}
-          >
-            <Download size={isMobile ? 14 : 18} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button onClick={() => openAddForm(formatDate(new Date()))} style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              background: 'white', color: '#3c4043',
+              border: '1px solid #dadce0', padding: isMobile ? '0.45rem 0.75rem' : '0.55rem 1.1rem',
+              borderRadius: '20px', fontWeight: 500, cursor: 'pointer',
+              fontSize: isMobile ? '0.75rem' : '0.85rem',
+              boxShadow: '0 1px 2px rgba(60,64,67,0.15)',
+              transition: 'box-shadow 0.2s ease, background 0.2s ease'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'white'; }}
+            >
+              <Plus size={isMobile ? 14 : 18} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
+            </button>
+            <button onClick={loadCivicCalendar} style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              background: 'white', color: '#3c4043',
+              border: '1px solid #dadce0', padding: isMobile ? '0.45rem 0.75rem' : '0.55rem 1.1rem',
+              borderRadius: '20px', fontWeight: 500, cursor: 'pointer',
+              fontSize: isMobile ? '0.75rem' : '0.85rem',
+              boxShadow: '0 1px 2px rgba(60,64,67,0.15)',
+              transition: 'box-shadow 0.2s ease, background 0.2s ease'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'white'; }}
+            >
+              <Download size={isMobile ? 14 : 18} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
+            </button>
+          </div>
         </div>
 
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-          width: '100%', minWidth: 0
+          width: '100%', minWidth: 0,
+          borderTop: '1px solid #dadce0'
         }}>
           {/* Day names */}
           {DAYS.map((d, idx) => (
             <div key={'h' + idx} style={{
-              textAlign: 'center', padding: isMobile ? '0.2rem' : '0.5rem',
-              fontWeight: 700, fontSize: isMobile ? '0.65rem' : '0.8rem', color: '#94a3b8',
+              textAlign: 'center', padding: isMobile ? '0.3rem' : '0.6rem',
+              fontWeight: 500, fontSize: isMobile ? '0.6rem' : '0.72rem',
+              color: '#70757a', textTransform: 'uppercase', letterSpacing: '0.05em',
               boxSizing: 'border-box',
-              borderBottom: '1px solid #f1f5f9',
-              borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
+              borderBottom: '1px solid #dadce0',
+              borderRight: (idx % 7 !== 6) ? '1px solid #dadce0' : 'none'
             }}>{d}</div>
           ))}
           {/* Calendar cells */}
           {calendarDays.map((cell, idx) => {
             const dayEvents = eventsByDate[cell.date] || [];
-            const maxShow = isMobile ? 0 : 2;
+            const maxShow = isMobile ? 1 : 3;
             const remaining = dayEvents.length - maxShow;
             return (
               <div key={idx} onClick={() => openAddForm(cell.date)} style={{
-                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.2rem' : '0.5rem',
+                minHeight: isMobile ? '44px' : '96px', padding: isMobile ? '2px 3px' : '4px 5px',
                 overflow: 'hidden', boxSizing: 'border-box',
-                borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
-                borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
-                background: cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white',
+                borderRight: (idx % 7 !== 6) ? '1px solid #dadce0' : 'none',
+                borderBottom: '1px solid #dadce0',
+                background: cell.isToday ? '#e8f0fe' : 'white',
                 cursor: 'pointer', transition: 'background 0.15s ease',
-                opacity: cell.isOutside ? 0.4 : 1,
                 position: 'relative'
               }}
-                onMouseEnter={e => { if (!cell.isOutside) e.currentTarget.style.background = '#f8fafc'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white'; }}
+                onMouseEnter={e => { if (!cell.isToday) e.currentTarget.style.background = '#f8f9fa'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? '#e8f0fe' : 'white'; }}
               >
                 <div style={{
-                  fontSize: isMobile ? '0.65rem' : '0.85rem', fontWeight: cell.isToday ? 800 : 600,
-                  color: cell.isToday ? '#d97706' : '#1e293b',
-                  width: isMobile ? '20px' : '28px', height: isMobile ? '20px' : '28px', display: 'flex',
+                  fontSize: isMobile ? '0.65rem' : '0.8rem', fontWeight: cell.isToday ? 700 : 400,
+                  color: cell.isToday ? '#ffffff' : (cell.isOutside ? '#70757a' : '#3c4043'),
+                  width: isMobile ? '18px' : '24px', height: isMobile ? '18px' : '24px', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   borderRadius: '50%',
-                  background: cell.isToday ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
-                  marginBottom: '0.25rem'
+                  background: cell.isToday ? '#1a73e8' : 'transparent',
+                  marginBottom: '2px'
                 }}>{cell.day}</div>
                 {dayEvents.slice(0, maxShow).map(ev => {
-                  const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
                   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
                   return (
                     <div key={ev.id} onClick={(e) => { e.stopPropagation(); openEditForm(ev); }} style={{
-                      display: 'flex', alignItems: 'center', gap: '3px',
-                      padding: '2px 6px', borderRadius: '6px', marginBottom: '2px',
+                      padding: isMobile ? '1px 4px' : '1.5px 6px', borderRadius: '4px', marginBottom: '2px',
                       background: colors.bg, color: colors.text,
-                      fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
+                      fontSize: isMobile ? '0.6rem' : '0.7rem', fontWeight: 500, cursor: 'pointer',
                       overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                      border: `1px solid ${colors.border}30`,
-                      transition: 'all 0.15s ease'
+                      transition: 'filter 0.15s ease'
                     }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = colors.border; showTooltip(ev, e); }}
+                      onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(0.88)'; showTooltip(ev, e); }}
                       onMouseMove={e => showTooltip(ev, e)}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${colors.border}30`; hideTooltip(); }}
+                      onMouseLeave={e => { e.currentTarget.style.filter = 'none'; hideTooltip(); }}
                     >
-                      <Icon size={10} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</span>
                     </div>
                   );
                 })}
                 {remaining > 0 && (
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, paddingLeft: '6px' }}>
+                  <div style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', color: '#5f6368', fontWeight: 500, paddingLeft: '5px' }}>
                     +{remaining} más
                   </div>
                 )}
@@ -362,18 +342,18 @@ export default function SchoolCalendar() {
 
       {/* Leyenda de tipos */}
       <div style={{
-        display: 'flex', gap: '1rem', marginTop: '1rem',
-        padding: '1rem 1.5rem', background: 'white', borderRadius: '16px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flexWrap: 'wrap',
+        display: 'flex', gap: '1rem', marginTop: '0.75rem',
+        padding: '0.75rem 1.25rem', background: 'white', borderRadius: '12px',
+        border: '1px solid #dadce0', flexWrap: 'wrap',
         alignItems: 'center'
       }}>
-        <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#64748b' }}>Tipos de evento:</span>
+        <span style={{ fontWeight: 500, fontSize: '0.8rem', color: '#5f6368' }}>Tipos de evento:</span>
         {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => {
           const colors = EVENT_COLORS[key];
-          const Icon = EVENT_TYPE_ICONS[key];
           return (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: colors.text }}>
-              <Icon size={14} /> {label}
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', fontWeight: 500, color: '#3c4043' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: colors.bg, display: 'inline-block' }} />
+              {label}
             </div>
           );
         })}
@@ -399,7 +379,7 @@ export default function SchoolCalendar() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
                   width: '48px', height: '48px', borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  background: '#1a73e8',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
                   {editingEvent ? <Edit2 size={22} color="white" /> : <Plus size={22} color="white" />}
@@ -466,10 +446,10 @@ export default function SchoolCalendar() {
                 }}>Cancelar</button>
                 <button onClick={handleSave} style={{
                   padding: '0.75rem 1.25rem', borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  background: '#1a73e8',
                   color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
+                  boxShadow: '0 2px 8px rgba(26, 115, 232, 0.35)'
                 }}>
                   <Save size={18} /> {editingEvent ? 'Actualizar' : 'Guardar'}
                 </button>
