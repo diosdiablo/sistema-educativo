@@ -5,10 +5,45 @@ import AIPlanningGenerator from '../components/AIPlanningGenerator';
 
 export default function PlanningDocuments() {
   try {
-    const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser } = useStore();
+    const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser, getPlanningFileData } = useStore();
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
+  const [docFiles, setDocFiles] = useState({});
+  const [docFileLoading, setDocFileLoading] = useState(false);
+
+  const openDoc = async (doc) => {
+    const cached = doc.fileData || docFiles[doc.id];
+    if (cached) { setViewingDoc({ ...doc, fileData: cached }); return; }
+    setViewingDoc(doc);
+    setDocFileLoading(true);
+    try {
+      const fd = await getPlanningFileData(doc.id);
+      if (fd) setDocFiles(prev => ({ ...prev, [doc.id]: fd }));
+      setViewingDoc(v => (v && v.id === doc.id) ? { ...v, fileData: fd } : v);
+    } catch (e) {
+      console.error('Error loading file:', e);
+    } finally {
+      setDocFileLoading(false);
+    }
+  };
+
+  const downloadDoc = async (doc) => {
+    try {
+      let fd = doc.fileData || docFiles[doc.id];
+      if (!fd) {
+        fd = await getPlanningFileData(doc.id);
+        if (fd) setDocFiles(prev => ({ ...prev, [doc.id]: fd }));
+      }
+      if (!fd) return;
+      const a = document.createElement('a');
+      a.href = fd;
+      a.download = doc.fileName || 'documento.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) { console.error('Download error:', e); }
+  };
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
   const [contentType, setContentType] = useState('planifications');
@@ -773,7 +808,7 @@ export default function PlanningDocuments() {
                   
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
-                      onClick={() => setViewingDoc(doc)}
+                      onClick={() => openDoc(doc)}
                       style={{
                         flex: 1,
                         display: 'flex',
@@ -793,8 +828,8 @@ export default function PlanningDocuments() {
                       <Eye size={16} /> Ver
                     </button>
                     <a
-                      href={doc.fileData}
-                      download={doc.fileName || 'documento.pdf'}
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); downloadDoc(doc); }}
                       style={{
                         flex: 1,
                         display: 'flex',
@@ -871,7 +906,7 @@ export default function PlanningDocuments() {
                   
                   <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
                     <button
-                      onClick={() => setViewingDoc(doc)}
+                      onClick={() => openDoc(doc)}
                       style={{
                         padding: '0.5rem',
                         background: `${color1}15`,
@@ -884,8 +919,8 @@ export default function PlanningDocuments() {
                       <Eye size={16} />
                     </button>
                     <a
-                      href={doc.fileData}
-                      download={doc.fileName || 'documento.pdf'}
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); downloadDoc(doc); }}
                       style={{
                         padding: '0.5rem',
                         background: 'white',
@@ -1274,8 +1309,8 @@ export default function PlanningDocuments() {
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <a
-                  href={viewingDoc.fileData}
-                  download={viewingDoc.fileName || 'documento.pdf'}
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); downloadDoc(viewingDoc); }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1311,11 +1346,13 @@ export default function PlanningDocuments() {
             </div>
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
               {viewingDoc.fileData ? (
-                <embed 
+                <embed
                   src={viewingDoc.fileData}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   type={viewingDoc.fileName?.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream'}
                 />
+              ) : docFileLoading ? (
+                <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Cargando archivo...</p>
               ) : (
                 <p style={{ color: 'var(--text-secondary)' }}>El archivo no está disponible. Intenta descargarlo.</p>
               )}

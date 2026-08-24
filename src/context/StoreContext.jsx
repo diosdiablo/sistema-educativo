@@ -192,7 +192,7 @@ export const StoreProvider = ({ children }) => {
             supabase.from('schedule').select('*'),
             supabase.from('diagnostic_evaluations').select('*'),
             supabase.from('users').select('*'),
-            supabase.from('planning_documents').select('*'),
+            supabase.from('planning_documents').select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at'),
             supabase.from('learning_sessions').select('*'),
             supabase.from('period_dates').select('*'),
             supabase.from('login_history').select('*').order('login_at', { ascending: false }),
@@ -603,7 +603,7 @@ const [
         supabase.from('schedule').select('*'),
         supabase.from('diagnostic_evaluations').select('*'),
         supabase.from('users').select('*'),
-        supabase.from('planning_documents').select('*'),
+        supabase.from('planning_documents').select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at'),
         supabase.from('learning_sessions').select('*'),
         supabase.from('period_dates').select('*'),
         supabase.from('login_history').select('*').order('login_at', { ascending: false }),
@@ -1729,6 +1729,12 @@ if (studentsData?.length > 0) {
     deleteFromSupabase('behavior', id);
   };
 
+  const getPlanningFileData = async (id) => {
+    const { data, error } = await supabase.from('planning_documents').select('file_data').eq('id', id).single();
+    if (error) throw error;
+    return data?.file_data || null;
+  };
+
   const addNotification = (title, message, type = 'chat_message') => {
     const notification = {
       id: generateId(),
@@ -1789,7 +1795,7 @@ if (studentsData?.length > 0) {
       behavior, addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
-      autoBackup, syncToSupabaseManual, fetchFromSupabase,
+      autoBackup, syncToSupabaseManual, fetchFromSupabase, getPlanningFileData,
       isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin'
     }}>
       {children}
