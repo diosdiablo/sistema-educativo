@@ -40,7 +40,7 @@ const fetchAllRows = async (table, orderBy = 'created_at') => {
     if (data.length < PAGE) break;
     from += PAGE;
   }
-  return all;
+  return { data: all };
 };
 
 const DEFAULT_SUBJECTS = [
