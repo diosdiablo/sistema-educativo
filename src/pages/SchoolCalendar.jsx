@@ -4,11 +4,11 @@ import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Bell
 import CALENDARIO_CIVICO from '../data/calendario-civico';
 
 const EVENT_COLORS = {
-  holiday: { bg: '#ef444420', text: '#ef4444', border: '#ef4444' },
-  meeting: { bg: '#3b82f620', text: '#3b82f6', border: '#3b82f6' },
-  event: { bg: '#10b98120', text: '#10b981', border: '#10b981' },
-  exam: { bg: '#f59e0b20', text: '#f59e0b', border: '#f59e0b' },
-  other: { bg: '#8b5cf620', text: '#8b5cf6', border: '#8b5cf6' },
+  holiday: { solid: '#ef4444', soft: '#ef444420', text: '#ef4444' },
+  meeting: { solid: '#3b82f6', soft: '#3b82f620', text: '#3b82f6' },
+  event: { solid: '#10b981', soft: '#10b98120', text: '#10b981' },
+  exam: { solid: '#f59e0b', soft: '#f59e0b20', text: '#f59e0b' },
+  other: { solid: '#8b5cf6', soft: '#8b5cf620', text: '#8b5cf6' },
 };
 
 const EVENT_TYPE_LABELS = {
@@ -33,26 +33,30 @@ const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 function EventTooltip({ ev, targetRef }) {
   if (!ev || !targetRef) return null;
   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
-  const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
   const rect = targetRef.getBoundingClientRect();
   return (
     <div style={{
       position: 'fixed',
-      left: rect.left + rect.width / 2,
+      left: Math.min(Math.max(rect.left + rect.width / 2, 160), window.innerWidth - 160),
       top: rect.top - 6,
       transform: 'translate(-50%, -100%)',
       background: '#1e293b', color: '#f1f5f9',
       padding: '0.55rem 0.85rem', borderRadius: '10px', fontSize: '0.75rem',
       zIndex: 9999, boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-      border: '1px solid rgba(255,255,255,0.1)', lineHeight: 1.4, textAlign: 'left',
-      pointerEvents: 'none', whiteSpace: 'nowrap', maxWidth: '280px',
+      lineHeight: 1.4, textAlign: 'left',
+      pointerEvents: 'none', whiteSpace: 'nowrap', maxWidth: '320px',
     }}>
       <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
         <Icon size={12} /> {ev.title}
       </div>
       <div style={{ color: '#94a3b8', fontSize: '0.65rem', marginTop: '2px' }}>
-        {EVENT_TYPE_LABELS[ev.type] || 'Otro'} · {new Date(ev.date + 'T12:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
+        {EVENT_TYPE_LABELS[ev.type] || 'Otro'} · {new Date(ev.date + 'T12:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}
       </div>
+      {ev.description && (
+        <div style={{ color: '#cbd5e1', fontSize: '0.65rem', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4px', whiteSpace: 'normal' }}>
+          {ev.description.length > 90 ? ev.description.substring(0, 90) + '...' : ev.description}
+        </div>
+      )}
       <div style={{
         position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
         width: '8px', height: '8px', background: '#1e293b'
@@ -105,6 +109,7 @@ export default function SchoolCalendar() {
       cells.push({
         day: i, date: formatDate(d), isOutside: false,
         isToday: d.toDateString() === today.toDateString(),
+        isWeekend: d.getDay() === 0 || d.getDay() === 6,
       });
     }
     const remaining = 42 - cells.length;
@@ -262,78 +267,51 @@ export default function SchoolCalendar() {
         </div>
 
         {/* Calendar grid */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-          width: '100%', minWidth: 0
-        }}>
-          {/* Day names */}
+        <div className="cal-grid">
           {DAYS.map((d, idx) => (
-            <div key={'h' + idx} style={{
-              textAlign: 'center', padding: isMobile ? '0.35rem 0.2rem' : '0.55rem 0.5rem',
-              fontWeight: 700, fontSize: isMobile ? '0.62rem' : '0.75rem', color: '#94a3b8',
-              boxSizing: 'border-box',
-              borderBottom: '1px solid #f1f5f9',
-              borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
-            }}>{d}</div>
+            <div key={'h' + idx} className="cal-dow" style={{ fontSize: isMobile ? '0.62rem' : undefined }}>{d}</div>
           ))}
-          {/* Calendar cells */}
           {calendarDays.map((cell, idx) => {
             const dayEvents = eventsByDate[cell.date] || [];
-            const maxShow = isMobile ? 0 : 2;
+            const maxShow = isMobile ? 0 : 3;
             const remaining = dayEvents.length - maxShow;
+            const classes = ['cal-cell'];
+            if (cell.isToday) classes.push('cal-today');
+            else if (cell.isWeekend) classes.push('cal-weekend');
+            if (cell.isOutside) classes.push('cal-outside');
             return (
-              <div key={idx} onClick={() => openAddForm(cell.date)} style={{
-                minHeight: isMobile ? '42px' : '92px', padding: isMobile ? '0.2rem' : '0.45rem',
-                overflow: 'visible', boxSizing: 'border-box',
-                borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
-                borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
-                background: cell.isToday ? '#fffbeb' : 'white',
-                cursor: 'pointer', transition: 'all 0.12s ease',
-                opacity: cell.isOutside ? 0.35 : 1,
-                position: 'relative'
-              }}
-                onMouseEnter={e => { if (!cell.isOutside) e.currentTarget.style.background = cell.isToday ? '#fef3c7' : '#f8fafc'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? '#fffbeb' : 'white'; }}
-              >
-                {/* Day number */}
-                <div style={{
-                  fontSize: isMobile ? '0.62rem' : '0.8rem', fontWeight: cell.isToday ? 800 : 600,
-                  color: cell.isToday ? '#b45309' : '#1e293b',
-                  width: isMobile ? '20px' : '26px', height: isMobile ? '20px' : '26px', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  borderRadius: '50%',
-                  background: cell.isToday ? '#fbbf2430' : 'transparent',
-                  marginBottom: '3px'
-                }}>{cell.day}</div>
+              <div key={idx} className={classes.join(' ')} onClick={() => openAddForm(cell.date)}>
+                <div className="cal-daynum">{cell.day}</div>
 
-                {/* Event chips */}
-                {dayEvents.slice(0, maxShow).map(ev => {
+                {isMobile && dayEvents.length > 0 && (
+                  <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
+                    {dayEvents.slice(0, 4).map(ev => (
+                      <div key={ev.id} style={{
+                        width: '6px', height: '6px', borderRadius: '50%',
+                        background: EVENT_COLORS[ev.type]?.solid || '#8b5cf6'
+                      }} />
+                    ))}
+                  </div>
+                )}
+
+                {!isMobile && dayEvents.slice(0, maxShow).map(ev => {
                   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
                   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
                   return (
-                    <div key={ev.id} onClick={(e) => { e.stopPropagation(); openEditForm(ev); }}
+                    <div key={ev.id} className="cal-chip"
+                      onClick={(e) => { e.stopPropagation(); openEditForm(ev); }}
                       onMouseEnter={e => showTooltip(ev, e)}
                       onMouseMove={e => showTooltip(ev, e)}
                       onMouseLeave={hideTooltip}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '3px',
-                        padding: '2px 5px', borderRadius: '5px', marginBottom: '2px',
-                        background: colors.bg, color: colors.text,
-                        fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
-                        overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                        border: `1px solid ${colors.border}30`,
-                        transition: 'all 0.12s ease'
-                      }}
+                      style={{ background: colors.solid }}
                     >
-                      <Icon size={9} />
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</span>
+                      <Icon size={10} style={{ flexShrink: 0 }} />
+                      <span>{ev.title}</span>
                     </div>
                   );
                 })}
                 {remaining > 0 && (
-                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, paddingLeft: '5px' }}>
-                    +{remaining} más
-                  </div>
+                  <div className="cal-more">+{remaining} más</div>
                 )}
               </div>
             );
@@ -350,10 +328,10 @@ export default function SchoolCalendar() {
         <span style={{ fontWeight: 600, fontSize: '0.8rem', color: '#94a3b8' }}>Tipos:</span>
         {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => {
           const colors = EVENT_COLORS[key];
-          const Icon = EVENT_TYPE_ICONS[key];
           return (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 600, color: colors.text }}>
-              <Icon size={12} /> {label}
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600, color: colors.text }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: colors.solid, display: 'inline-block' }} />
+              {label}
             </div>
           );
         })}
@@ -362,7 +340,7 @@ export default function SchoolCalendar() {
       {/* Tooltip */}
       <EventTooltip ev={tooltip} targetRef={tooltipTargetRef.current} />
 
-      {/* Modal */}
+      {/* Modal de evento */}
       {showForm && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
