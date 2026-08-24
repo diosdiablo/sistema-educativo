@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
@@ -30,6 +30,41 @@ const EVENT_TYPE_ICONS = {
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
+function EventTooltip({ ev, targetRef }) {
+  if (!ev || !targetRef) return null;
+  const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
+  const rect = targetRef.getBoundingClientRect();
+  return (
+    <div style={{
+      position: 'fixed',
+      left: Math.min(Math.max(rect.left + rect.width / 2, 160), window.innerWidth - 160),
+      top: rect.top - 6,
+      transform: 'translate(-50%, -100%)',
+      background: '#1e293b', color: '#f1f5f9',
+      padding: '0.55rem 0.85rem', borderRadius: '10px', fontSize: '0.75rem',
+      zIndex: 9999, boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+      lineHeight: 1.4, textAlign: 'left',
+      pointerEvents: 'none', whiteSpace: 'nowrap', maxWidth: '320px',
+    }}>
+      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <Icon size={12} /> {ev.title}
+      </div>
+      <div style={{ color: '#94a3b8', fontSize: '0.65rem', marginTop: '2px' }}>
+        {EVENT_TYPE_LABELS[ev.type] || 'Otro'} · {new Date(ev.date + 'T12:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}
+      </div>
+      {ev.description && (
+        <div style={{ color: '#cbd5e1', fontSize: '0.65rem', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4px', whiteSpace: 'normal' }}>
+          {ev.description.length > 90 ? ev.description.substring(0, 90) + '...' : ev.description}
+        </div>
+      )}
+      <div style={{
+        position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
+        width: '8px', height: '8px', background: '#1e293b'
+      }} />
+    </div>
+  );
+}
+
 export default function SchoolCalendar() {
   const { events, addEvent, updateEvent, deleteEvent, seedEvents } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -38,6 +73,8 @@ export default function SchoolCalendar() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+  const [tooltip, setTooltip] = useState(null);
+  const tooltipTargetRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 600);
@@ -140,6 +177,16 @@ export default function SchoolCalendar() {
     setShowForm(false);
     setEditingEvent(null);
   }
+
+  const showTooltip = useCallback((ev, e) => {
+    tooltipTargetRef.current = e.currentTarget;
+    setTooltip(ev);
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    tooltipTargetRef.current = null;
+    setTooltip(null);
+  }, []);
 
   return (
     <div className="animate-fade-in">
@@ -289,8 +336,9 @@ export default function SchoolCalendar() {
                       border: `1px solid ${colors.border}30`,
                       transition: 'all 0.15s ease'
                     }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = colors.border; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${colors.border}30`; }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = colors.border; showTooltip(ev, e); }}
+                      onMouseMove={e => showTooltip(ev, e)}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${colors.border}30`; hideTooltip(); }}
                     >
                       <Icon size={10} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</span>
@@ -326,6 +374,9 @@ export default function SchoolCalendar() {
           );
         })}
       </div>
+
+      {/* Tooltip */}
+      <EventTooltip ev={tooltip} targetRef={tooltipTargetRef.current} />
 
       {/* Modal de evento */}
       {showForm && (
