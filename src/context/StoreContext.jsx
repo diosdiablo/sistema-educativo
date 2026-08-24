@@ -247,7 +247,8 @@ setStudents(prev => {
             userId: ev.user_id,
             scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
             criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
-            instrumentType: ev.instrument_type
+            instrumentType: ev.instrument_type,
+            createdAt: ev.created_at
           })));
 if (scheduleData?.length > 0) {
           const classMap = {};
@@ -650,7 +651,8 @@ if (studentsData?.length > 0) {
           userId: ev.user_id,
           scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
           criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
-          instrumentType: ev.instrument_type
+          instrumentType: ev.instrument_type,
+          createdAt: ev.created_at
         })));
       }
       if (scheduleData?.length > 0) {

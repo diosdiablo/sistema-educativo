@@ -818,7 +818,11 @@ export default function Grades() {
                   };
                 }
               });
-              return Object.values(uniqueInstruments);
+              return Object.values(uniqueInstruments).sort((a, b) => {
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return dateA - dateB;
+              });
             };
 
             const gradientColors = [
