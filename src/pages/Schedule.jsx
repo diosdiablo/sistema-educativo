@@ -268,9 +268,11 @@ export default function Schedule() {
                       }}
                       style={{
                         cursor: readOnly ? 'default' : 'pointer',
-                        padding: '3px',
+                        padding: 0,
                         verticalAlign: 'top',
                         borderTop: '1px solid #dadce0',
+                        borderLeft: '1px solid #dadce0',
+                        position: 'relative',
                         transition: 'background 0.15s ease'
                       }}
                       onMouseEnter={e => { if (!item && !readOnly) e.currentTarget.style.background = '#f8f9fa'; }}
@@ -285,9 +287,11 @@ export default function Schedule() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '1px',
-                          height: '100%',
+                          position: 'absolute',
+                          top: '3px', left: '4px', right: '4px', bottom: '3px',
                           justifyContent: 'center',
                           boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
+                          overflow: 'hidden',
                           transition: 'filter 0.15s ease'
                         }}
                           onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.88)'; }}
@@ -310,8 +314,8 @@ export default function Schedule() {
                       ) : (
                         !readOnly && (
                           <div style={{
-                            height: '100%',
-                            minHeight: '60px',
+                            position: 'absolute',
+                            top: '3px', left: '4px', right: '4px', bottom: '3px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
