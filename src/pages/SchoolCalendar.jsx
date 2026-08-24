@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Bell, BookOpen, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
@@ -30,13 +30,16 @@ const EVENT_TYPE_ICONS = {
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 
-function EventTooltip({ ev, position }) {
-  if (!ev || !position) return null;
+function EventTooltip({ ev, cellRef }) {
+  if (!ev || !cellRef) return null;
   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
+  const rect = cellRef.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top;
   return (
     <div style={{
-      position: 'fixed', left: position.x, top: position.y - 12,
+      position: 'fixed', left: x, top: y - 10,
       transform: 'translate(-50%, -100%)',
       background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#f1f5f9',
       padding: '0.75rem 1rem', borderRadius: '14px', fontSize: '0.78rem',
@@ -89,6 +92,7 @@ export default function SchoolCalendar() {
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
   const [tooltip, setTooltip] = useState(null);
+  const tooltipCellRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 600);
@@ -173,12 +177,15 @@ export default function SchoolCalendar() {
     setEditingEvent(null);
   }
 
-  function showTooltip(ev, e) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({ ev, x: rect.left + rect.width / 2, y: rect.top });
-  }
+  const showTooltip = useCallback((ev, e) => {
+    tooltipCellRef.current = e.currentTarget;
+    setTooltip(ev);
+  }, []);
 
-  function hideTooltip() { setTooltip(null); }
+  const hideTooltip = useCallback(() => {
+    tooltipCellRef.current = null;
+    setTooltip(null);
+  }, []);
 
   const totalEvents = Object.values(eventsByDate).reduce((sum, arr) => sum + arr.length, 0);
   const todayStr = formatDate(new Date());
@@ -195,7 +202,6 @@ export default function SchoolCalendar() {
       }}>
         <div style={{ position: 'absolute', top: '-60%', right: '-15%', width: '350px', height: '350px', background: 'rgba(255,255,255,0.08)', borderRadius: '50%' }} />
         <div style={{ position: 'absolute', bottom: '-40%', left: '-8%', width: '250px', height: '250px', background: 'rgba(255,255,255,0.04)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', top: '20%', right: '25%', width: '120px', height: '120px', background: 'rgba(255,255,255,0.06)', borderRadius: '50%' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{
@@ -299,7 +305,7 @@ export default function SchoolCalendar() {
         </div>
 
         {/* Calendar grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%', minWidth: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
           {/* Day names */}
           {DAYS.map((d, idx) => (
             <div key={'h' + idx} style={{
@@ -320,40 +326,45 @@ export default function SchoolCalendar() {
                 minHeight: isMobile ? '48px' : '110px', padding: isMobile ? '0.3rem' : '0.5rem',
                 overflow: 'visible', boxSizing: 'border-box',
                 borderBottom: (idx < 35) ? '1px solid var(--border-color)' : 'none',
-                background: cell.isToday ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%)' : 'transparent',
+                background: cell.isToday ? 'rgba(245, 158, 11, 0.06)' : 'transparent',
                 cursor: 'pointer', transition: 'all 0.2s ease',
                 opacity: cell.isOutside ? 0.3 : 1,
-                position: 'relative',
-                borderLeft: dayEvents.length > 0 && !cell.isOutside ? `3px solid ${EVENT_COLORS[dayEvents[0].type]?.dot || '#10b981'}` : 'none'
+                position: 'relative'
               }}
                 onMouseEnter={e => {
-                  if (!cell.isOutside) {
-                    e.currentTarget.style.background = cell.isToday
-                      ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(245, 158, 11, 0.06) 100%)'
-                      : 'rgba(99, 102, 241, 0.04)';
-                    e.currentTarget.style.zIndex = '2';
-                  }
+                  if (!cell.isOutside) e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.12)' : 'rgba(99, 102, 241, 0.04)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = cell.isToday ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%)' : 'transparent';
-                  e.currentTarget.style.zIndex = '1';
+                  e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.06)' : 'transparent';
                 }}
               >
                 {/* Day number */}
                 <div style={{
                   fontSize: isMobile ? '0.65rem' : '0.82rem', fontWeight: cell.isToday ? 900 : 600,
                   color: cell.isToday ? 'white' : 'var(--text-primary)',
-                  width: isMobile ? '24px' : '30px', height: isMobile ? '24px' : '30px', display: 'flex',
+                  width: isMobile ? '24px' : '30px', height: isMobile ? '24px' : '30px', display: 'inline-flex',
                   alignItems: 'center', justifyContent: 'center',
                   borderRadius: '10px',
                   background: cell.isToday ? 'linear-gradient(135deg, #f59e0b, #e67e22)' : 'transparent',
                   marginBottom: '4px',
-                  boxShadow: cell.isToday ? '0 3px 10px rgba(245, 158, 11, 0.35)' : 'none',
-                  transition: 'all 0.2s ease'
+                  boxShadow: cell.isToday ? '0 3px 10px rgba(245, 158, 11, 0.35)' : 'none'
                 }}>{cell.day}</div>
 
-                {/* Events */}
-                {dayEvents.slice(0, maxShow).map(ev => {
+                {/* Event dots for mobile */}
+                {isMobile && dayEvents.length > 0 && (
+                  <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '2px' }}>
+                    {dayEvents.slice(0, 5).map(ev => (
+                      <div key={ev.id} style={{
+                        width: '6px', height: '6px', borderRadius: '50%',
+                        background: EVENT_COLORS[ev.type]?.dot || '#10b981'
+                      }} />
+                    ))}
+                    {dayEvents.length > 5 && <div style={{ fontSize: '0.5rem', color: 'var(--text-secondary)' }}>+{dayEvents.length - 5}</div>}
+                  </div>
+                )}
+
+                {/* Event chips (desktop) */}
+                {!isMobile && dayEvents.slice(0, maxShow).map(ev => {
                   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
                   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
                   return (
@@ -418,7 +429,7 @@ export default function SchoolCalendar() {
       </div>
 
       {/* Tooltip */}
-      <EventTooltip ev={tooltip?.ev} position={tooltip ? { x: tooltip.x, y: tooltip.y } : null} />
+      <EventTooltip ev={tooltip} cellRef={tooltipCellRef.current} />
 
       {/* Modal */}
       {showForm && (
