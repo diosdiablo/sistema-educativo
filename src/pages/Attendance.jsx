@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, UserCheck, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
@@ -174,318 +174,138 @@ export default function Attendance() {
   };
 
   const STATUS_OPTIONS = [
-    { value: 'P', label: 'Presente', color: '#10b981', bg: 'rgba(16,185,129,0.1)', icon: '✓' },
-    { value: 'T', label: 'Tarde', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', icon: '⏰' },
-    { value: 'F', label: 'Falta', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', icon: '✗' },
-    { value: 'J', label: 'Justificado', color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', icon: '📋' },
+    { value: 'P', label: 'Presente', color: '#188038', bg: '#e6f4ea' },
+    { value: 'T', label: 'Tarde', color: '#e37400', bg: '#fef7e0' },
+    { value: 'F', label: 'Falta', color: '#d93025', bg: '#fce8e6' },
+    { value: 'J', label: 'Justificado', color: '#9334e6', bg: '#f3e8fd' },
   ];
+
+  const selectPillStyle = {
+    padding: '0.55rem 1rem',
+    borderRadius: '20px',
+    border: '1px solid #dadce0',
+    background: '#ffffff',
+    fontWeight: 500,
+    fontSize: '0.875rem',
+    color: '#3c4043',
+    cursor: 'pointer',
+    outline: 'none'
+  };
+
+  const thStyle = (width, align = 'left') => ({
+    padding: '0.85rem 1rem',
+    fontSize: '0.75rem',
+    fontWeight: 500,
+    color: '#70757a',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    textAlign: align,
+    borderBottom: '1px solid #dadce0',
+    background: '#f8f9fa',
+    width: width || 'auto',
+    whiteSpace: 'nowrap'
+  });
 
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Barra de herramientas */}
       <div style={{
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
+        background: '#ffffff',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid #dadce0',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        flexWrap: 'wrap'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: '14px',
+        <div style={{ marginRight: 'auto' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Asistencia</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: '#5f6368' }}>Registro y control diario de asistencia</p>
+        </div>
+        <select
+          value={selectedClass}
+          onChange={e => setSelectedClass(e.target.value)}
+          style={selectPillStyle}
+          aria-label="Sección"
+        >
+          <option value="">Seleccionar sección...</option>
+          {availableClasses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+        </select>
+        <input
+          type="date"
+          value={date}
+          onChange={e => {
+            setDate(e.target.value);
+            const rec = attendance.find(a => a.date === e.target.value)?.records || {};
+            setCurrentRecords(rec);
+          }}
+          style={selectPillStyle}
+          aria-label="Fecha"
+        />
+        <button
+          onClick={handleSave}
+          disabled={!selectedClass}
+          style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <GraduationCap size={28} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Asistencia</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Registro y control diario de asistencia</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Tarjetas de selección */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem'
-      }}>
-        {/* Tarjeta de Sección */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid',
-          borderColor: selectedClass ? '#10b981' : '#e2e8f0',
-          transition: 'all 0.3s ease',
-          boxShadow: selectedClass ? '0 4px 20px rgba(16, 185, 129, 0.15)' : '0 2px 8px rgba(0,0,0,0.04)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: selectedClass ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Users size={20} color={selectedClass ? '#10b981' : '#6366f1'} />
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Sección</label>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Grado y sección</div>
-            </div>
-          </div>
-          <select 
-            className="input-field" 
-            value={selectedClass} 
-            onChange={e => setSelectedClass(e.target.value)} 
-            style={{ borderColor: selectedClass ? '#10b981' : '#e2e8f0' }}
-          >
-            <option value="">Seleccionar sección...</option>
-            {availableClasses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
-        </div>
-
-        {/* Tarjeta de Fecha */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid #e2e8f0',
-          transition: 'all 0.3s ease',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'rgba(139, 92, 246, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Calendar size={20} color="#8b5cf6" />
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Fecha</label>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.7 }}>Día de asistencia</div>
-            </div>
-          </div>
-          <input 
-            type="date" 
-            className="input-field" 
-            value={date} 
-            onChange={e => {
-              setDate(e.target.value);
-              const rec = attendance.find(a => a.date === e.target.value)?.records || {};
-              setCurrentRecords(rec);
-            }} 
-            style={{ borderColor: '#8b5cf6' }}
-          />
-        </div>
-
-        {/* Botón Guardar */}
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '1.25rem',
-          border: '2px solid #e2e8f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <button 
-            className="btn-primary" 
-            onClick={handleSave} 
-            disabled={!selectedClass}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              padding: '0.875rem 2rem',
-              fontSize: '1rem',
-              opacity: !selectedClass ? 0.5 : 1,
-              background: selectedClass ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : undefined,
-              border: selectedClass ? 'none' : undefined,
-              cursor: selectedClass ? 'pointer' : 'not-allowed'
-            }}
-          >
-            <Save size={20} /> 
-            <span style={{ fontWeight: 600 }}>Guardar Asistencia</span>
-          </button>
-        </div>
+            gap: '8px',
+            padding: '0.55rem 1.25rem',
+            borderRadius: '20px',
+            border: 'none',
+            background: selectedClass ? '#1a73e8' : '#f1f3f4',
+            color: selectedClass ? '#ffffff' : '#9aa0a6',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            cursor: selectedClass ? 'pointer' : 'not-allowed'
+          }}
+        >
+          <Save size={16} />
+          Guardar
+        </button>
       </div>
 
       {/* Widgets de estadísticas del día seleccionado */}
       {selectedClass && todayStats && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem'
         }}>
-          {/* Presentes */}
-          <div style={{
-            background: 'linear-gradient(145deg, #10b981 0%, #059669 100%)',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-            boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-40%',
-              right: '-20%',
-              width: '100px',
-              height: '100px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
-              <CheckCircle size={28} />
+          {[
+            { label: 'Presentes HOY', value: todayStats.P, color: '#188038', bg: '#e6f4ea', Icon: CheckCircle },
+            { label: 'Tardanzas HOY', value: todayStats.T, color: '#e37400', bg: '#fef7e0', Icon: Clock },
+            { label: 'Faltas HOY', value: todayStats.F, color: '#d93025', bg: '#fce8e6', Icon: XCircle },
+            { label: 'Justificados HOY', value: todayStats.J, color: '#9334e6', bg: '#f3e8fd', Icon: FileCheck }
+          ].map(({ label, value, color, bg, Icon }) => (
+            <div key={label} style={{
+              background: '#ffffff',
+              border: '1px solid #dadce0',
+              borderRadius: '12px',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.9rem'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: bg,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Icon size={20} color={color} />
+              </div>
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.P}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Presentes HOY</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 500, color: '#3c4043', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '0.78rem', color: '#5f6368', marginTop: '0.25rem' }}>{label}</div>
               </div>
             </div>
-          </div>
-
-          {/* Tardanzas */}
-          <div style={{
-            background: 'linear-gradient(145deg, #f59e0b 0%, #d97706 100%)',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-            boxShadow: '0 8px 24px rgba(245, 158, 11, 0.35)',
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-40%',
-              right: '-20%',
-              width: '100px',
-              height: '100px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
-              <Clock size={28} />
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.T}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Tardanzas HOY</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Faltas */}
-          <div style={{
-            background: 'linear-gradient(145deg, #ef4444 0%, #dc2626 100%)',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-            boxShadow: '0 8px 24px rgba(239, 68, 68, 0.35)',
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-40%',
-              right: '-20%',
-              width: '100px',
-              height: '100px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
-              <XCircle size={28} />
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.F}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Faltas HOY</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Justificados */}
-          <div style={{
-            background: 'linear-gradient(145deg, #8b5cf6 0%, #7c3aed 100%)',
-            borderRadius: '16px',
-            padding: '1.25rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease',
-            boxShadow: '0 8px 24px rgba(139, 92, 246, 0.35)',
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
-          >
-            <div style={{
-              position: 'absolute',
-              top: '-40%',
-              right: '-20%',
-              width: '100px',
-              height: '100px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
-              <FileCheck size={28} />
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{todayStats.J}</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>Justificados HOY</div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
@@ -499,51 +319,50 @@ export default function Attendance() {
         }}>
           {/* Resumen consolidado del bimestre */}
           <div style={{
-            background: 'white',
-            borderRadius: '20px',
+            background: '#ffffff',
+            borderRadius: '12px',
             padding: '1.5rem',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            border: '1px solid #e2e8f0'
+            border: '1px solid #dadce0'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <div style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: '#e8f0fe',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <PieChart size={22} color="white" />
+                <PieChart size={18} color="#1a73e8" />
               </div>
               <div>
-                <h4 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>
+                <h4 style={{ fontWeight: 500, margin: 0, fontSize: '1rem', color: '#3c4043' }}>
                   Resumen Consolidado
                 </h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>
                   {selectedClass} · {attendanceStats.datesCount} días con registro
                 </p>
               </div>
             </div>
-            
+
             {/* Barra de progreso */}
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981' }}>{attendanceStats.presentRate}%</span>
+                <span style={{ fontSize: '0.85rem', color: '#5f6368' }}>Tasa de Asistencia</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#188038' }}>{attendanceStats.presentRate}%</span>
               </div>
               <div style={{
-                height: '14px',
-                background: '#f1f5f9',
-                borderRadius: '7px',
+                height: '8px',
+                background: '#f1f3f4',
+                borderRadius: '4px',
                 overflow: 'hidden'
               }}>
                 <div style={{
                   height: '100%',
                   width: `${attendanceStats.presentRate}%`,
-                  background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '7px',
+                  background: '#188038',
+                  borderRadius: '4px',
                   transition: 'width 0.5s ease'
                 }} />
               </div>
@@ -551,215 +370,141 @@ export default function Attendance() {
 
             {/* Detalle consolidado */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-              <div style={{
-                padding: '1rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981' }}>
-                  {attendanceStats.P}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Presentes</div>
-              </div>
-              <div style={{
-                padding: '1rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f59e0b' }}>
-                  {attendanceStats.T}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Tardanzas</div>
-              </div>
-              <div style={{
-                padding: '1rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ef4444' }}>
-                  {attendanceStats.F}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Faltas</div>
-              </div>
-              <div style={{
-                padding: '1rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#8b5cf6' }}>
-                  {attendanceStats.J}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Justificados</div>
-              </div>
+              {[
+                ['Presentes', attendanceStats.P],
+                ['Tardanzas', attendanceStats.T],
+                ['Faltas', attendanceStats.F],
+                ['Justificados', attendanceStats.J]
+              ].map(([label, val]) => {
+                const cfg = STATUS_OPTIONS.find(o => o.label === label);
+                return (
+                  <div key={label} style={{
+                    padding: '0.9rem',
+                    borderRadius: '8px',
+                    background: '#f8f9fa',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 500, color: cfg?.color || '#3c4043' }}>
+                      {val}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#5f6368' }}>{label}</div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Información adicional */}
             <div style={{
               marginTop: '1rem',
-              padding: '0.75rem',
-              background: '#f8fafc',
-              borderRadius: '10px',
+              padding: '0.75rem 1rem',
+              background: '#f8f9fa',
+              borderRadius: '8px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Calendar size={16} color="#64748b" />
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  {attendanceStats.datesCount} días
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#5f6368' }}>
+                <Calendar size={14} />
+                {attendanceStats.datesCount} días
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Users size={16} color="#64748b" />
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  {attendanceStats.total} alumnos
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#5f6368' }}>
+                <Users size={14} />
+                {attendanceStats.total} alumnos
               </div>
             </div>
           </div>
 
           {/* Distribución visual del bimestre */}
           <div style={{
-            background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-            borderRadius: '20px',
+            background: '#ffffff',
+            borderRadius: '12px',
             padding: '1.5rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden'
+            border: '1px solid #dadce0'
           }}>
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              right: '-30%',
-              width: '200px',
-              height: '200px',
-              background: 'rgba(99, 102, 241, 0.2)',
-              borderRadius: '50%'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: '-30%',
-              left: '-20%',
-              width: '150px',
-              height: '150px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              borderRadius: '50%'
-            }} />
-            
-            <h4 style={{ fontWeight: 700, margin: '0 0 1.25rem 0', fontSize: '1.1rem', position: 'relative', zIndex: 1 }}>
+            <h4 style={{ fontWeight: 500, margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#3c4043' }}>
               Distribución General
             </h4>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', zIndex: 1 }}>
-              {/* Presentes */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10b981' }} />
-                <span style={{ flex: 1, fontSize: '0.85rem' }}>Presentes</span>
-                <span style={{ fontWeight: 700 }}>{attendanceStats.P}</span>
-                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.P / attendanceStats.marked) * 100) : 0}%)
-                </span>
-              </div>
-              
-              {/* Tardanzas */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#f59e0b' }} />
-                <span style={{ flex: 1, fontSize: '0.85rem' }}>Tardanzas</span>
-                <span style={{ fontWeight: 700 }}>{attendanceStats.T}</span>
-                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.T / attendanceStats.marked) * 100) : 0}%)
-                </span>
-              </div>
-              
-              {/* Faltas */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }} />
-                <span style={{ flex: 1, fontSize: '0.85rem' }}>Faltas</span>
-                <span style={{ fontWeight: 700 }}>{attendanceStats.F}</span>
-                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.F / attendanceStats.marked) * 100) : 0}%)
-                </span>
-              </div>
-              
-              {/* Justificados */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8b5cf6' }} />
-                <span style={{ flex: 1, fontSize: '0.85rem' }}>Justificados</span>
-                <span style={{ fontWeight: 700 }}>{attendanceStats.J}</span>
-                <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
-                  ({attendanceStats.marked > 0 ? Math.round((attendanceStats.J / attendanceStats.marked) * 100) : 0}%)
-                </span>
-              </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[
+                ['Presentes', attendanceStats.P],
+                ['Tardanzas', attendanceStats.T],
+                ['Faltas', attendanceStats.F],
+                ['Justificados', attendanceStats.J]
+              ].map(([label, val]) => {
+                const cfg = STATUS_OPTIONS.find(o => o.label === label);
+                const pct = attendanceStats.marked > 0 ? Math.round((val / attendanceStats.marked) * 100) : 0;
+                return (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: cfg?.color }} />
+                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#3c4043' }}>{label}</span>
+                    <span style={{ fontWeight: 500, fontSize: '0.85rem', color: '#3c4043' }}>{val}</span>
+                    <span style={{ color: '#5f6368', fontSize: '0.8rem', width: '44px', textAlign: 'right' }}>{pct}%</span>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Barra de distribución */}
-            <div style={{ 
-              display: 'flex', 
-              height: '28px', 
-              borderRadius: '14px', 
-              overflow: 'hidden', 
+            <div style={{
+              display: 'flex',
+              height: '24px',
+              borderRadius: '12px',
+              overflow: 'hidden',
               marginTop: '1.5rem',
-              position: 'relative',
-              zIndex: 1,
-              background: '#334155'
+              background: '#f1f3f4'
             }}>
               {attendanceStats.marked > 0 ? (
                 <>
-                  <div style={{ 
-                    width: `${(attendanceStats.P / attendanceStats.marked) * 100}%`, 
-                    background: '#10b981',
+                  <div style={{
+                    width: `${(attendanceStats.P / attendanceStats.marked) * 100}%`,
+                    background: '#188038',
                     transition: 'width 0.5s ease'
                   }} />
-                  <div style={{ 
-                    width: `${(attendanceStats.T / attendanceStats.marked) * 100}%`, 
-                    background: '#f59e0b',
+                  <div style={{
+                    width: `${(attendanceStats.T / attendanceStats.marked) * 100}%`,
+                    background: '#e37400',
                     transition: 'width 0.5s ease'
                   }} />
-                  <div style={{ 
-                    width: `${(attendanceStats.F / attendanceStats.marked) * 100}%`, 
-                    background: '#ef4444',
+                  <div style={{
+                    width: `${(attendanceStats.F / attendanceStats.marked) * 100}%`,
+                    background: '#d93025',
                     transition: 'width 0.5s ease'
                   }} />
-                  <div style={{ 
-                    width: `${(attendanceStats.J / attendanceStats.marked) * 100}%`, 
-                    background: '#8b5cf6',
+                  <div style={{
+                    width: `${(attendanceStats.J / attendanceStats.marked) * 100}%`,
+                    background: '#9334e6',
                     transition: 'width 0.5s ease'
                   }} />
                 </>
-              ) : (
-                <div style={{ width: '100%', background: '#334155' }} />
-              )}
+              ) : null}
             </div>
 
             {/* Lista de fechas del bimestre */}
             {attendanceStats.dates && attendanceStats.dates.length > 0 && (
-              <div style={{ marginTop: '1rem', position: 'relative', zIndex: 1 }}>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#5f6368', marginBottom: '0.5rem' }}>
                   Fechas registradas:
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                   {attendanceStats.dates.slice(-6).map(d => (
                     <span key={d} style={{
-                      fontSize: '0.7rem',
-                      padding: '0.25rem 0.5rem',
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: '6px',
-                      color: 'rgba(255,255,255,0.8)'
+                      fontSize: '0.72rem',
+                      padding: '0.25rem 0.65rem',
+                      background: '#f1f3f4',
+                      borderRadius: '12px',
+                      color: '#5f6368'
                     }}>
                       {new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
                     </span>
                   ))}
                   {attendanceStats.dates.length > 6 && (
                     <span style={{
-                      fontSize: '0.7rem',
-                      padding: '0.25rem 0.5rem',
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: '6px',
-                      color: 'rgba(255,255,255,0.6)'
+                      fontSize: '0.72rem',
+                      padding: '0.25rem 0.65rem',
+                      background: '#f1f3f4',
+                      borderRadius: '12px',
+                      color: '#5f6368'
                     }}>
                       +{attendanceStats.dates.length - 6} más
                     </span>
@@ -774,31 +519,30 @@ export default function Attendance() {
       {/* Mensaje si no hay registros en el bimestre */}
       {selectedClass && attendanceStats && attendanceStats.datesCount === 0 && (
         <div style={{
-          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-          borderRadius: '16px',
-          padding: '2rem',
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '2.5rem 2rem',
           textAlign: 'center',
-          border: '2px solid #fbbf24',
+          border: '1px dashed #dadce0',
           marginBottom: '1.5rem'
         }}>
           <div style={{
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            width: '56px',
+            height: '56px',
+            background: '#f1f3f4',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 1rem'
           }}>
-            <Calendar size={28} color="white" />
+            <Calendar size={26} color="#5f6368" />
           </div>
-          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#92400e' }}>
+          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: '#3c4043' }}>
             Sin registros de asistencia
           </h4>
-          <p style={{ fontSize: '0.9rem', color: '#92400e', margin: 0 }}>
-            No hay días registrados para {selectedClass}. 
-            ¡Comienza a registrar la asistencia!
+          <p style={{ fontSize: '0.9rem', color: '#5f6368', margin: 0 }}>
+            No hay días registrados para {selectedClass}. ¡Comienza a registrar la asistencia!
           </p>
         </div>
       )}
@@ -806,28 +550,28 @@ export default function Attendance() {
       {/* Estado vacío */}
       {!selectedClass && (
         <div style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
-          borderRadius: '20px',
+          background: '#ffffff',
+          borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '2px dashed #cbd5e1'
+          border: '1px dashed #dadce0'
         }}>
           <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            width: '64px',
+            height: '64px',
+            background: '#e8f0fe',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 1.5rem'
+            margin: '0 auto 1.25rem'
           }}>
-            <GraduationCap size={40} color="white" />
+            <GraduationCap size={30} color="#1a73e8" />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#3c4043', marginBottom: '0.5rem' }}>
             Registro de Asistencia
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: '#5f6368', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
             Selecciona una sección para comenzar a registrar la asistencia del día
           </p>
         </div>
@@ -837,89 +581,53 @@ export default function Attendance() {
       {selectedClass && (
         <div style={{
           background: 'white',
-          borderRadius: '20px',
+          borderRadius: '12px',
           overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          border: '1px solid #dadce0'
         }}>
           <div className="table-container" style={{ overflowX: 'auto' }}>
-            <table className="styled-table">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    padding: '1rem',
-                    width: '60px',
-                    textAlign: 'center'
-                  }}>
-                    N°
-                  </th>
-                  <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    padding: '1rem'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <UserCheck size={16} />
-                      Estudiante
-                    </div>
-                  </th>
-                  <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    padding: '1rem',
-                    width: '150px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Users size={16} />
-                      Grado
-                    </div>
-                  </th>
-                  <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    padding: '1rem'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <CheckCircle size={16} />
-                      Estado de Asistencia
-                    </div>
-                  </th>
+                  <th style={thStyle('60px', 'center')}>N°</th>
+                  <th style={thStyle()}>Estudiante</th>
+                  <th style={thStyle('150px')}>Grado</th>
+                  <th style={thStyle()}>Estado de Asistencia</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#5f6368', borderBottom: '1px solid #dadce0' }}>
                       No hay estudiantes matriculados en esta sección.
                     </td>
                   </tr>
                 ) : (
                   filteredStudents.map((student, idx) => (
-                    <tr key={student.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
-                      <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', padding: '1rem' }}>{idx + 1}</td>
-                      <td style={{ fontWeight: 600, padding: '1rem' }}>
+                    <tr key={student.id}>
+                      <td style={{ textAlign: 'center', fontWeight: 500, color: '#5f6368', padding: '0.85rem 1rem', borderBottom: '1px solid #dadce0', fontSize: '0.85rem' }}>{idx + 1}</td>
+                      <td style={{ fontWeight: 500, padding: '0.85rem 1rem', borderBottom: '1px solid #dadce0', color: '#3c4043' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{
-                            width: '36px',
-                            height: '36px',
+                            width: '32px',
+                            height: '32px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            background: '#e8f0fe',
+                            color: '#1967d2',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.85rem'
+                            fontWeight: 500,
+                            fontSize: '0.75rem'
                           }}>
                             {student.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
                           </div>
                           {student.name}
                         </div>
                       </td>
-                      <td style={{ color: 'var(--text-secondary)', padding: '1rem' }}>{student.gradeLevel}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.5rem' }}>
+                      <td style={{ color: '#5f6368', padding: '0.85rem 1rem', borderBottom: '1px solid #dadce0', fontSize: '0.9rem' }}>{student.gradeLevel}</td>
+                      <td style={{ borderBottom: '1px solid #dadce0' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.6rem 1rem' }}>
                           {STATUS_OPTIONS.map(opt => {
                             const isSelected = currentRecords[student.id] === opt.value;
                             return (
@@ -927,37 +635,24 @@ export default function Attendance() {
                                 key={opt.value}
                                 onClick={() => handleStatusChange(student.id, isSelected ? '' : opt.value)}
                                 style={{
-                                  padding: '0.5rem 1rem',
-                                  borderRadius: '10px',
-                                  border: `2px solid ${isSelected ? opt.color : 'transparent'}`,
-                                  background: isSelected ? opt.bg : '#f1f5f9',
-                                  color: isSelected ? opt.color : '#64748b',
-                                  fontWeight: 600,
-                                  fontSize: '0.85rem',
+                                  padding: '0.4rem 0.95rem',
+                                  borderRadius: '18px',
+                                  border: `1px solid ${isSelected ? opt.color : '#dadce0'}`,
+                                  background: isSelected ? opt.color : '#ffffff',
+                                  color: isSelected ? '#ffffff' : '#5f6368',
+                                  fontWeight: 500,
+                                  fontSize: '0.82rem',
                                   cursor: 'pointer',
-                                  transition: 'all 0.2s ease',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  boxShadow: isSelected ? `0 0 0 3px ${opt.color}20` : 'none',
+                                  transition: 'all 0.15s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                  if (!isSelected) {
-                                    e.currentTarget.style.background = opt.bg;
-                                    e.currentTarget.style.borderColor = opt.color + '40';
-                                    e.currentTarget.style.color = opt.color;
-                                  }
+                                  if (!isSelected) e.currentTarget.style.background = '#f1f3f4';
                                 }}
                                 onMouseLeave={(e) => {
-                                  if (!isSelected) {
-                                    e.currentTarget.style.background = '#f1f5f9';
-                                    e.currentTarget.style.borderColor = 'transparent';
-                                    e.currentTarget.style.color = '#64748b';
-                                  }
+                                  if (!isSelected) e.currentTarget.style.background = '#ffffff';
                                 }}
                               >
-                                <span style={{ fontSize: '1rem' }}>{opt.icon}</span>
-                                <span>{opt.label}</span>
+                                {opt.label}
                               </button>
                             );
                           })}
@@ -985,38 +680,28 @@ export default function Attendance() {
             flexWrap: 'wrap'
           }}>
             <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: '#e8f0fe',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <History size={20} color="white" />
+              <History size={18} color="#1a73e8" />
             </div>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.01em' }}>
                 Historial de Asistencias
               </h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+              <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>
                 {filteredHistoricalDates.length} de {historicalAttendanceDates.length} fechas registradas
               </p>
             </div>
             <select
               value={selectedPeriod}
               onChange={e => setSelectedPeriod(e.target.value)}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '10px',
-                border: '2px solid #e2e8f0',
-                background: 'white',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                color: '#334155',
-                cursor: 'pointer',
-                minWidth: '160px'
-              }}
+              style={selectPillStyle}
             >
               <option value="all">Todos los bimestres</option>
               {Object.entries(periodDates).map(([key, dates]) => (
@@ -1029,138 +714,60 @@ export default function Attendance() {
 
           <div style={{
             background: 'white',
-            borderRadius: '20px',
+            borderRadius: '12px',
             overflow: 'hidden',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            border: '1px solid #dadce0'
           }}>
             <div className="table-container" style={{ overflowX: 'auto' }}>
-              <table className="styled-table">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '60px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <History size={16} />
-                      </div>
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem'
-                    }}>
-                      Fecha
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '120px',
-                      textAlign: 'center'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <CheckCircle size={14} />
-                        Presentes
-                      </div>
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '120px',
-                      textAlign: 'center'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <Clock size={14} />
-                        Tardanzas
-                      </div>
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '120px',
-                      textAlign: 'center'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <XCircle size={14} />
-                        Faltas
-                      </div>
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '120px',
-                      textAlign: 'center'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <FileCheck size={14} />
-                        Justificados
-                      </div>
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '120px',
-                      textAlign: 'center'
-                    }}>
-                      % Asistencia
-                    </th>
-                    <th style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      padding: '1rem',
-                      width: '60px',
-                      textAlign: 'center'
-                    }}>
-                      Acción
-                    </th>
+                    <th style={thStyle('60px', 'center')}></th>
+                    <th style={thStyle()}>Fecha</th>
+                    <th style={thStyle('110px', 'center')}>Presentes</th>
+                    <th style={thStyle('110px', 'center')}>Tardanzas</th>
+                    <th style={thStyle('110px', 'center')}>Faltas</th>
+                    <th style={thStyle('120px', 'center')}>Justificados</th>
+                    <th style={thStyle('120px', 'center')}>% Asistencia</th>
+                    <th style={thStyle('70px', 'center')}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredHistoricalDates.map((dateStr, idx) => {
+                  {filteredHistoricalDates.map((dateStr) => {
                     const summary = getAttendanceSummaryForDate(dateStr, filteredStudents);
-                    const attendanceRate = summary.total > 0 
-                      ? Math.round(((summary.P + summary.T + summary.J) / summary.total) * 100) 
+                    const attendanceRate = summary.total > 0
+                      ? Math.round(((summary.P + summary.T + summary.J) / summary.total) * 100)
                       : 0;
                     const isExpanded = expandedDates[dateStr];
+                    const rateColor = attendanceRate >= 80 ? '#188038' : attendanceRate >= 60 ? '#e37400' : '#d93025';
+                    const rateBg = attendanceRate >= 80 ? '#e6f4ea' : attendanceRate >= 60 ? '#fef7e0' : '#fce8e6';
+                    const countPillStyle = (color, bg) => ({
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0.25rem 0.7rem',
+                      borderRadius: '12px',
+                      background: bg,
+                      color: color,
+                      fontWeight: 500,
+                      fontSize: '0.85rem',
+                      minWidth: '40px'
+                    });
 
                     return (
                       <React.Fragment key={dateStr}>
-                        <tr 
-                          style={{ 
-                            background: idx % 2 === 0 ? '#ffffff' : '#fafafa',
-                            cursor: 'pointer',
-                            transition: 'background 0.2s ease'
-                          }}
+                        <tr
+                          style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
                           onClick={() => toggleDateExpand(dateStr)}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = '#f8f9fa'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
                         >
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
-                            <button
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '4px',
-                                borderRadius: '6px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleDateExpand(dateStr);
-                              }}
-                            >
+                          <td style={{ textAlign: 'center', padding: '0.75rem 0.5rem', borderBottom: '1px solid #dadce0' }}>
+                            <span style={{ display: 'inline-flex', color: '#5f6368' }}>
                               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                            </button>
+                            </span>
                           </td>
-                          <td style={{ fontWeight: 600, padding: '0.75rem' }}>
+                          <td style={{ fontWeight: 500, padding: '0.75rem 1rem', borderBottom: '1px solid #dadce0', color: '#3c4043', fontSize: '0.9rem' }}>
                             {new Date(dateStr + 'T00:00:00').toLocaleDateString('es-PE', {
                               weekday: 'long',
                               year: 'numeric',
@@ -1168,95 +775,35 @@ export default function Attendance() {
                               day: 'numeric'
                             })}
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '0.35rem 0.75rem',
-                              borderRadius: '20px',
-                              background: 'rgba(16, 185, 129, 0.1)',
-                              color: '#10b981',
-                              fontWeight: 700,
-                              fontSize: '0.9rem',
-                              minWidth: '40px'
-                            }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                            <span style={countPillStyle('#188038', '#e6f4ea')}>
                               {summary.P}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '0.35rem 0.75rem',
-                              borderRadius: '20px',
-                              background: 'rgba(245, 158, 11, 0.1)',
-                              color: '#f59e0b',
-                              fontWeight: 700,
-                              fontSize: '0.9rem',
-                              minWidth: '40px'
-                            }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                            <span style={countPillStyle('#e37400', '#fef7e0')}>
                               {summary.T}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '0.35rem 0.75rem',
-                              borderRadius: '20px',
-                              background: 'rgba(239, 68, 68, 0.1)',
-                              color: '#ef4444',
-                              fontWeight: 700,
-                              fontSize: '0.9rem',
-                              minWidth: '40px'
-                            }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                            <span style={countPillStyle('#d93025', '#fce8e6')}>
                               {summary.F}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '0.35rem 0.75rem',
-                              borderRadius: '20px',
-                              background: 'rgba(139, 92, 246, 0.1)',
-                              color: '#8b5cf6',
-                              fontWeight: 700,
-                              fontSize: '0.9rem',
-                              minWidth: '40px'
-                            }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                            <span style={countPillStyle('#9334e6', '#f3e8fd')}>
                               {summary.J}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
                             <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '0.35rem 0.75rem',
-                              borderRadius: '20px',
-                              background: attendanceRate >= 80 
-                                ? 'rgba(16, 185, 129, 0.1)' 
-                                : attendanceRate >= 60 
-                                ? 'rgba(245, 158, 11, 0.1)' 
-                                : 'rgba(239, 68, 68, 0.1)',
-                              color: attendanceRate >= 80 
-                                ? '#10b981' 
-                                : attendanceRate >= 60 
-                                ? '#f59e0b' 
-                                : '#ef4444',
-                              fontWeight: 800,
-                              fontSize: '0.95rem',
-                              minWidth: '50px'
+                              ...countPillStyle(rateColor, rateBg),
+                              minWidth: '52px'
                             }}>
                               {attendanceRate}%
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1267,14 +814,16 @@ export default function Attendance() {
                                 background: 'none',
                                 border: 'none',
                                 cursor: 'pointer',
-                                color: '#ef4444',
+                                color: '#d93025',
                                 padding: '6px',
-                                borderRadius: '6px',
+                                borderRadius: '50%',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                transition: 'background 0.2s ease'
+                                transition: 'background 0.15s ease'
                               }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = '#fce8e6'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
                               title="Eliminar esta fecha"
                             >
                               <Trash2 size={16} />
@@ -1283,20 +832,20 @@ export default function Attendance() {
                         </tr>
                         {isExpanded && (
                           <tr>
-                            <td colSpan="8" style={{ padding: 0, background: '#f8fafc' }}>
-                              <div style={{ padding: '1rem' }}>
-                                <h4 style={{ 
-                                  fontSize: '0.85rem', 
-                                  fontWeight: 700, 
-                                  color: '#64748b', 
+                            <td colSpan="8" style={{ padding: 0, background: '#f8f9fa', borderBottom: '1px solid #dadce0' }}>
+                              <div style={{ padding: '1rem 1.5rem' }}>
+                                <h4 style={{
+                                  fontSize: '0.75rem',
+                                  fontWeight: 500,
+                                  color: '#5f6368',
                                   marginBottom: '0.75rem',
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.05em'
                                 }}>
                                   Detalle por Estudiante
                                 </h4>
-                                <div style={{ 
-                                  display: 'grid', 
+                                <div style={{
+                                  display: 'grid',
                                   gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                                   gap: '0.5rem'
                                 }}>
@@ -1304,7 +853,7 @@ export default function Attendance() {
                                     const records = getAttendanceForDate(dateStr);
                                     const status = records[student.id];
                                     if (!status) return null;
-                                    
+
                                     const statusConfig = STATUS_OPTIONS.find(opt => opt.value === status);
                                     return (
                                       <div key={student.id} style={{
@@ -1314,12 +863,12 @@ export default function Attendance() {
                                         padding: '0.5rem 0.75rem',
                                         borderRadius: '8px',
                                         background: 'white',
-                                        border: `1px solid ${statusConfig?.color || '#e2e8f0'}30`
+                                        border: '1px solid #dadce0'
                                       }}>
-                                        <span style={{ 
-                                          fontSize: '0.85rem', 
+                                        <span style={{
+                                          fontSize: '0.85rem',
                                           fontWeight: 500,
-                                          color: '#334155',
+                                          color: '#3c4043',
                                           flex: 1,
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
@@ -1331,16 +880,17 @@ export default function Attendance() {
                                         <span style={{
                                           display: 'inline-flex',
                                           alignItems: 'center',
-                                          justifyContent: 'center',
+                                          gap: '6px',
                                           padding: '0.2rem 0.6rem',
                                           borderRadius: '12px',
-                                          background: statusConfig?.bg || '#f1f5f9',
-                                          color: statusConfig?.color || '#64748b',
-                                          fontWeight: 700,
+                                          background: statusConfig?.bg || '#f1f3f4',
+                                          color: statusConfig?.color || '#5f6368',
+                                          fontWeight: 500,
                                           fontSize: '0.75rem',
                                           whiteSpace: 'nowrap'
                                         }}>
-                                          {statusConfig?.icon} {statusConfig?.label}
+                                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusConfig?.color || '#5f6368' }} />
+                                          {statusConfig?.label}
                                         </span>
                                       </div>
                                     );
@@ -1363,28 +913,28 @@ export default function Attendance() {
       {selectedClass && historicalAttendanceDates.length === 0 && attendanceStats && (
         <div style={{
           marginTop: '2rem',
-          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-          borderRadius: '16px',
-          padding: '2rem',
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '2.5rem 2rem',
           textAlign: 'center',
-          border: '2px dashed #bae6fd'
+          border: '1px dashed #dadce0'
         }}>
           <div style={{
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            width: '56px',
+            height: '56px',
+            background: '#e8f0fe',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 1rem'
           }}>
-            <History size={28} color="white" />
+            <History size={26} color="#1a73e8" />
           </div>
-          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1e40af' }}>
+          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: '#3c4043' }}>
             No hay historial de asistencias
           </h4>
-          <p style={{ fontSize: '0.9rem', color: '#1e40af', margin: 0 }}>
+          <p style={{ fontSize: '0.9rem', color: '#5f6368', margin: 0 }}>
             Las asistencias que tomes aparecerán aquí como historial
           </p>
         </div>
@@ -1393,28 +943,28 @@ export default function Attendance() {
       {selectedClass && filteredHistoricalDates.length === 0 && historicalAttendanceDates.length > 0 && (
         <div style={{
           marginTop: '2rem',
-          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-          borderRadius: '16px',
-          padding: '2rem',
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '2.5rem 2rem',
           textAlign: 'center',
-          border: '2px dashed #fbbf24'
+          border: '1px dashed #dadce0'
         }}>
           <div style={{
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            width: '56px',
+            height: '56px',
+            background: '#fef7e0',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 1rem'
           }}>
-            <Calendar size={28} color="white" />
+            <Calendar size={26} color="#e37400" />
           </div>
-          <h4 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#92400e' }}>
+          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: '#3c4043' }}>
             Sin registros en este bimestre
           </h4>
-          <p style={{ fontSize: '0.9rem', color: '#92400e', margin: 0 }}>
+          <p style={{ fontSize: '0.9rem', color: '#5f6368', margin: 0 }}>
             No hay fechas de asistencia registradas en {PERIOD_LABELS[selectedPeriod] || `Bimestre ${selectedPeriod}`} para {selectedClass}
           </p>
         </div>
