@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../context/StoreContext';
-import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Bell, BookOpen, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
 
 const EVENT_COLORS = {
@@ -30,37 +30,32 @@ const EVENT_TYPE_ICONS = {
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-function EventTooltip({ ev, cellRef }) {
-  if (!ev || !cellRef) return null;
+function EventTooltip({ ev, targetRef }) {
+  if (!ev || !targetRef) return null;
   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
-  const rect = cellRef.getBoundingClientRect();
-  const x = rect.left + rect.width / 2;
-  const y = rect.top;
+  const rect = targetRef.getBoundingClientRect();
   return (
     <div style={{
-      position: 'fixed', left: x, top: y - 10,
+      position: 'fixed',
+      left: rect.left + rect.width / 2,
+      top: rect.top - 6,
       transform: 'translate(-50%, -100%)',
       background: '#1e293b', color: '#f1f5f9',
-      padding: '0.65rem 0.9rem', borderRadius: '12px', fontSize: '0.75rem',
-      zIndex: 9999, boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-      border: '1px solid rgba(255,255,255,0.1)', lineHeight: 1.5, textAlign: 'left',
-      pointerEvents: 'none', minWidth: '180px', maxWidth: '300px'
+      padding: '0.55rem 0.85rem', borderRadius: '10px', fontSize: '0.75rem',
+      zIndex: 9999, boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+      border: '1px solid rgba(255,255,255,0.1)', lineHeight: 1.4, textAlign: 'left',
+      pointerEvents: 'none', whiteSpace: 'nowrap', maxWidth: '280px',
     }}>
-      <div style={{ fontWeight: 700, marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
         <Icon size={12} /> {ev.title}
       </div>
-      <div style={{ color: '#94a3b8', fontSize: '0.68rem' }}>
-        {EVENT_TYPE_LABELS[ev.type] || 'Otro'} · {new Date(ev.date + 'T12:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+      <div style={{ color: '#94a3b8', fontSize: '0.65rem', marginTop: '2px' }}>
+        {EVENT_TYPE_LABELS[ev.type] || 'Otro'} · {new Date(ev.date + 'T12:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
       </div>
-      {ev.description && (
-        <div style={{ color: '#cbd5e1', fontSize: '0.68rem', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '4px', maxWidth: '250px', whiteSpace: 'normal' }}>
-          {ev.description.length > 80 ? ev.description.substring(0, 80) + '...' : ev.description}
-        </div>
-      )}
       <div style={{
-        position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
-        width: '10px', height: '10px', background: '#1e293b'
+        position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
+        width: '8px', height: '8px', background: '#1e293b'
       }} />
     </div>
   );
@@ -75,7 +70,7 @@ export default function SchoolCalendar() {
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
   const [tooltip, setTooltip] = useState(null);
-  const tooltipCellRef = useRef(null);
+  const tooltipTargetRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 600);
@@ -164,12 +159,12 @@ export default function SchoolCalendar() {
   }
 
   const showTooltip = useCallback((ev, e) => {
-    tooltipCellRef.current = e.currentTarget;
+    tooltipTargetRef.current = e.currentTarget;
     setTooltip(ev);
   }, []);
 
   const hideTooltip = useCallback(() => {
-    tooltipCellRef.current = null;
+    tooltipTargetRef.current = null;
     setTooltip(null);
   }, []);
 
@@ -199,69 +194,69 @@ export default function SchoolCalendar() {
       </div>
 
       {/* Calendar card */}
-      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+      <div style={{
+        background: 'white', borderRadius: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', overflow: 'hidden'
+      }}>
         {/* Navigation */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem'
+          padding: '1rem 1.5rem', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.4rem' : '0.6rem', flexWrap: 'wrap' }}>
             <button onClick={prevMonth} style={{
-              padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+              padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0',
               background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              color: '#64748b', transition: 'all 0.2s ease'
+              color: '#64748b', transition: 'all 0.15s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
-            ><ChevronLeft size={20} /></button>
-            <h3 style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, margin: 0, minWidth: isMobile ? 'auto' : '180px' }}>
+              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+            ><ChevronLeft size={18} /></button>
+            <h3 style={{ fontSize: isMobile ? '0.95rem' : '1.15rem', fontWeight: 700, margin: '0 4px', minWidth: isMobile ? 'auto' : '170px', color: '#1e293b' }}>
               {MONTHS[month]} {year}
             </h3>
             <button onClick={nextMonth} style={{
-              padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+              padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0',
               background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              color: '#64748b', transition: 'all 0.2s ease'
+              color: '#64748b', transition: 'all 0.15s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
-            ><ChevronRight size={20} /></button>
+              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+            ><ChevronRight size={18} /></button>
             <button onClick={goToday} style={{
-              padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-              background: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-              color: '#64748b', transition: 'all 0.2s ease'
+              padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0',
+              background: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
+              color: '#64748b', transition: 'all 0.15s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#64748b'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
             >Hoy</button>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button onClick={() => openAddForm(formatDate(new Date()))} style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
               background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
-              borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-              fontSize: isMobile ? '0.75rem' : '0.85rem',
-              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
-              transition: 'all 0.2s ease'
+              color: 'white', border: 'none', padding: isMobile ? '0.45rem 0.7rem' : '0.6rem 1rem',
+              borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+              fontSize: isMobile ? '0.75rem' : '0.82rem',
+              boxShadow: '0 3px 12px rgba(245, 158, 11, 0.3)', transition: 'all 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.3)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <Plus size={isMobile ? 14 : 18} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
+              <Plus size={isMobile ? 14 : 16} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
             </button>
             <button onClick={loadCivicCalendar} style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
               background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: 'white', border: 'none', padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.25rem',
-              borderRadius: '12px', fontWeight: 600, cursor: 'pointer',
-              fontSize: isMobile ? '0.75rem' : '0.85rem',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
-              transition: 'all 0.2s ease'
+              color: 'white', border: 'none', padding: isMobile ? '0.45rem 0.7rem' : '0.6rem 1rem',
+              borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
+              fontSize: isMobile ? '0.75rem' : '0.82rem',
+              boxShadow: '0 3px 12px rgba(16, 185, 129, 0.3)', transition: 'all 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.3)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <Download size={isMobile ? 14 : 18} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
+              <Download size={isMobile ? 14 : 16} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
             </button>
           </div>
         </div>
@@ -274,8 +269,8 @@ export default function SchoolCalendar() {
           {/* Day names */}
           {DAYS.map((d, idx) => (
             <div key={'h' + idx} style={{
-              textAlign: 'center', padding: isMobile ? '0.2rem' : '0.5rem',
-              fontWeight: 700, fontSize: isMobile ? '0.65rem' : '0.8rem', color: '#94a3b8',
+              textAlign: 'center', padding: isMobile ? '0.35rem 0.2rem' : '0.55rem 0.5rem',
+              fontWeight: 700, fontSize: isMobile ? '0.62rem' : '0.75rem', color: '#94a3b8',
               boxSizing: 'border-box',
               borderBottom: '1px solid #f1f5f9',
               borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none'
@@ -288,27 +283,30 @@ export default function SchoolCalendar() {
             const remaining = dayEvents.length - maxShow;
             return (
               <div key={idx} onClick={() => openAddForm(cell.date)} style={{
-                minHeight: isMobile ? '40px' : '90px', padding: isMobile ? '0.2rem' : '0.5rem',
+                minHeight: isMobile ? '42px' : '92px', padding: isMobile ? '0.2rem' : '0.45rem',
                 overflow: 'visible', boxSizing: 'border-box',
                 borderRight: (idx % 7 !== 6) ? '1px solid #f1f5f9' : 'none',
                 borderBottom: (idx < 35) ? '1px solid #f1f5f9' : 'none',
-                background: cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white',
-                cursor: 'pointer', transition: 'background 0.15s ease',
-                opacity: cell.isOutside ? 0.4 : 1,
+                background: cell.isToday ? '#fffbeb' : 'white',
+                cursor: 'pointer', transition: 'all 0.12s ease',
+                opacity: cell.isOutside ? 0.35 : 1,
                 position: 'relative'
               }}
-                onMouseEnter={e => { if (!cell.isOutside) e.currentTarget.style.background = '#f8fafc'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? 'rgba(245, 158, 11, 0.05)' : 'white'; }}
+                onMouseEnter={e => { if (!cell.isOutside) e.currentTarget.style.background = cell.isToday ? '#fef3c7' : '#f8fafc'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? '#fffbeb' : 'white'; }}
               >
+                {/* Day number */}
                 <div style={{
-                  fontSize: isMobile ? '0.65rem' : '0.85rem', fontWeight: cell.isToday ? 800 : 600,
-                  color: cell.isToday ? '#d97706' : '#1e293b',
-                  width: isMobile ? '20px' : '28px', height: isMobile ? '20px' : '28px', display: 'flex',
+                  fontSize: isMobile ? '0.62rem' : '0.8rem', fontWeight: cell.isToday ? 800 : 600,
+                  color: cell.isToday ? '#b45309' : '#1e293b',
+                  width: isMobile ? '20px' : '26px', height: isMobile ? '20px' : '26px', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   borderRadius: '50%',
-                  background: cell.isToday ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
-                  marginBottom: '0.25rem'
+                  background: cell.isToday ? '#fbbf2430' : 'transparent',
+                  marginBottom: '3px'
                 }}>{cell.day}</div>
+
+                {/* Event chips */}
                 {dayEvents.slice(0, maxShow).map(ev => {
                   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
                   const colors = EVENT_COLORS[ev.type] || EVENT_COLORS.other;
@@ -319,21 +317,21 @@ export default function SchoolCalendar() {
                       onMouseLeave={hideTooltip}
                       style={{
                         display: 'flex', alignItems: 'center', gap: '3px',
-                        padding: '2px 6px', borderRadius: '6px', marginBottom: '2px',
+                        padding: '2px 5px', borderRadius: '5px', marginBottom: '2px',
                         background: colors.bg, color: colors.text,
-                        fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
+                        fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
                         overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
                         border: `1px solid ${colors.border}30`,
-                        transition: 'all 0.15s ease'
+                        transition: 'all 0.12s ease'
                       }}
                     >
-                      <Icon size={10} />
+                      <Icon size={9} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</span>
                     </div>
                   );
                 })}
                 {remaining > 0 && (
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, paddingLeft: '6px' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, paddingLeft: '5px' }}>
                     +{remaining} más
                   </div>
                 )}
@@ -343,86 +341,89 @@ export default function SchoolCalendar() {
         </div>
       </div>
 
-      {/* Leyenda de tipos */}
+      {/* Leyenda */}
       <div style={{
         display: 'flex', gap: '1rem', marginTop: '1rem',
-        padding: '1rem 1.5rem', background: 'white', borderRadius: '16px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flexWrap: 'wrap',
-        alignItems: 'center'
+        padding: '0.85rem 1.25rem', background: 'white', borderRadius: '14px',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.06)', flexWrap: 'wrap', alignItems: 'center'
       }}>
-        <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#64748b' }}>Tipos de evento:</span>
+        <span style={{ fontWeight: 600, fontSize: '0.8rem', color: '#94a3b8' }}>Tipos:</span>
         {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => {
           const colors = EVENT_COLORS[key];
           const Icon = EVENT_TYPE_ICONS[key];
           return (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: colors.text }}>
-              <Icon size={14} /> {label}
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 600, color: colors.text }}>
+              <Icon size={12} /> {label}
             </div>
           );
         })}
       </div>
 
       {/* Tooltip */}
-      <EventTooltip ev={tooltip} cellRef={tooltipCellRef.current} />
+      <EventTooltip ev={tooltip} targetRef={tooltipTargetRef.current} />
 
-      {/* Modal de evento */}
+      {/* Modal */}
       {showForm && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-          display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
-          padding: '4rem 1rem', zIndex: 1000
+          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          padding: '1rem', zIndex: 1000
         }} onClick={() => setShowForm(false)}>
           <div style={{
-            maxWidth: '450px', width: '100%', background: 'white',
-            borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-            position: 'relative'
+            maxWidth: '420px', width: '100%', background: 'white',
+            borderRadius: '20px', padding: '1.75rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            position: 'relative', maxHeight: '90vh', overflow: 'auto'
           }} className="animate-fade-in" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <div style={{
-                  width: '48px', height: '48px', borderRadius: '12px',
+                  width: '42px', height: '42px', borderRadius: '12px',
                   background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {editingEvent ? <Edit2 size={22} color="white" /> : <Plus size={22} color="white" />}
+                  {editingEvent ? <Edit2 size={20} color="white" /> : <Plus size={20} color="white" />}
                 </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
                   {editingEvent ? 'Editar Evento' : 'Nuevo Evento'}
                 </h3>
               </div>
               <button onClick={() => setShowForm(false)} style={{
-                background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.5rem'
-              }}><X size={24} /></button>
+                width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #e2e8f0',
+                background: 'white', color: '#64748b', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}><X size={18} /></button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
-                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Título</label>
+                <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Título</label>
                 <input className="input-field" type="text" placeholder="Ej. Día del Maestro"
                   value={formData.title}
                   onChange={e => setFormData({ ...formData, title: e.target.value })}
                   style={{ width: '100%' }} />
               </div>
-              <div>
-                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
-                <input className="input-field" type="date"
-                  value={formData.date}
-                  onChange={e => setFormData({ ...formData, date: e.target.value })}
-                  style={{ width: '100%' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                <div>
+                  <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Fecha</label>
+                  <input className="input-field" type="date"
+                    value={formData.date}
+                    onChange={e => setFormData({ ...formData, date: e.target.value })}
+                    style={{ width: '100%' }} />
+                </div>
+                <div>
+                  <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Tipo</label>
+                  <select className="input-field" value={formData.type}
+                    onChange={e => setFormData({ ...formData, type: e.target.value })}
+                    style={{ width: '100%' }}>
+                    {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
-                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Tipo</label>
-                <select className="input-field" value={formData.type}
-                  onChange={e => setFormData({ ...formData, type: e.target.value })}
-                  style={{ width: '100%' }}>
-                  {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="input-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Descripción (opcional)</label>
+                <label className="input-label" style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.78rem', fontWeight: 600, color: '#64748b' }}>Descripción (opcional)</label>
                 <textarea className="input-field" placeholder="Descripción del evento..."
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -431,30 +432,30 @@ export default function SchoolCalendar() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.25rem' }}>
               {editingEvent && (
                 <button onClick={() => { if (window.confirm('¿Eliminar este evento?')) { deleteEvent(editingEvent.id); setShowForm(false); } }} style={{
-                  padding: '0.75rem 1rem', borderRadius: '12px',
+                  padding: '0.65rem 0.9rem', borderRadius: '10px',
                   background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
-                  fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                  fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem'
                 }}>
-                  <Trash2 size={18} /> Eliminar
+                  <Trash2 size={16} /> Eliminar
                 </button>
               )}
-              <div style={{ flex: 1, display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <div style={{ flex: 1, display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
                 <button onClick={() => setShowForm(false)} style={{
-                  padding: '0.75rem 1.25rem', borderRadius: '12px',
+                  padding: '0.65rem 1.1rem', borderRadius: '10px',
                   background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0',
-                  fontWeight: 600, cursor: 'pointer'
+                  fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem'
                 }}>Cancelar</button>
                 <button onClick={handleSave} style={{
-                  padding: '0.75rem 1.25rem', borderRadius: '12px',
+                  padding: '0.65rem 1.1rem', borderRadius: '10px',
                   background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
+                  display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem',
+                  boxShadow: '0 3px 12px rgba(245, 158, 11, 0.3)'
                 }}>
-                  <Save size={18} /> {editingEvent ? 'Actualizar' : 'Guardar'}
+                  <Save size={16} /> {editingEvent ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>
             </div>
