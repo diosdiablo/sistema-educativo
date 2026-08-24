@@ -21,6 +21,28 @@ const loadData = (key, defaultValue) => {
   }
 };
 
+const safeParse = (val, fallback) => {
+  if (typeof val !== 'string') return val ?? fallback;
+  try { return JSON.parse(val); } catch { return fallback; }
+};
+
+const fetchAllRows = async (table, orderBy = 'created_at') => {
+  const PAGE = 1000;
+  let from = 0;
+  const all = [];
+  for (;;) {
+    let query = supabase.from(table).select('*').range(from, from + PAGE - 1);
+    if (orderBy) query = query.order(orderBy, { ascending: true });
+    const { data, error } = await query;
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+};
+
 const DEFAULT_SUBJECTS = [
   { id: 'cneb-mat', name: 'Matemática', competencies: [
     { id: 'c1', name: 'Resolución de problemas' },
@@ -166,7 +188,7 @@ export const StoreProvider = ({ children }) => {
             supabase.from('grades').select('*'),
             supabase.from('attendance').select('*'),
             supabase.from('instruments').select('*'),
-            supabase.from('instrument_evaluations').select('*'),
+            fetchAllRows('instrument_evaluations'),
             supabase.from('schedule').select('*'),
             supabase.from('diagnostic_evaluations').select('*'),
             supabase.from('users').select('*'),
@@ -235,21 +257,30 @@ setStudents(prev => {
             classId: i.class_id,
             criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
           })));
-          if (instrumentEvalsData?.length > 0) setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
-            ...ev,
-            instrumentId: ev.instrument_id,
-            studentId: ev.student_id,
-            competencyId: ev.competency_id,
-            subjectId: ev.subject_id,
-            classId: ev.class_id,
-            maxPossible: ev.max_possible,
-            activityName: ev.activity_name || '',
-            userId: ev.user_id,
-            scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
-            criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
-            instrumentType: ev.instrument_type,
-            createdAt: ev.created_at
-          })));
+          if (instrumentEvalsData?.length > 0) {
+            const seenIds = new Set();
+            const mappedEvals = [];
+            for (const ev of instrumentEvalsData) {
+              if (seenIds.has(ev.id)) continue;
+              seenIds.add(ev.id);
+              mappedEvals.push({
+                ...ev,
+                instrumentId: ev.instrument_id,
+                studentId: ev.student_id,
+                competencyId: ev.competency_id,
+                subjectId: ev.subject_id,
+                classId: ev.class_id,
+                maxPossible: ev.max_possible,
+                activityName: ev.activity_name || '',
+                userId: ev.user_id,
+                scores: safeParse(ev.scores, {}),
+                criteria: safeParse(ev.criteria, []),
+                instrumentType: ev.instrument_type,
+                createdAt: ev.created_at
+              });
+            }
+            setInstrumentEvaluations(mappedEvals);
+          }
 if (scheduleData?.length > 0) {
           const classMap = {};
           classesData?.forEach(c => { classMap[c.id] = c.color; });
@@ -568,7 +599,7 @@ const [
         supabase.from('grades').select('*'),
         supabase.from('attendance').select('*'),
         supabase.from('instruments').select('*'),
-        supabase.from('instrument_evaluations').select('*'),
+        fetchAllRows('instrument_evaluations'),
         supabase.from('schedule').select('*'),
         supabase.from('diagnostic_evaluations').select('*'),
         supabase.from('users').select('*'),
@@ -639,21 +670,28 @@ if (studentsData?.length > 0) {
       })));
           if (instrumentEvalsData?.length > 0) {
         console.log('Loading', instrumentEvalsData.length, 'instrument evaluations from Supabase');
-        setInstrumentEvaluations(instrumentEvalsData.map(ev => ({
-          ...ev,
-          instrumentId: ev.instrument_id,
-          studentId: ev.student_id,
-          competencyId: ev.competency_id,
-          subjectId: ev.subject_id,
-          classId: ev.class_id,
-          maxPossible: ev.max_possible,
-          activityName: ev.activity_name || '',
-          userId: ev.user_id,
-          scores: typeof ev.scores === 'string' ? JSON.parse(ev.scores) : ev.scores,
-          criteria: typeof ev.criteria === 'string' ? JSON.parse(ev.criteria) : ev.criteria,
-          instrumentType: ev.instrument_type,
-          createdAt: ev.created_at
-        })));
+        const seenIds = new Set();
+        const mappedEvals = [];
+        for (const ev of instrumentEvalsData) {
+          if (seenIds.has(ev.id)) continue;
+          seenIds.add(ev.id);
+          mappedEvals.push({
+            ...ev,
+            instrumentId: ev.instrument_id,
+            studentId: ev.student_id,
+            competencyId: ev.competency_id,
+            subjectId: ev.subject_id,
+            classId: ev.class_id,
+            maxPossible: ev.max_possible,
+            activityName: ev.activity_name || '',
+            userId: ev.user_id,
+            scores: safeParse(ev.scores, {}),
+            criteria: safeParse(ev.criteria, []),
+            instrumentType: ev.instrument_type,
+            createdAt: ev.created_at
+          });
+        }
+        setInstrumentEvaluations(mappedEvals);
       }
       if (scheduleData?.length > 0) {
         const classMap = {};
