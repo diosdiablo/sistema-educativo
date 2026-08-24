@@ -814,6 +814,7 @@ export default function Grades() {
                     period: ev.period,
                     classId: ev.classId,
                     activityName: ev.activityName,
+                    createdAt: ev.createdAt || originalInstr?.createdAt,
                   };
                 }
               });
@@ -998,9 +999,33 @@ export default function Grades() {
                               ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', position: 'relative' }}>
                                   <ClipboardCheck size={12} />
-                                  {(inst.title || inst.activityName || '').length > 12
-                                    ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
-                                    : (inst.title || inst.activityName || '')}
+                                  <div className="instrument-tooltip-wrapper" style={{ position: 'relative', cursor: 'default' }}>
+                                    {(inst.title || inst.activityName || '').length > 12
+                                      ? (inst.title || inst.activityName || '').substring(0, 12) + '...'
+                                      : (inst.title || inst.activityName || '')}
+                                    {(inst.title || inst.activityName || '').length > 12 && (
+                                      <div className="instrument-tooltip" style={{
+                                        display: 'none', position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%',
+                                        transform: 'translateX(-50%)', background: '#1e293b', color: '#f1f5f9',
+                                        padding: '0.6rem 0.85rem', borderRadius: '10px', fontSize: '0.72rem',
+                                        whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+                                        border: '1px solid rgba(255,255,255,0.1)', lineHeight: 1.5, textAlign: 'left',
+                                        pointerEvents: 'none'
+                                      }}>
+                                        <div style={{ fontWeight: 700, marginBottom: '2px' }}>{inst.title || inst.activityName}</div>
+                                        {inst.createdAt && (
+                                          <div style={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+                                            Creado: {new Date(inst.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                          </div>
+                                        )}
+                                        <div style={{
+                                          position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
+                                          width: '10px', height: '10px', background: '#1e293b', borderRight: '1px solid rgba(255,255,255,0.1)',
+                                          borderBottom: '1px solid rgba(255,255,255,0.1)'
+                                        }} />
+                                      </div>
+                                    )}
+                                  </div>
                                   {canRename && (
                                     <>
                                       <button
