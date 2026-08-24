@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
@@ -30,15 +30,16 @@ const EVENT_TYPE_ICONS = {
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-function EventTooltip({ ev, targetRef }) {
-  if (!ev || !targetRef) return null;
+function EventTooltip({ data }) {
+  if (!data) return null;
+  const { ev, x, y } = data;
   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
-  const rect = targetRef.getBoundingClientRect();
+  const clampedX = Math.min(Math.max(x, 160), window.innerWidth - 160);
   return (
     <div style={{
       position: 'fixed',
-      left: Math.min(Math.max(rect.left + rect.width / 2, 160), window.innerWidth - 160),
-      top: rect.top - 6,
+      left: clampedX,
+      top: y - 6,
       transform: 'translate(-50%, -100%)',
       background: '#1e293b', color: '#f1f5f9',
       padding: '0.55rem 0.85rem', borderRadius: '10px', fontSize: '0.75rem',
@@ -74,7 +75,6 @@ export default function SchoolCalendar() {
   const [formData, setFormData] = useState({ title: '', date: '', type: 'event', description: '' });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
   const [tooltip, setTooltip] = useState(null);
-  const tooltipTargetRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 600);
@@ -142,14 +142,17 @@ export default function SchoolCalendar() {
   }, [events]);
 
   function prevMonth() {
+    setTooltip(null);
     setCurrentDate(new Date(year, month - 1, 1));
   }
 
   function nextMonth() {
+    setTooltip(null);
     setCurrentDate(new Date(year, month + 1, 1));
   }
 
   function goToday() {
+    setTooltip(null);
     setCurrentDate(new Date());
   }
 
@@ -161,6 +164,7 @@ export default function SchoolCalendar() {
   }
 
   function openEditForm(ev) {
+    setTooltip(null);
     setEditingEvent(ev);
     setSelectedDate(ev.date);
     setFormData({ title: ev.title, date: ev.date, type: ev.type, description: ev.description || '' });
@@ -179,12 +183,11 @@ export default function SchoolCalendar() {
   }
 
   const showTooltip = useCallback((ev, e) => {
-    tooltipTargetRef.current = e.currentTarget;
-    setTooltip(ev);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({ ev, x: rect.left + rect.width / 2, y: rect.top });
   }, []);
 
   const hideTooltip = useCallback(() => {
-    tooltipTargetRef.current = null;
     setTooltip(null);
   }, []);
 
@@ -376,7 +379,7 @@ export default function SchoolCalendar() {
       </div>
 
       {/* Tooltip */}
-      <EventTooltip ev={tooltip} targetRef={tooltipTargetRef.current} />
+      <EventTooltip data={tooltip} />
 
       {/* Modal de evento */}
       {showForm && (
