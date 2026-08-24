@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useStore } from '../context/StoreContext';
 import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Sun, Moon, Bell, BookOpen, AlertTriangle, Star, Edit2, Trash2, Save, Download } from 'lucide-react';
 import CALENDARIO_CIVICO from '../data/calendario-civico';
@@ -35,11 +36,11 @@ function EventTooltip({ data }) {
   const { ev, x, y } = data;
   const Icon = EVENT_TYPE_ICONS[ev.type] || CalendarIcon;
   const clampedX = Math.min(Math.max(x, 160), window.innerWidth - 160);
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed',
       left: clampedX,
-      top: y - 6,
+      top: y - 10,
       transform: 'translate(-50%, -100%)',
       background: '#1e293b', color: '#f1f5f9',
       padding: '0.55rem 0.85rem', borderRadius: '10px', fontSize: '0.75rem',
@@ -62,7 +63,8 @@ function EventTooltip({ data }) {
         position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
         width: '8px', height: '8px', background: '#1e293b'
       }} />
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -183,8 +185,7 @@ export default function SchoolCalendar() {
   }
 
   const showTooltip = useCallback((ev, e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({ ev, x: rect.left + rect.width / 2, y: rect.top });
+    setTooltip({ ev, x: e.clientX, y: e.clientY });
   }, []);
 
   const hideTooltip = useCallback(() => {
