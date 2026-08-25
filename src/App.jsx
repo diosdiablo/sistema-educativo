@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle, ThumbsUp } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle, ThumbsUp, Moon, Sun } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
@@ -67,16 +67,29 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
           <img src={Logo} alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           <div>
             <h1 className="sidebar-title">Portal Agro</h1>
-            <span style={{ fontSize: '0.65rem', color: '#80868b', letterSpacing: '0.1em' }}>I.E.P. 110</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', letterSpacing: '0.1em' }}>I.E.P. 110</span>
           </div>
+          <button
+            onClick={() => setDarkMode(prev => !prev)}
+            title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+            style={{
+              background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+              cursor: 'pointer', padding: '0.5rem', borderRadius: '50%',
+              transition: 'all 0.2s ease', display: 'flex'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+          >
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           <div style={{ position: 'relative', marginLeft: 'auto' }}>
             <button ref={bellBtnRef} onClick={(e) => { e.stopPropagation(); toggleNotifs(e); }} style={{
-              background: showNotifs ? '#e8f0fe' : 'transparent',
-              border: 'none', color: '#5f6368', cursor: 'pointer', padding: '0.5rem',
+              background: showNotifs ? 'var(--nav-active-bg)' : 'transparent',
+              border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem',
               borderRadius: '50%', position: 'relative', transition: 'all 0.2s ease',
               display: 'flex'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
               onMouseLeave={e => { if (!showNotifs) e.currentTarget.style.background = 'transparent'; }}
             >
               {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
@@ -86,12 +99,12 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
                   width: '18px', height: '18px', borderRadius: '50%',
                   background: '#d93025', color: 'white', fontSize: '0.65rem',
                   fontWeight: 500, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', border: '2px solid #ffffff'
+                  justifyContent: 'center', border: '2px solid var(--bg-color-surface)'
                 }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
             </button>
           </div>
-          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', padding: '0.5rem' }}>
+          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem' }}>
             <X size={24} />
           </button>
         </div>
@@ -109,28 +122,28 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
           ))}
         </div>
 
-        <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid #dadce0', background: '#ffffff', borderRadius: '12px', margin: '0.5rem 0.25rem 0.25rem 0.25rem' }}>
+        <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', borderRadius: '12px', margin: '0.5rem 0.25rem 0.25rem 0.25rem' }}>
           <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               width: '40px', height: '40px',
               borderRadius: '50%',
-              background: '#e8f0fe',
+              background: 'var(--nav-active-bg)',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-              <Users size={20} color="#1967d2" />
+              <Users size={20} color="var(--nav-active-fg)" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-              <span style={{ color: '#5f6368', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
               </span>
-              <strong style={{ color: '#202124', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentUser?.name}</strong>
+              <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentUser?.name}</strong>
             </div>
           </div>
           <button
             onClick={() => { logout(); onClose(); }}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: '#fce8e6', color: '#d93025', border: 'none',
+              background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)', border: 'none',
               padding: '0.65rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem',
               transition: 'all 0.2s ease'
             }}
@@ -152,7 +165,7 @@ function AppContent() {
   const notifDropdownRef = useRef(null);
   const touchStartX = useRef(0);
   const swipedNotif = useRef(null);
-  const [darkMode, setDarkMode] = useState(() => false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('edu_theme') === 'dark');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -191,6 +204,8 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('edu_theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   if (!currentUser) {
@@ -218,20 +233,20 @@ function AppContent() {
         </button>
         <span className="mobile-title">Portal Agro 110</span>
       </div>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} bellBtnRef={bellBtnRef} toggleNotifs={toggleNotifs} unreadCount={unreadCount} showNotifs={showNotifs} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} darkMode={darkMode} setDarkMode={setDarkMode} bellBtnRef={bellBtnRef} toggleNotifs={toggleNotifs} unreadCount={unreadCount} showNotifs={showNotifs} />
       {showNotifs && notifPos && (
         <div ref={notifDropdownRef} style={{
           position: 'fixed', left: notifPos.left, top: notifPos.top,
           width: notifPos.isMobile ? 'calc(100vw - 32px)' : '320px',
           maxHeight: 'min(360px, calc(100vh - 90px))', overflowY: 'auto',
-          background: 'white', border: '1px solid #dadce0', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+          background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
           zIndex: 9999, padding: '0.5rem'
         }}>
-          <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid #e8eaed', fontWeight: 500, fontSize: '0.9rem', color: '#202124' }}>
+          <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid var(--border-color)', fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
             Notificaciones
           </div>
           {notifications.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#9aa0a6', fontSize: '0.85rem' }}>
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
               No hay notificaciones
             </div>
           ) : (
@@ -248,7 +263,7 @@ function AppContent() {
                     marginBottom: '2px', transition: 'background 0.15s ease',
                     position: 'relative', overflow: 'hidden'
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fef7e0' : 'transparent'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
@@ -260,9 +275,9 @@ function AppContent() {
                       <Bell size={14} color="#b06000" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 500, fontSize: '0.8rem', color: '#202124' }}>{n.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#5f6368', marginTop: '2px' }}>{n.message}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#9aa0a6', marginTop: '4px' }}>
+                      <div style={{ fontWeight: 500, fontSize: '0.8rem', color: 'var(--text-primary)' }}>{n.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{n.message}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                         {new Date(n.createdAt).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>

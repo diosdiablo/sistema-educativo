@@ -87,8 +87,8 @@ const gradeChipStyle = (qualitative, fontSize = '0.85rem') => ({
   minWidth: '34px',
   padding: '0.25rem 0.6rem',
   borderRadius: '12px',
-  background: GRADE_CHIP_BG[qualitative] || '#f1f3f4',
-  color: GRADE_CHIP_COLOR[qualitative] || '#5f6368',
+  background: GRADE_CHIP_BG[qualitative] || 'var(--hover-bg)',
+  color: GRADE_CHIP_COLOR[qualitative] || 'var(--text-secondary)',
   fontWeight: 500,
   fontSize
 });
@@ -96,11 +96,11 @@ const gradeChipStyle = (qualitative, fontSize = '0.85rem') => ({
 const selectPillStyle = {
   padding: '0.55rem 1rem',
   borderRadius: '20px',
-  border: '1px solid #dadce0',
-  background: '#ffffff',
+  border: '1px solid var(--border-color)',
+  background: 'var(--bg-color-surface)',
   fontWeight: 500,
   fontSize: '0.875rem',
-  color: '#3c4043',
+  color: 'var(--text-primary)',
   cursor: 'pointer',
   outline: 'none'
 };
@@ -272,19 +272,19 @@ export default function Grades() {
     <div className="animate-fade-in">
       {/* Barra de herramientas */}
       <div style={{
-        background: '#ffffff',
+        background: 'var(--bg-color-surface)',
         borderRadius: '12px',
         padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        border: '1px solid #dadce0',
+        border: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         gap: '0.75rem',
         flexWrap: 'wrap'
       }}>
         <div style={{ marginRight: 'auto' }}>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Calificaciones</h2>
-          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: '#5f6368' }}>Visualiza las evaluaciones por estudiante</p>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Calificaciones</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Visualiza las evaluaciones por estudiante</p>
         </div>
         <select
           value={selectedClass}
@@ -297,7 +297,7 @@ export default function Grades() {
         </select>
         <div style={{
           display: 'flex',
-          border: '1px solid #dadce0',
+          border: '1px solid var(--border-color)',
           borderRadius: '20px',
           overflow: 'hidden'
         }} aria-label="Bimestre">
@@ -311,8 +311,8 @@ export default function Grades() {
                 fontWeight: 500,
                 fontSize: '0.875rem',
                 cursor: 'pointer',
-                background: selectedPeriod === String(p) ? '#e8f0fe' : '#ffffff',
-                color: selectedPeriod === String(p) ? '#1967d2' : '#5f6368'
+                background: selectedPeriod === String(p) ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
+                color: selectedPeriod === String(p) ? 'var(--nav-active-fg)' : 'var(--text-secondary)'
               }}
             >
               B{p}
@@ -346,8 +346,8 @@ export default function Grades() {
             { label: 'Nivel AD', value: `${gradeStats.adRate}%`, color: '#7627bb', bg: '#f3e8fd', Icon: Trophy }
           ].map(({ label, value, color, bg, Icon }) => (
             <div key={label} style={{
-              background: '#ffffff',
-              border: '1px solid #dadce0',
+              background: 'var(--bg-color-surface)',
+              border: '1px solid var(--border-color)',
               borderRadius: '12px',
               padding: '1rem 1.25rem',
               display: 'flex',
@@ -366,8 +366,8 @@ export default function Grades() {
                 <Icon size={20} color={color} />
               </div>
               <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 500, color: '#3c4043', lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: '0.78rem', color: '#5f6368', marginTop: '0.25rem' }}>{label}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{label}</div>
               </div>
             </div>
           ))}
@@ -377,11 +377,11 @@ export default function Grades() {
       {/* Empty states */}
       {!selectedClass && (
         <div style={{
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '1px dashed #dadce0'
+          border: '1px dashed var(--border-color)'
         }}>
           <div style={{
             width: '64px',
@@ -395,10 +395,10 @@ export default function Grades() {
           }}>
             <GraduationCap size={30} color="#1a73e8" />
           </div>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#3c4043', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
             Bienvenido al módulo de calificaciones
           </h3>
-          <p style={{ color: '#5f6368', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
             Selecciona una sección para comenzar a visualizar las calificaciones de tus estudiantes
           </p>
         </div>
@@ -406,11 +406,11 @@ export default function Grades() {
 
       {selectedClass && !selectedSubjectId && (
         <div style={{
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '1px dashed #dadce0'
+          border: '1px dashed var(--border-color)'
         }}>
           <div style={{
             width: '64px',
@@ -424,10 +424,10 @@ export default function Grades() {
           }}>
             <BookOpen size={30} color="#b06000" />
           </div>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#3c4043', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
             Selecciona una materia
           </h3>
-          <p style={{ color: '#5f6368', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
             Elige el área curricular para ver las competencias y evaluaciones disponibles
           </p>
         </div>
@@ -441,7 +441,7 @@ export default function Grades() {
             display: 'flex', alignItems: 'center', gap: '12px',
             background: '#e8f0fe',
             borderRadius: '12px', padding: '0.9rem 1.25rem', marginBottom: '1.5rem',
-            fontSize: '0.9rem', color: '#3c4043'
+            fontSize: '0.9rem', color: 'var(--text-primary)'
           }}>
             <Info size={20} color="#1967d2" />
             <span>Cada columna representa un instrumento aplicado. <strong style={{ color: '#1967d2' }}>Haz clic en la nota</strong> para ver el detalle.</span>
@@ -480,9 +480,9 @@ export default function Grades() {
               }, 4050);
             }} style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.55rem 1.25rem', border: '1px solid #dadce0', borderRadius: '20px',
-              background: '#ffffff',
-              color: '#3c4043', fontWeight: 500, fontSize: '0.85rem', cursor: 'pointer'
+              padding: '0.55rem 1.25rem', border: '1px solid var(--border-color)', borderRadius: '20px',
+              background: 'var(--bg-color-surface)',
+              color: 'var(--text-primary)', fontWeight: 500, fontSize: '0.85rem', cursor: 'pointer'
             }}>
               🎲 Azar
             </button>
@@ -547,37 +547,37 @@ export default function Grades() {
 
             return (
               <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                <div className="table-container" style={{ borderRadius: '12px', border: '1px solid #dadce0' }}>
+                <div className="table-container" style={{ borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                   <table style={{ tableLayout: 'auto', minWidth: '600px', borderCollapse: 'collapse', width: '100%' }}>
                   <thead>
                     <tr>
                       <th style={{
                         width: '50px',
                         minWidth: '50px',
-                        background: '#f8f9fa',
-                        color: '#70757a',
+                        background: 'var(--surface-muted)',
+                        color: 'var(--text-secondary)',
                         fontWeight: 500,
                         fontSize: '0.75rem',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                         padding: '0.85rem 1rem',
-                        borderBottom: '1px solid #dadce0',
-                        borderRight: '2px solid #dadce0',
+                        borderBottom: '1px solid var(--border-color)',
+                        borderRight: '2px solid var(--border-color)',
                         textAlign: 'center'
                       }}>
                         N°
                       </th>
                       <th style={{
                         minWidth: '150px',
-                        background: '#f8f9fa',
-                        color: '#70757a',
+                        background: 'var(--surface-muted)',
+                        color: 'var(--text-secondary)',
                         fontWeight: 500,
                         fontSize: '0.75rem',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                         padding: '0.85rem 1rem',
-                        borderBottom: '1px solid #dadce0',
-                        borderRight: '2px solid #dadce0'
+                        borderBottom: '1px solid var(--border-color)',
+                        borderRight: '2px solid var(--border-color)'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           Estudiante
@@ -599,8 +599,8 @@ export default function Grades() {
                             background: tintBg,
                             color: tintFg,
                             padding: '0.85rem 1rem',
-                            borderBottom: '1px solid #dadce0',
-                            borderRight: '2px solid #dadce0'
+                            borderBottom: '1px solid var(--border-color)',
+                            borderRight: '2px solid var(--border-color)'
                           }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                               <Target size={13} />
@@ -614,22 +614,22 @@ export default function Grades() {
                       <th style={{
                         width: '50px',
                         minWidth: '50px',
-                        background: '#f8f9fa',
+                        background: 'var(--surface-muted)',
                         padding: '0.75rem 1rem',
-                        borderBottom: '1px solid #dadce0',
-                        borderRight: '2px solid #dadce0',
+                        borderBottom: '1px solid var(--border-color)',
+                        borderRight: '2px solid var(--border-color)',
                         textAlign: 'center'
                       }}>
-                        <span style={{ fontSize: '0.7rem', color: '#70757a', fontWeight: 500 }}>#</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500 }}>#</span>
                       </th>
                       <th style={{
                         minWidth: '150px',
-                        background: '#f8f9fa',
+                        background: 'var(--surface-muted)',
                         padding: '0.75rem 1rem',
-                        borderBottom: '1px solid #dadce0',
-                        borderRight: '2px solid #dadce0'
+                        borderBottom: '1px solid var(--border-color)',
+                        borderRight: '2px solid var(--border-color)'
                       }}>
-                        <span style={{ fontSize: '0.7rem', color: '#70757a', fontWeight: 500 }}>Instrumentos aplicados</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Instrumentos aplicados</span>
                       </th>
                       {currentSubject.competencies.map((comp, idx) => {
                         const existingInstruments = getInstrumentsForCompetency(comp.id);
@@ -644,19 +644,19 @@ export default function Grades() {
                             return (
                               <th key={'plus-' + comp.id} style={{
                                 textAlign: 'center', minWidth: '36px', fontSize: '0.7rem',
-                                color: '#5f6368', background: '#f8f9fa',
+                                color: 'var(--text-secondary)', background: 'var(--surface-muted)',
                                 padding: '0.75rem 0.25rem',
-                                borderBottom: '1px solid #dadce0',
-                                borderRight: '2px solid #dadce0'
+                                borderBottom: '1px solid var(--border-color)',
+                                borderRight: '2px solid var(--border-color)'
                               }}>
                                 <button
                                   title="Añadir instrumento"
                                   onClick={() => { setPickerCompetencyId(comp.id); setInstrumentPickerOpen(true); }}
                                   style={{
-                                    background: '#f1f3f4', border: 'none', borderRadius: '6px',
+                                    background: 'var(--hover-bg)', border: 'none', borderRadius: '6px',
                                     width: '24px', height: '24px', cursor: 'pointer',
                                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                    fontWeight: 700, fontSize: '1rem', color: '#5f6368',
+                                    fontWeight: 700, fontSize: '1rem', color: 'var(--text-secondary)',
                                     transition: 'all 0.15s'
                                   }}
                                 >+</button>
@@ -671,10 +671,10 @@ export default function Grades() {
                           return (
                             <th key={inst.id || inst.instrumentId} style={{
                               textAlign: 'center', minWidth: '60px', fontSize: '0.7rem',
-                              color: '#70757a', background: '#f8f9fa',
+                              color: 'var(--text-secondary)', background: 'var(--surface-muted)',
                               padding: '0.75rem',
-                              borderBottom: '1px solid #dadce0',
-                              borderRight: '1px solid #e8eaed'
+                              borderBottom: '1px solid var(--border-color)',
+                              borderRight: '1px solid var(--border-color)'
                             }}>
                               {renaming ? (
                                 <input
@@ -756,7 +756,7 @@ export default function Grades() {
                                         onClick={(e) => { e.stopPropagation(); setRenamingColumn(renamingKey); }}
                                         style={{
                                           position: 'absolute', top: '-4px', right: '-4px',
-                                          background: '#f1f3f4', border: 'none', borderRadius: '50%',
+                                          background: 'var(--hover-bg)', border: 'none', borderRadius: '50%',
                                           width: '16px', height: '16px', cursor: 'pointer',
                                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                                           padding: 0, lineHeight: 1
@@ -813,7 +813,7 @@ export default function Grades() {
                   <tbody>
                     {filteredStudents.length === 0 && (
                       <tr>
-                        <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: '#5f6368', borderBottom: '1px solid #e8eaed' }}>
+                        <td colSpan={100} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
                           No hay estudiantes matriculados en esta sección.
                         </td>
                       </tr>
@@ -822,8 +822,8 @@ export default function Grades() {
                       const isHighlighted = quickAzarHighlighted === student.id;
                       return (
                       <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : {}}>
-                        <td style={{ textAlign: 'center', fontWeight: 500, color: '#5f6368', minWidth: '50px', borderRight: '2px solid #dadce0', borderBottom: '1px solid #e8eaed' }}>{studentIdx + 1}</td>
-                        <td style={{ fontWeight: 500, color: '#3c4043', minWidth: '150px', borderRight: '2px solid #dadce0', borderBottom: '1px solid #e8eaed' }}>{student.name}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>{studentIdx + 1}</td>
+                        <td style={{ fontWeight: 500, color: 'var(--text-primary)', minWidth: '150px', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const existingInstruments = getInstrumentsForCompetency(comp.id);
                           const extra = extraInstruments[comp.id] || [];
@@ -835,7 +835,7 @@ export default function Grades() {
                           return items.map(inst => {
                             if (inst._isPlus) {
                               return (
-                                <td key={'plus-' + comp.id} style={{ textAlign: 'center', padding: '0.25rem', borderRight: '2px solid #dadce0', borderBottom: '1px solid #e8eaed' }}>
+                                <td key={'plus-' + comp.id} style={{ textAlign: 'center', padding: '0.25rem', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
                                 </td>
                               );
                             }
@@ -849,7 +849,7 @@ export default function Grades() {
                               return (
                                 <td key={inst.id || inst.instrumentId}
                                   title="Sin calificación — click para evaluar"
-                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e8eaed', borderBottom: '1px solid #e8eaed' }}
+                                  style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}
                                   onClick={() => {
                                     setQuickAzarHighlighted(null);
                                     const newEval = {
@@ -881,14 +881,14 @@ export default function Grades() {
                                   <span style={{
                                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                     width: '28px', height: '28px', borderRadius: '6px',
-                                    border: '1.5px dashed #dadce0', color: '#9aa0a6', fontSize: '1rem',
+                                    border: '1.5px dashed var(--border-color)', color: 'var(--text-secondary)', fontSize: '1rem',
                                     transition: 'all 0.15s'
                                   }}>+</span>
                                 </td>
                               );
                             }
                             return (
-                              <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid #e8eaed', borderBottom: '1px solid #e8eaed' }}
+                              <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
                                 onClick={() => { setQuickAzarHighlighted(null); setViewingEvaluation(ev); setHoveredEval(null); }}
@@ -940,7 +940,7 @@ export default function Grades() {
                   {/* Header del modal */}
                   <div style={{
                     padding: '1.25rem 1.5rem',
-                    borderBottom: '1px solid #dadce0',
+                    borderBottom: '1px solid var(--border-color)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start'
@@ -1005,7 +1005,7 @@ export default function Grades() {
                           portfolio: '#00796b',
                           anecdotal: '#3949ab'
                         };
-                        const typeColor = typeColors[instrumentType] || '#5f6368';
+                        const typeColor = typeColors[instrumentType] || 'var(--text-secondary)';
 
                         return (
                           <div key={ev.id} style={{ 
@@ -1088,7 +1088,7 @@ export default function Grades() {
                                     marginTop: '1rem',
                                     padding: '0.75rem',
                                     borderRadius: '8px',
-                                    background: '#f1f3f4',
+                                    background: 'var(--hover-bg)',
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center'
@@ -1108,7 +1108,7 @@ export default function Grades() {
                                 marginTop: '0.5rem',
                                 padding: '0.75rem',
                                 borderRadius: '8px',
-                                background: '#f8f9fa'
+                                background: 'var(--surface-muted)'
                               }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Puntaje</span>
@@ -1211,8 +1211,8 @@ export default function Grades() {
                         return (
                           <div key={criterionId} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                            padding: '0.75rem', background: '#f8f9fa', borderRadius: '8px',
-                            border: '1px solid #e8eaed'
+                            padding: '0.75rem', background: 'var(--surface-muted)', borderRadius: '8px',
+                            border: '1px solid var(--border-color)'
                           }}>
                             <span style={{ flex: 1, fontSize: '0.9rem' }}>{criterion.text || criterionId}</span>
                             <span style={{
@@ -1243,7 +1243,7 @@ export default function Grades() {
 
                 <div style={{
                   display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                  gap: '0.75rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px',
+                  gap: '0.75rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '8px',
                   fontSize: '0.85rem'
                 }}>
                   <div>
@@ -1262,8 +1262,8 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
                   <button onClick={() => setViewingEvaluation(null)} style={{
-                    flex: 1, padding: '0.75rem', borderRadius: '20px', border: '1px solid #dadce0',
-                    background: 'white', color: '#5f6368', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
+                    flex: 1, padding: '0.75rem', borderRadius: '20px', border: '1px solid var(--border-color)',
+                    background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                   }}>Cerrar</button>
                   <button onClick={() => {
                     setEditingEvaluation({ ...viewingEvaluation });
@@ -1369,7 +1369,7 @@ export default function Grades() {
 
                     {/* CHECKLIST */}
                     {evType === 'checklist' && evCriteria.map((c, idx) => (
-                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
                         <div style={{ display: 'flex', gap: '0.6rem' }}>
                           {[{ val: true, label: '✅ Logrado', color: '#188038' }, { val: false, label: '❌ No Logrado', color: '#d93025' }].map(opt => (
@@ -1377,9 +1377,9 @@ export default function Grades() {
                               onClick={() => setEditScores(s => ({ ...s, [c.id]: opt.val }))}
                               style={{
                                 flex: 1, padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-                                border: `2px solid ${editScores[c.id] === opt.val ? opt.color : '#dadce0'}`,
-                                background: editScores[c.id] === opt.val ? opt.color + '18' : 'white',
-                                color: editScores[c.id] === opt.val ? opt.color : '#5f6368'
+                                border: `2px solid ${editScores[c.id] === opt.val ? opt.color : 'var(--border-color)'}`,
+                                background: editScores[c.id] === opt.val ? opt.color + '18' : 'var(--bg-color-surface)',
+                                color: editScores[c.id] === opt.val ? opt.color : 'var(--text-secondary)'
                               }}>{opt.label}</button>
                           ))}
                         </div>
@@ -1388,7 +1388,7 @@ export default function Grades() {
 
                     {/* OBSERVATION */}
                     {evType === 'observation' && evCriteria.map((c, idx) => (
-                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.5rem' }}>
                           {[{ v: 3, l: '🟢 Siempre', color: '#188038' }, { v: 2, l: '🟡 A veces', color: '#e37400' }, { v: 1, l: '🔴 Nunca', color: '#d93025' }].map(opt => (
@@ -1396,9 +1396,9 @@ export default function Grades() {
                               onClick={() => setEditScores(s => ({ ...s, [c.id]: opt.v }))}
                               style={{
                                 padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
-                                border: `2px solid ${editScores[c.id] === opt.v ? opt.color : '#dadce0'}`,
-                                background: editScores[c.id] === opt.v ? opt.color + '18' : 'white',
-                                color: editScores[c.id] === opt.v ? opt.color : '#5f6368'
+                                border: `2px solid ${editScores[c.id] === opt.v ? opt.color : 'var(--border-color)'}`,
+                                background: editScores[c.id] === opt.v ? opt.color + '18' : 'var(--bg-color-surface)',
+                                color: editScores[c.id] === opt.v ? opt.color : 'var(--text-secondary)'
                               }}>{opt.l}</button>
                           ))}
                         </div>
@@ -1407,7 +1407,7 @@ export default function Grades() {
 
                     {/* QUALITATIVE (scale, rubric, selfeval) */}
                     {['scale', 'rubric', 'selfeval'].includes(evType) && evCriteria.map((c, idx) => (
-                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
+                      <div key={c.id} style={{ padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.9rem' }}>{idx + 1}. {c.text}</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
                           {[{ v: 4, g: 'AD', l: 'Destacado', color: '#188038' }, { v: 3, g: 'A', l: 'Logrado', color: '#1967d2' }, { v: 2, g: 'B', l: 'En Proceso', color: '#e37400' }, { v: 1, g: 'C', l: 'En Inicio', color: '#d93025' }].map(lv => (
@@ -1415,9 +1415,9 @@ export default function Grades() {
                               onClick={() => setEditScores(s => ({ ...s, [c.id]: lv.v }))}
                               style={{
                                 padding: '0.5rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
-                                border: `2px solid ${editScores[c.id] === lv.v ? lv.color : '#dadce0'}`,
-                                background: editScores[c.id] === lv.v ? lv.color + '18' : 'white',
-                                color: editScores[c.id] === lv.v ? lv.color : '#5f6368',
+                                border: `2px solid ${editScores[c.id] === lv.v ? lv.color : 'var(--border-color)'}`,
+                                background: editScores[c.id] === lv.v ? lv.color + '18' : 'var(--bg-color-surface)',
+                                color: editScores[c.id] === lv.v ? lv.color : 'var(--text-secondary)',
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
                               }}>
                               <span style={{ fontSize: '1rem' }}>{lv.g}</span>
@@ -1430,11 +1430,11 @@ export default function Grades() {
 
                     {/* WRITTEN / NUMERIC */}
                     {evType === 'written' && (
-                      <div style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.6rem' }}>Puntaje obtenido (0 – 20)</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <input type="number" min="0" max="20"
-                            style={{ width: '90px', fontSize: '2rem', textAlign: 'center', fontWeight: 700, padding: '0.5rem', borderRadius: '8px', border: '2px solid #dadce0' }}
+                            style={{ width: '90px', fontSize: '2rem', textAlign: 'center', fontWeight: 700, padding: '0.5rem', borderRadius: '8px', border: '2px solid var(--border-color)' }}
                             value={editScores['__numeric__'] ?? ''}
                             onChange={e => setEditScores({ __numeric__: Math.min(20, Math.max(0, Number(e.target.value))) })}
                           />
@@ -1445,7 +1445,7 @@ export default function Grades() {
 
                     {/* PORTFOLIO / ANECDOTAL / DIRECT */}
                     {['portfolio', 'anecdotal'].includes(evType) && (
-                      <div style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
                           {['AD', 'A', 'B', 'C'].map(g => (
@@ -1453,9 +1453,9 @@ export default function Grades() {
                               onClick={() => setEditScores({ ...editScores, __direct__: g })}
                               style={{
                                 padding: '0.75rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
-                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#dadce0'}`,
-                                background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'white',
-                                color: editScores['__direct__'] === g ? gradeColor[g] : '#5f6368',
+                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : 'var(--border-color)'}`,
+                                background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'var(--bg-color-surface)',
+                                color: editScores['__direct__'] === g ? gradeColor[g] : 'var(--text-secondary)',
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
                               }}>
                               <span style={{ fontSize: '1.1rem' }}>{g}</span>
@@ -1466,7 +1466,7 @@ export default function Grades() {
                         {evType === 'anecdotal' && (
                           <div style={{ marginTop: '0.75rem' }}>
                             <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Descripción del hecho observado</label>
-                            <textarea rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #dadce0', resize: 'vertical', fontSize: '0.85rem' }}
+                            <textarea rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', resize: 'vertical', fontSize: '0.85rem' }}
                               value={editScores['__note__'] || ''}
                               onChange={e => setEditScores(s => ({ ...s, __note__: e.target.value }))}
                               placeholder="Describe brevemente la situación observada..."
@@ -1477,7 +1477,7 @@ export default function Grades() {
                     )}
 
                     {evCriteria.length === 0 && !['portfolio', 'anecdotal', 'written'].includes(evType) && (
-                      <div style={{ padding: '0.75rem 1rem', background: '#f8f9fa', borderRadius: '10px', border: '1px solid #dadce0' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Calificación directa</p>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.5rem' }}>
                           {['AD', 'A', 'B', 'C'].map(g => (
@@ -1490,9 +1490,9 @@ export default function Grades() {
                               }}
                               style={{
                                 padding: '0.75rem 0.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
-                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : '#dadce0'}`,
-                                background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'white',
-                                color: editScores['__direct__'] === g ? gradeColor[g] : '#5f6368',
+                                border: `2px solid ${editScores['__direct__'] === g ? gradeColor[g] : 'var(--border-color)'}`,
+                                background: editScores['__direct__'] === g ? gradeColor[g] + '18' : 'var(--bg-color-surface)',
+                                color: editScores['__direct__'] === g ? gradeColor[g] : 'var(--text-secondary)',
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
                               }}>
                               <span style={{ fontSize: '1.1rem' }}>{g}</span>
@@ -1508,8 +1508,8 @@ export default function Grades() {
                   {/* Footer botones */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button onClick={() => setEditingEvaluation(null)} style={{
-                      flex: 1, padding: '0.75rem', borderRadius: '20px', border: '1px solid #dadce0',
-                      background: 'white', color: '#5f6368', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
+                      flex: 1, padding: '0.75rem', borderRadius: '20px', border: '1px solid var(--border-color)',
+                      background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                     }}>Cancelar</button>
                     <button onClick={handleSaveEdit} style={{
                       flex: 2, padding: '0.75rem', borderRadius: '20px', border: 'none',
@@ -1571,14 +1571,14 @@ export default function Grades() {
                           setPickerCompetencyId(null);
                         }} style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px',
-                          padding: '1rem', borderRadius: '12px', border: '1px solid #dadce0',
-                          background: 'white', cursor: 'pointer', textAlign: 'left', width: '100%',
+                          padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)',
+                          background: 'var(--bg-color-surface)', cursor: 'pointer', textAlign: 'left', width: '100%',
                           transition: 'all 0.15s'
                         }}>
                           <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
                             {inst.title || inst.name || 'Sin título'}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: '#5f6368' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                             {inst.type || '—'} · {inst.criteria?.length || 0} criterio(s)
                           </span>
                         </button>
@@ -1586,7 +1586,7 @@ export default function Grades() {
                     </div>
                   )}
                   <button onClick={() => { setInstrumentPickerOpen(false); setPickerCompetencyId(null); }}
-                    style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '10px', border: '1px solid #dadce0', background: 'white', color: '#5f6368', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
+                    style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
                     Cancelar
                   </button>
                 </div>
@@ -1630,14 +1630,14 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5f6368', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
                     <input type="text" className="input-field" placeholder="Ej: Participación oral, Actividad en pizarra..." value={quickGrade.activityName}
                       onChange={e => setQuickGrade(prev => ({ ...prev, activityName: e.target.value }))} style={{ width: '100%' }} />
                   </div>
 
                   {currentSubject?.competencies?.length > 0 && (
                     <div>
-                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5f6368', display: 'block', marginBottom: '0.35rem' }}>Competencia <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Competencia <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
                       <select value={quickGrade.competencyId} onChange={e => setQuickGrade(prev => ({ ...prev, competencyId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
                         <option value="">Todas las competencias</option>
                         {currentSubject.competencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1646,7 +1646,7 @@ export default function Grades() {
                   )}
 
                   <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5f6368', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Fecha</label>
                     <input type="date" className="input-field" value={quickGrade.date}
                       onChange={e => setQuickGrade(prev => ({ ...prev, date: e.target.value }))} style={{ width: '100%' }} />
                   </div>
@@ -1654,8 +1654,8 @@ export default function Grades() {
 
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
                   <button onClick={() => setShowQuickGrade(false)} style={{
-                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #dadce0',
-                    background: 'white', color: '#5f6368', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)',
+                    background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                   }}>Cancelar</button>
                   <button onClick={async () => {
                     if (!quickGrade.activityName.trim()) { setQuickGradeMsg('Ingresa el nombre de la actividad'); return; }
@@ -1690,7 +1690,7 @@ export default function Grades() {
                   }} disabled={quickGradeSaving} style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                     padding: '0.75rem', borderRadius: '10px', border: 'none',
-                    background: quickGradeSaving ? '#9aa0a6' : '#1a73e8',
+                    background: quickGradeSaving ? 'var(--text-secondary)' : '#1a73e8',
                     color: 'white', fontWeight: 500, cursor: quickGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
                   }}>
                     <Send size={16} /> {quickGradeSaving ? 'Creando...' : 'Crear columna'}
@@ -1768,14 +1768,14 @@ export default function Grades() {
             )}
             {stopped && (
               <div style={{
-                marginTop: '1.5rem', background: 'white', borderRadius: '16px',
+                marginTop: '1.5rem', background: 'var(--bg-color-surface)', borderRadius: '16px',
                 padding: '1.2rem 2.5rem', textAlign: 'center',
                 animation: 'bounceIn 0.5s ease',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
               }}>
                 <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
-                <div style={{ fontSize: '0.9rem', color: '#5f6368', marginTop: '0.25rem' }}>¡Seleccionado!</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>¡Seleccionado!</div>
                 <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.35rem' }}>{pickedCount}/{total} alumnos sorteados</div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                   <button onClick={() => setQuickAzarOpen(false)} style={{
@@ -1786,8 +1786,8 @@ export default function Grades() {
                   {pickedCount >= total && (
                     <button onClick={() => { setQuickAzarPicked(new Set()); setQuickAzarOpen(false); }} style={{
                       padding: '0.6rem 1.5rem', borderRadius: '10px',
-                      border: '1px solid #dadce0', background: 'white',
-                      color: '#5f6368', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                      border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)',
+                      color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
                     }}>Reiniciar ciclo</button>
                   )}
                 </div>

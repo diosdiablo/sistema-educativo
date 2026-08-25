@@ -7,8 +7,8 @@
 
 .sidebar {
   width: 280px;
-  background: #ffffff;
-  border-right: 1px solid #dadce0;
+  background: var(--bg-color-surface);
+  border-right: 1px solid var(--border-color);
   padding: 1.25rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -51,7 +51,7 @@
   padding: 0.55rem 1.25rem;
   margin-right: 0.5rem;
   border-radius: 0 24px 24px 0;
-  color: #3c4043;
+  color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   transition: background 0.15s ease;
@@ -61,12 +61,12 @@
 }
 
 .nav-item:hover {
-  background: #f1f3f4;
+  background: var(--hover-bg);
 }
 
 .nav-item.active {
-  background: #e8f0fe;
-  color: #1967d2;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-fg);
 }
 
 .main-content {
@@ -209,8 +209,8 @@
   left: 0;
   right: 0;
   height: 60px;
-  background: #ffffff;
-  border-bottom: 1px solid #dadce0;
+  background: var(--bg-color-surface);
+  border-bottom: 1px solid var(--border-color);
   z-index: 100;
   align-items: center;
   padding: 0 1rem;
@@ -229,7 +229,7 @@
 }
 
 .mobile-header .mobile-title {
-  color: #202124;
+  color: var(--text-primary);
   font-size: 1.1rem;
   font-weight: 500;
 }

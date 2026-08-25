@@ -128,14 +128,14 @@ export default function Schedule() {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: '0.75rem',
-        background: 'white', border: '1px solid #dadce0', borderRadius: '12px',
+        background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px',
         padding: '1rem 1.5rem', marginBottom: '0.75rem'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             Horario Escolar
           </h2>
-          <p style={{ fontSize: '0.82rem', color: '#5f6368', margin: '0.15rem 0 0 0' }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>
             {isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase'}
           </p>
         </div>
@@ -144,15 +144,15 @@ export default function Schedule() {
           {isAdmin && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              background: 'white', padding: '0.45rem 0.9rem',
-              borderRadius: '20px', border: '1px solid #dadce0'
+              background: 'var(--bg-color-surface)', padding: '0.45rem 0.9rem',
+              borderRadius: '20px', border: '1px solid var(--border-color)'
             }}>
               <User size={16} color="#5f6368" />
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
                 style={{
-                  background: 'transparent', border: 'none', color: '#3c4043',
+                  background: 'transparent', border: 'none', color: 'var(--text-primary)',
                   outline: 'none', fontWeight: 500, fontSize: '0.85rem',
                   cursor: 'pointer'
                 }}
@@ -168,14 +168,14 @@ export default function Schedule() {
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
-              background: 'white', color: '#3c4043', border: '1px solid #dadce0',
+              background: 'var(--bg-color-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
               padding: '0.55rem 1.1rem', borderRadius: '20px', fontWeight: 500,
               cursor: 'pointer', fontSize: '0.85rem',
               boxShadow: '0 1px 2px rgba(60,64,67,0.15)',
               transition: 'box-shadow 0.2s ease, background 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'white'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = 'var(--surface-muted)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
             onClick={() => handleOpenModal()}
           >
             <Plus size={18} /> Agregar Bloque
@@ -187,8 +187,8 @@ export default function Schedule() {
       <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div style={{
           borderRadius: '12px',
-          border: '1px solid #dadce0',
-          background: 'white',
+          border: '1px solid var(--border-color)',
+          background: 'var(--bg-color-surface)',
           overflow: 'hidden'
         }}>
         <table style={{ tableLayout: 'fixed', minWidth: '1000px', width: '100%', borderCollapse: 'collapse' }}>
@@ -196,8 +196,8 @@ export default function Schedule() {
             <tr>
               <th style={{
                 width: '110px',
-                borderBottom: '1px solid #dadce0',
-                color: '#70757a',
+                borderBottom: '1px solid var(--border-color)',
+                color: 'var(--text-secondary)',
                 fontWeight: 500,
                 fontSize: '0.72rem',
                 textTransform: 'uppercase',
@@ -210,9 +210,9 @@ export default function Schedule() {
               {DAYS.map((day, idx) => (
                 <th key={day} style={{
                   textAlign: 'center',
-                  borderBottom: '1px solid #dadce0',
-                  borderLeft: idx > 0 ? '1px solid #dadce0' : 'none',
-                  color: '#70757a',
+                  borderBottom: '1px solid var(--border-color)',
+                  borderLeft: idx > 0 ? '1px solid var(--border-color)' : 'none',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.78rem',
                   textTransform: 'uppercase',
@@ -231,14 +231,14 @@ export default function Schedule() {
                 return (
                   <tr key={time} style={{ height: '36px' }}>
                     <td style={{
-                      fontSize: '0.68rem', fontWeight: 400, color: '#70757a',
-                      backgroundColor: '#f8f9fa', textAlign: 'center',
-                      borderTop: '1px solid #dadce0'
+                      fontSize: '0.68rem', fontWeight: 400, color: 'var(--text-secondary)',
+                      backgroundColor: 'var(--surface-muted)', textAlign: 'center',
+                      borderTop: '1px solid var(--border-color)'
                     }}>{time}</td>
                     <td colSpan={DAYS.length} style={{
-                      backgroundColor: '#f8f9fa', textAlign: 'center',
+                      backgroundColor: 'var(--surface-muted)', textAlign: 'center',
                       fontSize: '0.66rem', color: '#bdc1c6', fontStyle: 'italic',
-                      letterSpacing: '0.1em', borderTop: '1px solid #dadce0'
+                      letterSpacing: '0.1em', borderTop: '1px solid var(--border-color)'
                     }}>D E S C A N S O</td>
                   </tr>
                 );
@@ -248,10 +248,10 @@ export default function Schedule() {
                   <td style={{
                     fontSize: '0.72rem',
                     fontWeight: 400,
-                    color: '#70757a',
+                    color: 'var(--text-secondary)',
                     textAlign: 'center',
                     verticalAlign: 'middle',
-                    borderTop: '1px solid #dadce0'
+                    borderTop: '1px solid var(--border-color)'
                   }}>
                     {time}
                   </td>
@@ -270,13 +270,13 @@ export default function Schedule() {
                         cursor: readOnly ? 'default' : 'pointer',
                         padding: 0,
                         verticalAlign: 'top',
-                        borderTop: '1px solid #dadce0',
-                        borderLeft: '1px solid #dadce0',
+                        borderTop: '1px solid var(--border-color)',
+                        borderLeft: '1px solid var(--border-color)',
                         position: 'relative',
                         transition: 'background 0.15s ease'
                       }}
-                      onMouseEnter={e => { if (!item && !readOnly) e.currentTarget.style.background = '#f8f9fa'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+                      onMouseEnter={e => { if (!item && !readOnly) e.currentTarget.style.background = 'var(--surface-muted)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
                     >
                       {item ? (
                         <div style={{
@@ -319,13 +319,13 @@ export default function Schedule() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            border: '1px dashed #dadce0',
+                            border: '1px dashed var(--border-color)',
                             borderRadius: '6px',
                             color: '#bdc1c6',
                             transition: 'border-color 0.15s ease, color 0.15s ease'
                           }}
                           onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.color = '#1a73e8'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#dadce0'; e.currentTarget.style.color = '#bdc1c6'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = '#bdc1c6'; }}
                           >
                             <Plus size={18} />
                           </div>
@@ -352,7 +352,7 @@ export default function Schedule() {
         }}>
           <div style={{
             maxWidth: '480px', width: '100%',
-            background: 'white', borderRadius: '16px', padding: '2rem',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
             boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">

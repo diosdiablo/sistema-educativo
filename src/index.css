@@ -4,12 +4,12 @@
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   
   /* Light Theme Colors */
-  --bg-color-main: #ffffff;
+  --bg-color-main: #f8f9fa;
   --bg-color-surface: #ffffff;
   --bg-color-glass: rgba(255, 255, 255, 0.9);
   
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
   
   --sidebar-bg: #004d4d;
   --accent-primary: #10b981;
@@ -24,8 +24,16 @@
   --grade-b: #f59e0b;
   --grade-c: #ef4444;
   
-  --border-color: #e2e8f0;
+  --border-color: #dadce0;
   --border-radius: 16px;
+  
+  /* Neutral surfaces (Google style) */
+  --surface-muted: #f8f9fa;
+  --hover-bg: #f1f3f4;
+  --nav-active-bg: #e8f0fe;
+  --nav-active-fg: #1967d2;
+  --danger-tint-bg: #fce8e6;
+  --danger-tint-fg: #d93025;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -200,21 +208,39 @@ select.input-field {
   animation: spin 1s linear infinite;
 }
 
-/* Dark Theme */
+/* Dark Theme — True Black */
 [data-theme="dark"] {
-  --bg-color-main: #0f172a;
-  --bg-color-surface: #1e293b;
-  --bg-color-glass: rgba(30, 41, 59, 0.9);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --bg-color-main: #000000;
+  --bg-color-surface: #121212;
+  --bg-color-glass: rgba(18, 18, 18, 0.92);
+  
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  
+  --sidebar-bg: #000000;
+  --border-color: #303134;
+  
+  --surface-muted: #141414;
+  --hover-bg: #1a1a1a;
+  --nav-active-bg: rgba(138, 180, 248, 0.15);
+  --nav-active-fg: #8ab4f8;
+  --danger-tint-bg: rgba(242, 139, 130, 0.12);
+  --danger-tint-fg: #f28b82;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
 }
 
 [data-theme="dark"] .styled-table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* Dashboard Utility Classes */
@@ -246,8 +272,8 @@ select.input-field {
 }
 
 [data-theme="dark"] .glass-card {
-  background: rgba(30, 41, 59, 0.7);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(18, 18, 18, 0.7);
+  border-color: var(--border-color);
 }
 
 .gradient-text {

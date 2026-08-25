@@ -33,29 +33,29 @@ export default function Login() {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       minHeight: '100vh', width: '100vw',
-      background: '#f8f9fa',
+      background: 'var(--surface-muted)',
       position: 'fixed', top: 0, left: 0, zIndex: 9999,
       padding: '1rem', overflow: 'hidden'
     }}>
       <div style={{
         maxWidth: '420px', width: '100%',
-        background: '#ffffff',
+        background: 'var(--bg-color-surface)',
         borderRadius: '16px',
         padding: '2.5rem',
-        border: '1px solid #dadce0',
+        border: '1px solid var(--border-color)',
         position: 'relative'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <img src={Logo} alt="Logo" style={{ width: '56px', height: '56px', objectFit: 'contain', marginBottom: '1rem' }} />
           <h1 style={{
             fontSize: '1.65rem', fontWeight: 400,
-            color: '#202124',
+            color: 'var(--text-primary)',
             marginBottom: '0.25rem',
             letterSpacing: '-0.02em'
           }}>
             Portal Agro 110
           </h1>
-          <p style={{ color: '#5f6368', fontSize: '0.9rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Inicia sesión para continuar
           </p>
         </div>
@@ -80,20 +80,20 @@ export default function Login() {
               value={username}
               onChange={e => setUsername(e.target.value)}
               onFocus={e => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.boxShadow = 'inset 0 0 0 1px #1a73e8'; }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#dadce0'; e.currentTarget.style.boxShadow = 'none'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
               style={{
                 width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
-                borderRadius: '8px', border: '1px solid #dadce0',
+                borderRadius: '8px', border: '1px solid var(--border-color)',
                 fontSize: '0.95rem', outline: 'none',
                 transition: 'all 0.2s',
-                background: '#ffffff',
-                color: '#202124',
+                background: 'var(--bg-color-surface)',
+                color: 'var(--text-primary)',
                 boxSizing: 'border-box'
               }}
             />
             <Mail style={{
               position: 'absolute', left: '0.875rem', top: '50%',
-              transform: 'translateY(-50%)', color: '#5f6368'
+              transform: 'translateY(-50%)', color: 'var(--text-secondary)'
             }} size={18} />
           </div>
 
@@ -104,20 +104,20 @@ export default function Login() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               onFocus={e => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.boxShadow = 'inset 0 0 0 1px #1a73e8'; }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#dadce0'; e.currentTarget.style.boxShadow = 'none'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
               style={{
                 width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
-                borderRadius: '8px', border: '1px solid #dadce0',
+                borderRadius: '8px', border: '1px solid var(--border-color)',
                 fontSize: '0.95rem', outline: 'none',
                 transition: 'all 0.2s',
-                background: '#ffffff',
-                color: '#202124',
+                background: 'var(--bg-color-surface)',
+                color: 'var(--text-primary)',
                 boxSizing: 'border-box'
               }}
             />
             <Lock style={{
               position: 'absolute', left: '0.875rem', top: '50%',
-              transform: 'translateY(-50%)', color: '#5f6368'
+              transform: 'translateY(-50%)', color: 'var(--text-secondary)'
             }} size={18} />
             <button
               type="button"
@@ -126,7 +126,7 @@ export default function Login() {
                 position: 'absolute', right: '0.75rem', top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'none', border: 'none',
-                cursor: 'pointer', color: '#5f6368',
+                cursor: 'pointer', color: 'var(--text-secondary)',
                 padding: '0.25rem'
               }}
             >
@@ -141,8 +141,8 @@ export default function Login() {
               display: 'flex', justifyContent: 'center', alignItems: 'center',
               gap: '0.5rem', width: '100%', padding: '0.875rem',
               marginTop: '0.5rem',
-              background: loading ? '#f1f3f4' : '#1a73e8',
-              color: loading ? '#9aa0a6' : 'white', border: 'none', borderRadius: '20px',
+              background: loading ? 'var(--hover-bg)' : '#1a73e8',
+              color: loading ? 'var(--text-secondary)' : 'white', border: 'none', borderRadius: '20px',
               fontWeight: 500, fontSize: '1rem',
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s'

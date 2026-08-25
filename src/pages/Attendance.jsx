@@ -183,11 +183,11 @@ export default function Attendance() {
   const selectPillStyle = {
     padding: '0.55rem 1rem',
     borderRadius: '20px',
-    border: '1px solid #dadce0',
-    background: '#ffffff',
+    border: '1px solid var(--border-color)',
+    background: 'var(--bg-color-surface)',
     fontWeight: 500,
     fontSize: '0.875rem',
-    color: '#3c4043',
+    color: 'var(--text-primary)',
     cursor: 'pointer',
     outline: 'none'
   };
@@ -196,12 +196,12 @@ export default function Attendance() {
     padding: '0.85rem 1rem',
     fontSize: '0.75rem',
     fontWeight: 500,
-    color: '#70757a',
+    color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     textAlign: align,
-    borderBottom: '1px solid #dadce0',
-    background: '#f8f9fa',
+    borderBottom: '1px solid var(--border-color)',
+    background: 'var(--surface-muted)',
     width: width || 'auto',
     whiteSpace: 'nowrap'
   });
@@ -210,19 +210,19 @@ export default function Attendance() {
     <div className="animate-fade-in">
       {/* Barra de herramientas */}
       <div style={{
-        background: '#ffffff',
+        background: 'var(--bg-color-surface)',
         borderRadius: '12px',
         padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        border: '1px solid #dadce0',
+        border: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         gap: '0.75rem',
         flexWrap: 'wrap'
       }}>
         <div style={{ marginRight: 'auto' }}>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Asistencia</h2>
-          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: '#5f6368' }}>Registro y control diario de asistencia</p>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Asistencia</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Registro y control diario de asistencia</p>
         </div>
         <select
           value={selectedClass}
@@ -254,8 +254,8 @@ export default function Attendance() {
             padding: '0.55rem 1.25rem',
             borderRadius: '20px',
             border: 'none',
-            background: selectedClass ? '#1a73e8' : '#f1f3f4',
-            color: selectedClass ? '#ffffff' : '#9aa0a6',
+            background: selectedClass ? '#1a73e8' : 'var(--hover-bg)',
+            color: selectedClass ? '#ffffff' : 'var(--text-secondary)',
             fontWeight: 500,
             fontSize: '0.875rem',
             cursor: selectedClass ? 'pointer' : 'not-allowed'
@@ -281,8 +281,8 @@ export default function Attendance() {
             { label: 'Justificados HOY', value: todayStats.J, color: '#9334e6', bg: '#f3e8fd', Icon: FileCheck }
           ].map(({ label, value, color, bg, Icon }) => (
             <div key={label} style={{
-              background: '#ffffff',
-              border: '1px solid #dadce0',
+              background: 'var(--bg-color-surface)',
+              border: '1px solid var(--border-color)',
               borderRadius: '12px',
               padding: '1rem 1.25rem',
               display: 'flex',
@@ -301,8 +301,8 @@ export default function Attendance() {
                 <Icon size={20} color={color} />
               </div>
               <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 500, color: '#3c4043', lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: '0.78rem', color: '#5f6368', marginTop: '0.25rem' }}>{label}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{label}</div>
               </div>
             </div>
           ))}
@@ -319,10 +319,10 @@ export default function Attendance() {
         }}>
           {/* Resumen consolidado del bimestre */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--bg-color-surface)',
             borderRadius: '12px',
             padding: '1.5rem',
-            border: '1px solid #dadce0'
+            border: '1px solid var(--border-color)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <div style={{
@@ -337,10 +337,10 @@ export default function Attendance() {
                 <PieChart size={18} color="#1a73e8" />
               </div>
               <div>
-                <h4 style={{ fontWeight: 500, margin: 0, fontSize: '1rem', color: '#3c4043' }}>
+                <h4 style={{ fontWeight: 500, margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>
                   Resumen Consolidado
                 </h4>
-                <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
                   {selectedClass} · {attendanceStats.datesCount} días con registro
                 </p>
               </div>
@@ -349,12 +349,12 @@ export default function Attendance() {
             {/* Barra de progreso */}
             <div style={{ marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: '#5f6368' }}>Tasa de Asistencia</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tasa de Asistencia</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#188038' }}>{attendanceStats.presentRate}%</span>
               </div>
               <div style={{
                 height: '8px',
-                background: '#f1f3f4',
+                background: 'var(--hover-bg)',
                 borderRadius: '4px',
                 overflow: 'hidden'
               }}>
@@ -381,13 +381,13 @@ export default function Attendance() {
                   <div key={label} style={{
                     padding: '0.9rem',
                     borderRadius: '8px',
-                    background: '#f8f9fa',
+                    background: 'var(--surface-muted)',
                     textAlign: 'center'
                   }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 500, color: cfg?.color || '#3c4043' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 500, color: cfg?.color || 'var(--text-primary)' }}>
                       {val}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#5f6368' }}>{label}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{label}</div>
                   </div>
                 );
               })}
@@ -397,17 +397,17 @@ export default function Attendance() {
             <div style={{
               marginTop: '1rem',
               padding: '0.75rem 1rem',
-              background: '#f8f9fa',
+              background: 'var(--surface-muted)',
               borderRadius: '8px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#5f6368' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                 <Calendar size={14} />
                 {attendanceStats.datesCount} días
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#5f6368' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                 <Users size={14} />
                 {attendanceStats.total} alumnos
               </div>
@@ -416,12 +416,12 @@ export default function Attendance() {
 
           {/* Distribución visual del bimestre */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--bg-color-surface)',
             borderRadius: '12px',
             padding: '1.5rem',
-            border: '1px solid #dadce0'
+            border: '1px solid var(--border-color)'
           }}>
-            <h4 style={{ fontWeight: 500, margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#3c4043' }}>
+            <h4 style={{ fontWeight: 500, margin: '0 0 1.25rem 0', fontSize: '1rem', color: 'var(--text-primary)' }}>
               Distribución General
             </h4>
 
@@ -437,9 +437,9 @@ export default function Attendance() {
                 return (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: cfg?.color }} />
-                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#3c4043' }}>{label}</span>
-                    <span style={{ fontWeight: 500, fontSize: '0.85rem', color: '#3c4043' }}>{val}</span>
-                    <span style={{ color: '#5f6368', fontSize: '0.8rem', width: '44px', textAlign: 'right' }}>{pct}%</span>
+                    <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{label}</span>
+                    <span style={{ fontWeight: 500, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{val}</span>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', width: '44px', textAlign: 'right' }}>{pct}%</span>
                   </div>
                 );
               })}
@@ -452,7 +452,7 @@ export default function Attendance() {
               borderRadius: '12px',
               overflow: 'hidden',
               marginTop: '1.5rem',
-              background: '#f1f3f4'
+              background: 'var(--hover-bg)'
             }}>
               {attendanceStats.marked > 0 ? (
                 <>
@@ -483,7 +483,7 @@ export default function Attendance() {
             {/* Lista de fechas del bimestre */}
             {attendanceStats.dates && attendanceStats.dates.length > 0 && (
               <div style={{ marginTop: '1rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#5f6368', marginBottom: '0.5rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                   Fechas registradas:
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -491,9 +491,9 @@ export default function Attendance() {
                     <span key={d} style={{
                       fontSize: '0.72rem',
                       padding: '0.25rem 0.65rem',
-                      background: '#f1f3f4',
+                      background: 'var(--hover-bg)',
                       borderRadius: '12px',
-                      color: '#5f6368'
+                      color: 'var(--text-secondary)'
                     }}>
                       {new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
                     </span>
@@ -502,9 +502,9 @@ export default function Attendance() {
                     <span style={{
                       fontSize: '0.72rem',
                       padding: '0.25rem 0.65rem',
-                      background: '#f1f3f4',
+                      background: 'var(--hover-bg)',
                       borderRadius: '12px',
-                      color: '#5f6368'
+                      color: 'var(--text-secondary)'
                     }}>
                       +{attendanceStats.dates.length - 6} más
                     </span>
@@ -519,17 +519,17 @@ export default function Attendance() {
       {/* Mensaje si no hay registros en el bimestre */}
       {selectedClass && attendanceStats && attendanceStats.datesCount === 0 && (
         <div style={{
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '2.5rem 2rem',
           textAlign: 'center',
-          border: '1px dashed #dadce0',
+          border: '1px dashed var(--border-color)',
           marginBottom: '1.5rem'
         }}>
           <div style={{
             width: '56px',
             height: '56px',
-            background: '#f1f3f4',
+            background: 'var(--hover-bg)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -538,10 +538,10 @@ export default function Attendance() {
           }}>
             <Calendar size={26} color="#5f6368" />
           </div>
-          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: '#3c4043' }}>
+          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
             Sin registros de asistencia
           </h4>
-          <p style={{ fontSize: '0.9rem', color: '#5f6368', margin: 0 }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>
             No hay días registrados para {selectedClass}. ¡Comienza a registrar la asistencia!
           </p>
         </div>
@@ -550,11 +550,11 @@ export default function Attendance() {
       {/* Estado vacío */}
       {!selectedClass && (
         <div style={{
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '1px dashed #dadce0'
+          border: '1px dashed var(--border-color)'
         }}>
           <div style={{
             width: '64px',
@@ -568,10 +568,10 @@ export default function Attendance() {
           }}>
             <GraduationCap size={30} color="#1a73e8" />
           </div>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#3c4043', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
             Registro de Asistencia
           </h3>
-          <p style={{ color: '#5f6368', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', maxWidth: '400px', margin: '0 auto' }}>
             Selecciona una sección para comenzar a registrar la asistencia del día
           </p>
         </div>
@@ -580,10 +580,10 @@ export default function Attendance() {
       {/* Tabla */}
       {selectedClass && (
         <div style={{
-          background: 'white',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           overflow: 'hidden',
-          border: '1px solid #dadce0'
+          border: '1px solid var(--border-color)'
         }}>
           <div className="table-container" style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -598,15 +598,15 @@ export default function Attendance() {
               <tbody>
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#5f6368', borderBottom: '1px solid #dadce0' }}>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
                       No hay estudiantes matriculados en esta sección.
                     </td>
                   </tr>
                 ) : (
                   filteredStudents.map((student, idx) => (
                     <tr key={student.id}>
-                      <td style={{ textAlign: 'center', fontWeight: 500, color: '#5f6368', padding: '0.85rem 1rem', borderBottom: '1px solid #dadce0', fontSize: '0.85rem' }}>{idx + 1}</td>
-                      <td style={{ fontWeight: 500, padding: '0.85rem 1rem', borderBottom: '1px solid #dadce0', color: '#3c4043' }}>
+                      <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>{idx + 1}</td>
+                      <td style={{ fontWeight: 500, padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{
                             width: '32px',
@@ -625,8 +625,8 @@ export default function Attendance() {
                           {student.name}
                         </div>
                       </td>
-                      <td style={{ color: '#5f6368', padding: '0.85rem 1rem', borderBottom: '1px solid #dadce0', fontSize: '0.9rem' }}>{student.gradeLevel}</td>
-                      <td style={{ borderBottom: '1px solid #dadce0' }}>
+                      <td style={{ color: 'var(--text-secondary)', padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>{student.gradeLevel}</td>
+                      <td style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.6rem 1rem' }}>
                           {STATUS_OPTIONS.map(opt => {
                             const isSelected = currentRecords[student.id] === opt.value;
@@ -637,19 +637,19 @@ export default function Attendance() {
                                 style={{
                                   padding: '0.4rem 0.95rem',
                                   borderRadius: '18px',
-                                  border: `1px solid ${isSelected ? opt.color : '#dadce0'}`,
-                                  background: isSelected ? opt.color : '#ffffff',
-                                  color: isSelected ? '#ffffff' : '#5f6368',
+                                  border: `1px solid ${isSelected ? opt.color : 'var(--border-color)'}`,
+                                  background: isSelected ? opt.color : 'var(--bg-color-surface)',
+                                  color: isSelected ? '#ffffff' : 'var(--text-secondary)',
                                   fontWeight: 500,
                                   fontSize: '0.82rem',
                                   cursor: 'pointer',
                                   transition: 'all 0.15s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                  if (!isSelected) e.currentTarget.style.background = '#f1f3f4';
+                                  if (!isSelected) e.currentTarget.style.background = 'var(--hover-bg)';
                                 }}
                                 onMouseLeave={(e) => {
-                                  if (!isSelected) e.currentTarget.style.background = '#ffffff';
+                                  if (!isSelected) e.currentTarget.style.background = 'var(--bg-color-surface)';
                                 }}
                               >
                                 {opt.label}
@@ -691,10 +691,10 @@ export default function Attendance() {
               <History size={18} color="#1a73e8" />
             </div>
             <div style={{ flex: 1, minWidth: '220px' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.01em' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                 Historial de Asistencias
               </h3>
-              <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
                 {filteredHistoricalDates.length} de {historicalAttendanceDates.length} fechas registradas
               </p>
             </div>
@@ -713,10 +713,10 @@ export default function Attendance() {
           </div>
 
           <div style={{
-            background: 'white',
+            background: 'var(--bg-color-surface)',
             borderRadius: '12px',
             overflow: 'hidden',
-            border: '1px solid #dadce0'
+            border: '1px solid var(--border-color)'
           }}>
             <div className="table-container" style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -759,15 +759,15 @@ export default function Attendance() {
                         <tr
                           style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
                           onClick={() => toggleDateExpand(dateStr)}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#f8f9fa'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-muted)'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
                         >
-                          <td style={{ textAlign: 'center', padding: '0.75rem 0.5rem', borderBottom: '1px solid #dadce0' }}>
-                            <span style={{ display: 'inline-flex', color: '#5f6368' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem 0.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                            <span style={{ display: 'inline-flex', color: 'var(--text-secondary)' }}>
                               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                             </span>
                           </td>
-                          <td style={{ fontWeight: 500, padding: '0.75rem 1rem', borderBottom: '1px solid #dadce0', color: '#3c4043', fontSize: '0.9rem' }}>
+                          <td style={{ fontWeight: 500, padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
                             {new Date(dateStr + 'T00:00:00').toLocaleDateString('es-PE', {
                               weekday: 'long',
                               year: 'numeric',
@@ -775,27 +775,27 @@ export default function Attendance() {
                               day: 'numeric'
                             })}
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                             <span style={countPillStyle('#188038', '#e6f4ea')}>
                               {summary.P}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                             <span style={countPillStyle('#e37400', '#fef7e0')}>
                               {summary.T}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                             <span style={countPillStyle('#d93025', '#fce8e6')}>
                               {summary.F}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                             <span style={countPillStyle('#9334e6', '#f3e8fd')}>
                               {summary.J}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                             <span style={{
                               ...countPillStyle(rateColor, rateBg),
                               minWidth: '52px'
@@ -803,7 +803,7 @@ export default function Attendance() {
                               {attendanceRate}%
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #dadce0' }}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -832,12 +832,12 @@ export default function Attendance() {
                         </tr>
                         {isExpanded && (
                           <tr>
-                            <td colSpan="8" style={{ padding: 0, background: '#f8f9fa', borderBottom: '1px solid #dadce0' }}>
+                            <td colSpan="8" style={{ padding: 0, background: 'var(--surface-muted)', borderBottom: '1px solid var(--border-color)' }}>
                               <div style={{ padding: '1rem 1.5rem' }}>
                                 <h4 style={{
                                   fontSize: '0.75rem',
                                   fontWeight: 500,
-                                  color: '#5f6368',
+                                  color: 'var(--text-secondary)',
                                   marginBottom: '0.75rem',
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.05em'
@@ -862,13 +862,13 @@ export default function Attendance() {
                                         justifyContent: 'space-between',
                                         padding: '0.5rem 0.75rem',
                                         borderRadius: '8px',
-                                        background: 'white',
-                                        border: '1px solid #dadce0'
+                                        background: 'var(--bg-color-surface)',
+                                        border: '1px solid var(--border-color)'
                                       }}>
                                         <span style={{
                                           fontSize: '0.85rem',
                                           fontWeight: 500,
-                                          color: '#3c4043',
+                                          color: 'var(--text-primary)',
                                           flex: 1,
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
@@ -883,13 +883,13 @@ export default function Attendance() {
                                           gap: '6px',
                                           padding: '0.2rem 0.6rem',
                                           borderRadius: '12px',
-                                          background: statusConfig?.bg || '#f1f3f4',
-                                          color: statusConfig?.color || '#5f6368',
+                                          background: statusConfig?.bg || 'var(--hover-bg)',
+                                          color: statusConfig?.color || 'var(--text-secondary)',
                                           fontWeight: 500,
                                           fontSize: '0.75rem',
                                           whiteSpace: 'nowrap'
                                         }}>
-                                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusConfig?.color || '#5f6368' }} />
+                                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusConfig?.color || 'var(--text-secondary)' }} />
                                           {statusConfig?.label}
                                         </span>
                                       </div>
@@ -913,11 +913,11 @@ export default function Attendance() {
       {selectedClass && historicalAttendanceDates.length === 0 && attendanceStats && (
         <div style={{
           marginTop: '2rem',
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '2.5rem 2rem',
           textAlign: 'center',
-          border: '1px dashed #dadce0'
+          border: '1px dashed var(--border-color)'
         }}>
           <div style={{
             width: '56px',
@@ -931,10 +931,10 @@ export default function Attendance() {
           }}>
             <History size={26} color="#1a73e8" />
           </div>
-          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: '#3c4043' }}>
+          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
             No hay historial de asistencias
           </h4>
-          <p style={{ fontSize: '0.9rem', color: '#5f6368', margin: 0 }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>
             Las asistencias que tomes aparecerán aquí como historial
           </p>
         </div>
@@ -943,11 +943,11 @@ export default function Attendance() {
       {selectedClass && filteredHistoricalDates.length === 0 && historicalAttendanceDates.length > 0 && (
         <div style={{
           marginTop: '2rem',
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '2.5rem 2rem',
           textAlign: 'center',
-          border: '1px dashed #dadce0'
+          border: '1px dashed var(--border-color)'
         }}>
           <div style={{
             width: '56px',
@@ -961,10 +961,10 @@ export default function Attendance() {
           }}>
             <Calendar size={26} color="#e37400" />
           </div>
-          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: '#3c4043' }}>
+          <h4 style={{ fontWeight: 500, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
             Sin registros en este bimestre
           </h4>
-          <p style={{ fontSize: '0.9rem', color: '#5f6368', margin: 0 }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>
             No hay fechas de asistencia registradas en {PERIOD_LABELS[selectedPeriod] || `Bimestre ${selectedPeriod}`} para {selectedClass}
           </p>
         </div>

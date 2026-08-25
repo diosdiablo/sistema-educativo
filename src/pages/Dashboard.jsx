@@ -43,22 +43,22 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: '#ffffff',
-      border: '1px solid #dadce0',
+      background: 'var(--bg-color-surface)',
+      border: '1px solid var(--border-color)',
       borderRadius: '8px',
       padding: '0.65rem 0.85rem',
       boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
       fontSize: '0.78rem',
       minWidth: '120px'
     }}>
-      {label && <p style={{ fontWeight: 500, marginBottom: '0.4rem', color: '#202124', fontSize: '0.8rem', borderBottom: '1px solid #e8eaed', paddingBottom: '0.35rem' }}>{label}</p>}
+      {label && <p style={{ fontWeight: 500, marginBottom: '0.4rem', color: 'var(--text-primary)', fontSize: '0.8rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.35rem' }}>{label}</p>}
       {payload.map((entry, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '2px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color }} />
-            <span style={{ color: '#5f6368' }}>{entry.name}</span>
+            <span style={{ color: 'var(--text-secondary)' }}>{entry.name}</span>
           </div>
-          <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: '#202124' }}>{entry.value}</span>
+          <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)' }}>{entry.value}</span>
         </div>
       ))}
     </div>
@@ -533,21 +533,21 @@ export default function Dashboard() {
     <motion.div initial="hidden" animate="visible" variants={stagger} style={{ minHeight: '100vh' }}>
       {/* Header */}
       <motion.div variants={fadeIn} style={{
-        background: '#ffffff',
+        background: 'var(--bg-color-surface)',
         borderRadius: '12px', padding: '1.75rem 2rem', marginBottom: '1.5rem',
-        border: '1px solid #dadce0', position: 'relative', overflow: 'hidden'
+        border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#202124', letterSpacing: '-0.02em' }}>{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f1f3f4', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 500, color: '#5f6368' }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--hover-bg)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
                 <Clock size={14} />
                 {timeString}
               </div>
             </div>
-            <p style={{ color: '#5f6368', fontSize: '0.9rem', marginTop: '0.25rem' }}>{formattedDate}</p>
-            <p style={{ color: '#80868b', fontSize: '0.85rem', fontWeight: 400, marginTop: '0.5rem', fontStyle: 'italic' }}>"{dayMessage}"</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.25rem' }}>{formattedDate}</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 400, marginTop: '0.5rem', fontStyle: 'italic' }}>"{dayMessage}"</p>
           </div>
           {nextClass && (
             <motion.div whileHover={{ scale: 1.03 }} style={{
@@ -557,8 +557,8 @@ export default function Dashboard() {
               <p style={{ fontSize: '0.75rem', color: '#1967d2', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500 }}>
                 <Clock size={14} /> Proxima clase
               </p>
-              <p style={{ fontWeight: 500, fontSize: '1rem', color: '#202124' }}>{nextClass.subjectName}</p>
-              <p style={{ fontSize: '0.8rem', color: '#5f6368' }}>{nextClass.className} - {nextClass.time}</p>
+              <p style={{ fontWeight: 500, fontSize: '1rem', color: 'var(--text-primary)' }}>{nextClass.subjectName}</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{nextClass.className} - {nextClass.time}</p>
             </motion.div>
           )}
         </div>
@@ -572,7 +572,7 @@ export default function Dashboard() {
             whileHover={{ y: -4 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             className="glass-card"
-            style={{ padding: '1.25rem', cursor: 'pointer', background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px', boxShadow: 'none' }}
+            style={{ padding: '1.25rem', cursor: 'pointer', background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', boxShadow: 'none' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div style={{
@@ -592,15 +592,15 @@ export default function Dashboard() {
                 {stat.trend}
               </span>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 500, color: '#202124', lineHeight: 1.2 }}>{stat.value}</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 400, color: '#5f6368', marginTop: '0.25rem' }}>{stat.title}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.2 }}>{stat.value}</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{stat.title}</div>
           </motion.div>
         ))}
       </motion.div>
 
       {/* Quick Actions */}
       <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '0.85rem', fontWeight: 500, color: '#5f6368', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h3 style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Accesos Rapidos
         </h3>
         <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
@@ -611,7 +611,7 @@ export default function Dashboard() {
               onClick={() => navigate(action.path)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
-                background: '#ffffff', border: '1px solid #dadce0',
+                background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)',
                 borderRadius: '20px', padding: '0.55rem 1.1rem',
                 cursor: 'pointer', whiteSpace: 'nowrap'
               }}
@@ -623,7 +623,7 @@ export default function Dashboard() {
               }}>
                 {action.icon}
               </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#3c4043' }}>{action.label}</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' }}>{action.label}</span>
             </motion.button>
           ))}
         </div>
@@ -632,9 +632,9 @@ export default function Dashboard() {
       {/* Birthday Section */}
       {birthdayData.total > 0 && (
         <motion.div variants={fadeIn} style={{
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px', padding: '1.75rem', marginBottom: '1.5rem',
-          border: '1px solid #dadce0',
+          border: '1px solid var(--border-color)',
           position: 'relative', overflow: 'hidden'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
@@ -646,8 +646,8 @@ export default function Dashboard() {
               <Cake size={22} color="#d93025" />
             </div>
             <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 500, margin: 0, color: '#202124' }}>Proximos Cumpleanos</h3>
-              <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>{birthdayData.total} estudiante(s) registrados</p>
+              <h3 style={{ fontSize: '1rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Proximos Cumpleanos</h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>{birthdayData.total} estudiante(s) registrados</p>
             </div>
           </div>
           {birthdayData.todayBirthdays.length > 0 && (
@@ -659,11 +659,11 @@ export default function Dashboard() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {birthdayData.todayBirthdays.map(student => (
                   <div key={student.id} style={{
-                    background: '#ffffff', borderRadius: '16px',
-                    padding: '0.5rem 1rem', fontWeight: 500, fontSize: '0.9rem', color: '#202124'
+                    background: 'var(--bg-color-surface)', borderRadius: '16px',
+                    padding: '0.5rem 1rem', fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-primary)'
                   }}>
                     {student.name}
-                    {student.gradeLevel && <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#5f6368', marginLeft: '0.5rem' }}>{student.gradeLevel}</span>}
+                    {student.gradeLevel && <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>{student.gradeLevel}</span>}
                   </div>
                 ))}
               </div>
@@ -671,15 +671,15 @@ export default function Dashboard() {
           )}
           {birthdayData.thisWeek.length > 0 && (
             <div>
-              <p style={{ fontSize: '0.8rem', fontWeight: 500, color: '#5f6368', marginBottom: '0.5rem' }}>Esta semana:</p>
+              <p style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Esta semana:</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {birthdayData.thisWeek.map(student => (
                   <div key={student.id} style={{
-                    background: '#f1f3f4', borderRadius: '16px',
+                    background: 'var(--hover-bg)', borderRadius: '16px',
                     padding: '0.4rem 0.85rem', fontSize: '0.8rem'
                   }}>
-                    <span style={{ fontWeight: 500, color: '#202124' }}>{student.name}</span>
-                    {student.gradeLevel && <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#5f6368', marginLeft: '0.35rem' }}>{student.gradeLevel}</span>}
+                    <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{student.name}</span>
+                    {student.gradeLevel && <span style={{ fontSize: '0.7rem', fontWeight: 400, color: 'var(--text-secondary)', marginLeft: '0.35rem' }}>{student.gradeLevel}</span>}
                     <span style={{ color: '#1967d2', marginLeft: '0.4rem', fontWeight: 500, fontSize: '0.75rem' }}>
                       {student.daysUntil === 1 ? 'Manana!' : `En ${student.daysUntil} dias`}
                     </span>
@@ -694,18 +694,18 @@ export default function Dashboard() {
       {/* Schedule + Top Instruments + Activity */}
       <motion.div variants={fadeIn} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Today Schedule */}
-        <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
-          <h3 style={{ marginBottom: '1.25rem', color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="dashboard-card" style={{ background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CalendarCheck size={18} color="#188038" />
             </div>
             Horario de Hoy
-            <span style={{ fontSize: '0.8rem', color: '#5f6368', fontWeight: 400, marginLeft: 'auto' }}>({todayName})</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 400, marginLeft: 'auto' }}>({todayName})</span>
           </h3>
           {todaySchedule.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', background: '#f8f9fa', borderRadius: '12px', border: '2px dashed #dadce0' }}>
+            <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--surface-muted)', borderRadius: '12px', border: '2px dashed var(--border-color)' }}>
               <Calendar size={32} color="#9aa0a6" style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-              <p style={{ color: '#5f6368', fontSize: '0.9rem' }}>No tienes clases programadas para hoy.</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No tienes clases programadas para hoy.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -729,16 +729,16 @@ export default function Dashboard() {
                     whileHover={{ x: 4 }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '0.85rem', background: '#f8f9fa', borderRadius: '12px',
-                      borderLeft: `4px solid ${isPast ? '#9aa0a6' : item.color || '#188038'}`,
+                      padding: '0.85rem', background: 'var(--surface-muted)', borderRadius: '12px',
+                      borderLeft: `4px solid ${isPast ? 'var(--text-secondary)' : item.color || '#188038'}`,
                       opacity: isPast ? 0.6 : 1, transition: 'all 0.2s ease'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                      <div style={{ fontWeight: 500, minWidth: '120px', fontSize: '0.8rem', color: '#5f6368' }}>{timesDisplay}</div>
+                      <div style={{ fontWeight: 500, minWidth: '120px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{timesDisplay}</div>
                       <div>
-                        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#202124' }}>{className}</div>
-                        {subjectName && <div style={{ fontSize: '0.75rem', color: '#5f6368' }}>{subjectName}</div>}
+                        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{className}</div>
+                        {subjectName && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{subjectName}</div>}
                       </div>
                     </div>
                     {!isPast ? (
@@ -778,7 +778,7 @@ export default function Dashboard() {
       {/* Section Summary */}
       {sectionSummary.length > 0 && (
         <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1rem', color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f3e8fd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <GraduationCap size={18} color="#7627bb" />
             </div>
@@ -790,17 +790,17 @@ export default function Dashboard() {
                 key={section.id}
                 whileHover={{ y: -4 }}
                 className="glass-card"
-                style={{ padding: '1rem', cursor: 'pointer', background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px', boxShadow: 'none', borderTop: `3px solid ${section.color}` }}
+                style={{ padding: '1rem', cursor: 'pointer', background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', boxShadow: 'none', borderTop: `3px solid ${section.color}` }}
                 onClick={() => navigate('/students')}
               >
-                <div style={{ fontWeight: 500, fontSize: '0.95rem', marginBottom: '0.5rem', color: '#202124' }}>{section.name}</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#5f6368' }}>
+                <div style={{ fontWeight: 500, fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{section.name}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                   <span>{section.students} estudiantes</span>
                   <span style={{ fontWeight: 500, color: section.attendance >= 80 ? '#188038' : '#d93025' }}>{section.attendance}% asist.</span>
                 </div>
                 <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', color: '#5f6368' }}>Nivel: <strong>{section.avgGrade}</strong></span>
-                  <span style={{ fontSize: '0.65rem', color: '#5f6368' }}>{section.gradesCount} calif.</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Nivel: <strong>{section.avgGrade}</strong></span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{section.gradesCount} calif.</span>
                 </div>
               </motion.div>
             ))}
@@ -811,28 +811,28 @@ export default function Dashboard() {
       {/* Attendance Charts */}
       {attendanceChartData.length > 0 && (
         <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-          <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
+          <div className="dashboard-card" style={{ background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <h3 style={{ color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
+                <h3 style={{ color: 'var(--text-primary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <BarChart3 size={18} color="#188038" />
                   </div>
                   Asistencia
                 </h3>
                 <select value={attendanceClass} onChange={e => setAttendanceClass(e.target.value)}
-                  style={{ padding: '0.45rem 1rem', borderRadius: '20px', border: '1px solid #dadce0', fontSize: '0.8rem', fontWeight: 500, color: '#3c4043', background: '#ffffff', cursor: 'pointer', outline: 'none' }}>
+                  style={{ padding: '0.45rem 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-primary)', background: 'var(--bg-color-surface)', cursor: 'pointer', outline: 'none' }}>
                   <option value="">Todas las secciones</option>
                   {classes.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
-              <div style={{ display: 'flex', gap: '0.25rem', background: '#f1f3f4', borderRadius: '20px', padding: '3px' }}>
+              <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--hover-bg)', borderRadius: '20px', padding: '3px' }}>
                 {[{ key: 'daily', label: 'Diario' }, { key: 'weekly', label: 'Semanal' }, { key: 'monthly', label: 'Mensual' }].map(v => (
                   <button key={v.key} onClick={() => setAttendanceView(v.key)} style={{
                     padding: '6px 14px', border: 'none', borderRadius: '18px', cursor: 'pointer', fontWeight: 500, fontSize: '0.8rem',
-                    background: attendanceView === v.key ? '#ffffff' : 'transparent',
+                    background: attendanceView === v.key ? 'var(--bg-color-surface)' : 'transparent',
                     boxShadow: attendanceView === v.key ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
-                    color: attendanceView === v.key ? '#1967d2' : '#5f6368', transition: 'all 0.2s'
+                    color: attendanceView === v.key ? '#1967d2' : 'var(--text-secondary)', transition: 'all 0.2s'
                   }}>
                     {v.label}
                   </button>
@@ -843,8 +843,8 @@ export default function Dashboard() {
               <BarChart data={attendanceChartData} barCategoryGap="20%">
                 <ChartGradients />
                 <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.4} vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dy={8} />
-                <YAxis tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={8} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dx={-4} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(26, 115, 232, 0.06)' }} />
                 <Bar dataKey="P" stackId="a" fill="url(#gradPresent)" name="Presente" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="T" stackId="a" fill="url(#gradLate)" name="Tarde" radius={[0, 0, 0, 0]} />
@@ -854,7 +854,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
             {attendancePresentRate.length > 0 && (
               <div style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 500, color: '#5f6368', marginBottom: '0.75rem' }}>% de Asistencia</h4>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>% de Asistencia</h4>
                 <ResponsiveContainer width="100%" height={120}>
                   <LineChart data={attendancePresentRate}>
                     <defs>
@@ -864,8 +864,8 @@ export default function Dashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dy={6} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={6} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dx={-4} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone" dataKey="rate" name="% Asistencia"
@@ -884,7 +884,7 @@ export default function Dashboard() {
       {/* Grade Stats */}
       {(grades.length > 0 || diagnosticEvaluations.length > 0 || instrumentEvaluations.length > 0) && (
         <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1.25rem', color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f3e8fd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <BarChart3 size={18} color="#7627bb" />
             </div>
@@ -892,15 +892,15 @@ export default function Dashboard() {
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
             {/* Levels General */}
-            <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
-              <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Niveles de Logro (General)</h4>
+            <div className="dashboard-card" style={{ background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>Niveles de Logro (General)</h4>
               {gradesByLevel.some(g => g.value > 0) ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={gradesByLevel.filter(g => g.value > 0)} layout="vertical" barCategoryGap="25%">
                     <ChartGradients />
                     <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.3} horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} />
-                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dx={-4} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(26, 115, 232, 0.06)' }} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={28}>
                       {gradesByLevel.filter(g => g.value > 0).map((entry, index) => (
@@ -910,20 +910,20 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p style={{ color: '#5f6368', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
+                <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
               )}
             </div>
 
             {/* By Class */}
-            <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
-              <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Calificaciones por Grado</h4>
+            <div className="dashboard-card" style={{ background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>Calificaciones por Grado</h4>
               {gradesByClass.some(g => g.ad + g.a + g.b + g.c > 0) ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={gradesByClass} barCategoryGap="25%">
                     <ChartGradients />
                     <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dy={8} />
-                    <YAxis tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={8} />
+                    <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dx={-4} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(26, 115, 232, 0.06)' }} />
                     <Bar dataKey="ad" stackId="a" fill="url(#gradAD)" name="AD" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="a" stackId="a" fill="url(#gradA)" name="A" radius={[0, 0, 0, 0]} />
@@ -932,19 +932,19 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p style={{ color: '#5f6368', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
+                <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
               )}
             </div>
 
             {/* Subject Performance Radar */}
             {subjectPerformance.length > 2 && (
-              <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
-                <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Rendimiento por Asignatura</h4>
+              <div className="dashboard-card" style={{ background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+                <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>Rendimiento por Asignatura</h4>
                 <ResponsiveContainer width="100%" height={240}>
                   <RadarChart data={subjectPerformance} cx="50%" cy="50%" outerRadius="70%">
                     <ChartGradients />
                     <PolarGrid stroke="#e8eaed" strokeOpacity={0.5} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9aa0a6' }} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
                     <PolarRadiusAxis domain={[0, 4]} tick={false} axisLine={false} />
                     <Radar name="Promedio" dataKey="promedio" stroke="#7627bb" strokeWidth={2.5} fill="url(#gradRadar)" dot={{ r: 4, fill: '#7627bb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, fill: '#7627bb', stroke: '#fff', strokeWidth: 2 }} />
                     <Tooltip content={<CustomTooltip />} />
@@ -955,8 +955,8 @@ export default function Dashboard() {
 
             {/* Diagnostic Pie */}
             {diagnosticStats.length > 0 && (
-              <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
-                <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Evaluacion Diagnostica</h4>
+              <div className="dashboard-card" style={{ background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+                <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>Evaluacion Diagnostica</h4>
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
@@ -990,8 +990,8 @@ export default function Dashboard() {
       {/* Empty State */}
       {(grades.length === 0 && diagnosticEvaluations.length === 0 && instrumentEvaluations.length === 0 && attendance.length === 0) && (
         <motion.div variants={fadeIn} style={{
-          background: '#ffffff',
-          borderRadius: '12px', padding: '4rem 2rem', textAlign: 'center', border: '2px dashed #dadce0'
+          background: 'var(--bg-color-surface)',
+          borderRadius: '12px', padding: '4rem 2rem', textAlign: 'center', border: '2px dashed var(--border-color)'
         }}>
           <div style={{
             width: '80px', height: '80px',
@@ -1000,8 +1000,8 @@ export default function Dashboard() {
           }}>
             <BarChart3 size={40} color="#1967d2" />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 500, color: '#202124', marginBottom: '0.5rem' }}>Comienza a registrar datos</h3>
-          <p style={{ color: '#5f6368', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Comienza a registrar datos</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
             Los graficos y estadisticas apareceran aqui cuando registres asistencia, calificaciones o evaluaciones.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>

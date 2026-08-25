@@ -195,7 +195,7 @@ export default function SchoolCalendar() {
   return (
     <div className="animate-fade-in">
       {/* Calendar card */}
-      <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', border: '1px solid #dadce0', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
         {/* Toolbar */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -204,64 +204,64 @@ export default function SchoolCalendar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '1rem', flexWrap: 'wrap' }}>
             <h2 style={{
               fontSize: isMobile ? '1.25rem' : '1.75rem', fontWeight: 400, margin: 0,
-              color: '#3c4043', letterSpacing: '-0.02em'
+              color: 'var(--text-primary)', letterSpacing: '-0.02em'
             }}>
-              {MONTHS[month]} <span style={{ fontWeight: 300, color: '#5f6368' }}>{year}</span>
+              {MONTHS[month]} <span style={{ fontWeight: 300, color: 'var(--text-secondary)' }}>{year}</span>
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <button onClick={prevMonth} title="Mes anterior" style={{
                 padding: '0.45rem', borderRadius: '50%', border: 'none',
                 background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                color: '#5f6368', transition: 'background 0.2s ease'
+                color: 'var(--text-secondary)', transition: 'background 0.2s ease'
               }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
               ><ChevronLeft size={22} /></button>
               <button onClick={nextMonth} title="Mes siguiente" style={{
                 padding: '0.45rem', borderRadius: '50%', border: 'none',
                 background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                color: '#5f6368', transition: 'background 0.2s ease'
+                color: 'var(--text-secondary)', transition: 'background 0.2s ease'
               }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
               ><ChevronRight size={22} /></button>
             </div>
             <button onClick={goToday} style={{
               padding: '0.45rem 1rem', borderRadius: '20px',
-              border: '1px solid #dadce0', background: 'white', cursor: 'pointer',
-              fontWeight: 500, fontSize: '0.85rem', color: '#3c4043',
+              border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', cursor: 'pointer',
+              fontWeight: 500, fontSize: '0.85rem', color: 'var(--text-primary)',
               transition: 'box-shadow 0.2s ease, background 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'white'; }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(60,64,67,0.3)'; e.currentTarget.style.background = 'var(--surface-muted)'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
             >Hoy</button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <button onClick={() => openAddForm(formatDate(new Date()))} style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
-              background: 'white', color: '#3c4043',
-              border: '1px solid #dadce0', padding: isMobile ? '0.45rem 0.75rem' : '0.55rem 1.1rem',
+              background: 'var(--bg-color-surface)', color: 'var(--text-primary)',
+              border: '1px solid var(--border-color)', padding: isMobile ? '0.45rem 0.75rem' : '0.55rem 1.1rem',
               borderRadius: '20px', fontWeight: 500, cursor: 'pointer',
               fontSize: isMobile ? '0.75rem' : '0.85rem',
               boxShadow: '0 1px 2px rgba(60,64,67,0.15)',
               transition: 'box-shadow 0.2s ease, background 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'white'; }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = 'var(--surface-muted)'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
             >
               <Plus size={isMobile ? 14 : 18} /> {isMobile ? 'Evento' : 'Nuevo Evento'}
             </button>
             <button onClick={loadCivicCalendar} style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
-              background: 'white', color: '#3c4043',
-              border: '1px solid #dadce0', padding: isMobile ? '0.45rem 0.75rem' : '0.55rem 1.1rem',
+              background: 'var(--bg-color-surface)', color: 'var(--text-primary)',
+              border: '1px solid var(--border-color)', padding: isMobile ? '0.45rem 0.75rem' : '0.55rem 1.1rem',
               borderRadius: '20px', fontWeight: 500, cursor: 'pointer',
               fontSize: isMobile ? '0.75rem' : '0.85rem',
               boxShadow: '0 1px 2px rgba(60,64,67,0.15)',
               transition: 'box-shadow 0.2s ease, background 0.2s ease'
             }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = '#f8f9fa'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'white'; }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(60,64,67,0.3)'; e.currentTarget.style.background = 'var(--surface-muted)'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.15)'; e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
             >
               <Download size={isMobile ? 14 : 18} /> {isMobile ? 'Cívico' : 'Calendario Cívico'}
             </button>
@@ -271,17 +271,17 @@ export default function SchoolCalendar() {
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
           width: '100%', minWidth: 0,
-          borderTop: '1px solid #dadce0'
+          borderTop: '1px solid var(--border-color)'
         }}>
           {/* Day names */}
           {DAYS.map((d, idx) => (
             <div key={'h' + idx} style={{
               textAlign: 'center', padding: isMobile ? '0.3rem' : '0.6rem',
               fontWeight: 500, fontSize: isMobile ? '0.6rem' : '0.72rem',
-              color: '#70757a', textTransform: 'uppercase', letterSpacing: '0.05em',
+              color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em',
               boxSizing: 'border-box',
-              borderBottom: '1px solid #dadce0',
-              borderRight: (idx % 7 !== 6) ? '1px solid #dadce0' : 'none'
+              borderBottom: '1px solid var(--border-color)',
+              borderRight: (idx % 7 !== 6) ? '1px solid var(--border-color)' : 'none'
             }}>{d}</div>
           ))}
           {/* Calendar cells */}
@@ -293,18 +293,18 @@ export default function SchoolCalendar() {
               <div key={idx} onClick={() => openAddForm(cell.date)} style={{
                 minHeight: isMobile ? '44px' : '96px', padding: isMobile ? '2px 3px' : '4px 5px',
                 overflow: 'hidden', boxSizing: 'border-box',
-                borderRight: (idx % 7 !== 6) ? '1px solid #dadce0' : 'none',
-                borderBottom: '1px solid #dadce0',
-                background: cell.isToday ? '#e8f0fe' : 'white',
+                borderRight: (idx % 7 !== 6) ? '1px solid var(--border-color)' : 'none',
+                borderBottom: '1px solid var(--border-color)',
+                background: cell.isToday ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
                 cursor: 'pointer', transition: 'background 0.15s ease',
                 position: 'relative'
               }}
-                onMouseEnter={e => { if (!cell.isToday) e.currentTarget.style.background = '#f8f9fa'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? '#e8f0fe' : 'white'; }}
+                onMouseEnter={e => { if (!cell.isToday) e.currentTarget.style.background = 'var(--surface-muted)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = cell.isToday ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)'; }}
               >
                 <div style={{
                   fontSize: isMobile ? '0.65rem' : '0.8rem', fontWeight: cell.isToday ? 700 : 400,
-                  color: cell.isToday ? '#ffffff' : (cell.isOutside ? '#70757a' : '#3c4043'),
+                  color: cell.isToday ? '#ffffff' : (cell.isOutside ? 'var(--text-secondary)' : 'var(--text-primary)'),
                   width: isMobile ? '18px' : '24px', height: isMobile ? '18px' : '24px', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   borderRadius: '50%',
@@ -330,7 +330,7 @@ export default function SchoolCalendar() {
                   );
                 })}
                 {remaining > 0 && (
-                  <div style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', color: '#5f6368', fontWeight: 500, paddingLeft: '5px' }}>
+                  <div style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', color: 'var(--text-secondary)', fontWeight: 500, paddingLeft: '5px' }}>
                     +{remaining} más
                   </div>
                 )}
@@ -343,15 +343,15 @@ export default function SchoolCalendar() {
       {/* Leyenda de tipos */}
       <div style={{
         display: 'flex', gap: '1rem', marginTop: '0.75rem',
-        padding: '0.75rem 1.25rem', background: 'white', borderRadius: '12px',
-        border: '1px solid #dadce0', flexWrap: 'wrap',
+        padding: '0.75rem 1.25rem', background: 'var(--bg-color-surface)', borderRadius: '12px',
+        border: '1px solid var(--border-color)', flexWrap: 'wrap',
         alignItems: 'center'
       }}>
-        <span style={{ fontWeight: 500, fontSize: '0.8rem', color: '#5f6368' }}>Tipos de evento:</span>
+        <span style={{ fontWeight: 500, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Tipos de evento:</span>
         {Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => {
           const colors = EVENT_COLORS[key];
           return (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', fontWeight: 500, color: '#3c4043' }}>
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-primary)' }}>
               <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: colors.bg, display: 'inline-block' }} />
               {label}
             </div>
@@ -371,7 +371,7 @@ export default function SchoolCalendar() {
           padding: '4rem 1rem', zIndex: 1000
         }} onClick={() => setShowForm(false)}>
           <div style={{
-            maxWidth: '450px', width: '100%', background: 'white',
+            maxWidth: '450px', width: '100%', background: 'var(--bg-color-surface)',
             borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in" onClick={e => e.stopPropagation()}>

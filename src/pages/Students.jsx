@@ -224,26 +224,26 @@ export default function Students() {
       <div className="animate-fade-in">
         {/* Barra de herramientas */}
         <div style={{
-          background: '#ffffff',
+          background: 'var(--bg-color-surface)',
           borderRadius: '12px',
           padding: '1rem 1.5rem',
           marginBottom: '1.5rem',
-          border: '1px solid #dadce0',
+          border: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
           flexWrap: 'wrap'
         }}>
           <div style={{ marginRight: 'auto' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#3c4043', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Estudiantes</h2>
-            <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: '#5f6368' }}>Gestiona el registro de alumnos</p>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Estudiantes</h2>
+            <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Gestiona el registro de alumnos</p>
           </div>
 
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <Search size={14} style={{
               position: 'absolute',
               left: '12px',
-              color: '#9aa0a6',
+              color: 'var(--text-secondary)',
               pointerEvents: 'none'
             }} />
             <input
@@ -258,11 +258,11 @@ export default function Students() {
                 paddingTop: '0.55rem',
                 paddingBottom: '0.55rem',
                 borderRadius: '20px',
-                border: '1px solid #dadce0',
-                background: '#ffffff',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-color-surface)',
                 fontWeight: 500,
                 fontSize: '0.85rem',
-                color: '#3c4043',
+                color: 'var(--text-primary)',
                 outline: 'none'
               }}
             />
@@ -272,7 +272,7 @@ export default function Students() {
                 style={{
                   position: 'absolute', right: '8px',
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: '#9aa0a6', padding: '4px'
+                  color: 'var(--text-secondary)', padding: '4px'
                 }}
               >
                 <X size={14} />
@@ -287,11 +287,11 @@ export default function Students() {
             style={{
               padding: '0.55rem 1rem',
               borderRadius: '20px',
-              border: '1px solid #dadce0',
-              background: '#ffffff',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-color-surface)',
               fontWeight: 500,
               fontSize: '0.85rem',
-              color: '#3c4043',
+              color: 'var(--text-primary)',
               cursor: 'pointer',
               outline: 'none',
               minWidth: '150px'
@@ -306,7 +306,7 @@ export default function Students() {
               onClick={handleClearAll}
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#ffffff', color: '#d93025', border: '1px solid #dadce0',
+                background: 'var(--bg-color-surface)', color: '#d93025', border: '1px solid var(--border-color)',
                 padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem'
               }}
             >
@@ -319,7 +319,7 @@ export default function Students() {
             disabled={filteredStudents.length === 0}
             style={{
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: '#ffffff', color: filteredStudents.length === 0 ? '#9aa0a6' : '#3c4043', border: '1px solid #dadce0',
+              background: 'var(--bg-color-surface)', color: filteredStudents.length === 0 ? 'var(--text-secondary)' : 'var(--text-primary)', border: '1px solid var(--border-color)',
               padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, cursor: filteredStudents.length === 0 ? 'not-allowed' : 'pointer', fontSize: '0.875rem'
             }}
           >
@@ -337,7 +337,7 @@ export default function Students() {
             <button
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#ffffff', color: '#3c4043', border: '1px solid #dadce0',
+                background: 'var(--bg-color-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
                 padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem'
               }}
               onClick={() => fileInputRef.current?.click()}
@@ -363,11 +363,11 @@ export default function Students() {
         {/* Formulario */}
         {showForm && (
           <div style={{
-            background: 'white',
+            background: 'var(--bg-color-surface)',
             borderRadius: '12px',
             padding: '1.5rem',
             marginBottom: '1.5rem',
-            border: '1px solid #dadce0'
+            border: '1px solid var(--border-color)'
           }} className="animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -383,8 +383,8 @@ export default function Students() {
                   {isEditing ? <Edit2 size={20} color="#b06000" /> : <UserCheck size={20} color="#188038" />}
                 </div>
                 <div>
-                  <h3 style={{ fontWeight: 500, margin: 0, fontSize: '1.1rem', color: '#3c4043' }}>{isEditing ? 'Editar Estudiante' : 'Agregar Estudiante'}</h3>
-                  <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>Ingresa los datos del alumno</p>
+                  <h3 style={{ fontWeight: 500, margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{isEditing ? 'Editar Estudiante' : 'Agregar Estudiante'}</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Ingresa los datos del alumno</p>
                 </div>
               </div>
               {isEditing && (
@@ -394,9 +394,9 @@ export default function Students() {
                   style={{
                     padding: '0.5rem 1rem',
                     borderRadius: '20px',
-                    background: '#ffffff',
-                    border: '1px solid #dadce0',
-                    color: '#5f6368',
+                    background: 'var(--bg-color-surface)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-secondary)',
                     fontWeight: 500,
                     cursor: 'pointer',
                     fontSize: '0.85rem'
@@ -478,8 +478,8 @@ export default function Students() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
                   <div style={{
                     width: '80px', height: '80px', borderRadius: '50%',
-                    background: newStudent.photo_url ? `url(${newStudent.photo_url}) center/cover` : '#f1f3f4',
-                    border: '2px dashed #dadce0',
+                    background: newStudent.photo_url ? `url(${newStudent.photo_url}) center/cover` : 'var(--hover-bg)',
+                    border: '2px dashed var(--border-color)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     overflow: 'hidden', flexShrink: 0
                   }}>
@@ -521,12 +521,12 @@ export default function Students() {
                     <label htmlFor="student-photo-input" style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                       padding: '0.6rem 1rem', borderRadius: '10px',
-                      background: '#f1f3f4', border: '1px solid #dadce0',
-                      cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem', color: '#5f6368'
+                      background: 'var(--hover-bg)', border: '1px solid var(--border-color)',
+                      cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem', color: 'var(--text-secondary)'
                     }}>
                       {photoUploading ? (
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span className="spinner" style={{ width: 14, height: 14, border: '2px solid #dadce0', borderTopColor: '#188038', borderRadius: '50%', display: 'inline-block' }} /> Subiendo...
+                          <span className="spinner" style={{ width: 14, height: 14, border: '2px solid var(--border-color)', borderTopColor: '#188038', borderRadius: '50%', display: 'inline-block' }} /> Subiendo...
                         </span>
                       ) : (
                         <><Camera size={16} /> {newStudent.photo_url ? 'Cambiar foto' : 'Subir foto'}</>
@@ -544,7 +544,7 @@ export default function Students() {
                   </div>
                 </div>
               </div>
-              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #dadce0', paddingTop: '1rem', marginTop: '0.5rem' }}>
+              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem' }}>
                 <h4 style={{ marginBottom: '1rem', color: '#188038', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <UserCheck size={18} /> Información del Apoderado
                 </h4>
@@ -609,88 +609,88 @@ export default function Students() {
 
         {/* Tabla */}
         <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div className="table-container" style={{ borderRadius: '12px', border: '1px solid #dadce0' }}>
+          <div className="table-container" style={{ borderRadius: '12px', border: '1px solid var(--border-color)' }}>
             <table style={{ tableLayout: 'auto', width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 <th style={{
                   width: '60px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0',
+                  borderBottom: '1px solid var(--border-color)',
                   textAlign: 'center'
                 }}>N°</th>
                 <th style={{
                   width: '64px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0',
+                  borderBottom: '1px solid var(--border-color)',
                   textAlign: 'center'
                 }}>Foto</th>
                 <th style={{
                   minWidth: '120px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>DNI</th>
                 <th style={{
                   minWidth: '200px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>Apellidos y Nombre</th>
                 <th style={{
                   minWidth: '150px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>Grado</th>
                 <th style={{
                   minWidth: '150px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0'
+                  borderBottom: '1px solid var(--border-color)'
                 }}>Nacimiento</th>
                 <th style={{
                   minWidth: '140px',
-                  background: '#f8f9fa',
-                  color: '#70757a',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   padding: '0.85rem 1rem',
-                  borderBottom: '1px solid #dadce0',
+                  borderBottom: '1px solid var(--border-color)',
                   textAlign: 'center'
                 }}>Acciones</th>
               </tr>
@@ -698,7 +698,7 @@ export default function Students() {
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#5f6368' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                     No hay estudiantes registrados.
                   </td>
                 </tr>
@@ -707,37 +707,37 @@ export default function Students() {
                   const [tintBg, tintFg] = classTints[idx % classTints.length];
                   return (
                     <tr key={student.id}>
-                      <td style={{ textAlign: 'center', fontWeight: 500, color: '#5f6368', borderBottom: '1px solid #e8eaed' }}>{idx + 1}</td>
-                      <td style={{ textAlign: 'center', borderBottom: '1px solid #e8eaed' }}>
+                      <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>{idx + 1}</td>
+                      <td style={{ textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
                         {student.photo_url ? (
                           <img src={student.photo_url} alt="" style={{
                             width: '40px', height: '40px', borderRadius: '50%',
-                            objectFit: 'cover', border: '1px solid #dadce0'
+                            objectFit: 'cover', border: '1px solid var(--border-color)'
                           }} />
                         ) : (
                           <div style={{
                             width: '40px', height: '40px', borderRadius: '50%',
-                            background: '#f1f3f4', display: 'flex', alignItems: 'center',
+                            background: 'var(--hover-bg)', display: 'flex', alignItems: 'center',
                             justifyContent: 'center', margin: '0 auto'
                           }}>
                             <Camera size={16} color="#9aa0a6" />
                           </div>
                         )}
                       </td>
-                      <td style={{ borderBottom: '1px solid #e8eaed' }}>
+                      <td style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <code style={{
-                          background: '#f1f3f4',
+                          background: 'var(--hover-bg)',
                           padding: '4px 10px',
                           borderRadius: '6px',
-                          color: '#5f6368',
+                          color: 'var(--text-secondary)',
                           fontSize: '0.85rem',
                           fontWeight: 500
                         }}>
                           {student.dni || '-'}
                         </code>
                       </td>
-                      <td style={{ fontWeight: 500, color: '#3c4043', borderBottom: '1px solid #e8eaed' }}>{student.name}</td>
-                      <td style={{ borderBottom: '1px solid #e8eaed' }}>
+                      <td style={{ fontWeight: 500, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>{student.name}</td>
+                      <td style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <span style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -753,8 +753,8 @@ export default function Students() {
                           {student.gradeLevel || 'Sin asignar'}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.85rem', color: '#5f6368', borderBottom: '1px solid #e8eaed' }}>{student.birthDate || '-'}</td>
-                      <td style={{ borderBottom: '1px solid #e8eaed' }}>
+                      <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>{student.birthDate || '-'}</td>
+                      <td style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                           <button
                             style={{
@@ -839,7 +839,7 @@ export default function Students() {
         }}>
           <div style={{
             maxWidth: '450px', width: '100%',
-            background: 'white', borderRadius: '16px', padding: '2rem',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
             position: 'relative'
           }} className="animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -855,11 +855,11 @@ export default function Students() {
                 }}>
                   <Users size={24} color="#1967d2" />
                 </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 500, margin: 0, color: '#3c4043' }}>Detalles del Estudiante</h3>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Detalles del Estudiante</h3>
               </div>
               <button
                 onClick={() => setViewingStudent(null)}
-                style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', padding: '0.5rem' }}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem' }}
               >
                 <X size={24} />
               </button>
@@ -869,41 +869,41 @@ export default function Students() {
               <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                 <img src={viewingStudent.photo_url} alt="" style={{
                   width: '100px', height: '100px', borderRadius: '50%',
-                  objectFit: 'cover', border: '1px solid #dadce0'
+                  objectFit: 'cover', border: '1px solid var(--border-color)'
                 }} />
               </div>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>DNI</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>DNI</span>
                 <span style={{ fontWeight: 600 }}>{viewingStudent.dni || '-'}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>APELLIDOS Y NOMBRE</span>
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>APELLIDOS Y NOMBRE</span>
                 <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewingStudent.name}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>GRADO Y SECCIÓN</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>GRADO Y SECCIÓN</span>
                 <span style={{ fontWeight: 500, color: '#188038' }}>{viewingStudent.gradeLevel}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>FECHA DE NACIMIENTO</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>FECHA DE NACIMIENTO</span>
                 <span>{viewingStudent.birthDate || '-'}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>APODERADO</span>
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>APODERADO</span>
                 <span style={{ fontWeight: 600 }}>{viewingStudent.guardianName || '-'}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>DNI APODERADO</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>DNI APODERADO</span>
                 <span>{viewingStudent.guardianDni || '-'}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f3f4' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>DIRECCIÓN</span>
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '0.75rem', borderBottom: '1px solid var(--hover-bg)' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>DIRECCIÓN</span>
                 <span style={{ fontSize: '0.9rem' }}>{viewingStudent.address || '-'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#5f6368', fontSize: '0.8rem', fontWeight: 500 }}>TELÉFONO</span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>TELÉFONO</span>
                 <span style={{ fontWeight: 600 }}>{viewingStudent.phone || '-'}</span>
               </div>
             </div>
@@ -941,7 +941,7 @@ export default function Students() {
             width: '100%',
             textAlign: 'center',
             padding: '2rem',
-            background: 'white',
+            background: 'var(--bg-color-surface)',
             borderRadius: '16px',
             position: 'relative'
           }} className="animate-fade-in">
@@ -958,8 +958,8 @@ export default function Students() {
               <Trash2 size={32} color="#d93025" />
             </div>
 
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#202124', fontWeight: 500 }}>¿Confirmar acción?</h3>
-            <p style={{ color: '#5f6368', marginBottom: '2rem', lineHeight: '1.6' }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>¿Confirmar acción?</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
               Estás a punto de eliminar a <strong>TODOS</strong> los estudiantes de manera definitiva. Esta acción no se puede deshacer.
             </p>
 
@@ -967,8 +967,8 @@ export default function Students() {
               <button
                 style={{
                   flex: 1, padding: '0.8rem', borderRadius: '20px',
-                  background: '#ffffff', color: '#5f6368',
-                  border: '1px solid #dadce0', cursor: 'pointer', fontWeight: 500
+                  background: 'var(--bg-color-surface)', color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 500
                 }}
                 onClick={() => setShowConfirmModal(false)}
               >
@@ -1001,7 +1001,7 @@ export default function Students() {
         }} onClick={() => !isPicking && setShowRandomModal(false)}>
           <div style={{
             maxWidth: '500px', width: '100%',
-            background: 'white', borderRadius: '16px', padding: '2.5rem',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2.5rem',
             position: 'relative',
             textAlign: 'center',
             overflow: 'hidden'
@@ -1024,21 +1024,21 @@ export default function Students() {
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#202124' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
                 {isPicking ? 'Sorteando...' : '¡Estudiante Seleccionado!'}
               </h3>
-              <p style={{ fontSize: '0.9rem', color: '#5f6368', marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
                 {isPicking ? 'El sorteo está en curso' : `Sección: ${filterClass === 'Todos' ? 'Todas las secciones' : filterClass}`}
               </p>
 
               {/* Estudiante */}
               {randomStudent && (
                 <div style={{
-                  background: 'white',
+                  background: 'var(--bg-color-surface)',
                   borderRadius: '16px',
                   padding: '1.5rem',
                   marginBottom: '2rem',
-                  border: isPicking ? '2px dashed #dadce0' : '2px solid #188038',
+                  border: isPicking ? '2px dashed var(--border-color)' : '2px solid #188038',
                   boxShadow: isPicking ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
                   transition: 'all 0.3s ease'
                 }}>
@@ -1064,14 +1064,14 @@ export default function Students() {
                   <div style={{ 
                     fontSize: '1.25rem', 
                     fontWeight: 700, 
-                    color: isPicking ? '#9aa0a6' : '#202124',
+                    color: isPicking ? 'var(--text-secondary)' : 'var(--text-primary)',
                     transition: 'all 0.3s ease'
                   }}>
                     {randomStudent.name}
                   </div>
                   <div style={{ 
                     fontSize: '0.85rem', 
-                    color: isPicking ? '#dadce0' : '#5f6368', 
+                    color: isPicking ? 'var(--border-color)' : 'var(--text-secondary)', 
                     marginTop: '0.25rem',
                     display: 'flex',
                     alignItems: 'center',
@@ -1084,7 +1084,7 @@ export default function Students() {
                   {randomStudent.dni && !isPicking && (
                     <div style={{ 
                       fontSize: '0.8rem', 
-                      color: '#9aa0a6', 
+                      color: 'var(--text-secondary)', 
                       marginTop: '0.5rem',
                       fontFamily: 'monospace'
                     }}>
@@ -1099,8 +1099,8 @@ export default function Students() {
                 <button
                   style={{
                     flex: 1, padding: '0.8rem', borderRadius: '20px',
-                    background: '#ffffff', color: '#5f6368',
-                    border: '1px solid #dadce0', cursor: 'pointer', fontWeight: 500,
+                    background: 'var(--bg-color-surface)', color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 500,
                     fontSize: '0.9rem',
                     transition: 'all 0.2s ease'
                   }}
