@@ -507,101 +507,58 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
     }));
   };
 
-  const gradientColors = [
-    ['#c2185b', '#ad1457'],
-    ['#7627bb', '#6a1b9a'],
-    ['#007b83', '#007b83'],
-    ['#e37400', '#b06000']
-  ];
-
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Barra de herramientas */}
       <div style={{
-        background: '#c2185b',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <ClipboardCheck size={28} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Evaluación Diagnóstica</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Registra y genera mapas de calor</p>
-          </div>
+        <div style={{ marginRight: 'auto' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Evaluación Diagnóstica</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Registra y genera mapas de calor</p>
         </div>
       </div>
 
       {/* Tarjeta de configuración */}
       <div style={{ 
         background: 'var(--bg-color-surface)', 
-        borderRadius: '20px', 
+        borderRadius: '12px', 
         padding: '1.5rem',
         marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(194, 24, 91, 0.2)'
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              width: '40px',
-              height: '40px',
+              width: '36px',
+              height: '36px',
               borderRadius: '10px',
-              background: '#c2185b',
+              background: 'var(--nav-active-bg)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <Settings size={20} color="white" />
+              <Settings size={18} color="var(--nav-active-fg)" />
             </div>
-            <h3 style={{ color: '#c2185b', margin: 0, fontWeight: 700, fontSize: '1.1rem' }}>Configuración de Evaluación</h3>
+            <h3 style={{ color: 'var(--text-primary)', margin: 0, fontWeight: 500, fontSize: '1.05rem' }}>Configuración de Evaluación</h3>
           </div>
           {selectedSubject && (
             <button 
               onClick={() => setShowRubricModal(true)}
               style={{ 
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#c2185b', color: 'white', border: 'none',
-                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                display: 'flex', alignItems: 'center', gap: '6px',
+                background: 'var(--nav-active-bg)', color: 'var(--nav-active-fg)', border: '1px solid var(--border-color)',
+                padding: '0.45rem 1rem', borderRadius: '20px', fontWeight: 500, fontSize: '0.8rem', cursor: 'pointer'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(194, 24, 91, 0.4)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <Settings size={16} /> Configurar Rúbrica
+              <Settings size={14} /> Configurar Rúbrica
             </button>
           )}
         </div>
@@ -655,34 +612,26 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
             <button onClick={handleLoadExisting} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'var(--surface-muted)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)',
-              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              background: 'var(--bg-color-surface)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
+              padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-color)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface-muted)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-muted)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
             >
               <RotateCcw size={16} /> Cargar Datos
             </button>
             <button onClick={handleReset} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: '#fce8e6', color: '#d93025', border: '1px solid #fecaca',
-              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)', border: '1px solid transparent',
+              padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#fad2cf'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#fce8e6'; }}
             >
               <RotateCcw size={16} /> Limpiar Todo
             </button>
-            <button onClick={handleSave} style={{ 
+            <button onClick={handleSave} className="btn-primary" style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: saved ? '#188038' : '#c2185b', color: 'white', border: 'none',
-              padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-              transition: 'all 0.3s ease'
+              background: saved ? '#188038' : undefined, padding: '0.55rem 1.25rem', fontSize: '0.875rem'
             }}
-            onMouseEnter={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(194, 24, 91, 0.4)'; } }}
-            onMouseLeave={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; } }}
             >
               {saved ? <Check size={16} /> : <Save size={16} />}
               {saved ? '¡Guardado!' : 'Guardar'}
@@ -692,11 +641,10 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px', 
                 background: '#188038', color: 'white', border: 'none',
-                padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                padding: '0.55rem 1rem', borderRadius: '20px', fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(24, 128, 56, 0.4)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#146c2e'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#188038'; }}
             >
               <Download size={16} /> Exportar
             </button>
@@ -708,45 +656,35 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
       {selectedClass && selectedSubject && (
         <>
           <div style={{
-            background: '#7627bb',
-            borderRadius: '20px',
-            padding: '1.5rem',
+            background: 'var(--bg-color-surface)',
+            borderRadius: '12px',
+            padding: '1rem 1.5rem',
             marginBottom: '1.5rem',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden'
+            border: '1px solid var(--border-color)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '-10%',
-              width: '150px',
-              height: '150px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '50%'
-            }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <BookOpen size={24} />
-                </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>{selectedClass}</h4>
-                  <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>{selectedSubjectData?.name}</p>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                background: 'var(--nav-active-bg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <BookOpen size={20} color="var(--nav-active-fg)" />
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 900 }}>{filteredStudents.length}</div>
-                <div style={{ opacity: 0.8, fontSize: '0.85rem' }}>estudiantes</div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)' }}>{selectedClass}</h4>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{selectedSubjectData?.name}</p>
               </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: 400, color: 'var(--text-primary)' }}>{filteredStudents.length}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>estudiantes</div>
             </div>
           </div>
 
@@ -778,22 +716,23 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           {filteredStudents.length === 0 ? (
             <div style={{
               background: 'var(--surface-muted)',
-              borderRadius: '20px',
+              borderRadius: '12px',
               padding: '4rem 2rem',
               textAlign: 'center',
-              border: '2px dashed var(--border-color)'
+              border: '1px solid var(--border-color)'
             }}>
               <div style={{
                 width: '80px',
                 height: '80px',
-                background: '#c2185b',
+                background: 'var(--bg-color-surface)',
+                border: '1px solid var(--border-color)',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 1.5rem'
               }}>
-                <Users size={40} color="white" />
+                <Users size={40} color="var(--text-secondary)" />
               </div>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
                 No hay estudiantes
@@ -803,62 +742,28 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               </p>
             </div>
           ) : (
-            <div className="table-container" style={{ overflowX: 'auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <div className="table-container" style={{ overflowX: 'auto' }}>
               <table className="styled-table" style={{ minWidth: '800px', tableLayout: 'auto' }}>
                 <thead>
                   <tr>
-                    <th style={{ 
-                      width: '60px', 
-                      background: '#c2185b', 
-                      color: 'white',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                      padding: '1rem',
-                      textAlign: 'center'
-                    }}>N°</th>
-                    <th style={{ 
-                      minWidth: '180px', 
-                      background: '#c2185b', 
-                      color: 'white',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                      padding: '1rem'
-                    }}>
+                    <th style={{ width: '60px', textAlign: 'center' }}>N°</th>
+                    <th style={{ minWidth: '180px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Users size={16} />
                         Apellidos y Nombre
                       </div>
                     </th>
-                    {rubricConfig.competencies.map((comp, idx) => {
-                      const [color1, color2] = gradientColors[idx % gradientColors.length];
-                      return (
-                        <th key={comp.id || idx} style={{ 
-                          minWidth: '200px', 
-                          textAlign: 'center',
-                          background: `${color1}`,
-                          color: 'white',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          padding: '1rem'
-                        }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                            <span>{comp.name.substring(0, 18)}{comp.name.length > 18 ? '...' : ''}</span>
-                            <span style={{ fontSize: '0.65rem', fontWeight: 400, opacity: 0.9 }}>
-                              {rubricConfig.mode === 'rubrica' ? 'Rúbrica' : `Total: ${comp.totalQuestions}`}
-                            </span>
-                          </div>
-                        </th>
-                      );
-                    })}
-                    <th style={{ 
-                      width: '80px', 
-                      background: '#c2185b', 
-                      color: 'white',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                      padding: '1rem',
-                      textAlign: 'center'
-                    }}>Acción</th>
+                    {rubricConfig.competencies.map((comp, idx) => (
+                      <th key={comp.id || idx} style={{ minWidth: '200px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <span>{comp.name.substring(0, 18)}{comp.name.length > 18 ? '...' : ''}</span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-secondary)' }}>
+                            {rubricConfig.mode === 'rubrica' ? 'Rúbrica' : `Total: ${comp.totalQuestions}`}
+                          </span>
+                        </div>
+                      </th>
+                    ))}
+                    <th style={{ width: '80px', textAlign: 'center' }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -930,7 +835,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                                       padding: '0.5rem',
                                       borderRadius: '8px',
                                       border: `2px solid ${nivel ? getGradeColor(nivel) : 'var(--border-color)'}`,
-                                      background: nivel ? `${getGradeColor(nivel)}10` : 'white',
+                                      background: nivel ? `${getGradeColor(nivel)}10` : 'var(--bg-color-surface)',
                                       color: 'var(--text-primary)',
                                       fontWeight: 600,
                                       textAlign: 'center',
@@ -984,22 +889,23 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
       {(!selectedClass || !selectedSubject) && (
         <div style={{
           background: 'var(--surface-muted)',
-          borderRadius: '20px',
+          borderRadius: '12px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '2px dashed var(--border-color)'
+          border: '1px solid var(--border-color)'
         }}>
           <div style={{
             width: '80px',
             height: '80px',
-            background: '#c2185b',
+            background: 'var(--bg-color-surface)',
+            border: '1px solid var(--border-color)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 1.5rem'
           }}>
-            <ClipboardCheck size={40} color="white" />
+            <ClipboardCheck size={40} color="var(--text-secondary)" />
           </div>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
             Selecciona un Grado y un Área
@@ -1020,39 +926,34 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
         }}>
           <div style={{ 
             maxWidth: '900px', width: '100%', 
-            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: 'rgba(194, 24, 91, 0.12)',
-              borderRadius: '50%'
-            }} />
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: '#c2185b',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Settings size={24} color="white" />
+                  <Settings size={20} color="var(--nav-active-fg)" />
                 </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Configurar Rúbrica</h3>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Configurar Rúbrica</h3>
               </div>
               <button onClick={() => setShowRubricModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
                 <X size={24} color="var(--text-secondary)" />
               </button>
             </div>
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fdf2f8', borderRadius: '12px', border: '1px solid #fce7f3' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#ad1457' }}>Modo de Evaluación</label>
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Modo de Evaluación</label>
               <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 500 }}>
                   <input
@@ -1073,7 +974,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                   Rúbrica (seleccionar nivel)
                 </label>
               </div>
-              <p style={{ fontSize: '0.8rem', color: '#ad1457', marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
                 {rubricConfig.mode === 'rubrica' 
                   ? 'Para Matemática: el docente selecciona directamente el nivel AD, A, B o C basado en una rúbrica con descriptores por cada competencia.'
                   : 'Ingresa el número de respuestas correctas y el sistema calcula el nivel automáticamente.'}
@@ -1082,13 +983,12 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
               {rubricConfig.competencies.map((comp, compIdx) => {
-                const [color1, color2] = gradientColors[compIdx % gradientColors.length];
                 return (
                   <div key={comp.id || compIdx} style={{ 
-                    border: `1px solid ${color1}30`, 
-                    borderRadius: '16px', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '12px', 
                     padding: '1.25rem',
-                    background: `${color1}08`
+                    background: 'var(--surface-muted)'
                   }}>
                     <div style={{ marginBottom: '1rem' }}>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Nombre de Competencia</label>
@@ -1175,19 +1075,19 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               <button 
                 onClick={() => setShowRubricModal(false)}
                 style={{ 
-                  padding: '0.75rem 1.5rem', borderRadius: '12px',
-                  background: 'var(--surface-muted)', color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 600
+                  padding: '0.55rem 1.25rem', borderRadius: '20px',
+                  background: 'var(--bg-color-surface)', color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'
                 }}
               >
                 Cancelar
               </button>
               <button 
                 onClick={saveRubric} 
+                className="btn-primary"
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '8px',
-                  background: '#c2185b', color: 'white', border: 'none',
-                  padding: '0.75rem 1.5rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 600
+                  padding: '0.55rem 1.25rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'
                 }}
               >
                 <Save size={16} /> Guardar Rúbrica
@@ -1204,15 +1104,15 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           left: tooltipInfo.x,
           top: tooltipInfo.y,
           transform: 'translate(-50%, 0)',
-          background: 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: 'blur(10px)',
+          background: 'var(--bg-color-surface)',
+          border: '1px solid var(--border-color)',
           color: 'var(--text-primary)',
           padding: '14px 18px',
           borderRadius: '12px',
           fontSize: '0.85rem',
           maxWidth: '400px',
           zIndex: 9999,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(24, 128, 56,0.1)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           pointerEvents: 'none',
           textAlign: 'center'
         }}>
