@@ -925,14 +925,14 @@ export default function PlanningDocuments() {
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '4rem 1rem', zIndex: 1000, overflowY: 'auto'
         }}>
-          <div style={{ 
-            maxWidth: '500px', width: '100%', 
+          <div style={{
+            maxWidth: '500px', width: '100%',
             background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
             border: '1px solid var(--border-color)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
             position: 'relative'
           }}>
-            
+
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
@@ -1055,14 +1055,13 @@ export default function PlanningDocuments() {
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '4rem 1rem', zIndex: 1000, overflowY: 'auto'
         }}>
-          <div style={{ 
-            maxWidth: '500px', width: '100%', 
+          <div style={{
+            maxWidth: '500px', width: '100%',
             background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
             border: '1px solid var(--border-color)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
-            
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
@@ -1135,7 +1134,6 @@ export default function PlanningDocuments() {
                           fontSize: '0.7rem',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
-                          boxShadow: isSelected ? `0 2px 6px ${cls.color}40` : 'none',
                           outline: isSelected ? `2px solid ${cls.color}80` : 'none'
                         }}
                       >

@@ -372,24 +372,24 @@ export default function SchoolCalendar() {
         }} onClick={() => setShowForm(false)}>
           <div style={{
             maxWidth: '450px', width: '100%', background: 'var(--bg-color-surface)',
-            borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            borderRadius: '16px', padding: '2rem', border: '1px solid var(--border-color)',
             position: 'relative'
           }} className="animate-fade-in" onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
                   width: '48px', height: '48px', borderRadius: '12px',
-                  background: '#1a73e8',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {editingEvent ? <Edit2 size={22} color="white" /> : <Plus size={22} color="white" />}
+                  {editingEvent ? <Edit2 size={22} color="var(--nav-active-fg)" /> : <Plus size={22} color="var(--nav-active-fg)" />}
                 </div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>
                   {editingEvent ? 'Editar Evento' : 'Nuevo Evento'}
                 </h3>
               </div>
               <button onClick={() => setShowForm(false)} style={{
-                background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.5rem'
+                background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem'
               }}><X size={24} /></button>
             </div>
 
@@ -431,25 +431,22 @@ export default function SchoolCalendar() {
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
               {editingEvent && (
                 <button onClick={() => { if (window.confirm('¿Eliminar este evento?')) { deleteEvent(editingEvent.id); setShowForm(false); } }} style={{
-                  padding: '0.75rem 1rem', borderRadius: '12px',
-                  background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
-                  fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                  padding: '0.75rem 1rem', borderRadius: '20px',
+                  background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)', border: 'none',
+                  fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
                 }}>
                   <Trash2 size={18} /> Eliminar
                 </button>
               )}
               <div style={{ flex: 1, display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button onClick={() => setShowForm(false)} style={{
-                  padding: '0.75rem 1.25rem', borderRadius: '12px',
-                  background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0',
-                  fontWeight: 600, cursor: 'pointer'
+                  padding: '0.75rem 1.25rem', borderRadius: '20px',
+                  background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)',
+                  fontWeight: 500, cursor: 'pointer'
                 }}>Cancelar</button>
-                <button onClick={handleSave} style={{
-                  padding: '0.75rem 1.25rem', borderRadius: '12px',
-                  background: '#1a73e8',
-                  color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  boxShadow: '0 2px 8px rgba(26, 115, 232, 0.35)'
+                <button onClick={handleSave} className="btn-primary" style={{
+                  padding: '0.75rem 1.25rem', borderRadius: '20px',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem'
                 }}>
                   <Save size={18} /> {editingEvent ? 'Actualizar' : 'Guardar'}
                 </button>

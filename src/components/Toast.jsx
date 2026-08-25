@@ -44,24 +44,24 @@ export function ToastProvider({ children }) {
 
 function Toast({ message, type, onClose }) {
   const icons = {
-    success: <CheckCircle size={20} color="#10b981" />,
-    error: <AlertCircle size={20} color="#ef4444" />,
-    warning: <AlertTriangle size={20} color="#f59e0b" />,
-    info: <Info size={20} color="#3b82f6" />
+    success: <CheckCircle size={20} color="#188038" />,
+    error: <AlertCircle size={20} color="var(--danger-color)" />,
+    warning: <AlertTriangle size={20} color="#e37400" />,
+    info: <Info size={20} color="var(--accent-primary)" />
   };
 
   const colors = {
-    success: '#ecfdf5',
-    error: '#fef2f2',
-    warning: '#fffbeb',
-    info: '#eff6ff'
+    success: '#18803815',
+    error: 'var(--danger-tint-bg)',
+    warning: '#e3740015',
+    info: 'var(--nav-active-bg)'
   };
 
   const borderColors = {
-    success: '#10b981',
-    error: '#ef4444',
-    warning: '#f59e0b',
-    info: '#3b82f6'
+    success: '#188038',
+    error: 'var(--danger-color)',
+    warning: '#e37400',
+    info: 'var(--accent-primary)'
   };
 
   useEffect(() => {
@@ -84,7 +84,7 @@ function Toast({ message, type, onClose }) {
       animation: 'slideIn 0.3s ease'
     }}>
       {icons[type] || icons.info}
-      <span style={{ flex: 1, color: '#1f2937', fontWeight: 500, fontSize: '0.9rem' }}>
+      <span style={{ flex: 1, color: 'var(--text-primary)', fontWeight: 500, fontSize: '0.9rem' }}>
         {message}
       </span>
       <button
@@ -94,7 +94,7 @@ function Toast({ message, type, onClose }) {
           border: 'none',
           cursor: 'pointer',
           padding: '0.25rem',
-          color: '#6b7280'
+          color: 'var(--text-secondary)'
         }}
       >
         <X size={16} />

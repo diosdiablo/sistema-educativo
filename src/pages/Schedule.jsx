@@ -353,7 +353,7 @@ export default function Schedule() {
           <div style={{
             maxWidth: '480px', width: '100%',
             background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
-            boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+            border: '1px solid var(--border-color)',
             position: 'relative'
           }} className="animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -483,16 +483,16 @@ export default function Schedule() {
 
               <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
                 {editingItem && (
-                  <button 
-                    type="button" 
-                    style={{ 
+                  <button
+                    type="button"
+                    style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)',
-                      padding: '0.75rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 600,
+                      background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)', border: 'none',
+                      padding: '0.75rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 500,
                       transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; }}
                     onClick={() => { 
                       if (window.confirm('¿Eliminar este bloque horario?')) {
                         deleteScheduleItem(editingItem.id); 

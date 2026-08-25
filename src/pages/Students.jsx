@@ -848,12 +848,12 @@ export default function Students() {
                   width: '48px',
                   height: '48px',
                   borderRadius: '50%',
-                  background: '#e8f0fe',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Users size={24} color="#1967d2" />
+                  <Users size={24} color="var(--nav-active-fg)" />
                 </div>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Detalles del Estudiante</h3>
               </div>
@@ -910,11 +910,9 @@ export default function Students() {
             
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
               <button
+                className="btn-primary"
                 style={{
-                  width: '100%', padding: '0.75rem',
-                  background: '#1a73e8',
-                  color: 'white', border: 'none', borderRadius: '20px',
-                  fontWeight: 500, cursor: 'pointer'
+                  width: '100%', padding: '0.75rem', borderRadius: '20px'
                 }}
                 onClick={() => setViewingStudent(null)}
               >
@@ -948,14 +946,14 @@ export default function Students() {
             <div style={{
               width: '64px',
               height: '64px',
-              background: '#fce8e6',
+              background: 'var(--danger-tint-bg)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1.5rem auto'
             }}>
-              <Trash2 size={32} color="#d93025" />
+              <Trash2 size={32} color="var(--danger-color)" />
             </div>
 
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>¿Confirmar acción?</h3>
@@ -975,10 +973,9 @@ export default function Students() {
                 Cancelar
               </button>
               <button
+                className="btn-danger"
                 style={{
-                  flex: 1, padding: '0.8rem', borderRadius: '20px',
-                  background: '#d93025',
-                  color: 'white', border: 'none', cursor: 'pointer', fontWeight: 500
+                  flex: 1, padding: '0.8rem', borderRadius: '20px'
                 }}
                 onClick={confirmClearAll}
               >
@@ -1014,13 +1011,13 @@ export default function Students() {
                   width: '72px',
                   height: '72px',
                   borderRadius: '50%',
-                  background: isPicking ? '#fef7e0' : '#e6f4ea',
+                  background: isPicking ? '#e3740015' : '#18803815',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'all 0.3s ease'
                 }}>
-                  <Shuffle size={36} color={isPicking ? '#b06000' : '#188038'} style={{ transform: isPicking ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }} />
+                  <Shuffle size={36} color={isPicking ? '#e37400' : '#188038'} style={{ transform: isPicking ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }} />
                 </div>
               </div>
 
@@ -1038,15 +1035,14 @@ export default function Students() {
                   borderRadius: '16px',
                   padding: '1.5rem',
                   marginBottom: '2rem',
-                  border: isPicking ? '2px dashed var(--border-color)' : '2px solid #188038',
-                  boxShadow: isPicking ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+                  border: isPicking ? '2px dashed var(--border-color)' : '1px solid #188038',
                   transition: 'all 0.3s ease'
                 }}>
                   <div style={{
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
-                    background: isPicking ? '#fef7e0' : '#188038',
+                    background: isPicking ? '#e3740015' : '#188038',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1054,7 +1050,7 @@ export default function Students() {
                     transition: 'all 0.3s ease'
                   }}>
                     {isPicking ? (
-                      <Users size={28} color="#b06000" />
+                      <Users size={28} color="#e37400" />
                     ) : (
                       <span style={{ color: 'white', fontWeight: 800, fontSize: '1.25rem' }}>
                         {randomStudent.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
@@ -1110,10 +1106,9 @@ export default function Students() {
                 </button>
                 {!isPicking && (
                   <button
+                    className="btn-primary"
                     style={{
                       flex: 1, padding: '0.8rem', borderRadius: '20px',
-                      background: '#188038',
-                      color: 'white', border: 'none', cursor: 'pointer', fontWeight: 500,
                       fontSize: '0.9rem',
                       display: 'flex',
                       alignItems: 'center',

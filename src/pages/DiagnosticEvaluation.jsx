@@ -924,11 +924,10 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
           padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
         }}>
-          <div style={{ 
-            maxWidth: '900px', width: '100%', 
+          <div style={{
+            maxWidth: '900px', width: '100%',
             background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
             border: '1px solid var(--border-color)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
             
