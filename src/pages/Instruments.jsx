@@ -135,6 +135,7 @@ export default function Instruments() {
   const [applyingInstrument, setApplyingInstrument] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showAllEvals, setShowAllEvals] = useState(false);
   const fileInputRef = useRef(null);
 
   const resetToList = () => {
@@ -1585,9 +1586,31 @@ export default function Instruments() {
       {/* Evaluaciones recientes */}
       {instrumentEvaluations.length > 0 && (
         <div style={{ marginTop: '3rem' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Evaluaciones Recientes</h2>
-            <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>{instrumentEvaluations.length} evaluación(es) registrada(s)</p>
+          <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Evaluaciones Recientes</h2>
+              <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>{instrumentEvaluations.length} evaluación(es) registrada(s)</p>
+            </div>
+            {instrumentEvaluations.length > 6 && (
+              <button
+                onClick={() => setShowAllEvals(v => !v)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'var(--bg-color-surface)',
+                  color: 'var(--accent-primary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '20px',
+                  padding: '0.45rem 1rem',
+                  fontWeight: 500,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {showAllEvals ? 'Ver menos' : `Ver todas (${instrumentEvaluations.length})`}
+              </button>
+            )}
           </div>
           <div className="table-container">
             <table className="styled-table">
@@ -1595,17 +1618,14 @@ export default function Instruments() {
                 <tr>
                   <th>Estudiante</th>
                   <th>Actividad / Instrumento</th>
-                  <th>Tipo</th>
                   <th style={{ textAlign: 'center' }}>Resultado</th>
                   <th>Fecha</th>
                   <th style={{ textAlign: 'center' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {instrumentEvaluations.slice().reverse().map((ev, idx) => {
+                {instrumentEvaluations.slice().reverse().slice(0, showAllEvals ? undefined : 6).map((ev, idx) => {
                   const instrument = instruments.find(i => i.id === ev.instrumentId);
-                  const evalType = ev.instrumentType || instrument?.type || 'rubric';
-                  const td = typeMap[evalType] || typeMap['rubric'];
                   const displayTitle = ev.instrumentTitle || instrument?.title || instrument?.name || 'Sin instrumento';
                   const studentFromList = students.find(s => 
                     s.id === ev.studentId || s.id === ev.student_id || 
@@ -1626,11 +1646,6 @@ export default function Instruments() {
                       <td style={{ padding: '1rem' }}>
                         <div style={{ fontWeight: 500 }}>{ev.activityName || 'Sin actividad'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{displayTitle}</div>
-                      </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{ fontSize: '0.78rem', color: td.color, fontWeight: 600, background: `${td.color}15`, padding: '4px 10px', borderRadius: '6px' }}>
-                          {td.label}
-                        </span>
                       </td>
                       <td style={{ textAlign: 'center', padding: '1rem' }}>
                         <span className={`badge ${BadgeTheme[ev.qualitative]}`}>
