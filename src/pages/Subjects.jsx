@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, BookOpen, X, Target, LayoutGrid, Users, GraduationCap } from 'lucide-react';
+import { Plus, Trash2, BookOpen, X, Target } from 'lucide-react';
 
 export default function Subjects() {
   const { subjects, addSubject, deleteSubject, addCompetency, deleteCompetency } = useStore();
@@ -26,101 +26,50 @@ export default function Subjects() {
     }
   };
 
-  const gradientColors = [
-    ['#3f51b5', '#7627bb'],
-    ['#188038', '#146c2e'],
-    ['#e37400', '#b06000'],
-    ['#d93025', '#b3261e'],
-    ['#7627bb', '#6a1b9a'],
-    ['#c2185b', '#ad1457'],
-    ['#007b83', '#007b83'],
-    ['#1a73e8', '#174ea6']
-  ];
-
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Barra de herramientas */}
       <div style={{
-        background: '#c2185b',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <BookOpen size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Áreas Curriculares</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Gestiona las materias y sus competencias de evaluación</p>
-            </div>
-          </div>
-          <button 
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: '12px',
-              padding: '0.75rem 1.25rem',
-              color: 'white',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            onClick={() => setShowForm(!showForm)}
-          >
-            <Plus size={18} />
-            Nueva Área
-          </button>
+        <div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Áreas Curriculares</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Gestiona las materias y sus competencias de evaluación · {subjects.length} áreas</p>
         </div>
+        <button 
+          className="btn-primary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.55rem 1.25rem',
+            borderRadius: '20px',
+            fontSize: '0.875rem'
+          }}
+          onClick={() => setShowForm(!showForm)}
+        >
+          <Plus size={18} />
+          Nueva Área
+        </button>
       </div>
 
-      {/* Formulario moderno */}
+      {/* Formulario */}
       {showForm && (
         <div style={{
           background: 'var(--bg-color-surface)',
-          borderRadius: '20px',
+          borderRadius: '12px',
           padding: '1.5rem',
           marginBottom: '1.5rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid rgba(26, 115, 232, 0.2)'
+          border: '1px solid var(--border-color)'
         }} className="animate-fade-in">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -128,15 +77,15 @@ export default function Subjects() {
                 width: '40px',
                 height: '40px',
                 borderRadius: '10px',
-                background: '#7627bb',
+                background: 'var(--nav-active-bg)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Plus size={20} color="white" />
+                <Plus size={20} color="var(--nav-active-fg)" />
               </div>
               <div>
-                <h3 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Agregar Nueva Área Curricular</h3>
+                <h3 style={{ fontWeight: 500, margin: 0, fontSize: '1.05rem', color: 'var(--text-primary)' }}>Agregar Nueva Área Curricular</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Ingresa el nombre de la materia o área</p>
               </div>
             </div>
@@ -147,7 +96,7 @@ export default function Subjects() {
                 border: 'none',
                 cursor: 'pointer',
                 padding: '0.5rem',
-                borderRadius: '8px',
+                borderRadius: '50%',
                 color: 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
@@ -173,9 +122,9 @@ export default function Subjects() {
               type="submit" 
               className="btn-primary"
               style={{ 
-                background: '#7627bb',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
+                padding: '0.6rem 1.25rem',
+                borderRadius: '20px',
+                fontSize: '0.875rem',
                 whiteSpace: 'nowrap'
               }}
             >
@@ -187,29 +136,30 @@ export default function Subjects() {
       )}
 
       {/* Grid de tarjetas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
         {subjects.length === 0 ? (
           <div style={{
             background: 'var(--surface-muted)',
-            borderRadius: '20px',
+            borderRadius: '12px',
             padding: '4rem 2rem',
             textAlign: 'center',
-            border: '2px dashed var(--border-color)',
+            border: '1px solid var(--border-color)',
             gridColumn: '1 / -1'
           }}>
             <div style={{
               width: '80px',
               height: '80px',
-              background: '#7627bb',
+              background: 'var(--bg-color-surface)',
+              border: '1px solid var(--border-color)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1.5rem'
             }}>
-              <BookOpen size={40} color="white" />
+              <BookOpen size={36} color="var(--text-secondary)" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
               No hay áreas curriculares
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
@@ -218,72 +168,58 @@ export default function Subjects() {
             <button 
               onClick={() => setShowForm(true)}
               className="btn-primary"
-              style={{ marginTop: '1.5rem', background: '#7627bb' }}
+              style={{ marginTop: '1.5rem', padding: '0.55rem 1.25rem', borderRadius: '20px', fontSize: '0.875rem' }}
             >
               <Plus size={18} style={{ marginRight: '0.5rem' }} />
               Agregar Primera Área
             </button>
           </div>
         ) : (
-          subjects.map((subject, idx) => {
-            const [color1, color2] = gradientColors[idx % gradientColors.length];
+          subjects.map((subject) => {
             return (
               <div key={subject.id} style={{
                 background: 'var(--bg-color-surface)',
-                borderRadius: '20px',
+                borderRadius: '12px',
                 padding: '1.5rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                border: `1px solid ${color1}20`,
+                border: '1px solid var(--border-color)',
                 display: 'flex',
                 flexDirection: 'column',
-                transition: 'all 0.3s ease',
                 position: 'relative',
                 overflow: 'hidden'
               }}>
-                <div style={{
-                  position: 'absolute',
-                  top: '-50%',
-                  right: '-20%',
-                  width: '150px',
-                  height: '150px',
-                  background: `${color1}10`,
-                  borderRadius: '50%'
-                }} />
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{
                       width: '44px',
                       height: '44px',
                       borderRadius: '12px',
-                      background: `${color1}`,
+                      background: 'var(--nav-active-bg)',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: `0 4px 15px ${color1}40`
+                      justifyContent: 'center'
                     }}>
-                      <BookOpen size={22} color="white" />
+                      <BookOpen size={22} color="var(--nav-active-fg)" />
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{subject.name}</h3>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>{subject.name}</h3>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>{subject.competencies?.length || 0} competencias</p>
                     </div>
                   </div>
                   <button 
                     style={{
-                      background: 'rgba(217, 48, 37, 0.1)',
-                      border: '1px solid rgba(217, 48, 37, 0.3)',
+                      background: 'var(--danger-tint-bg)',
+                      border: '1px solid transparent',
                       borderRadius: '10px',
                       padding: '0.5rem',
                       cursor: 'pointer',
-                      color: '#d93025',
+                      color: 'var(--danger-tint-fg)',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s ease'
+                      justifyContent: 'center'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; }}
                     onClick={() => {
                       if (window.confirm(`¿Estás seguro de que deseas eliminar el área completa "${subject.name}" con todas sus competencias?`)) {
                         deleteSubject(subject.id);
@@ -291,7 +227,7 @@ export default function Subjects() {
                     }}
                     title="Eliminar Área Completa"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={17} />
                   </button>
                 </div>
                 
@@ -302,12 +238,12 @@ export default function Subjects() {
                     alignItems: 'center', 
                     gap: '8px',
                     padding: '0.5rem 0.75rem',
-                    background: `${color1}10`,
+                    background: 'var(--nav-active-bg)',
                     borderRadius: '8px',
                     marginBottom: '1rem'
                   }}>
-                    <Target size={16} color={color1} />
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Competencias</span>
+                    <Target size={16} color="var(--nav-active-fg)" />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>Competencias</span>
                   </div>
                   
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -326,14 +262,14 @@ export default function Subjects() {
                           <div style={{
                             width: '24px',
                             height: '24px',
-                            borderRadius: '6px',
-                            background: `${color1}`,
+                            borderRadius: '50%',
+                            background: 'var(--nav-active-bg)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '0.7rem',
-                            fontWeight: 700,
-                            color: 'white',
+                            fontWeight: 500,
+                            color: 'var(--nav-active-fg)',
                             flexShrink: 0
                           }}>
                             {compIdx + 1}
@@ -342,16 +278,15 @@ export default function Subjects() {
                         </div>
                         <button 
                           style={{ 
-                            color: '#d93025', 
+                            color: 'var(--danger-tint-fg)', 
                             background: 'none', 
                             border: 'none', 
                             cursor: 'pointer', 
                             padding: '0.2rem',
-                            opacity: 0.7,
-                            transition: 'all 0.2s ease'
+                            opacity: 0.6
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; e.currentTarget.style.transform = 'scale(1)'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; }}
                           onClick={() => {
                             if (window.confirm(`¿Eliminar la competencia "${comp.name}"?`)) {
                               deleteCompetency(subject.id, comp.id);
@@ -371,7 +306,7 @@ export default function Subjects() {
                         textAlign: 'center', 
                         background: 'var(--surface-muted)', 
                         borderRadius: '10px',
-                        border: '1px dashed var(--border-color)'
+                        border: '1px solid var(--border-color)'
                       }}>
                         Sin competencias definidas
                       </li>
@@ -395,9 +330,7 @@ export default function Subjects() {
                     style={{ 
                       padding: '0.6rem', 
                       display: 'flex', 
-                      alignItems: 'center',
-                      background: `${color1}`,
-                      border: 'none'
+                      alignItems: 'center'
                     }} 
                     onClick={() => handleAddCompetency(subject.id)}
                   >
