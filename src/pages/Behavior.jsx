@@ -68,87 +68,88 @@ export default function Behavior() {
   return (
     <div className="animate-fade-in">
       <div style={{
-        background: '#e37400',
-        borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
-        color: 'white', position: 'relative', overflow: 'hidden'
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px', padding: '1rem 1.5rem', marginBottom: '1.5rem',
+        border: '1px solid var(--border-color)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
       }}>
-        <div style={{
-          position: 'absolute', top: '-50%', right: '-10%',
-          width: '300px', height: '300px',
-          background: 'rgba(255,255,255,0.1)', borderRadius: '50%'
-        }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', zIndex: 1 }}>
-          <div style={{
-            width: '56px', height: '56px', background: 'rgba(255,255,255,0.2)',
-            borderRadius: '14px', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', backdropFilter: 'blur(10px)'
-          }}>
-            <ThumbsUp size={28} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Registro de Conducta</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Anota comportamientos positivos y negativos por estudiante</p>
-          </div>
+        <div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Registro de Conducta</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Anota comportamientos positivos y negativos por estudiante</p>
         </div>
       </div>
 
       {!selectedClass ? (
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem'
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem'
         }}>
-          {availableClasses.map(c => (
-            <button key={c.id} onClick={() => setSelectedClass(c.name)} style={{
-              padding: '1.25rem', borderRadius: '16px', border: '2px solid var(--border-color)',
-              background: 'var(--bg-color-surface)', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
-              transition: 'all 0.2s', color: 'var(--text-primary)'
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#e37400'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(227, 116, 0,0.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><Users size={24} /></div>
-              {c.name}
-            </button>
-          ))}
+          {availableClasses.map(c => {
+            const classStudents = students.filter(s => (s.gradeLevel || '').trim().toLowerCase() === c.name.trim().toLowerCase() || s.classId === c.id).length;
+            return (
+              <button key={c.id} onClick={() => setSelectedClass(c.name)} style={{
+                padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)',
+                background: 'var(--bg-color-surface)', cursor: 'pointer',
+                transition: 'box-shadow 0.2s, border-color 0.2s', color: 'var(--text-primary)',
+                textAlign: 'left'
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '10px', marginBottom: '0.75rem',
+                  background: 'var(--nav-active-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Users size={20} color="var(--nav-active-fg)" />
+                </div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{c.name}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
+                  {classStudents} estudiante{classStudents !== 1 ? 's' : ''}
+                </div>
+              </button>
+            );
+          })}
         </div>
       ) : (
         <>
           <div style={{
             display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center',
-            marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-color-surface)',
-            borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            marginBottom: '1.5rem', padding: '0.9rem 1.25rem', background: 'var(--bg-color-surface)',
+            borderRadius: '12px', border: '1px solid var(--border-color)'
           }}>
             <button onClick={() => setSelectedClass('')} style={{
-              background: 'var(--surface-muted)', border: 'none', padding: '0.5rem 1rem',
-              borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-              color: 'var(--text-secondary)'
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', padding: '0.5rem 1rem',
+              borderRadius: '20px', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem',
+              color: 'var(--text-primary)'
             }}>← Cambiar sección</button>
 
             <div style={{
               display: 'flex', gap: '0.5rem', alignItems: 'center',
-              padding: '0.35rem 0.75rem', background: 'var(--surface-muted)', borderRadius: '10px', flex: 1, maxWidth: '250px'
+              padding: '0.45rem 0.9rem', background: 'var(--surface-muted)', borderRadius: '20px', flex: 1, maxWidth: '250px',
+              border: '1px solid var(--border-color)'
             }}>
               <Search size={16} color="var(--text-secondary)" />
               <input type="text" placeholder="Buscar estudiante..." value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.85rem' }} />
+                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.85rem', color: 'var(--text-primary)' }} />
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <Filter size={16} color="var(--text-secondary)" />
               <select value={filterType} onChange={e => setFilterType(e.target.value)}
-                style={{ padding: '0.4rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '0.85rem', background: 'var(--bg-color-surface)' }}>
+                style={{ padding: '0.45rem 0.75rem', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '0.85rem', background: 'var(--bg-color-surface)', color: 'var(--text-primary)' }}>
                 <option value="all">Todas</option>
                 <option value="positive">Solo positivas</option>
                 <option value="negative">Solo negativas</option>
               </select>
             </div>
 
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#188038', fontWeight: 600 }}>
-                <ThumbsUp size={16} /> {totalPositive} positivas
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.6rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#188038', fontWeight: 600, fontSize: '0.82rem', background: '#18803815', padding: '0.35rem 0.8rem', borderRadius: '16px' }}>
+                <ThumbsUp size={15} /> {totalPositive} positivas
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#b3261e', fontWeight: 600 }}>
-                <ThumbsDown size={16} /> {totalNegative} negativas
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--danger-color)', fontWeight: 600, fontSize: '0.82rem', background: 'var(--danger-tint-bg)', padding: '0.35rem 0.8rem', borderRadius: '16px' }}>
+                <ThumbsDown size={15} /> {totalNegative} negativas
               </span>
             </div>
           </div>
@@ -157,72 +158,71 @@ export default function Behavior() {
             const records = (studentBehavior[student.id] || []).filter(r => filterType === 'all' || r.type === filterType);
             return (
               <div key={student.id} style={{
-                background: 'var(--bg-color-surface)', borderRadius: '16px', marginBottom: '1rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden'
+                background: 'var(--bg-color-surface)', borderRadius: '12px', marginBottom: '1rem',
+                border: '1px solid var(--border-color)', overflow: 'hidden'
               }}>
                 <div style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '1rem 1.25rem', borderBottom: '1px solid var(--surface-muted)',
+                  padding: '0.85rem 1.25rem', borderBottom: '1px solid var(--border-color)',
                   background: 'var(--surface-muted)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{
-                      width: '40px', height: '40px', borderRadius: '12px',
-                      background: '#e37400',
+                      width: '40px', height: '40px', borderRadius: '50%',
+                      background: 'var(--nav-active-bg)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontWeight: 700, fontSize: '1rem'
+                      color: 'var(--nav-active-fg)', fontWeight: 500, fontSize: '1rem'
                     }}>{student.name?.charAt(0)?.toUpperCase() || '?'}</div>
                     <div>
-                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{student.name}</div>
+                      <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{student.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                         {records.filter(r => r.type === 'positive').length} positivas · {records.filter(r => r.type === 'negative').length} negativas
                       </div>
                     </div>
                   </div>
-                  <button onClick={() => { setAddingFor(student.id); setNewRecord({ type: 'positive', description: '', date: new Date().toISOString().split('T')[0] }); }} style={{
+                  <button onClick={() => { setAddingFor(student.id); setNewRecord({ type: 'positive', description: '', date: new Date().toISOString().split('T')[0] }); }} className="btn-primary" style={{
                     display: 'flex', alignItems: 'center', gap: '0.35rem',
-                    padding: '0.5rem 1rem', borderRadius: '10px', border: 'none',
-                    background: '#188038',
-                    color: 'white', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
-                  }}><Plus size={16} /> Agregar</button>
+                    padding: '0.45rem 1rem', borderRadius: '20px', fontSize: '0.82rem'
+                  }}><Plus size={15} /> Agregar</button>
                 </div>
 
                 {addingFor === student.id && (
                   <div style={{
-                    padding: '1rem 1.25rem', background: '#fef7e0',
-                    borderBottom: '1px solid #feefc3'
+                    padding: '1rem 1.25rem', background: 'var(--surface-muted)',
+                    borderBottom: '1px solid var(--border-color)'
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => setNewRecord(prev => ({ ...prev, type: 'positive' }))} style={{
-                          flex: 1, padding: '0.5rem', borderRadius: '8px', border: 'none',
-                          fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-                          background: newRecord.type === 'positive' ? '#188038' : 'var(--border-color)',
-                          color: newRecord.type === 'positive' ? 'white' : 'var(--text-secondary)'
+                          flex: 1, padding: '0.5rem', borderRadius: '20px',
+                          fontWeight: 500, fontSize: '0.85rem', cursor: 'pointer',
+                          border: newRecord.type === 'positive' ? '1px solid #188038' : '1px solid var(--border-color)',
+                          background: newRecord.type === 'positive' ? '#18803815' : 'var(--bg-color-surface)',
+                          color: newRecord.type === 'positive' ? '#188038' : 'var(--text-secondary)'
                         }}><ThumbsUp size={14} style={{ marginRight: '0.35rem' }} /> Positivo</button>
                         <button onClick={() => setNewRecord(prev => ({ ...prev, type: 'negative' }))} style={{
-                          flex: 1, padding: '0.5rem', borderRadius: '8px', border: 'none',
-                          fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-                          background: newRecord.type === 'negative' ? '#b3261e' : 'var(--border-color)',
-                          color: newRecord.type === 'negative' ? 'white' : 'var(--text-secondary)'
+                          flex: 1, padding: '0.5rem', borderRadius: '20px',
+                          fontWeight: 500, fontSize: '0.85rem', cursor: 'pointer',
+                          border: newRecord.type === 'negative' ? '1px solid #d93025' : '1px solid var(--border-color)',
+                          background: newRecord.type === 'negative' ? 'var(--danger-tint-bg)' : 'var(--bg-color-surface)',
+                          color: newRecord.type === 'negative' ? 'var(--danger-tint-fg)' : 'var(--text-secondary)'
                         }}><ThumbsDown size={14} style={{ marginRight: '0.35rem' }} /> Negativo</button>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <input type="date" value={newRecord.date}
                           onChange={e => setNewRecord(prev => ({ ...prev, date: e.target.value }))}
-                          style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }} />
+                          style={{ padding: '0.5rem', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '0.85rem', background: 'var(--bg-color-surface)', color: 'var(--text-primary)' }} />
                         <input type="text" placeholder="Describe el comportamiento..." value={newRecord.description}
                           onChange={e => setNewRecord(prev => ({ ...prev, description: e.target.value }))}
-                          style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                          className="input-field"
+                          style={{ flex: 1 }}
                           onKeyDown={e => { if (e.key === 'Enter') handleAdd(student.id); }} />
-                        <button onClick={() => handleAdd(student.id)} disabled={!newRecord.description.trim()} style={{
-                          padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
-                          background: !newRecord.description.trim() ? 'var(--text-secondary)' : '#188038',
-                          color: 'white', fontWeight: 600, fontSize: '0.85rem', cursor: !newRecord.description.trim() ? 'not-allowed' : 'pointer'
+                        <button onClick={() => handleAdd(student.id)} disabled={!newRecord.description.trim()} className="btn-primary" style={{
+                          padding: '0.5rem 1.15rem', borderRadius: '20px', fontSize: '0.85rem'
                         }}>Guardar</button>
                         <button onClick={() => setAddingFor(null)} style={{
-                          padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)',
-                          background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', cursor: 'pointer'
+                          padding: '0.5rem 1rem', borderRadius: '20px', border: '1px solid var(--border-color)',
+                          background: 'var(--bg-color-surface)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500
                         }}>Cancelar</button>
                       </div>
                     </div>
@@ -238,14 +238,14 @@ export default function Behavior() {
                     {records.map(r => (
                       <div key={r.id} style={{
                         display: 'flex', alignItems: 'center', gap: '0.75rem',
-                        padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--surface-muted)'
+                        padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--border-color)'
                       }}>
                         <div style={{
-                          width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+                          width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: r.type === 'positive' ? '#ceead6' : '#fad2cf'
+                          background: r.type === 'positive' ? '#18803815' : 'var(--danger-tint-bg)'
                         }}>
-                          {r.type === 'positive' ? <ThumbsUp size={16} color="#188038" /> : <ThumbsDown size={16} color="#d93025" />}
+                          {r.type === 'positive' ? <ThumbsUp size={15} color="#188038" /> : <ThumbsDown size={15} color="var(--danger-tint-fg)" />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.description}</div>
