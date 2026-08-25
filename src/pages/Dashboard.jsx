@@ -4,8 +4,8 @@ import { useStore } from '../context/StoreContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck,
-  BarChart3, Award, Clock, Calendar, ArrowRight, GraduationCap, Cake,
-  ArrowUpRight, ArrowDownRight, AlertTriangle,
+  BarChart3, Clock, Calendar, GraduationCap, Cake,
+  AlertTriangle,
   FileText, Star, CheckSquare
 } from 'lucide-react';
 import {
@@ -14,7 +14,6 @@ import {
   PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 const fadeIn = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
 
@@ -44,24 +43,22 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: 'rgba(15, 23, 42, 0.92)',
-      backdropFilter: 'blur(16px)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: '14px',
-      padding: '0.85rem 1rem',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-      color: '#f1f5f9',
+      background: '#ffffff',
+      border: '1px solid #dadce0',
+      borderRadius: '8px',
+      padding: '0.65rem 0.85rem',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
       fontSize: '0.78rem',
       minWidth: '120px'
     }}>
-      {label && <p style={{ fontWeight: 700, marginBottom: '0.5rem', color: '#e2e8f0', fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>{label}</p>}
+      {label && <p style={{ fontWeight: 500, marginBottom: '0.4rem', color: '#202124', fontSize: '0.8rem', borderBottom: '1px solid #e8eaed', paddingBottom: '0.35rem' }}>{label}</p>}
       {payload.map((entry, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '2px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color, boxShadow: `0 0 8px ${entry.color}60` }} />
-            <span style={{ color: '#94a3b8' }}>{entry.name}</span>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color }} />
+            <span style={{ color: '#5f6368' }}>{entry.name}</span>
           </div>
-          <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{entry.value}</span>
+          <span style={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: '#202124' }}>{entry.value}</span>
         </div>
       ))}
     </div>
@@ -71,49 +68,45 @@ function CustomTooltip({ active, payload, label }) {
 const ChartGradients = () => (
   <defs>
     <linearGradient id="gradPresent" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#34d399" stopOpacity={0.95} />
-      <stop offset="100%" stopColor="#10b981" stopOpacity={0.85} />
+      <stop offset="0%" stopColor="#188038" stopOpacity={1} />
+      <stop offset="100%" stopColor="#188038" stopOpacity={1} />
     </linearGradient>
     <linearGradient id="gradLate" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.95} />
-      <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.85} />
+      <stop offset="0%" stopColor="#e37400" stopOpacity={1} />
+      <stop offset="100%" stopColor="#e37400" stopOpacity={1} />
     </linearGradient>
     <linearGradient id="gradJustified" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.95} />
-      <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.85} />
+      <stop offset="0%" stopColor="#7627bb" stopOpacity={1} />
+      <stop offset="100%" stopColor="#7627bb" stopOpacity={1} />
     </linearGradient>
     <linearGradient id="gradAbsent" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#f87171" stopOpacity={0.95} />
-      <stop offset="100%" stopColor="#ef4444" stopOpacity={0.85} />
+      <stop offset="0%" stopColor="#d93025" stopOpacity={1} />
+      <stop offset="100%" stopColor="#d93025" stopOpacity={1} />
     </linearGradient>
     <linearGradient id="gradLine" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
-      <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+      <stop offset="0%" stopColor="#188038" stopOpacity={0.3} />
+      <stop offset="100%" stopColor="#188038" stopOpacity={0.02} />
     </linearGradient>
     <linearGradient id="gradAD" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stopColor="#34d399" />
-      <stop offset="100%" stopColor="#10b981" />
+      <stop offset="0%" stopColor="#188038" />
+      <stop offset="100%" stopColor="#188038" />
     </linearGradient>
     <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stopColor="#60a5fa" />
-      <stop offset="100%" stopColor="#3b82f6" />
+      <stop offset="0%" stopColor="#1967d2" />
+      <stop offset="100%" stopColor="#1967d2" />
     </linearGradient>
     <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stopColor="#fcd34d" />
-      <stop offset="100%" stopColor="#f59e0b" />
+      <stop offset="0%" stopColor="#e37400" />
+      <stop offset="100%" stopColor="#e37400" />
     </linearGradient>
     <linearGradient id="gradC" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stopColor="#fca5a5" />
-      <stop offset="100%" stopColor="#ef4444" />
+      <stop offset="0%" stopColor="#d93025" />
+      <stop offset="100%" stopColor="#d93025" />
     </linearGradient>
     <linearGradient id="gradRadar" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.4} />
-      <stop offset="100%" stopColor="#6366f1" stopOpacity={0.1} />
+      <stop offset="0%" stopColor="#7627bb" stopOpacity={0.4} />
+      <stop offset="100%" stopColor="#7627bb" stopOpacity={0.1} />
     </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
   </defs>
 );
 
@@ -286,10 +279,10 @@ export default function Dashboard() {
       if (level && counts[level] !== undefined) counts[level]++;
     });
     return [
-      { name: 'AD - Destacado', value: counts.AD, color: '#10b981' },
-      { name: 'A - Logrado', value: counts.A, color: '#3b82f6' },
-      { name: 'B - En Proceso', value: counts.B, color: '#f59e0b' },
-      { name: 'C - En Inicio', value: counts.C, color: '#ef4444' },
+      { name: 'AD - Destacado', value: counts.AD, color: '#188038' },
+      { name: 'A - Logrado', value: counts.A, color: '#1967d2' },
+      { name: 'B - En Proceso', value: counts.B, color: '#e37400' },
+      { name: 'C - En Inicio', value: counts.C, color: '#d93025' },
     ];
   }, [grades, instrumentEvaluations]);
 
@@ -371,10 +364,10 @@ export default function Dashboard() {
       }
     });
     return [
-      { name: 'AD', value: counts.AD, fill: '#10b981' },
-      { name: 'A', value: counts.A, fill: '#3b82f6' },
-      { name: 'B', value: counts.B, fill: '#f59e0b' },
-      { name: 'C', value: counts.C, fill: '#ef4444' },
+      { name: 'AD', value: counts.AD, fill: '#188038' },
+      { name: 'A', value: counts.A, fill: '#1967d2' },
+      { name: 'B', value: counts.B, fill: '#e37400' },
+      { name: 'C', value: counts.C, fill: '#d93025' },
     ].filter(d => d.value > 0);
   }, [diagnosticEvaluations]);
 
@@ -403,7 +396,7 @@ export default function Dashboard() {
       return {
         id: c.id,
         name: c.name,
-        color: c.color || '#10b981',
+        color: c.color || '#188038',
         students: classStudents.length,
         attendance: total > 0 ? Math.round((present / total) * 100) : 0,
         avgGrade,
@@ -496,78 +489,76 @@ export default function Dashboard() {
   const statCards = [
     {
       icon: <Users size={22} />, title: 'Estudiantes', value: totalStudents,
-      gradient: ['#3b82f6', '#2563eb'], trend: '+2', trendUp: true
+      tint: ['#e8f0fe', '#1967d2'], trend: '+2', trendUp: true
     },
     {
       icon: <CheckCircle size={22} />, title: 'Asistencia', value: `${avgAttendance}%`,
-      gradient: ['#10b981', '#059669'], trend: avgAttendance >= 80 ? 'Buena' : 'Baja', trendUp: avgAttendance >= 80
+      tint: ['#e6f4ea', '#188038'], trend: avgAttendance >= 80 ? 'Buena' : 'Baja', trendUp: avgAttendance >= 80
     },
     {
       icon: <TrendingUp size={22} />, title: 'Calificaciones', value: totalGrades,
-      gradient: ['#8b5cf6', '#7c3aed'], trend: `Nivel ${totalGradesCount}`, trendUp: totalGradesCount === 'AD' || totalGradesCount === 'A'
+      tint: ['#f3e8fd', '#7627bb'], trend: `Nivel ${totalGradesCount}`, trendUp: totalGradesCount === 'AD' || totalGradesCount === 'A'
     },
     {
       icon: <ClipboardCheck size={22} />, title: 'Instrumentos', value: instruments.length,
-      gradient: ['#f59e0b', '#d97706'], trend: `${pendingEvaluations} sin usar`, trendUp: pendingEvaluations === 0
+      tint: ['#fef7e0', '#b06000'], trend: `${pendingEvaluations} sin usar`, trendUp: pendingEvaluations === 0
     },
     {
       icon: <Star size={22} />, title: 'Nivel General', value: totalGradesCount,
-      gradient: ['#ec4899', '#db2777'], trend: totalGradesCount === 'AD' ? 'Excelente' : totalGradesCount === 'A' ? 'Bueno' : 'Mejorar', trendUp: totalGradesCount === 'AD' || totalGradesCount === 'A'
+      tint: ['#e4f7fb', '#007b83'], trend: totalGradesCount === 'AD' ? 'Excelente' : totalGradesCount === 'A' ? 'Bueno' : 'Mejorar', trendUp: totalGradesCount === 'AD' || totalGradesCount === 'A'
     },
     {
       icon: <CalendarCheck size={22} />, title: 'Clases Hoy', value: classesToday,
-      gradient: ['#06b6d4', '#0891b2'], trend: todayName, trendUp: true
+      tint: ['#e8f0fe', '#1967d2'], trend: todayName, trendUp: true
     },
   ];
 
   if (studentsAtRisk > 0) {
     statCards.push({
       icon: <AlertTriangle size={22} />, title: 'En Riesgo', value: studentsAtRisk,
-      gradient: ['#ef4444', '#dc2626'], trend: 'Asistencia <70%', trendUp: false
+      tint: ['#fce8e6', '#d93025'], trend: 'Asistencia <70%', trendUp: false
     });
   }
 
   const quickActions = [
-    { icon: <CheckSquare size={20} />, label: 'Asistencia', color: '#10b981', path: '/attendance' },
-    { icon: <ClipboardCheck size={20} />, label: 'Evaluar', color: '#f59e0b', path: '/instruments' },
-    { icon: <BookOpen size={20} />, label: 'Calificar', color: '#3b82f6', path: '/grades' },
-    { icon: <Users size={20} />, label: 'Estudiantes', color: '#8b5cf6', path: '/students' },
-    { icon: <FileText size={20} />, label: 'Planificar', color: '#ec4899', path: '/planning' },
-    { icon: <BarChart3 size={20} />, label: 'Reportes', color: '#06b6d4', path: '/reports' },
+    { icon: <CheckSquare size={20} />, label: 'Asistencia', tint: ['#e6f4ea', '#188038'], path: '/attendance' },
+    { icon: <ClipboardCheck size={20} />, label: 'Evaluar', tint: ['#fef7e0', '#b06000'], path: '/instruments' },
+    { icon: <BookOpen size={20} />, label: 'Calificar', tint: ['#e8f0fe', '#1967d2'], path: '/grades' },
+    { icon: <Users size={20} />, label: 'Estudiantes', tint: ['#f3e8fd', '#7627bb'], path: '/students' },
+    { icon: <FileText size={20} />, label: 'Planificar', tint: ['#e4f7fb', '#007b83'], path: '/planning' },
+    { icon: <BarChart3 size={20} />, label: 'Reportes', tint: ['#fce8e6', '#d93025'], path: '/reports' },
   ];
 
   return (
     <motion.div initial="hidden" animate="visible" variants={stagger} style={{ minHeight: '100vh' }}>
       {/* Header */}
       <motion.div variants={fadeIn} style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        borderRadius: '24px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
-        color: 'white', position: 'relative', overflow: 'hidden'
+        background: '#ffffff',
+        borderRadius: '12px', padding: '1.75rem 2rem', marginBottom: '1.5rem',
+        border: '1px solid #dadce0', position: 'relative', overflow: 'hidden'
       }}>
-        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.2)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: '#202124', letterSpacing: '-0.02em' }}>{getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Usuario'}</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f1f3f4', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 500, color: '#5f6368' }}>
                 <Clock size={14} />
                 {timeString}
               </div>
             </div>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', marginTop: '0.25rem' }}>{formattedDate}</p>
-            <p style={{ opacity: 0.85, fontSize: '0.85rem', fontWeight: 500, marginTop: '0.5rem', fontStyle: 'italic' }}>"{dayMessage}"</p>
+            <p style={{ color: '#5f6368', fontSize: '0.9rem', marginTop: '0.25rem' }}>{formattedDate}</p>
+            <p style={{ color: '#80868b', fontSize: '0.85rem', fontWeight: 400, marginTop: '0.5rem', fontStyle: 'italic' }}>"{dayMessage}"</p>
           </div>
           {nextClass && (
             <motion.div whileHover={{ scale: 1.03 }} style={{
-              background: 'rgba(255,255,255,0.2)', padding: '1rem 1.5rem', borderRadius: '16px',
-              borderLeft: '4px solid #10b981', backdropFilter: 'blur(10px)', cursor: 'pointer'
+              background: '#e8f0fe', padding: '1rem 1.5rem', borderRadius: '12px',
+              cursor: 'pointer'
             }} onClick={() => navigate('/attendance')}>
-              <p style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <p style={{ fontSize: '0.75rem', color: '#1967d2', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500 }}>
                 <Clock size={14} /> Proxima clase
               </p>
-              <p style={{ fontWeight: 700, fontSize: '1rem' }}>{nextClass.subjectName}</p>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>{nextClass.className} - {nextClass.time}</p>
+              <p style={{ fontWeight: 500, fontSize: '1rem', color: '#202124' }}>{nextClass.subjectName}</p>
+              <p style={{ fontSize: '0.8rem', color: '#5f6368' }}>{nextClass.className} - {nextClass.time}</p>
             </motion.div>
           )}
         </div>
@@ -578,49 +569,61 @@ export default function Dashboard() {
         {statCards.map((stat, idx) => (
           <motion.div
             key={idx}
-            whileHover={{ y: -4, scale: 1.02 }}
+            whileHover={{ y: -4 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             className="glass-card"
-            style={{ padding: '1.25rem', cursor: 'pointer' }}
+            style={{ padding: '1.25rem', cursor: 'pointer', background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px', boxShadow: 'none' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div style={{
-                width: '44px', height: '44px', borderRadius: '12px',
-                background: `linear-gradient(135deg, ${stat.gradient[0]}, ${stat.gradient[1]})`,
+                width: '44px', height: '44px', borderRadius: '50%',
+                background: stat.tint[0],
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', boxShadow: `0 4px 15px ${stat.gradient[0]}40`
+                color: stat.tint[1]
               }}>
                 {stat.icon}
               </div>
-              <span className={`stat-trend ${stat.trendUp ? 'up' : 'down'}`}>
-                {stat.trendUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+              <span style={{
+                fontSize: '0.7rem', fontWeight: 500,
+                padding: '0.2rem 0.6rem', borderRadius: '10px',
+                background: stat.trendUp ? '#e6f4ea' : '#fce8e6',
+                color: stat.trendUp ? '#188038' : '#d93025'
+              }}>
                 {stat.trend}
               </span>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>{stat.value}</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{stat.title}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 500, color: '#202124', lineHeight: 1.2 }}>{stat.value}</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 400, color: '#5f6368', marginTop: '0.25rem' }}>{stat.title}</div>
           </motion.div>
         ))}
       </motion.div>
 
       {/* Quick Actions */}
       <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h3 style={{ fontSize: '0.85rem', fontWeight: 500, color: '#5f6368', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Accesos Rapidos
         </h3>
         <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
           {quickActions.map((action, idx) => (
             <motion.button
               key={idx}
-              whileHover={{ y: -4, scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="quick-action-btn"
+              whileTap={{ scale: 0.97 }}
               onClick={() => navigate(action.path)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                background: '#ffffff', border: '1px solid #dadce0',
+                borderRadius: '20px', padding: '0.55rem 1.1rem',
+                cursor: 'pointer', whiteSpace: 'nowrap'
+              }}
             >
-              <div className="icon-circle" style={{ background: `linear-gradient(135deg, ${action.color}, ${action.color}dd)` }}>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%',
+                background: action.tint[0], color: action.tint[1],
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
                 {action.icon}
               </div>
-              <span>{action.label}</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#3c4043' }}>{action.label}</span>
             </motion.button>
           ))}
         </div>
@@ -629,39 +632,38 @@ export default function Dashboard() {
       {/* Birthday Section */}
       {birthdayData.total > 0 && (
         <motion.div variants={fadeIn} style={{
-          background: 'linear-gradient(145deg, #fff5f9 0%, #fff0f7 50%, #fef3f2 100%)',
-          borderRadius: '24px', padding: '1.75rem', marginBottom: '1.5rem',
-          boxShadow: '0 8px 32px rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.15)',
+          background: '#ffffff',
+          borderRadius: '12px', padding: '1.75rem', marginBottom: '1.5rem',
+          border: '1px solid #dadce0',
           position: 'relative', overflow: 'hidden'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
             <div style={{
-              width: '44px', height: '44px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ec4899, #db2777)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 20px rgba(236, 72, 153, 0.5)'
+              width: '44px', height: '44px', borderRadius: '50%',
+              background: '#fce8e6',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-              <Cake size={22} color="white" />
+              <Cake size={22} color="#d93025" />
             </div>
             <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#db2777' }}>Proximos Cumpleanos</h3>
-              <p style={{ fontSize: '0.8rem', color: '#a855a8', margin: 0 }}>{birthdayData.total} estudiante(s) registrados</p>
+              <h3 style={{ fontSize: '1rem', fontWeight: 500, margin: 0, color: '#202124' }}>Proximos Cumpleanos</h3>
+              <p style={{ fontSize: '0.8rem', color: '#5f6368', margin: 0 }}>{birthdayData.total} estudiante(s) registrados</p>
             </div>
           </div>
           {birthdayData.todayBirthdays.length > 0 && (
             <div style={{
-              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', borderRadius: '16px',
+              background: '#fef7e0', borderRadius: '12px',
               padding: '1rem', marginBottom: '0.75rem'
             }}>
-              <p style={{ fontWeight: 800, color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem' }}>HOY ES SU CUMPLEANOS!</p>
+              <p style={{ fontWeight: 500, color: '#b06000', fontSize: '0.85rem', marginBottom: '0.5rem' }}>HOY ES SU CUMPLEANOS!</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {birthdayData.todayBirthdays.map(student => (
                   <div key={student.id} style={{
-                    background: 'rgba(255,255,255,0.95)', borderRadius: '10px',
-                    padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b'
+                    background: '#ffffff', borderRadius: '16px',
+                    padding: '0.5rem 1rem', fontWeight: 500, fontSize: '0.9rem', color: '#202124'
                   }}>
                     {student.name}
-                    {student.gradeLevel && <span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#92400e', marginLeft: '0.5rem' }}>{student.gradeLevel}</span>}
+                    {student.gradeLevel && <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#5f6368', marginLeft: '0.5rem' }}>{student.gradeLevel}</span>}
                   </div>
                 ))}
               </div>
@@ -669,16 +671,16 @@ export default function Dashboard() {
           )}
           {birthdayData.thisWeek.length > 0 && (
             <div>
-              <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#db2777', marginBottom: '0.5rem' }}>Esta semana:</p>
+              <p style={{ fontSize: '0.8rem', fontWeight: 500, color: '#5f6368', marginBottom: '0.5rem' }}>Esta semana:</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {birthdayData.thisWeek.map(student => (
                   <div key={student.id} style={{
-                    background: 'linear-gradient(135deg, #fdf2f8, #fce7f3)', borderRadius: '10px',
-                    padding: '0.4rem 0.85rem', fontSize: '0.8rem', border: '1px solid rgba(236, 72, 153, 0.15)'
+                    background: '#f1f3f4', borderRadius: '16px',
+                    padding: '0.4rem 0.85rem', fontSize: '0.8rem'
                   }}>
-                    <span style={{ fontWeight: 600 }}>{student.name}</span>
-                    {student.gradeLevel && <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#9d174d', marginLeft: '0.35rem', opacity: 0.7 }}>{student.gradeLevel}</span>}
-                    <span style={{ color: '#db2777', marginLeft: '0.4rem', fontWeight: 600, fontSize: '0.75rem' }}>
+                    <span style={{ fontWeight: 500, color: '#202124' }}>{student.name}</span>
+                    {student.gradeLevel && <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#5f6368', marginLeft: '0.35rem' }}>{student.gradeLevel}</span>}
+                    <span style={{ color: '#1967d2', marginLeft: '0.4rem', fontWeight: 500, fontSize: '0.75rem' }}>
                       {student.daysUntil === 1 ? 'Manana!' : `En ${student.daysUntil} dias`}
                     </span>
                   </div>
@@ -692,18 +694,18 @@ export default function Dashboard() {
       {/* Schedule + Top Instruments + Activity */}
       <motion.div variants={fadeIn} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Today Schedule */}
-        <div className="dashboard-card">
-          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CalendarCheck size={18} color="white" />
+        <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
+          <h3 style={{ marginBottom: '1.25rem', color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CalendarCheck size={18} color="#188038" />
             </div>
             Horario de Hoy
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 400, marginLeft: 'auto' }}>({todayName})</span>
+            <span style={{ fontSize: '0.8rem', color: '#5f6368', fontWeight: 400, marginLeft: 'auto' }}>({todayName})</span>
           </h3>
           {todaySchedule.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--bg-color-main)', borderRadius: '12px', border: '2px dashed var(--border-color)' }}>
-              <Calendar size={32} color="var(--text-secondary)" style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No tienes clases programadas para hoy.</p>
+            <div style={{ textAlign: 'center', padding: '2rem', background: '#f8f9fa', borderRadius: '12px', border: '2px dashed #dadce0' }}>
+              <Calendar size={32} color="#9aa0a6" style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
+              <p style={{ color: '#5f6368', fontSize: '0.9rem' }}>No tienes clases programadas para hoy.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -727,36 +729,35 @@ export default function Dashboard() {
                     whileHover={{ x: 4 }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '0.85rem', background: 'var(--bg-color-main)', borderRadius: '12px',
-                      borderLeft: `4px solid ${isPast ? '#94a3b8' : item.color || '#10b981'}`,
+                      padding: '0.85rem', background: '#f8f9fa', borderRadius: '12px',
+                      borderLeft: `4px solid ${isPast ? '#9aa0a6' : item.color || '#188038'}`,
                       opacity: isPast ? 0.6 : 1, transition: 'all 0.2s ease'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                      <div style={{ fontWeight: 700, minWidth: '120px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{timesDisplay}</div>
+                      <div style={{ fontWeight: 500, minWidth: '120px', fontSize: '0.8rem', color: '#5f6368' }}>{timesDisplay}</div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{className}</div>
-                        {subjectName && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{subjectName}</div>}
+                        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#202124' }}>{className}</div>
+                        {subjectName && <div style={{ fontSize: '0.75rem', color: '#5f6368' }}>{subjectName}</div>}
                       </div>
                     </div>
                     {!isPast ? (
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => navigate(`/attendance?class=${encodeURIComponent(className)}`)}
                         style={{
-                          padding: '0.4rem 0.85rem', background: 'linear-gradient(135deg, #10b981, #059669)',
-                          border: 'none', borderRadius: '8px', color: 'white', fontSize: '0.7rem',
-                          fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+                          padding: '0.4rem 0.85rem', background: '#188038',
+                          border: 'none', borderRadius: '16px', color: 'white', fontSize: '0.7rem',
+                          fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
                         }}
                       >
                         <CalendarCheck size={12} /> Asistencia
                       </motion.button>
                     ) : (
                       <div style={{
-                        padding: '0.4rem 0.85rem', background: 'rgba(16, 185, 129, 0.1)',
-                        border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px',
-                        color: '#059669', fontSize: '0.7rem', fontWeight: 600,
+                        padding: '0.4rem 0.85rem', background: '#e6f4ea',
+                        border: 'none', borderRadius: '16px',
+                        color: '#188038', fontSize: '0.7rem', fontWeight: 500,
                         display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer'
                       }} onClick={() => navigate(`/attendance?class=${encodeURIComponent(className)}`)}>
                         <CheckCircle size={12} /> Asistencia registrada
@@ -777,9 +778,9 @@ export default function Dashboard() {
       {/* Section Summary */}
       {sectionSummary.length > 0 && (
         <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <GraduationCap size={18} color="white" />
+          <h3 style={{ marginBottom: '1rem', color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f3e8fd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <GraduationCap size={18} color="#7627bb" />
             </div>
             Resumen por Seccion
           </h3>
@@ -787,19 +788,19 @@ export default function Dashboard() {
             {sectionSummary.map((section, idx) => (
               <motion.div
                 key={section.id}
-                whileHover={{ y: -4, scale: 1.02 }}
+                whileHover={{ y: -4 }}
                 className="glass-card"
-                style={{ padding: '1rem', cursor: 'pointer', borderTop: `3px solid ${section.color}` }}
+                style={{ padding: '1rem', cursor: 'pointer', background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px', boxShadow: 'none', borderTop: `3px solid ${section.color}` }}
                 onClick={() => navigate('/students')}
               >
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.5rem' }}>{section.name}</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                <div style={{ fontWeight: 500, fontSize: '0.95rem', marginBottom: '0.5rem', color: '#202124' }}>{section.name}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#5f6368' }}>
                   <span>{section.students} estudiantes</span>
-                  <span style={{ fontWeight: 700, color: section.attendance >= 80 ? '#10b981' : '#ef4444' }}>{section.attendance}% asist.</span>
+                  <span style={{ fontWeight: 500, color: section.attendance >= 80 ? '#188038' : '#d93025' }}>{section.attendance}% asist.</span>
                 </div>
                 <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Nivel: <strong>{section.avgGrade}</strong></span>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{section.gradesCount} calif.</span>
+                  <span style={{ fontSize: '0.7rem', color: '#5f6368' }}>Nivel: <strong>{section.avgGrade}</strong></span>
+                  <span style={{ fontSize: '0.65rem', color: '#5f6368' }}>{section.gradesCount} calif.</span>
                 </div>
               </motion.div>
             ))}
@@ -810,27 +811,28 @@ export default function Dashboard() {
       {/* Attendance Charts */}
       {attendanceChartData.length > 0 && (
         <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-          <div className="dashboard-card">
+          <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <h3 style={{ color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <BarChart3 size={18} color="white" />
+                <h3 style={{ color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#e6f4ea', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <BarChart3 size={18} color="#188038" />
                   </div>
                   Asistencia
                 </h3>
                 <select value={attendanceClass} onChange={e => setAttendanceClass(e.target.value)}
-                  style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid var(--border-color)', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', background: 'var(--bg-color-surface)', cursor: 'pointer', outline: 'none' }}>
+                  style={{ padding: '0.45rem 1rem', borderRadius: '20px', border: '1px solid #dadce0', fontSize: '0.8rem', fontWeight: 500, color: '#3c4043', background: '#ffffff', cursor: 'pointer', outline: 'none' }}>
                   <option value="">Todas las secciones</option>
                   {classes.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-color-main)', borderRadius: '10px', padding: '3px' }}>
+              <div style={{ display: 'flex', gap: '0.25rem', background: '#f1f3f4', borderRadius: '20px', padding: '3px' }}>
                 {[{ key: 'daily', label: 'Diario' }, { key: 'weekly', label: 'Semanal' }, { key: 'monthly', label: 'Mensual' }].map(v => (
                   <button key={v.key} onClick={() => setAttendanceView(v.key)} style={{
-                    padding: '6px 14px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
-                    background: attendanceView === v.key ? '#10b981' : 'transparent',
-                    color: attendanceView === v.key ? 'white' : 'var(--text-secondary)', transition: 'all 0.2s'
+                    padding: '6px 14px', border: 'none', borderRadius: '18px', cursor: 'pointer', fontWeight: 500, fontSize: '0.8rem',
+                    background: attendanceView === v.key ? '#ffffff' : 'transparent',
+                    boxShadow: attendanceView === v.key ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                    color: attendanceView === v.key ? '#1967d2' : '#5f6368', transition: 'all 0.2s'
                   }}>
                     {v.label}
                   </button>
@@ -840,10 +842,10 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={attendanceChartData} barCategoryGap="20%">
                 <ChartGradients />
-                <CartesianGrid strokeDasharray="0" stroke="var(--border-color)" opacity={0.4} vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} dy={8} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} dx={-4} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
+                <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.4} vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dy={8} />
+                <YAxis tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(26, 115, 232, 0.06)' }} />
                 <Bar dataKey="P" stackId="a" fill="url(#gradPresent)" name="Presente" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="T" stackId="a" fill="url(#gradLate)" name="Tarde" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="J" stackId="a" fill="url(#gradJustified)" name="Justificado" radius={[0, 0, 0, 0]} />
@@ -852,24 +854,24 @@ export default function Dashboard() {
             </ResponsiveContainer>
             {attendancePresentRate.length > 0 && (
               <div style={{ marginTop: '1.5rem' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>% de Asistencia</h4>
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 500, color: '#5f6368', marginBottom: '0.75rem' }}>% de Asistencia</h4>
                 <ResponsiveContainer width="100%" height={120}>
                   <LineChart data={attendancePresentRate}>
                     <defs>
                       <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+                        <stop offset="0%" stopColor="#188038" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="#188038" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="0" stroke="var(--border-color)" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} dy={6} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} dx={-4} />
+                    <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.3} vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dy={6} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone" dataKey="rate" name="% Asistencia"
-                      stroke="#10b981" strokeWidth={2.5}
-                      dot={{ fill: '#10b981', r: 4, strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 6, strokeWidth: 2, stroke: '#10b981', fill: '#fff' }}
+                      stroke="#188038" strokeWidth={2.5}
+                      dot={{ fill: '#188038', r: 4, strokeWidth: 2, stroke: '#fff' }}
+                      activeDot={{ r: 6, strokeWidth: 2, stroke: '#188038', fill: '#fff' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -882,24 +884,24 @@ export default function Dashboard() {
       {/* Grade Stats */}
       {(grades.length > 0 || diagnosticEvaluations.length > 0 || instrumentEvaluations.length > 0) && (
         <motion.div variants={fadeIn} style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1.25rem', color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChart3 size={18} color="white" />
+          <h3 style={{ marginBottom: '1.25rem', color: '#202124', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f3e8fd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart3 size={18} color="#7627bb" />
             </div>
             Estadisticas de Calificaciones
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
             {/* Levels General */}
-            <div className="dashboard-card">
-              <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '0.95rem', fontWeight: 700 }}>Niveles de Logro (General)</h4>
+            <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
+              <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Niveles de Logro (General)</h4>
               {gradesByLevel.some(g => g.value > 0) ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={gradesByLevel.filter(g => g.value > 0)} layout="vertical" barCategoryGap="25%">
                     <ChartGradients />
-                    <CartesianGrid strokeDasharray="0" stroke="var(--border-color)" opacity={0.3} horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} dx={-4} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
+                    <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.3} horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(26, 115, 232, 0.06)' }} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={28}>
                       {gradesByLevel.filter(g => g.value > 0).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={`url(#grad${entry.name.charAt(0)})`} />
@@ -908,21 +910,21 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
+                <p style={{ color: '#5f6368', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
               )}
             </div>
 
             {/* By Class */}
-            <div className="dashboard-card">
-              <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '0.95rem', fontWeight: 700 }}>Calificaciones por Grado</h4>
+            <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
+              <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Calificaciones por Grado</h4>
               {gradesByClass.some(g => g.ad + g.a + g.b + g.c > 0) ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={gradesByClass} barCategoryGap="25%">
                     <ChartGradients />
-                    <CartesianGrid strokeDasharray="0" stroke="var(--border-color)" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} dy={8} />
-                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} dx={-4} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
+                    <CartesianGrid strokeDasharray="0" stroke="#e8eaed" opacity={0.3} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dy={8} />
+                    <YAxis tick={{ fontSize: 11, fill: '#9aa0a6' }} axisLine={false} tickLine={false} dx={-4} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(26, 115, 232, 0.06)' }} />
                     <Bar dataKey="ad" stackId="a" fill="url(#gradAD)" name="AD" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="a" stackId="a" fill="url(#gradA)" name="A" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="b" stackId="a" fill="url(#gradB)" name="B" radius={[0, 0, 0, 0]} />
@@ -930,21 +932,21 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
+                <p style={{ color: '#5f6368', fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>Registra calificaciones para ver estadisticas</p>
               )}
             </div>
 
             {/* Subject Performance Radar */}
             {subjectPerformance.length > 2 && (
-              <div className="dashboard-card">
-                <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '0.95rem', fontWeight: 700 }}>Rendimiento por Asignatura</h4>
+              <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
+                <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Rendimiento por Asignatura</h4>
                 <ResponsiveContainer width="100%" height={240}>
                   <RadarChart data={subjectPerformance} cx="50%" cy="50%" outerRadius="70%">
                     <ChartGradients />
-                    <PolarGrid stroke="var(--border-color)" strokeOpacity={0.5} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                    <PolarGrid stroke="#e8eaed" strokeOpacity={0.5} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9aa0a6' }} />
                     <PolarRadiusAxis domain={[0, 4]} tick={false} axisLine={false} />
-                    <Radar name="Promedio" dataKey="promedio" stroke="#8b5cf6" strokeWidth={2.5} fill="url(#gradRadar)" dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 2 }} />
+                    <Radar name="Promedio" dataKey="promedio" stroke="#7627bb" strokeWidth={2.5} fill="url(#gradRadar)" dot={{ r: 4, fill: '#7627bb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, fill: '#7627bb', stroke: '#fff', strokeWidth: 2 }} />
                     <Tooltip content={<CustomTooltip />} />
                   </RadarChart>
                 </ResponsiveContainer>
@@ -953,24 +955,19 @@ export default function Dashboard() {
 
             {/* Diagnostic Pie */}
             {diagnosticStats.length > 0 && (
-              <div className="dashboard-card">
-                <h4 style={{ marginBottom: '1rem', color: '#6366f1', fontSize: '0.95rem', fontWeight: 700 }}>Evaluacion Diagnostica</h4>
+              <div className="dashboard-card" style={{ background: '#ffffff', border: '1px solid #dadce0', borderRadius: '12px' }}>
+                <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 500, color: '#202124' }}>Evaluacion Diagnostica</h4>
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
-                    <defs>
-                      <filter id="pieShadow">
-                        <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.15" />
-                      </filter>
-                    </defs>
                     <Pie
                       data={diagnosticStats} cx="50%" cy="50%"
                       innerRadius={60} outerRadius={95}
                       paddingAngle={4} dataKey="value"
-                      strokeWidth={0}
+                      stroke="#ffffff" strokeWidth={2}
                       animationBegin={0} animationDuration={800} animationEasing="ease-out"
                     >
                       {diagnosticStats.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} filter="url(#pieShadow)" />
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
@@ -993,39 +990,37 @@ export default function Dashboard() {
       {/* Empty State */}
       {(grades.length === 0 && diagnosticEvaluations.length === 0 && instrumentEvaluations.length === 0 && attendance.length === 0) && (
         <motion.div variants={fadeIn} style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
-          borderRadius: '20px', padding: '4rem 2rem', textAlign: 'center', border: '2px dashed #cbd5e1'
+          background: '#ffffff',
+          borderRadius: '12px', padding: '4rem 2rem', textAlign: 'center', border: '2px dashed #dadce0'
         }}>
           <div style={{
             width: '80px', height: '80px',
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            background: '#e8f0fe',
             borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem'
           }}>
-            <BarChart3 size={40} color="white" />
+            <BarChart3 size={40} color="#1967d2" />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Comienza a registrar datos</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 500, color: '#202124', marginBottom: '0.5rem' }}>Comienza a registrar datos</h3>
+          <p style={{ color: '#5f6368', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
             Los graficos y estadisticas apareceran aqui cuando registres asistencia, calificaciones o evaluaciones.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => navigate('/attendance')}
               style={{
-                padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #10b981, #059669)',
-                border: 'none', borderRadius: '12px', color: 'white', fontWeight: 600, cursor: 'pointer'
+                padding: '0.75rem 1.5rem', background: '#188038',
+                border: 'none', borderRadius: '20px', color: 'white', fontWeight: 500, cursor: 'pointer'
               }}
             >
               Registrar Asistencia
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => navigate('/grades')}
               style={{
-                padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                border: 'none', borderRadius: '12px', color: 'white', fontWeight: 600, cursor: 'pointer'
+                padding: '0.75rem 1.5rem', background: '#1a73e8',
+                border: 'none', borderRadius: '20px', color: 'white', fontWeight: 500, cursor: 'pointer'
               }}
             >
               Ingresar Calificaciones
