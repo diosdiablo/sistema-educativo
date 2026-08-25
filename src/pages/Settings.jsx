@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Settings as SettingsIcon, Save, Calendar, Clock, AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
+import { Save, Calendar, Clock, AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function Settings() {
   const { 
@@ -35,13 +35,13 @@ export default function Settings() {
         <div style={{ 
           display: 'inline-flex', 
           padding: '1.5rem', 
-          background: 'rgba(217, 48, 37, 0.1)', 
+          background: 'var(--danger-tint-bg)', 
           borderRadius: '50%', 
           marginBottom: '1.5rem' 
         }}>
-          <AlertCircle size={48} color="#d93025" />
+          <AlertCircle size={48} color="var(--danger-tint-fg)" />
         </div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Acceso Restringido</h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Acceso Restringido</h2>
         <p style={{ color: 'var(--text-secondary)' }}>Solo los administradores pueden configurar los periodos académicos.</p>
       </div>
     );
@@ -119,96 +119,48 @@ export default function Settings() {
     setTimeout(() => setClearMsg(''), 3000);
   };
 
-  const gradientColors = [
-    ['#3f51b5', '#7627bb'],
-    ['#188038', '#146c2e'],
-    ['#e37400', '#b06000'],
-    ['#d93025', '#b3261e']
-  ];
-
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Barra de herramientas */}
       <div style={{
-        background: '#7627bb',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid var(--border-color)'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <SettingsIcon size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Configuración del Sistema</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Administra periodos académicos y datos</p>
-            </div>
-          </div>
-        </div>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Configuración del Sistema</h2>
+        <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Administra periodos académicos y datos</p>
       </div>
 
       {/* Sección Fechas de Bimestres */}
       <div style={{
         background: 'var(--bg-color-surface)',
-        borderRadius: '20px',
+        borderRadius: '12px',
         padding: '1.5rem',
         marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(63, 81, 181, 0.2)'
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
             width: '48px',
             height: '48px',
             borderRadius: '12px',
-            background: '#7627bb',
+            background: 'var(--nav-active-bg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <Calendar size={24} color="white" />
+            <Calendar size={24} color="var(--nav-active-fg)" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Fechas de Bimestres</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Fechas de Bimestres</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Configura los periodos académicos</p>
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {['1', '2', '3', '4'].map((id, idx) => {
-            const [color1, color2] = gradientColors[idx % gradientColors.length];
+          {['1', '2', '3', '4'].map((id) => {
             return (
               <div key={id} style={{ 
                 display: 'grid', 
@@ -216,47 +168,44 @@ export default function Settings() {
                 gap: '1.5rem', 
                 alignItems: 'center',
                 padding: '1.25rem',
-                background: `${color1}08`,
-                borderRadius: '14px',
-                border: `1px solid ${color1}30`
+                background: 'var(--surface-muted)',
+                borderRadius: '12px',
+                border: '1px solid var(--border-color)'
               }}>
-                <div style={{ fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ fontWeight: 500, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <div style={{
                     width: '32px',
                     height: '32px',
-                    borderRadius: '8px',
-                    background: `${color1}`,
+                    borderRadius: '50%',
+                    background: 'var(--nav-active-bg)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '0.85rem',
-                    fontWeight: 700
+                    color: 'var(--nav-active-fg)',
+                    fontSize: '0.85rem'
                   }}>
                     {id}
                   </div>
-                  <span style={{ color: color1 }}>Bimestre {id}</span>
+                  <span style={{ color: 'var(--text-primary)' }}>Bimestre {id}</span>
                 </div>
                 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha de Inicio</label>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Fecha de Inicio</label>
                   <input 
                     type="date" 
                     className="input-field" 
                     value={localDates[id]?.start || ''} 
                     onChange={(e) => handleChange(id, 'start', e.target.value)}
-                    style={{ borderColor: color1 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha de Finalización</label>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Fecha de Finalización</label>
                   <input 
                     type="date" 
                     className="input-field" 
                     value={localDates[id]?.end || ''} 
                     onChange={(e) => handleChange(id, 'end', e.target.value)}
-                    style={{ borderColor: color1 }}
                   />
                 </div>
               </div>
@@ -266,22 +215,19 @@ export default function Settings() {
 
         <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem' }}>
           {saved && (
-            <span style={{ color: '#188038', fontWeight: 600, fontSize: '0.9rem' }} className="animate-fade-in">
+            <span style={{ color: '#188038', fontWeight: 500, fontSize: '0.9rem' }} className="animate-fade-in">
               ✓ ¡Configuración guardada!
             </span>
           )}
           <button 
             onClick={handleSave}
+            className="btn-primary"
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1.5rem',
-              background: '#7627bb',
-              color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
-              fontWeight: 600, transition: 'all 0.3s ease'
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '0.55rem 1.25rem',
+              borderRadius: '20px', fontSize: '0.875rem'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(63, 81, 181, 0.4)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
-            <Save size={20} /> Guardar Cambios
+            <Save size={18} /> Guardar Cambios
           </button>
         </div>
       </div>
@@ -289,22 +235,21 @@ export default function Settings() {
       {/* Sincronización con la nube */}
       <div style={{
         background: 'var(--bg-color-surface)',
-        borderRadius: '20px',
+        borderRadius: '12px',
         padding: '1.5rem',
         marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(24, 128, 56, 0.2)'
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '12px',
-            background: '#188038',
+            background: '#18803815',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <RefreshCw size={24} color="white" />
+            <RefreshCw size={24} color="#188038" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Sincronización con Supabase</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Sincronización con Supabase</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
               Sube todos los datos locales a la nube para que otros usuarios los vean
             </p>
@@ -320,21 +265,16 @@ export default function Settings() {
           <button
             onClick={syncToCloud}
             disabled={isSyncing}
+            className="btn-primary"
             style={{
               display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '0.75rem 1.5rem',
-              background: isSyncing ? 'var(--text-secondary)' : '#188038',
-              color: 'white', border: 'none', borderRadius: '12px', cursor: isSyncing ? 'not-allowed' : 'pointer',
-              fontWeight: 600, transition: 'all 0.3s ease',
-              boxShadow: isSyncing ? 'none' : '0 4px 15px rgba(24, 128, 56, 0.3)'
+              padding: '0.6rem 1.25rem', borderRadius: '20px', fontSize: '0.875rem'
             }}
-            onMouseEnter={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(24, 128, 56, 0.4)'; } }}
-            onMouseLeave={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(24, 128, 56, 0.3)'; } }}
           >
-            <RefreshCw size={20} className={isSyncing ? 'spinner' : ''} /> {isSyncing ? 'Sincronizando...' : 'Sincronizar Todo'}
+            <RefreshCw size={18} className={isSyncing ? 'spinner' : ''} /> {isSyncing ? 'Sincronizando...' : 'Sincronizar Todo'}
           </button>
           {syncMsg && (
-            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: syncMsg.includes('✓') ? '#188038' : '#d93025' }} className="animate-fade-in">
+            <span style={{ fontWeight: 500, fontSize: '0.9rem', color: syncMsg.includes('✓') ? '#188038' : 'var(--danger-tint-fg)' }} className="animate-fade-in">
               {syncMsg}
             </span>
           )}
@@ -343,11 +283,10 @@ export default function Settings() {
 
       {/* Info importante */}
       <div style={{
-        background: 'rgba(227, 116, 0, 0.12)',
-        borderRadius: '16px',
+        background: '#e3740015',
+        borderRadius: '12px',
         padding: '1.25rem',
         marginBottom: '1.5rem',
-        border: '1px solid #e3740040',
         display: 'flex',
         gap: '1rem'
       }}>
@@ -355,7 +294,7 @@ export default function Settings() {
           width: '40px',
           height: '40px',
           borderRadius: '10px',
-          background: 'rgba(227, 116, 0, 0.15)',
+          background: '#e3740020',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -364,8 +303,8 @@ export default function Settings() {
           <Clock size={20} color="#e37400" />
         </div>
         <div>
-          <h4 style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#b06000' }}>Información Importante</h4>
-          <p style={{ fontSize: '0.85rem', color: '#b06000', lineHeight: 1.5, margin: 0 }}>
+          <h4 style={{ fontWeight: 500, marginBottom: '0.25rem', color: '#e37400' }}>Información Importante</h4>
+          <p style={{ fontSize: '0.85rem', color: '#e37400', lineHeight: 1.5, margin: 0 }}>
             Estas fechas se utilizan para filtrar la asistencia en los reportes de Excel. 
             Asegúrate de que no haya solapamientos entre bimestres para garantizar la exactitud de los datos.
           </p>
@@ -375,26 +314,25 @@ export default function Settings() {
       {/* Sección de Limpiar Datos */}
       <div style={{
         background: 'var(--bg-color-surface)',
-        borderRadius: '20px',
+        borderRadius: '12px',
         padding: '1.5rem',
         marginBottom: '1.5rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(217, 48, 37, 0.2)'
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
             width: '48px',
             height: '48px',
             borderRadius: '12px',
-            background: '#d93025',
+            background: 'var(--danger-tint-bg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <Trash2 size={24} color="white" />
+            <Trash2 size={24} color="var(--danger-tint-fg)" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#d93025' }}>Limpiar/Borrar Datos</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>Limpiar/Borrar Datos</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Elimina datos para comenzar desde cero</p>
           </div>
         </div>
@@ -402,13 +340,12 @@ export default function Settings() {
         <div style={{ 
           display: 'flex', alignItems: 'center', gap: '0.75rem',
           padding: '1rem', 
-          background: 'rgba(217, 48, 37, 0.1)', 
-          borderRadius: '12px', 
-          border: '1px solid rgba(217, 48, 37, 0.3)',
+          background: 'var(--danger-tint-bg)', 
+          borderRadius: '12px',
           marginBottom: '1.5rem'
         }}>
-          <AlertTriangle size={20} color="#d93025" />
-          <p style={{ fontSize: '0.85rem', color: '#b3261e', margin: 0 }}>
+          <AlertTriangle size={20} color="var(--danger-tint-fg)" />
+          <p style={{ fontSize: '0.85rem', color: 'var(--danger-tint-fg)', margin: 0 }}>
             <strong>Peligro:</strong> Esta acción elimina datos de Supabase y es IRREVERSIBLE. Asegúrate de tener un respaldo antes de continuar.
           </p>
         </div>
@@ -419,16 +356,15 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(217, 48, 37, 0.1)',
-              border: '1px solid rgba(217, 48, 37, 0.3)',
+              background: 'var(--danger-tint-bg)',
+              border: 'none',
               borderRadius: '12px',
-              color: '#d93025',
+              color: 'var(--danger-tint-fg)',
               cursor: 'pointer',
-              fontWeight: 600,
-              transition: 'all 0.2s ease'
+              fontWeight: 500
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; }}
           >
             <Trash2 size={16} /> Estudiantes ({students.length})
           </button>
@@ -437,16 +373,15 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(217, 48, 37, 0.1)',
-              border: '1px solid rgba(217, 48, 37, 0.3)',
+              background: 'var(--danger-tint-bg)',
+              border: 'none',
               borderRadius: '12px',
-              color: '#d93025',
+              color: 'var(--danger-tint-fg)',
               cursor: 'pointer',
-              fontWeight: 600,
-              transition: 'all 0.2s ease'
+              fontWeight: 500
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; }}
           >
             <Trash2 size={16} /> Asistencia ({attendance.length})
           </button>
@@ -455,16 +390,15 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(217, 48, 37, 0.1)',
-              border: '1px solid rgba(217, 48, 37, 0.3)',
+              background: 'var(--danger-tint-bg)',
+              border: 'none',
               borderRadius: '12px',
-              color: '#d93025',
+              color: 'var(--danger-tint-fg)',
               cursor: 'pointer',
-              fontWeight: 600,
-              transition: 'all 0.2s ease'
+              fontWeight: 500
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; }}
           >
             <Trash2 size={16} /> Notas ({grades.length})
           </button>
@@ -473,16 +407,15 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(217, 48, 37, 0.1)',
-              border: '1px solid rgba(217, 48, 37, 0.3)',
+              background: 'var(--danger-tint-bg)',
+              border: 'none',
               borderRadius: '12px',
-              color: '#d93025',
+              color: 'var(--danger-tint-fg)',
               cursor: 'pointer',
-              fontWeight: 600,
-              transition: 'all 0.2s ease'
+              fontWeight: 500
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; }}
           >
             <Trash2 size={16} /> Instrumentos ({instruments.length})
           </button>
@@ -499,16 +432,17 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1.5rem',
-              background: '#e37400',
+              background: '#e3740015',
               border: 'none',
-              borderRadius: '12px',
-              color: 'white',
+              borderRadius: '20px',
+              color: '#e37400',
               cursor: 'pointer',
-              fontWeight: 600,
+              fontWeight: 500,
               width: '100%',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(227, 116, 0, 0.3)'
+              fontSize: '0.875rem'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#e3740025'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#e3740015'; }}
           >
             <Trash2 size={18} /> Limpiar Datos Huérfanos
           </button>
@@ -520,18 +454,15 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1.5rem',
-              background: '#d93025',
+              background: 'var(--danger-color)',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '20px',
               color: 'white',
               cursor: 'pointer',
-              fontWeight: 600,
+              fontWeight: 500,
               width: '100%',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(217, 48, 37, 0.3)'
+              fontSize: '0.875rem'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(217, 48, 37, 0.4)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(217, 48, 37, 0.3)'; }}
           >
             <Trash2 size={18} /> Borrar TODOS los Datos
           </button>
@@ -539,10 +470,10 @@ export default function Settings() {
 
         {clearMsg && (
           <p style={{ 
-            color: clearMsg.includes('✓') ? '#188038' : '#d93025', 
+            color: clearMsg.includes('✓') ? '#188038' : 'var(--danger-tint-fg)', 
             fontSize: '0.85rem', 
             marginTop: '1rem',
-            fontWeight: 600,
+            fontWeight: 500,
             textAlign: 'center'
           }}>{clearMsg}</p>
         )}
@@ -565,31 +496,25 @@ export default function Settings() {
             textAlign: 'center', 
             padding: '2rem',
             background: 'var(--bg-color-surface)',
-            borderRadius: '24px',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '120px', height: '120px',
-              background: 'rgba(26, 115, 232, 0.12)',
-              borderRadius: '50%'
-            }} />
             
             <div style={{ 
               width: '64px', 
               height: '64px', 
-              background: 'rgba(217, 48, 37, 0.1)', 
+              background: 'var(--danger-tint-bg)', 
               borderRadius: '50%', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
               margin: '0 auto 1.5rem auto'
             }}>
-              <AlertTriangle size={32} color="#d93025" />
+              <AlertTriangle size={32} color="var(--danger-tint-fg)" />
             </div>
             
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 400 }}>
               ¿Confirmar eliminación?
             </h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
@@ -614,13 +539,12 @@ export default function Settings() {
                 style={{ 
                   flex: 1, 
                   padding: '0.8rem', 
-                  background: '#d93025',
+                  background: 'var(--danger-color)',
                   border: 'none',
                   borderRadius: '12px',
                   color: 'white',
                   cursor: 'pointer',
-                  fontWeight: 600,
-                  boxShadow: '0 4px 14px 0 rgba(217, 48, 37, 0.3)'
+                  fontWeight: 500
                 }}
                 onClick={confirmClear}
               >
@@ -635,12 +559,12 @@ export default function Settings() {
       {isAdmin && (
         <div style={{
           background: 'var(--bg-color-surface)',
-          borderRadius: '20px',
+          borderRadius: '12px',
           padding: '1.5rem',
           marginTop: '1.5rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          border: '1px solid var(--border-color)'
         }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 500, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
             <Clock size={20} /> Historial de Ingresos
           </h3>
           {loginHistory && loginHistory.length > 0 ? (
@@ -661,9 +585,9 @@ export default function Settings() {
                         <td style={{ fontWeight: 600 }}>{entry.userName}</td>
                         <td>
                           <span style={{
-                            display: 'inline-block', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
-                            background: entry.role === 'admin' ? 'rgba(217, 48, 37,0.1)' : entry.role === 'parent' ? 'rgba(227, 116, 0,0.1)' : 'rgba(24, 128, 56,0.1)',
-                            color: entry.role === 'admin' ? '#b3261e' : entry.role === 'parent' ? '#b06000' : '#146c2e'
+                            display: 'inline-block', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500,
+                            background: entry.role === 'admin' ? 'var(--danger-tint-bg)' : entry.role === 'parent' ? '#e3740015' : '#18803815',
+                            color: entry.role === 'admin' ? 'var(--danger-tint-fg)' : entry.role === 'parent' ? '#e37400' : '#188038'
                           }}>
                             {entry.role === 'admin' ? 'Admin' : entry.role === 'parent' ? 'Padre' : 'Docente'}
                           </span>
