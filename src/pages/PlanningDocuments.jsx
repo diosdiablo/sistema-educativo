@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, File, LayoutGrid, List, Tag, Clipboard, BookMarked, AlertCircle, Briefcase, Users, UserCheck } from 'lucide-react';
+import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, LayoutGrid, List, BookMarked, Briefcase, Users, UserCheck } from 'lucide-react';
 import AIPlanningGenerator from '../components/AIPlanningGenerator';
 
 export default function PlanningDocuments() {
@@ -263,15 +263,6 @@ export default function PlanningDocuments() {
     reader.readAsDataURL(uploadData.file);
   };
 
-  const gradientColors = [
-    ['#1a73e8', '#174ea6'],
-    ['#188038', '#146c2e'],
-    ['#e37400', '#b06000'],
-    ['#d93025', '#b3261e'],
-    ['#7627bb', '#6a1b9a'],
-    ['#c2185b', '#ad1457']
-  ];
-
   const DocIcon = useMemo(() => {
     return contentType === 'sessions' ? BookMarked : FileText;
   }, [contentType]);
@@ -283,9 +274,9 @@ export default function PlanningDocuments() {
         width: '280px',
         flexShrink: 0,
         background: 'var(--bg-color-surface)',
-        borderRadius: '20px',
+        borderRadius: '12px',
         padding: '1.25rem',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid var(--border-color)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'
@@ -295,13 +286,13 @@ export default function PlanningDocuments() {
           alignItems: 'center', 
           gap: '0.75rem', 
           padding: '0.75rem',
-          background: '#e37400',
-          borderRadius: '14px',
-          color: 'white',
+          background: 'var(--surface-muted)',
+          borderRadius: '10px',
+          color: 'var(--text-primary)',
           marginBottom: '1rem'
         }}>
-          <FolderOpen size={22} />
-          <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Navegador</span>
+          <FolderOpen size={20} color="var(--text-secondary)" />
+          <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>Navegador</span>
         </div>
 
         {/* Tipo de contenido */}
@@ -312,10 +303,10 @@ export default function PlanningDocuments() {
               flex: 1,
               padding: '0.6rem 0.5rem',
               borderRadius: '10px',
-              border: 'none',
-              background: contentType === 'planifications' ? '#e37400' : 'var(--surface-muted)',
-              color: contentType === 'planifications' ? 'white' : 'var(--text-secondary)',
-              fontWeight: 600,
+              border: contentType === 'planifications' ? '1px solid var(--nav-active-fg)' : '1px solid transparent',
+              background: contentType === 'planifications' ? 'var(--nav-active-bg)' : 'var(--surface-muted)',
+              color: contentType === 'planifications' ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+              fontWeight: 500,
               fontSize: '0.75rem',
               cursor: 'pointer',
               display: 'flex',
@@ -333,10 +324,10 @@ export default function PlanningDocuments() {
               flex: 1,
               padding: '0.6rem 0.5rem',
               borderRadius: '10px',
-              border: 'none',
-              background: contentType === 'sessions' ? '#e37400' : 'var(--surface-muted)',
-              color: contentType === 'sessions' ? 'white' : 'var(--text-secondary)',
-              fontWeight: 600,
+              border: contentType === 'sessions' ? '1px solid var(--nav-active-fg)' : '1px solid transparent',
+              background: contentType === 'sessions' ? 'var(--nav-active-bg)' : 'var(--surface-muted)',
+              color: contentType === 'sessions' ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+              fontWeight: 500,
               fontSize: '0.75rem',
               cursor: 'pointer',
               display: 'flex',
@@ -354,10 +345,10 @@ export default function PlanningDocuments() {
               flex: 1,
               padding: '0.6rem 0.5rem',
               borderRadius: '10px',
-              border: 'none',
-              background: contentType === 'reports' ? '#e37400' : 'var(--surface-muted)',
-              color: contentType === 'reports' ? 'white' : 'var(--text-secondary)',
-              fontWeight: 600,
+              border: contentType === 'reports' ? '1px solid var(--nav-active-fg)' : '1px solid transparent',
+              background: contentType === 'reports' ? 'var(--nav-active-bg)' : 'var(--surface-muted)',
+              color: contentType === 'reports' ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+              fontWeight: 500,
               fontSize: '0.75rem',
               cursor: 'pointer',
               display: 'flex',
@@ -379,17 +370,17 @@ export default function PlanningDocuments() {
             alignItems: 'center',
             gap: '0.75rem',
             padding: '0.75rem',
-            borderRadius: '12px',
-            border: !selectedSection ? '2px solid #e37400' : '1px solid var(--border-color)',
-            background: !selectedSection ? '#fef7e0' : 'var(--bg-color-surface)',
+            borderRadius: '10px',
+            border: !selectedSection ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+            background: !selectedSection ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
             cursor: 'pointer',
             width: '100%',
             textAlign: 'left',
             marginBottom: '0.75rem'
           }}
         >
-          <LayoutGrid size={18} color={!selectedSection ? '#b06000' : 'var(--text-secondary)'} />
-          <span style={{ fontWeight: !selectedSection ? 700 : 500, color: !selectedSection ? '#b06000' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+          <LayoutGrid size={18} color={!selectedSection ? 'var(--nav-active-fg)' : 'var(--text-secondary)'} />
+          <span style={{ fontWeight: !selectedSection ? 600 : 500, color: !selectedSection ? 'var(--nav-active-fg)' : 'var(--text-primary)', fontSize: '0.9rem' }}>
             Ver Todo
           </span>
         </button>
@@ -406,17 +397,17 @@ export default function PlanningDocuments() {
                     alignItems: 'center',
                     gap: '0.75rem',
                     padding: '0.75rem',
-                    borderRadius: '12px',
-                    border: !selectedTeacherId ? '2px solid #d93025' : '1px solid var(--border-color)',
-                    background: !selectedTeacherId ? '#fce8e6' : 'var(--bg-color-surface)',
+                    borderRadius: '10px',
+                    border: !selectedTeacherId ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                    background: !selectedTeacherId ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
                     marginBottom: '0.5rem'
                   }}
                 >
-                  <Users size={18} color={!selectedTeacherId ? '#d93025' : 'var(--text-secondary)'} />
-                  <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#d93025' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                  <Users size={18} color={!selectedTeacherId ? 'var(--nav-active-fg)' : 'var(--text-secondary)'} />
+                  <span style={{ fontWeight: !selectedTeacherId ? 600 : 500, color: !selectedTeacherId ? 'var(--nav-active-fg)' : 'var(--text-primary)', fontSize: '0.9rem' }}>
                     Todos los Docentes
                   </span>
                   <span style={{ marginLeft: 'auto', background: 'var(--surface-muted)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
@@ -433,16 +424,16 @@ export default function PlanningDocuments() {
                       gap: '0.75rem',
                       padding: '0.6rem 0.75rem',
                       borderRadius: '10px',
-                      border: selectedTeacherId === teacher.id ? '2px solid #d93025' : '1px solid var(--border-color)',
-                      background: selectedTeacherId === teacher.id ? '#fce8e6' : 'var(--bg-color-surface)',
+                      border: selectedTeacherId === teacher.id ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                      background: selectedTeacherId === teacher.id ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
                       cursor: 'pointer',
                       width: '100%',
                       textAlign: 'left',
                       marginBottom: '0.25rem'
                     }}
                   >
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#d9302520', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <UserCheck size={16} color="#d93025" />
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--surface-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <UserCheck size={16} color="var(--text-secondary)" />
                     </div>
                     <span style={{ fontWeight: selectedTeacherId === teacher.id ? 600 : 400, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
                       {teacher.name}
@@ -461,17 +452,17 @@ export default function PlanningDocuments() {
                   alignItems: 'center',
                   gap: '0.75rem',
                   padding: '0.75rem',
-                  borderRadius: '12px',
-                  border: !selectedTeacherId ? '2px solid #d93025' : '1px solid var(--border-color)',
-                  background: !selectedTeacherId ? '#fce8e6' : 'var(--bg-color-surface)',
+                  borderRadius: '10px',
+                  border: !selectedTeacherId ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                  background: !selectedTeacherId ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
                   cursor: 'pointer',
                   width: '100%',
                   textAlign: 'left',
                   marginBottom: '0.5rem'
                 }}
               >
-                <FileText size={18} color={!selectedTeacherId ? '#d93025' : 'var(--text-secondary)'} />
-                <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#d93025' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                <FileText size={18} color={!selectedTeacherId ? 'var(--nav-active-fg)' : 'var(--text-secondary)'} />
+                <span style={{ fontWeight: !selectedTeacherId ? 600 : 500, color: !selectedTeacherId ? 'var(--nav-active-fg)' : 'var(--text-primary)', fontSize: '0.9rem' }}>
                   Mis Informes
                 </span>
                 <span style={{ marginLeft: 'auto', background: 'var(--surface-muted)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
@@ -481,7 +472,6 @@ export default function PlanningDocuments() {
             )
           ) : (
             grades.map((grade, idx) => {
-              const gradeColor = gradientColors[idx % gradientColors.length];
               const isGradeExpanded = selectedGrade === grade.name;
               const hasSelectedChild = grade.sections.some(s => s.id === selectedSection);
               
@@ -496,28 +486,29 @@ export default function PlanningDocuments() {
                       padding: '0.6rem 0.75rem',
                       borderRadius: '10px',
                       border: 'none',
-                      background: hasSelectedChild || isGradeExpanded ? `${gradeColor[0]}15` : 'transparent',
+                      background: hasSelectedChild || isGradeExpanded ? 'var(--surface-muted)' : 'transparent',
                       cursor: 'pointer',
                       width: '100%',
                       textAlign: 'left'
                     }}
                   >
                     {isGradeExpanded ? (
-                      <ChevronDown size={16} color={gradeColor[0]} />
+                      <ChevronDown size={16} color="var(--text-secondary)" />
                     ) : (
-                      <ChevronRight size={16} color={gradeColor[0]} />
+                      <ChevronRight size={16} color="var(--text-secondary)" />
                     )}
-                    <Folder size={18} color={gradeColor[0]} />
+                    <Folder size={18} color="var(--text-secondary)" />
                     <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
                       {grade.name}
                     </span>
                     <span style={{ 
                       marginLeft: 'auto', 
-                      background: gradeColor[0], 
-                      color: 'white', 
+                      background: 'var(--bg-color-surface)', 
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-secondary)', 
                       fontSize: '0.7rem', 
                       padding: '0.15rem 0.4rem', 
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       fontWeight: 600
                     }}>
                       {getDocCountForGrade(grade.name)}
@@ -577,20 +568,16 @@ export default function PlanningDocuments() {
                 setShowUploadModal(true);
               }
             }}
+            className="btn-primary"
             style={{
               marginTop: 'auto',
-              background: contentType === 'reports' ? '#d93025' : '#e37400',
-              color: 'white',
-              border: 'none',
-              padding: '0.9rem',
-              borderRadius: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
+              padding: '0.7rem',
+              borderRadius: '20px',
+              fontSize: '0.875rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 4px 15px rgba(227, 116, 0, 0.3)'
+              gap: '0.5rem'
             }}
           >
             <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
@@ -600,99 +587,82 @@ export default function PlanningDocuments() {
 
       {/* Contenido principal */}
       <div style={{ flex: 1, width: contentType === 'reports' ? '100%' : 'auto' }}>
-        {/* Header */}
+        {/* Barra de herramientas */}
         <div style={{
-          background: '#e37400',
-          borderRadius: '20px',
-          padding: '1.5rem 2rem',
+          background: 'var(--bg-color-surface)',
+          borderRadius: '12px',
+          padding: '1rem 1.5rem',
           marginBottom: '1.5rem',
-          color: 'white',
-          position: 'relative',
-          overflow: 'hidden'
+          border: '1px solid var(--border-color)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          flexWrap: 'wrap'
         }}>
-          <div style={{
-            position: 'absolute',
-            top: '-50%',
-            right: '-10%',
-            width: '300px',
-            height: '300px',
-            background: 'rgba(255,255,255,0.1)',
-            borderRadius: '50%'
-          }} />
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{
-                width: '50px',
-                height: '50px',
-                background: 'rgba(255,255,255,0.2)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(10px)'
-              }}>
-                {contentType === 'planifications' ? <FileText size={24} /> : <BookMarked size={24} />}
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
-                  {contentType === 'planifications' ? 'Planificaciones' : 'Sesiones de Aprendizaje'}
-                </h2>
-                <p style={{ opacity: 0.9, fontSize: '0.85rem', margin: 0 }}>
-                  {selectedSection 
-                    ? `Ver documentos de ${getSectionName(selectedSection)}` 
-                    : 'Gestiona los documentos de planificación y sesiones'}
-                </p>
-              </div>
-            </div>
+          <div>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              {contentType === 'planifications' ? 'Planificaciones' : contentType === 'sessions' ? 'Sesiones de Aprendizaje' : 'Informes'}
+            </h2>
+            <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>
+              {selectedSection 
+                ? `Ver documentos de ${getSectionName(selectedSection)}` 
+                : 'Gestiona los documentos de planificación y sesiones'}
+            </p>
+          </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <div style={{ position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                <input 
-                  type="text"
-                  placeholder="Buscar..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  style={{
-                    padding: '0.6rem 1rem 0.6rem 2.5rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.9rem',
-                    width: '180px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-              
-              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.25rem' }}>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: viewMode === 'grid' ? 'var(--bg-color-surface)' : 'transparent',
-                    color: viewMode === 'grid' ? '#b06000' : 'rgba(255,255,255,0.8)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <LayoutGrid size={18} />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: viewMode === 'list' ? 'var(--bg-color-surface)' : 'transparent',
-                    color: viewMode === 'list' ? '#b06000' : 'rgba(255,255,255,0.8)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <List size={18} />
-                </button>
-              </div>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <input 
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{
+                  padding: '0.55rem 1rem 0.55rem 2.5rem',
+                  borderRadius: '20px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--surface-muted)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  width: '180px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', background: 'var(--surface-muted)', borderRadius: '20px', padding: '0.25rem', border: '1px solid var(--border-color)' }}>
+              <button
+                onClick={() => setViewMode('grid')}
+                style={{
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '16px',
+                  border: 'none',
+                  background: viewMode === 'grid' ? 'var(--bg-color-surface)' : 'transparent',
+                  color: viewMode === 'grid' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <LayoutGrid size={18} />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                style={{
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '16px',
+                  border: 'none',
+                  background: viewMode === 'list' ? 'var(--bg-color-surface)' : 'transparent',
+                  color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <List size={18} />
+              </button>
             </div>
           </div>
         </div>
@@ -703,25 +673,26 @@ export default function PlanningDocuments() {
         {filteredDocuments.length === 0 ? (
           <div style={{
             background: 'var(--surface-muted)',
-            borderRadius: '20px',
+            borderRadius: '12px',
             padding: '4rem 2rem',
             textAlign: 'center',
-            border: '2px dashed var(--border-color)'
+            border: '1px solid var(--border-color)'
           }}>
             <div style={{
               width: '80px',
               height: '80px',
-              background: '#e37400',
+              background: 'var(--bg-color-surface)',
+              border: '1px solid var(--border-color)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1.5rem'
             }}>
-              <DocIcon size={40} color="white" />
+              <DocIcon size={40} color="var(--text-secondary)" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-              {searchTerm ? 'No se encontraron resultados' : `No hay ${contentType === 'planifications' ? 'planificaciones' : 'sesiones de aprendizaje'} yet`}
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+              {searchTerm ? 'No se encontraron resultados' : `Aún no hay ${contentType === 'planifications' ? 'planificaciones' : 'sesiones de aprendizaje'}`}
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>
               {isAdmin 
@@ -732,45 +703,42 @@ export default function PlanningDocuments() {
         ) : viewMode === 'grid' ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
             {filteredDocuments.map((doc, idx) => {
-              const [color1, color2] = gradientColors[idx % gradientColors.length];
               const sectionId = doc.sections?.[0];
               const section = classes.find(c => c.id === sectionId);
               
               return (
                 <div key={doc.id} style={{
                   background: 'var(--bg-color-surface)',
-                  borderRadius: '16px',
+                  borderRadius: '12px',
                   padding: '1.25rem',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                  border: `1px solid ${color1}20`,
-                  transition: 'all 0.3s ease'
+                  border: '1px solid var(--border-color)',
+                  transition: 'box-shadow 0.2s ease'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                     <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '12px',
-                      background: `${color1}`,
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '10px',
+                      background: 'var(--nav-active-bg)',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: `0 4px 15px ${color1}40`
+                      justifyContent: 'center'
                     }}>
-                      <DocIcon size={24} color="white" />
+                      <DocIcon size={22} color="var(--nav-active-fg)" />
                     </div>
                     {(isAdmin || doc.uploadedById === currentUser?.id || doc.uploadedBy === currentUser?.name || doc.uploaded_by === currentUser?.name || (!doc.uploadedById && !doc.uploadedBy && !doc.uploaded_by)) && (
                       <button
                         onClick={() => handleDelete(doc.id)}
                         style={{
-                          background: 'rgba(217, 48, 37, 0.1)',
-                          border: '1px solid rgba(217, 48, 37, 0.3)',
+                          background: 'var(--danger-tint-bg)',
+                          border: '1px solid transparent',
                           borderRadius: '8px',
                           padding: '0.5rem',
                           cursor: 'pointer',
-                          color: '#d93025',
+                          color: 'var(--danger-tint-fg)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
@@ -781,7 +749,7 @@ export default function PlanningDocuments() {
                     )}
                   </div>
                   
-                  <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ fontWeight: 500, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
                     {doc.title}
                   </h3>
                   
@@ -793,15 +761,15 @@ export default function PlanningDocuments() {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      <GraduationCap size={14} color={color1} />
+                      <GraduationCap size={14} />
                       <span>{getGradeDisplay(doc)}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      <BookOpen size={14} color={color1} />
+                      <BookOpen size={14} />
                       <span>{getSubjectName(doc.subjectId)}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      <Calendar size={14} color={color1} />
+                      <Calendar size={14} />
                       <span>{doc.period}</span>
                     </div>
                   </div>
@@ -809,20 +777,16 @@ export default function PlanningDocuments() {
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
                       onClick={() => openDoc(doc)}
+                      className="btn-primary"
                       style={{
                         flex: 1,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '0.5rem',
-                        padding: '0.6rem',
-                        background: `${color1}`,
-                        border: 'none',
-                        borderRadius: '10px',
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer'
+                        padding: '0.55rem',
+                        borderRadius: '20px',
+                        fontSize: '0.85rem'
                       }}
                     >
                       <Eye size={16} /> Ver
@@ -836,12 +800,12 @@ export default function PlanningDocuments() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '0.5rem',
-                        padding: '0.6rem',
+                        padding: '0.55rem',
                         background: 'var(--bg-color-surface)',
-                        border: `1px solid ${color1}`,
-                        borderRadius: '10px',
-                        color: color1,
-                        fontWeight: 600,
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '20px',
+                        color: 'var(--accent-primary)',
+                        fontWeight: 500,
                         fontSize: '0.85rem',
                         textDecoration: 'none',
                         cursor: 'pointer'
@@ -861,40 +825,38 @@ export default function PlanningDocuments() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {filteredDocuments.map((doc, idx) => {
-              const [color1, color2] = gradientColors[idx % gradientColors.length];
               const sectionId = doc.sections?.[0];
               const section = classes.find(c => c.id === sectionId);
               
               return (
                 <div key={doc.id} style={{
                   background: 'var(--bg-color-surface)',
-                  borderRadius: '14px',
+                  borderRadius: '12px',
                   padding: '1rem 1.25rem',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-                  border: '1px solid var(--surface-muted)',
+                  border: '1px solid var(--border-color)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1rem',
-                  transition: 'all 0.2s ease'
+                  transition: 'box-shadow 0.2s ease'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = color1; e.currentTarget.style.boxShadow = `0 4px 15px ${color1}20`; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--surface-muted)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                 >
                   <div style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',
-                    background: `${color1}`,
+                    background: 'var(--nav-active-bg)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0
                   }}>
-                    <DocIcon size={20} color="white" />
+                    <DocIcon size={20} color="var(--nav-active-fg)" />
                   </div>
                   
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <h3 style={{ fontWeight: 600, fontSize: '0.95rem', margin: 0, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <h3 style={{ fontWeight: 500, fontSize: '0.95rem', margin: 0, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {doc.title}
                     </h3>
                     <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
@@ -909,12 +871,13 @@ export default function PlanningDocuments() {
                       onClick={() => openDoc(doc)}
                       style={{
                         padding: '0.5rem',
-                        background: `${color1}15`,
+                        background: 'var(--nav-active-bg)',
                         border: 'none',
                         borderRadius: '8px',
                         cursor: 'pointer',
-                        color: color1
+                        color: 'var(--nav-active-fg)'
                       }}
+                      title="Ver"
                     >
                       <Eye size={16} />
                     </button>
@@ -924,14 +887,15 @@ export default function PlanningDocuments() {
                       style={{
                         padding: '0.5rem',
                         background: 'var(--bg-color-surface)',
-                        border: `1px solid ${color1}`,
+                        border: '1px solid var(--border-color)',
                         borderRadius: '8px',
-                        color: color1,
+                        color: 'var(--accent-primary)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         textDecoration: 'none'
                       }}
+                      title="Descargar"
                     >
                       <Download size={16} />
                     </a>
@@ -940,12 +904,13 @@ export default function PlanningDocuments() {
                         onClick={() => handleDelete(doc.id)}
                         style={{
                           padding: '0.5rem',
-                          background: 'rgba(217, 48, 37, 0.1)',
-                          border: '1px solid rgba(217, 48, 37, 0.3)',
+                          background: 'var(--danger-tint-bg)',
+                          border: '1px solid transparent',
                           borderRadius: '8px',
                           cursor: 'pointer',
-                          color: '#d93025'
+                          color: 'var(--danger-tint-fg)'
                         }}
+                        title="Eliminar"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -962,31 +927,26 @@ export default function PlanningDocuments() {
         }}>
           <div style={{ 
             maxWidth: '500px', width: '100%', 
-            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
             position: 'relative'
           }}>
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: 'rgba(26, 115, 232, 0.12)',
-              borderRadius: '50%'
-            }} />
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: '#d93025',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Briefcase size={24} color="white" />
+                  <Briefcase size={20} color="var(--nav-active-fg)" />
                 </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>
                   Subir Informe
                 </h3>
               </div>
@@ -1056,7 +1016,7 @@ export default function PlanningDocuments() {
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#e37400'}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
                   onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                 >
                   <Upload size={32} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
@@ -1066,14 +1026,11 @@ export default function PlanningDocuments() {
               </div>
 
               <button 
+                className="btn-primary"
                 style={{
-                  background: '#d93025',
-                  color: 'white',
-                  border: 'none',
-                  padding: '1rem',
-                  borderRadius: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  padding: '0.7rem',
+                  borderRadius: '20px',
+                  fontSize: '0.875rem',
                   marginTop: '1rem'
                 }}
               >
@@ -1100,31 +1057,26 @@ export default function PlanningDocuments() {
         }}>
           <div style={{ 
             maxWidth: '500px', width: '100%', 
-            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: 'rgba(227, 116, 0, 0.12)',
-              borderRadius: '50%'
-            }} />
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: '#e37400',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Upload size={24} color="white" />
+                  <Upload size={20} color="var(--nav-active-fg)" />
                 </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>
                   Subir {contentType === 'planifications' ? 'Planificación' : 'Sesión'}
                 </h3>
               </div>
@@ -1193,12 +1145,12 @@ export default function PlanningDocuments() {
                   })}
                 </div>
                 {uploadData.sections.length === 0 && (
-                  <p style={{ fontSize: '0.75rem', color: '#b3261e', marginTop: '0.25rem' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--danger-color)', marginTop: '0.25rem' }}>
                     ⚠️ Selecciona al menos una sección
                   </p>
                 )}
                 {uploadData.sections.length > 0 && (
-                  <p style={{ fontSize: '0.75rem', color: '#188038', marginTop: '0.25rem' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--success-color)', marginTop: '0.25rem' }}>
                     ✓ {uploadData.sections.length} sección(es) seleccionada(s)
                   </p>
                 )}
@@ -1246,13 +1198,13 @@ export default function PlanningDocuments() {
                 <div style={{ 
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
                   padding: '0.75rem',
-                  background: '#e6f4ea',
+                  background: 'var(--surface-muted)',
                   borderRadius: '10px',
-                  border: '1px solid #18803840',
-                  color: '#188038'
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--success-color)'
                 }}>
                   <FileText size={18} />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{uploadData.fileName}</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>{uploadData.fileName}</span>
                 </div>
               )}
 
@@ -1260,19 +1212,19 @@ export default function PlanningDocuments() {
                 <button 
                   onClick={() => setShowUploadModal(false)}
                   style={{ 
-                    flex: 1, padding: '0.75rem', borderRadius: '12px',
-                    background: 'var(--surface-muted)', color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 600
+                    flex: 1, padding: '0.6rem', borderRadius: '20px',
+                    background: 'var(--bg-color-surface)', color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'
                   }}
                 >
                   Cancelar
                 </button>
                 <button 
                   onClick={handleUpload}
+                  className="btn-primary"
                   style={{ 
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    background: '#e37400', color: 'white',
-                    border: 'none', borderRadius: '12px', padding: '0.75rem', cursor: 'pointer', fontWeight: 600
+                    borderRadius: '20px', padding: '0.6rem', fontSize: '0.875rem'
                   }}
                 >
                   <Upload size={18} /> Subir
@@ -1311,19 +1263,15 @@ export default function PlanningDocuments() {
                 <a
                   href="#"
                   onClick={(e) => { e.preventDefault(); downloadDoc(viewingDoc); }}
+                  className="btn-primary"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
                     padding: '0.5rem 1rem',
-                    background: '#e37400',
-                    border: 'none',
-                    borderRadius: '10px',
-                    color: 'white',
-                    fontWeight: 600,
+                    borderRadius: '20px',
                     fontSize: '0.85rem',
-                    textDecoration: 'none',
-                    cursor: 'pointer'
+                    textDecoration: 'none'
                   }}
                 >
                   <Download size={16} /> Descargar
@@ -1332,11 +1280,12 @@ export default function PlanningDocuments() {
                   onClick={() => setViewingDoc(null)}
                   style={{
                     padding: '0.5rem 1rem',
-                    background: 'var(--surface-muted)',
+                    background: 'var(--bg-color-surface)',
                     border: '1px solid var(--border-color)',
-                    borderRadius: '10px',
-                    color: 'var(--text-secondary)',
-                    fontWeight: 600,
+                    borderRadius: '20px',
+                    color: 'var(--text-primary)',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
                     cursor: 'pointer'
                   }}
                 >
