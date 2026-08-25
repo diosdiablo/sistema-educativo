@@ -290,7 +290,7 @@ export default function Users() {
                       background: isAdmin ? 'rgba(24, 128, 56, 0.15)' : 'rgba(227, 116, 0, 0.15)',
                       color: isAdmin ? '#188038' : '#e37400',
                       fontWeight: 700,
-                      border: `1px solid ${isAdmin ? '#10b98140' : '#f59e0b40'}`
+                      border: `1px solid ${isAdmin ? '#18803840' : '#e3740040'}`
                     }}>
                       {isAdmin ? 'Administrador' : 'Docente'}
                     </span>
@@ -410,7 +410,7 @@ export default function Users() {
             </div>
 
             {error && (
-              <div style={{ padding: '0.75rem', marginBottom: '1rem', background: 'rgba(217, 48, 37, 0.1)', color: '#d93025', borderRadius: '10px', fontSize: '0.875rem', border: '1px solid #ef444440' }}>
+              <div style={{ padding: '0.75rem', marginBottom: '1rem', background: 'rgba(217, 48, 37, 0.1)', color: '#d93025', borderRadius: '10px', fontSize: '0.875rem', border: '1px solid #d9302540' }}>
                 {error}
               </div>
             )}

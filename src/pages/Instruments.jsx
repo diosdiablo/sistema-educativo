@@ -690,7 +690,7 @@ export default function Instruments() {
                       alignItems: 'center', 
                       gap: '6px',
                       background: '#f5f3ff',
-                      border: '1px solid #8b5cf630',
+                      border: '1px solid #7627bb30',
                       padding: '0.6rem 1rem',
                       borderRadius: '8px',
                       fontWeight: 600,
@@ -729,7 +729,7 @@ export default function Instruments() {
                           style={{ 
                             color: '#d93025', 
                             background: '#fce8e6',
-                            border: '1px solid #ef444420',
+                            border: '1px solid #d9302520',
                             padding: '8px',
                             borderRadius: '8px',
                             cursor: 'pointer'
@@ -758,8 +758,8 @@ export default function Instruments() {
                                 style={{ 
                                   fontSize: '0.72rem', 
                                   resize: 'none',
-                                  borderColor: level === 'AD' ? '#10b98130' : level === 'A' ? '#3b82f630' : level === 'B' ? '#f59e0b30' : '#ef444430',
-                                  background: level === 'AD' ? '#10b98108' : level === 'A' ? '#3b82f608' : level === 'B' ? '#f59e0b08' : '#ef444408'
+                                  borderColor: level === 'AD' ? '#18803830' : level === 'A' ? '#1a73e830' : level === 'B' ? '#e3740030' : '#d9302530',
+                                  background: level === 'AD' ? '#18803808' : level === 'A' ? '#1a73e808' : level === 'B' ? '#e3740008' : '#d9302508'
                                 }}
                                 value={c.descriptors?.[level] || ''}
                                 onChange={e => {
@@ -784,7 +784,7 @@ export default function Instruments() {
             {instrumentType === 'numeric' && (
               <div style={{ 
                 background: '#fef7e0', 
-                border: '1px solid #ef444420', 
+                border: '1px solid #d9302520', 
                 borderRadius: '12px', 
                 padding: '1.25rem', 
                 fontSize: '0.9rem', 
@@ -797,7 +797,7 @@ export default function Instruments() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '10px',
-                  background: '#ef444415',
+                  background: '#d9302515',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -814,7 +814,7 @@ export default function Instruments() {
             {(instrumentType === 'portfolio' || instrumentType === 'anecdotal') && (
               <div style={{ 
                 background: '#e8f0fe', 
-                border: '1px solid #6366f120', 
+                border: '1px solid #3f51b520', 
                 borderRadius: '12px', 
                 padding: '1.25rem', 
                 fontSize: '0.9rem', 
@@ -827,7 +827,7 @@ export default function Instruments() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '10px',
-                  background: '#6366f115',
+                  background: '#3f51b515',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'

@@ -389,10 +389,10 @@ export default function StudentProfile() {
                 {filteredAttendanceDays.map(day => {
                   const status = day.records[student.id];
                   const statusConfig = {
-                    P: { label: 'Presente', color: '#188038', bg: '#10b98115' },
-                    T: { label: 'Tardanza', color: '#e37400', bg: '#f59e0b15' },
-                    F: { label: 'Falta', color: '#d93025', bg: '#ef444415' },
-                    J: { label: 'Justificado', color: '#7627bb', bg: '#8b5cf615' },
+                    P: { label: 'Presente', color: '#188038', bg: '#18803815' },
+                    T: { label: 'Tardanza', color: '#e37400', bg: '#e3740015' },
+                    F: { label: 'Falta', color: '#d93025', bg: '#d9302515' },
+                    J: { label: 'Justificado', color: '#7627bb', bg: '#7627bb15' },
                   };
                   const config = statusConfig[status] || { label: status, color: 'var(--text-secondary)', bg: 'var(--surface-muted)' };
                   return (
@@ -439,7 +439,7 @@ export default function StudentProfile() {
                     </div>
                     <span style={{
                       padding: '0.25rem 0.75rem', borderRadius: '8px', fontWeight: 700,
-                      background: diag.result === 'AD' ? '#10b98120' : diag.result === 'A' ? '#3b82f620' : diag.result === 'B' ? '#f59e0b20' : '#ef444420',
+                      background: diag.result === 'AD' ? '#18803820' : diag.result === 'A' ? '#1a73e820' : diag.result === 'B' ? '#e3740020' : '#d9302520',
                       color: diag.result === 'AD' ? '#188038' : diag.result === 'A' ? '#1a73e8' : diag.result === 'B' ? '#e37400' : '#d93025'
                     }}>{diag.result || diag.score || '-'}</span>
                   </div>

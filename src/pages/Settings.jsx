@@ -347,7 +347,7 @@ export default function Settings() {
         borderRadius: '16px',
         padding: '1.25rem',
         marginBottom: '1.5rem',
-        border: '1px solid #f59e0b40',
+        border: '1px solid #e3740040',
         display: 'flex',
         gap: '1rem'
       }}>

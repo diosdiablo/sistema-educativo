@@ -441,7 +441,7 @@ export default function PlanningDocuments() {
                       marginBottom: '0.25rem'
                     }}
                   >
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ef444420', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#d9302520', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <UserCheck size={16} color="#d93025" />
                     </div>
                     <span style={{ fontWeight: selectedTeacherId === teacher.id ? 600 : 400, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
@@ -1248,7 +1248,7 @@ export default function PlanningDocuments() {
                   padding: '0.75rem',
                   background: '#e6f4ea',
                   borderRadius: '10px',
-                  border: '1px solid #22c55e40',
+                  border: '1px solid #18803840',
                   color: '#188038'
                 }}>
                   <FileText size={18} />
