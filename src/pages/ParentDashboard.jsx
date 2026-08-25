@@ -73,10 +73,8 @@ export default function ParentDashboard() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '1rem', background: 'var(--surface-muted)' }}>
         <div style={{ textAlign: 'center' }}>
           <h2 style={{ color: 'var(--text-secondary)' }}>No se encontraron hijos con este DNI</h2>
-          <button onClick={() => navigate('/parent')} style={{
-            marginTop: '1rem', padding: '0.75rem 1.5rem', border: 'none',
-            borderRadius: '12px', background: '#188038', color: 'white',
-            fontWeight: 600, cursor: 'pointer'
+          <button onClick={() => navigate('/parent')} className="btn-primary" style={{
+            marginTop: '1rem', padding: '0.55rem 1.25rem', borderRadius: '20px', fontSize: '0.875rem'
           }}>Volver</button>
         </div>
       </div>
@@ -85,21 +83,22 @@ export default function ParentDashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--surface-muted)', paddingBottom: '2rem' }}>
-      {/* Header */}
+      {/* Encabezado */}
       <div style={{
-        background: '#188038',
-        padding: '1.25rem 1.5rem', color: 'white'
+        background: 'var(--bg-color-surface)',
+        borderBottom: '1px solid var(--border-color)',
+        padding: '1rem 1.5rem'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto' }}>
           <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Portal para Padres</h1>
-            <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: '2px 0 0' }}>DNI: {parentDni}</p>
+            <h1 style={{ fontSize: '1.35rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Portal para Padres</h1>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>DNI: {parentDni}</p>
           </div>
           <button onClick={handleLogout} style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white',
-            padding: '0.5rem 1rem', borderRadius: '10px', cursor: 'pointer',
-            fontSize: '0.85rem', fontWeight: 600
+            background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)',
+            padding: '0.45rem 1rem', borderRadius: '20px', cursor: 'pointer',
+            fontSize: '0.85rem', fontWeight: 500
           }}>
             <LogOut size={16} /> Salir
           </button>
@@ -129,18 +128,18 @@ export default function ParentDashboard() {
           <>
             {/* Student info card */}
             <div style={{
-              background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '1.25rem',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '1.5rem'
+              background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.25rem',
+              border: '1px solid var(--border-color)', marginBottom: '1.5rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{
-                  width: '56px', height: '56px', borderRadius: '16px',
-                  background: '#188038',
+                  width: '52px', height: '52px', borderRadius: '50%',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 700, fontSize: '1.3rem'
+                  color: 'var(--nav-active-fg)', fontWeight: 500, fontSize: '1.2rem'
                 }}>{currentChild.name?.charAt(0)?.toUpperCase() || '?'}</div>
                 <div>
-                  <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{currentChild.name}</h2>
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)' }}>{currentChild.name}</h2>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
                     {getStudentClass(currentChild)?.name || 'Sin sección'} | {currentChild.gradeLevel || currentChild.grade || ''}
                   </p>
@@ -152,28 +151,31 @@ export default function ParentDashboard() {
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
               <button onClick={() => setView('grades')} style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
-                cursor: 'pointer', transition: 'all 0.2s',
-                background: view === 'grades' ? '#188038' : 'var(--border-color)',
-                color: view === 'grades' ? 'white' : 'var(--text-secondary)'
+                padding: '0.6rem', borderRadius: '20px',
+                border: view === 'grades' ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer',
+                background: view === 'grades' ? 'var(--nav-active-bg)' : 'transparent',
+                color: view === 'grades' ? 'var(--nav-active-fg)' : 'var(--text-secondary)'
               }}>
                 <GraduationCap size={18} /> Notas
               </button>
               <button onClick={() => setView('attendance')} style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
-                cursor: 'pointer', transition: 'all 0.2s',
-                background: view === 'attendance' ? '#188038' : 'var(--border-color)',
-                color: view === 'attendance' ? 'white' : 'var(--text-secondary)'
+                padding: '0.6rem', borderRadius: '20px',
+                border: view === 'attendance' ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer',
+                background: view === 'attendance' ? 'var(--nav-active-bg)' : 'transparent',
+                color: view === 'attendance' ? 'var(--nav-active-fg)' : 'var(--text-secondary)'
               }}>
                 <CalendarCheck size={18} /> Asistencia
               </button>
               <button onClick={() => setView('behavior')} style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
-                cursor: 'pointer', transition: 'all 0.2s',
-                background: view === 'behavior' ? '#188038' : 'var(--border-color)',
-                color: view === 'behavior' ? 'white' : 'var(--text-secondary)'
+                padding: '0.6rem', borderRadius: '20px',
+                border: view === 'behavior' ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer',
+                background: view === 'behavior' ? 'var(--nav-active-bg)' : 'transparent',
+                color: view === 'behavior' ? 'var(--nav-active-fg)' : 'var(--text-secondary)'
               }}>
                 <ThumbsUp size={18} /> Conducta
               </button>
@@ -203,16 +205,18 @@ export default function ParentDashboard() {
                 ) : (
                   subjectsWithGrades.map(({ subject, grades: sg }) => (
                     <div key={subject.id || subject.name} style={{
-                      background: 'var(--bg-color-surface)', borderRadius: '16px',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      background: 'var(--bg-color-surface)', borderRadius: '12px',
+                      border: '1px solid var(--border-color)',
                       marginBottom: '1rem', overflow: 'hidden'
                     }}>
                       <div style={{
                         padding: '0.75rem 1rem',
-                        background: '#e37400',
-                        color: 'white', fontWeight: 700, fontSize: '0.9rem'
+                        background: 'var(--surface-muted)',
+                        borderBottom: '1px solid var(--border-color)',
+                        color: 'var(--text-primary)', fontWeight: 500, fontSize: '0.9rem',
+                        display: 'flex', alignItems: 'center'
                       }}>
-                        <BookOpen size={14} style={{ marginRight: '0.5rem' }} />
+                        <BookOpen size={15} style={{ marginRight: '0.5rem', color: 'var(--accent-primary)' }} />
                         {subject.name}
                       </div>
                       <div style={{ padding: '0.75rem 1rem' }}>
@@ -231,7 +235,7 @@ export default function ParentDashboard() {
                                 {comp?.name || g.competencyId || 'Competencia'}
                               </div>
                               <div style={{
-                                fontWeight: 700, fontSize: '1rem',
+                                fontWeight: 500, fontSize: '1rem',
                                 color: qual === 'AD' ? '#188038' : qual === 'A' ? '#1a73e8' : qual === 'B' ? '#e37400' : '#d93025',
                                 minWidth: '40px', textAlign: 'right'
                               }}>
@@ -256,10 +260,10 @@ export default function ParentDashboard() {
                     <p>No hay registros de conducta</p>
                   </div>
                 ) : (
-                  <div style={{ background: 'var(--bg-color-surface)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
                     <div style={{
-                      padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-muted)',
-                      background: 'var(--surface-muted)', fontWeight: 700, fontSize: '0.9rem',
+                      padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)',
+                      background: 'var(--surface-muted)', fontWeight: 500, fontSize: '0.9rem',
                       color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem'
                     }}>
                       <ThumbsUp size={16} /> Registro de Conducta
@@ -271,11 +275,11 @@ export default function ParentDashboard() {
                           padding: '0.65rem 1rem', borderBottom: '1px solid var(--surface-muted)'
                         }}>
                           <div style={{
-                            width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+                            width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: r.type === 'positive' ? '#ceead6' : '#fad2cf'
+                            background: r.type === 'positive' ? '#18803815' : 'var(--danger-tint-bg)'
                           }}>
-                            {r.type === 'positive' ? <ThumbsUp size={16} color="#188038" /> : <ThumbsDown size={16} color="#d93025" />}
+                            {r.type === 'positive' ? <ThumbsUp size={16} color="#188038" /> : <ThumbsDown size={16} color="var(--danger-tint-fg)" />}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.description}</div>
@@ -284,9 +288,9 @@ export default function ParentDashboard() {
                             </div>
                           </div>
                           <span style={{
-                            padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
-                            background: r.type === 'positive' ? '#ceead6' : '#fad2cf',
-                            color: r.type === 'positive' ? '#188038' : '#b3261e'
+                            padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 500,
+                            background: r.type === 'positive' ? '#18803815' : 'var(--danger-tint-bg)',
+                            color: r.type === 'positive' ? '#188038' : 'var(--danger-tint-fg)'
                           }}>
                             {r.type === 'positive' ? 'Positivo' : 'Negativo'}
                           </span>
@@ -307,10 +311,10 @@ export default function ParentDashboard() {
                     <p>No hay registros de asistencia</p>
                   </div>
                 ) : (
-                  <div style={{ background: 'var(--bg-color-surface)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
                     <div style={{
-                      padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-muted)',
-                      background: 'var(--surface-muted)', fontWeight: 700, fontSize: '0.9rem',
+                      padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)',
+                      background: 'var(--surface-muted)', fontWeight: 500, fontSize: '0.9rem',
                       color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem'
                     }}>
                       <CalendarCheck size={16} /> Registro de Asistencia
@@ -326,9 +330,9 @@ export default function ParentDashboard() {
                           </span>
                           <span style={{
                             padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem',
-                            fontWeight: 600,
-                            background: a.status === 'presente' ? '#ceead6' : a.status === 'tardanza' ? '#fef9c3' : '#fad2cf',
-                            color: a.status === 'presente' ? '#188038' : a.status === 'tardanza' ? '#b06000' : '#b3261e'
+                            fontWeight: 500,
+                            background: a.status === 'presente' ? '#18803815' : a.status === 'tardanza' ? '#e3740015' : a.status === 'justificado' ? '#007b8315' : 'var(--danger-tint-bg)',
+                            color: a.status === 'presente' ? '#188038' : a.status === 'tardanza' ? '#e37400' : a.status === 'justificado' ? '#007b83' : 'var(--danger-tint-fg)'
                           }}>
                             {a.status === 'presente' ? 'Presente' : a.status === 'tardanza' ? 'Tardanza' : a.status === 'justificado' ? 'Justificado' : 'Falta'}
                           </span>
