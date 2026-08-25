@@ -64,31 +64,19 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
       <div className={`sidebar-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid rgba(255,255,255,0.2)',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
-          }}>
-            <img src={Logo} alt="Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
-          </div>
+          <img src={Logo} alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           <div>
             <h1 className="sidebar-title">Portal Agro</h1>
-            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>I.E.P. 110</span>
+            <span style={{ fontSize: '0.65rem', color: '#80868b', letterSpacing: '0.1em' }}>I.E.P. 110</span>
           </div>
           <div style={{ position: 'relative', marginLeft: 'auto' }}>
             <button ref={bellBtnRef} onClick={(e) => { e.stopPropagation(); toggleNotifs(e); }} style={{
-              background: showNotifs ? 'rgba(255,255,255,0.2)' : 'transparent',
-              border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem',
-              borderRadius: '10px', position: 'relative', transition: 'all 0.2s ease',
+              background: showNotifs ? '#e8f0fe' : 'transparent',
+              border: 'none', color: '#5f6368', cursor: 'pointer', padding: '0.5rem',
+              borderRadius: '50%', position: 'relative', transition: 'all 0.2s ease',
               display: 'flex'
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
               onMouseLeave={e => { if (!showNotifs) e.currentTarget.style.background = 'transparent'; }}
             >
               {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
@@ -96,14 +84,14 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
                 <span style={{
                   position: 'absolute', top: '2px', right: '2px',
                   width: '18px', height: '18px', borderRadius: '50%',
-                  background: '#ef4444', color: 'white', fontSize: '0.65rem',
-                  fontWeight: 700, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', border: '2px solid #0f172a'
+                  background: '#d93025', color: 'white', fontSize: '0.65rem',
+                  fontWeight: 500, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', border: '2px solid #ffffff'
                 }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
             </button>
           </div>
-          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem' }}>
+          <button className="mobile-close-btn" onClick={onClose} style={{ display: 'none', background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', padding: '0.5rem' }}>
             <X size={24} />
           </button>
         </div>
@@ -120,35 +108,32 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
             </NavLink>
           ))}
         </div>
-        
-        <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(0,0,0,0.15)', borderRadius: '16px', margin: '0.5rem' }}>
+
+        <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid #dadce0', background: '#ffffff', borderRadius: '12px', margin: '0.5rem 0.25rem 0.25rem 0.25rem' }}>
           <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ 
-              width: '40px', height: '40px', 
-              borderRadius: '12px', 
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '1px solid rgba(255,255,255,0.2)'
+            <div style={{
+              width: '40px', height: '40px',
+              borderRadius: '50%',
+              background: '#e8f0fe',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-              <Users size={20} color="white" />
+              <Users size={20} color="#1967d2" />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+              <span style={{ color: '#5f6368', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
               </span>
-              <strong style={{color: '#ffffff', fontSize: '0.9rem', fontWeight: 600}}>{currentUser?.name}</strong>
+              <strong style={{ color: '#202124', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentUser?.name}</strong>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => { logout(); onClose(); }}
-            style={{ 
+            style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)',
-              padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              background: '#fce8e6', color: '#d93025', border: 'none',
+              padding: '0.65rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem',
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <LogOut size={18} /> Cerrar Sesión
           </button>
@@ -239,14 +224,14 @@ function AppContent() {
           position: 'fixed', left: notifPos.left, top: notifPos.top,
           width: notifPos.isMobile ? 'calc(100vw - 32px)' : '320px',
           maxHeight: 'min(360px, calc(100vh - 90px))', overflowY: 'auto',
-          background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          background: 'white', border: '1px solid #dadce0', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
           zIndex: 9999, padding: '0.5rem'
         }}>
-          <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
+          <div style={{ padding: '0.75rem 0.75rem 0.5rem', borderBottom: '1px solid #e8eaed', fontWeight: 500, fontSize: '0.9rem', color: '#202124' }}>
             Notificaciones
           </div>
           {notifications.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#9aa0a6', fontSize: '0.85rem' }}>
               No hay notificaciones
             </div>
           ) : (
@@ -259,29 +244,29 @@ function AppContent() {
                   onTouchEnd={e => { const dx = parseInt(e.currentTarget.style.transform?.replace('translateX(', '')?.replace('px)', '') || '0'); if (dx > 80) { e.currentTarget.style.transition = 'transform 0.3s ease'; e.currentTarget.style.transform = 'translateX(100%)'; setTimeout(() => deleteNotification(n.id), 300); } else { e.currentTarget.style.transition = 'transform 0.2s ease'; e.currentTarget.style.transform = 'translateX(0)'; } }}
                   style={{
                     padding: '0.75rem', borderRadius: '10px', cursor: 'pointer',
-                    background: isUnread ? '#fefce8' : 'transparent',
+                    background: isUnread ? '#fef7e0' : 'transparent',
                     marginBottom: '2px', transition: 'background 0.15s ease',
                     position: 'relative', overflow: 'hidden'
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fefce8' : 'transparent'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#f1f3f4'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#fef7e0' : 'transparent'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                     <div style={{
-                      width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+                      background: '#fef7e0',
                       display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
-                      <Bell size={14} color="white" />
+                      <Bell size={14} color="#b06000" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.8rem', color: '#1e293b' }}>{n.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{n.message}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>
+                      <div style={{ fontWeight: 500, fontSize: '0.8rem', color: '#202124' }}>{n.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#5f6368', marginTop: '2px' }}>{n.message}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#9aa0a6', marginTop: '4px' }}>
                         {new Date(n.createdAt).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
-                    {isUnread && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0, marginTop: '6px' }} />}
+                    {isUnread && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e37400', flexShrink: 0, marginTop: '6px' }} />}
                   </div>
                 </div>
               );
