@@ -26,65 +26,16 @@ export default function ParentLogin() {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       minHeight: '100vh', width: '100vw',
-      background: '#f0fdfa',
+      background: 'var(--bg-color)',
       position: 'fixed', top: 0, left: 0, zIndex: 9999,
       padding: '1rem', overflow: 'hidden'
     }}>
       <div style={{
-        position: 'absolute', top: '-8%', right: '-4%',
-        width: '450px', height: '450px',
-        background: 'radial-gradient(circle, rgba(0, 123, 131,0.12) 0%, transparent 70%)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '-10%', left: '-5%',
-        width: '500px', height: '500px',
-        background: 'radial-gradient(circle, rgba(227, 116, 0,0.1) 0%, transparent 70%)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', top: '12%', left: '6%',
-        width: '180px', height: '180px',
-        border: '2px solid rgba(0, 123, 131,0.08)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '18%', right: '8%',
-        width: '120px', height: '120px',
-        border: '2px solid rgba(227, 116, 0,0.08)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', top: '35%', right: '12%',
-        width: '60px', height: '60px',
-        background: 'rgba(0, 123, 131,0.06)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '35%', left: '10%',
-        width: '40px', height: '40px',
-        background: 'rgba(227, 116, 0,0.06)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', top: '25%', right: '22%',
-        width: '20px', height: '20px',
-        border: '2px solid rgba(0, 123, 131,0.1)',
-        borderRadius: '50%'
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '28%', left: '20%',
-        width: '16px', height: '16px',
-        border: '2px solid rgba(227, 116, 0,0.1)',
-        borderRadius: '50%'
-      }} />
-
-      <div style={{
         width: '100%', maxWidth: '400px',
         background: 'var(--bg-color-surface)',
-        borderRadius: '24px',
+        borderRadius: '16px',
         padding: '2.5rem 2rem',
-        boxShadow: '0 25px 60px rgba(0, 123, 131,0.08), 0 8px 20px rgba(0,0,0,0.04)',
+        border: '1px solid var(--border-color)',
         position: 'relative', zIndex: 1
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -96,7 +47,7 @@ export default function ParentLogin() {
           }}>
             <img src={Logo} alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#134e4a', margin: 0 }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
             Portal para Padres
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
@@ -107,9 +58,8 @@ export default function ParentLogin() {
         {error && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.75rem 1rem', background: '#fce8e6', color: '#b3261e',
-            borderRadius: '12px', fontSize: '0.85rem', marginBottom: '1rem',
-            border: '1px solid #fecaca'
+            padding: '0.75rem 1rem', background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)',
+            borderRadius: '12px', fontSize: '0.85rem', marginBottom: '1rem'
           }}>
             <AlertCircle size={16} />
             {error}
@@ -123,13 +73,13 @@ export default function ParentLogin() {
               placeholder="DNI del apoderado"
               value={dni} maxLength={8}
               onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
-              onFocus={e => { e.currentTarget.style.borderColor = '#007b83'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 123, 131,0.1)'; }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.boxShadow = 'none'; }}
               onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
               style={{
                 width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
-                borderRadius: '14px', border: '1.5px solid var(--border-color)',
+                borderRadius: '12px', border: '1px solid var(--border-color)',
                 fontSize: '0.95rem', outline: 'none',
-                transition: 'all 0.2s', background: 'var(--surface-muted)',
+                background: 'var(--surface-muted)',
                 color: 'var(--text-primary)', boxSizing: 'border-box'
               }}
             />
@@ -139,20 +89,13 @@ export default function ParentLogin() {
             }} size={18} />
           </div>
 
-          <button type="submit" style={{
+          <button type="submit" className="btn-primary" style={{
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            gap: '0.5rem', width: '100%', padding: '0.875rem',
+            gap: '0.5rem', width: '100%', padding: '0.775rem',
             marginTop: '0.5rem',
-            background: '#007b83',
-            color: 'white', border: 'none', borderRadius: '14px',
-            fontWeight: 700, fontSize: '1rem',
-            cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(0, 123, 131,0.25)',
-            transition: 'all 0.2s'
-          }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 123, 131,0.35)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 123, 131,0.25)'; }}
-          >
+            borderRadius: '24px',
+            fontSize: '0.95rem'
+          }}>
             Consultar
             <ArrowRight size={18} />
           </button>
@@ -161,10 +104,9 @@ export default function ParentLogin() {
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
           <button onClick={() => navigate('/login')} style={{
             background: 'none', border: 'none', color: 'var(--text-secondary)',
-            fontSize: '0.85rem', cursor: 'pointer',
-            transition: 'color 0.2s'
+            fontSize: '0.85rem', cursor: 'pointer'
           }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#007b83'; }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
           >
             ← Acceso para docentes
