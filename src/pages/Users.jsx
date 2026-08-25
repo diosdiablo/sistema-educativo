@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { UserCog, Trash2, Edit2, UserPlus, X, Save, Shield, User, BookOpen, Plus, LayoutGrid, Users as UsersIcon } from 'lucide-react';
+import { Trash2, Edit2, UserPlus, X, Save, Shield, User, BookOpen, Plus, LayoutGrid } from 'lucide-react';
 
 export default function Users() {
   const { users, currentUser, updateUser, deleteUser, register, classes, subjects } = useStore();
@@ -103,169 +103,85 @@ export default function Users() {
     }
   };
 
-  const gradientColors = [
-    ['#3f51b5', '#7627bb'],
-    ['#188038', '#146c2e'],
-    ['#e37400', '#b06000'],
-    ['#d93025', '#b3261e'],
-    ['#7627bb', '#6a1b9a'],
-    ['#c2185b', '#ad1457']
-  ];
-
   return (
     <div className="animate-fade-in">
-      {/* Header con gradiente */}
+      {/* Barra de herramientas */}
       <div style={{
-        background: '#c2185b',
-        borderRadius: '20px',
-        padding: '2rem 2.5rem',
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '1.5rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '-5%',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.05)',
-          borderRadius: '50%'
-        }} />
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <UserCog size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Gestión de Usuarios</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Administra las cuentas de acceso al sistema</p>
-            </div>
-          </div>
-          <button 
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: '12px',
-              padding: '0.75rem 1.25rem',
-              color: 'white',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            onClick={() => handleOpenModal()}
-          >
-            <UserPlus size={18} />
-            Nuevo Usuario
-          </button>
+        <div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Gestión de Usuarios</h2>
+          <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Administra las cuentas de acceso al sistema · {users.length} usuarios</p>
         </div>
+        <button 
+          className="btn-primary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.55rem 1.25rem',
+            borderRadius: '20px',
+            fontSize: '0.875rem'
+          }}
+          onClick={() => handleOpenModal()}
+        >
+          <UserPlus size={18} />
+          Nuevo Usuario
+        </button>
       </div>
 
-      {/* Tabla moderna */}
-      <div className="table-container" style={{ overflowX: 'auto', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+      {/* Tabla */}
+      <div className="table-container" style={{ overflowX: 'auto' }}>
         <table className="styled-table" style={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
-              <th style={{ 
-                minWidth: '200px', 
-                background: '#7627bb', 
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                padding: '1rem'
-              }}>
+              <th style={{ minWidth: '200px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <User size={16} />
                   Nombre
                 </div>
               </th>
-              <th style={{ 
-                minWidth: '150px', 
-                background: '#7627bb', 
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                padding: '1rem'
-              }}>
+              <th style={{ minWidth: '150px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Shield size={16} />
                   Usuario
                 </div>
               </th>
-              <th style={{ 
-                minWidth: '130px', 
-                background: '#7627bb', 
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                padding: '1rem'
-              }}>
+              <th style={{ minWidth: '130px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <LayoutGrid size={16} />
                   Rol
                 </div>
               </th>
-              <th style={{ 
-                minWidth: '160px', 
-                background: '#7627bb', 
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                padding: '1rem',
-                textAlign: 'center'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <UsersIcon size={16} />
-                  Acciones
-                </div>
-              </th>
+              <th style={{ minWidth: '160px', textAlign: 'center' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user, idx) => {
-              const [color1, color2] = gradientColors[idx % gradientColors.length];
+            {users.map((user) => {
               const isAdmin = user.role === 'admin' || user.username === 'admin';
               return (
                 <tr key={user.id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{ 
-                        width: '40px', height: '40px', borderRadius: '12px', 
-                        background: isAdmin ? '#188038' : `${color1}`,
+                        width: '38px', height: '38px', borderRadius: '50%', 
+                        background: isAdmin ? '#18803815' : 'var(--nav-active-bg)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                        color: isAdmin ? '#188038' : 'var(--nav-active-fg)'
                       }}>
                         {isAdmin ? <Shield size={18} /> : <User size={18} />}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600 }}>{user.name}</div>
+                        <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.name}</div>
                         {user.id === currentUser.id && (
                           <span style={{ fontSize: '0.7rem', color: '#188038', fontWeight: 600 }}> (Tú)</span>
                         )}
@@ -274,11 +190,12 @@ export default function Users() {
                   </td>
                   <td>
                     <code style={{ 
-                      background: `${color1}15`, 
+                      background: 'var(--surface-muted)',
+                      border: '1px solid var(--border-color)',
                       padding: '4px 10px', 
                       borderRadius: '8px', 
-                      color: color1,
-                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      fontWeight: 500,
                       fontSize: '0.85rem'
                     }}>
                       {user.username}
@@ -286,11 +203,10 @@ export default function Users() {
                   </td>
                   <td>
                     <span style={{ 
-                      fontSize: '0.75rem', padding: '6px 12px', borderRadius: '20px',
-                      background: isAdmin ? 'rgba(24, 128, 56, 0.15)' : 'rgba(227, 116, 0, 0.15)',
+                      fontSize: '0.75rem', padding: '5px 12px', borderRadius: '20px',
+                      background: isAdmin ? '#18803815' : '#e3740015',
                       color: isAdmin ? '#188038' : '#e37400',
-                      fontWeight: 700,
-                      border: `1px solid ${isAdmin ? '#18803840' : '#e3740040'}`
+                      fontWeight: 500
                     }}>
                       {isAdmin ? 'Administrador' : 'Docente'}
                     </span>
@@ -302,61 +218,59 @@ export default function Users() {
                         style={{ 
                           padding: '8px', 
                           borderRadius: '10px', 
-                          background: 'rgba(26, 115, 232, 0.1)',
-                          border: '1px solid rgba(26, 115, 232, 0.3)',
-                          color: '#1a73e8',
+                          background: 'var(--nav-active-bg)',
+                          border: '1px solid transparent',
+                          color: 'var(--nav-active-fg)',
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(26, 115, 232, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(26, 115, 232, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent-primary)'; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--nav-active-bg)'; e.currentTarget.style.color = 'var(--nav-active-fg)'; }}
                         title="Asignar Grados y Materias"
                       >
-                        <BookOpen size={18} />
+                        <BookOpen size={17} />
                       </button>
                       <button 
                         onClick={() => handleOpenModal(user)}
                         style={{ 
                           padding: '8px', 
                           borderRadius: '10px', 
-                          background: 'rgba(118, 39, 187, 0.1)',
-                          border: '1px solid rgba(118, 39, 187, 0.3)',
-                          color: '#7627bb',
+                          background: 'var(--surface-muted)',
+                          border: '1px solid var(--border-color)',
+                          color: 'var(--text-secondary)',
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(118, 39, 187, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(118, 39, 187, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-primary)'; e.currentTarget.style.borderColor = 'var(--accent-primary)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-color)'; }}
                         title="Editar usuario"
                       >
-                        <Edit2 size={18} />
+                        <Edit2 size={17} />
                       </button>
                       <button 
                         onClick={() => handleDelete(user.id)}
                         style={{ 
                           padding: '8px', 
                           borderRadius: '10px', 
-                          background: user.id === currentUser.id ? 'rgba(100,100,100,0.1)' : 'rgba(217, 48, 37, 0.1)',
-                          border: user.id === currentUser.id ? '1px solid rgba(100,100,100,0.3)' : '1px solid rgba(217, 48, 37, 0.3)',
-                          color: user.id === currentUser.id ? '#999' : '#d93025',
+                          background: user.id === currentUser.id ? 'var(--surface-muted)' : 'var(--danger-tint-bg)',
+                          border: '1px solid transparent',
+                          color: user.id === currentUser.id ? 'var(--text-secondary)' : 'var(--danger-tint-fg)',
                           cursor: user.id === currentUser.id ? 'not-allowed' : 'pointer',
-                          transition: 'all 0.2s ease',
+                          opacity: user.id === currentUser.id ? 0.5 : 1,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}
-                        onMouseEnter={(e) => { if (user.id !== currentUser.id) { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; } }}
-                        onMouseLeave={(e) => { if (user.id !== currentUser.id) { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; } }}
+                        onMouseEnter={(e) => { if (user.id !== currentUser.id) { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; } }}
+                        onMouseLeave={(e) => { if (user.id !== currentUser.id) { e.currentTarget.style.background = 'var(--danger-tint-bg)'; e.currentTarget.style.color = 'var(--danger-tint-fg)'; } }}
                         disabled={user.id === currentUser.id}
                         title="Eliminar usuario"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={17} />
                       </button>
                     </div>
                   </td>
@@ -376,31 +290,25 @@ export default function Users() {
         }}>
           <div style={{ 
             width: '100%', maxWidth: '480px', 
-            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
+            border: '1px solid var(--border-color)',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: 'rgba(118, 39, 187, 0.12)',
-              borderRadius: '50%'
-            }} />
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
                   width: '48px',
                   height: '48px',
                   borderRadius: '12px',
-                  background: '#7627bb',
+                  background: 'var(--nav-active-bg)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <UserPlus size={24} color="white" />
+                  <UserPlus size={24} color="var(--nav-active-fg)" />
                 </div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)' }}>
                   {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
                 </h2>
               </div>
@@ -410,7 +318,7 @@ export default function Users() {
             </div>
 
             {error && (
-              <div style={{ padding: '0.75rem', marginBottom: '1rem', background: 'rgba(217, 48, 37, 0.1)', color: '#d93025', borderRadius: '10px', fontSize: '0.875rem', border: '1px solid #d9302540' }}>
+              <div style={{ padding: '0.75rem', marginBottom: '1rem', background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)', borderRadius: '10px', fontSize: '0.875rem' }}>
                 {error}
               </div>
             )}
@@ -475,10 +383,10 @@ export default function Users() {
                   Cancelar
                 </button>
                 <button type="submit" 
+                  className="btn-primary"
                   style={{ 
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    background: '#7627bb', color: 'white',
-                    border: 'none', borderRadius: '12px', padding: '0.75rem', cursor: 'pointer', fontWeight: 600
+                    padding: '0.75rem', borderRadius: '12px'
                   }}
                 >
                   <Save size={18} /> {editingUser ? 'Guardar' : 'Crear'}
@@ -498,32 +406,26 @@ export default function Users() {
         }}>
           <div style={{ 
             width: '100%', maxWidth: '550px', 
-            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '2rem',
+            border: '1px solid var(--border-color)',
             position: 'relative'
           }} className="animate-fade-in">
-            <div style={{ 
-              position: 'absolute', top: '-30%', right: '-10%',
-              width: '150px', height: '150px',
-              background: 'rgba(26, 115, 232, 0.12)',
-              borderRadius: '50%'
-            }} />
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
                   <div style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',
-                    background: '#1967d2',
+                    background: 'var(--nav-active-bg)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <BookOpen size={20} color="white" />
+                    <BookOpen size={20} color="var(--nav-active-fg)" />
                   </div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Asignar Materias</h2>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)' }}>Asignar Materias</h2>
                 </div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>Docente: <strong>{userForAssignment.name}</strong></p>
               </div>
@@ -560,10 +462,9 @@ export default function Users() {
                   </select>
                 </div>
                 <button type="button" 
+                  className="btn-primary"
                   style={{ 
                     padding: '0.65rem', borderRadius: '10px',
-                    background: '#1967d2', 
-                    border: 'none', color: 'white', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}
                   onClick={handleAddAssignment}
@@ -580,7 +481,6 @@ export default function Users() {
                   tempAssignments.map((asg, idx) => {
                     const classObj = classes.find(c => c.id === asg.classId);
                     const subjectObj = subjects.find(s => s.id === asg.subjectId);
-                    const [color1, color2] = gradientColors[idx % gradientColors.length];
                     return (
                       <div key={idx} style={{ 
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -590,21 +490,21 @@ export default function Users() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{
                             width: '32px', height: '32px', borderRadius: '8px',
-                            background: `${color1}`,
+                            background: 'var(--nav-active-bg)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                           }}>
-                            <BookOpen size={16} color="white" />
+                            <BookOpen size={16} color="var(--nav-active-fg)" />
                           </div>
                           <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{subjectObj?.name || 'Materia Desconocida'}</div>
+                            <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{subjectObj?.name || 'Materia Desconocida'}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{classObj?.name || 'Grado Desconocido'}</div>
                           </div>
                         </div>
                         <button type="button" 
                           onClick={() => handleRemoveAssignment(idx)} 
                           style={{ 
-                            color: '#d93025', padding: '6px',
-                            background: 'rgba(217, 48, 37,0.1)', border: '1px solid rgba(217, 48, 37,0.3)',
+                            color: 'var(--danger-tint-fg)', padding: '6px',
+                            background: 'var(--danger-tint-bg)', border: 'none',
                             borderRadius: '8px', cursor: 'pointer'
                           }}
                         >
@@ -614,7 +514,7 @@ export default function Users() {
                     );
                   })
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)', fontSize: '0.875rem', background: 'var(--surface-muted)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)', fontSize: '0.875rem', background: 'var(--surface-muted)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                     Añade asignaciones usando el formulario de arriba.
                   </div>
                 )}
@@ -634,10 +534,10 @@ export default function Users() {
               </button>
               <button type="button" 
                 onClick={handleSaveAssignments} 
+                className="btn-primary"
                 style={{ 
                   flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  background: '#1967d2', color: 'white',
-                  border: 'none', borderRadius: '12px', padding: '0.75rem', cursor: 'pointer', fontWeight: 600
+                  padding: '0.75rem', borderRadius: '12px'
                 }}
               >
                 <Save size={18} /> Guardar ({tempAssignments.length})
