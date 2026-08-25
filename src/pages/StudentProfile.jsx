@@ -138,11 +138,8 @@ export default function StudentProfile() {
       <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
         <Users size={64} style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }} />
         <h2>Estudiante no encontrado</h2>
-        <button onClick={() => navigate('/students')} style={{
-          marginTop: '1rem', padding: '0.75rem 1.5rem',
-          background: '#188038',
-          color: 'white', border: 'none', borderRadius: '12px',
-          fontWeight: 600, cursor: 'pointer'
+        <button onClick={() => navigate('/students')} className="btn-primary" style={{
+          marginTop: '1rem', padding: '0.55rem 1.25rem', borderRadius: '20px', fontSize: '0.875rem'
         }}>Volver a Estudiantes</button>
       </div>
     );
@@ -166,33 +163,30 @@ export default function StudentProfile() {
         <ArrowLeft size={18} /> Volver a Estudiantes
       </button>
 
-      {/* Header */}
+      {/* Encabezado */}
       <div style={{
-        background: '#188038',
-        borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
-        color: 'white', position: 'relative', overflow: 'hidden'
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px', padding: '1.25rem 1.5rem', marginBottom: '1.5rem',
+        border: '1px solid var(--border-color)'
       }}>
-        <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '300px', height: '300px',
-          background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: '200px', height: '200px',
-          background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <div style={{
-            width: '72px', height: '72px', borderRadius: '18px',
-            background: student.photo_url ? `url(${student.photo_url}) center/cover` : 'rgba(255,255,255,0.2)',
+            width: '64px', height: '64px', borderRadius: '50%',
+            background: student.photo_url ? `url(${student.photo_url}) center/cover` : 'var(--nav-active-bg)',
+            color: 'var(--nav-active-fg)', fontWeight: 500,
             display: 'flex', alignItems: 'center',
-            justifyContent: 'center', backdropFilter: 'blur(10px)',
-            overflow: 'hidden', flexShrink: 0
+            justifyContent: 'center',
+            overflow: 'hidden', flexShrink: 0, fontSize: '1.4rem'
           }}>
             {student.photo_url ? null : (
-              <span style={{ fontSize: '1.75rem', fontWeight: 800 }}>
+              <span>
                 {student.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
               </span>
             )}
           </div>
           <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>{student.name}</h2>
-            <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: '0.25rem 0 0 0' }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{student.name}</h2>
+            <p style={{ fontSize: '0.85rem', margin: '0.25rem 0 0 0', color: 'var(--text-secondary)' }}>
               {student.gradeLevel} {student.dni ? `| DNI: ${student.dni}` : ''}
             </p>
           </div>
@@ -204,12 +198,11 @@ export default function StudentProfile() {
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.75rem 1.25rem', borderRadius: '12px',
-            border: activeTab === tab.id ? '2px solid #188038' : '1px solid var(--border-color)',
-            background: activeTab === tab.id ? 'rgba(24, 128, 56, 0.08)' : 'white',
-            color: activeTab === tab.id ? '#188038' : 'var(--text-secondary)',
-            fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem',
-            transition: 'all 0.2s ease'
+            padding: '0.55rem 1.15rem', borderRadius: '20px',
+            border: activeTab === tab.id ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+            background: activeTab === tab.id ? 'var(--nav-active-bg)' : 'transparent',
+            color: activeTab === tab.id ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+            fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
           }}>
             {tab.icon} {tab.label}
           </button>
@@ -219,23 +212,23 @@ export default function StudentProfile() {
       {/* Tab Content */}
       {activeTab === 'info' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users size={20} color="#188038" /> Datos Personales
+          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.5rem', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ fontWeight: 500, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+              <Users size={20} color="var(--accent-primary)" /> Datos Personales
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <InfoRow label="DNI" value={student.dni || '-'} />
               <InfoRow label="Nombre Completo" value={student.name} />
-              <InfoRow label="Grado y Sección" value={student.gradeLevel || '-'} color="#188038" />
+              <InfoRow label="Grado y Sección" value={student.gradeLevel || '-'} />
               <InfoRow label="Fecha de Nacimiento" value={student.birthDate || '-'} icon={<Calendar size={14} />} />
               <InfoRow label="Dirección" value={student.address || '-'} icon={<MapPin size={14} />} />
               <InfoRow label="Teléfono" value={student.phone || '-'} icon={<Phone size={14} />} />
             </div>
           </div>
 
-          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <UserCheck size={20} color="#188038" /> Apoderado
+          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.5rem', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ fontWeight: 500, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+              <UserCheck size={20} color="var(--accent-primary)" /> Apoderado
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <InfoRow label="Nombre" value={student.guardianName || '-'} />
@@ -250,7 +243,7 @@ export default function StudentProfile() {
             <StatCard icon={<CheckCircle />} label="Asistencias" value={String(attendanceStats.present)} color="#188038" />
             <StatCard icon={<AlertCircle />} label="Tardanzas" value={String(attendanceStats.late)} color="#e37400" />
             <StatCard icon={<XCircle />} label="Faltas" value={String(attendanceStats.absent)} color="#d93025" />
-            <StatCard icon={<Award />} label="% Asistencia" value={`${attendanceStats.percentage}%`} color="#7627bb" />
+            <StatCard icon={<Award />} label="% Asistencia" value={`${attendanceStats.percentage}%`} color="#007b83" />
           </div>
         </div>
       )}
@@ -266,8 +259,8 @@ export default function StudentProfile() {
             if (!hasAnyGrade) return null;
 
             return (
-              <div key={sub.id} style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                <h3 style={{ fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>{sub.name}</h3>
+              <div key={sub.id} style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.5rem', border: '1px solid var(--border-color)' }}>
+                <h3 style={{ fontWeight: 500, marginBottom: '1rem', color: 'var(--text-primary)' }}>{sub.name}</h3>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
@@ -334,7 +327,7 @@ export default function StudentProfile() {
             const subData = gradesByPeriodAndSubject[sub.id];
             return !subData || PERIODS.every(p => Object.keys(subData[p]?.competencies || {}).length === 0);
           }) && (
-            <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-color-surface)', borderRadius: '20px', color: 'var(--text-secondary)' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-color-surface)', borderRadius: '12px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
               <GraduationCap size={48} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
               <p>No hay calificaciones registradas para este estudiante.</p>
             </div>
@@ -349,21 +342,21 @@ export default function StudentProfile() {
             <CalendarRange size={18} color="var(--text-secondary)" />
             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, marginRight: '0.25rem' }}>Filtrar por:</span>
             <button onClick={() => setSelectedAttendancePeriod(null)} style={{
-              padding: '0.4rem 0.75rem', borderRadius: '8px',
-              border: selectedAttendancePeriod === null ? '2px solid #188038' : '1px solid var(--border-color)',
-              background: selectedAttendancePeriod === null ? 'rgba(24, 128, 56,0.08)' : 'white',
-              color: selectedAttendancePeriod === null ? '#188038' : 'var(--text-secondary)',
-              fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem'
+              padding: '0.4rem 0.85rem', borderRadius: '20px',
+              border: selectedAttendancePeriod === null ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+              background: selectedAttendancePeriod === null ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
+              color: selectedAttendancePeriod === null ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+              fontWeight: 500, cursor: 'pointer', fontSize: '0.8rem'
             }}>Todo</button>
             {PERIODS.map(p => {
               const isActive = selectedAttendancePeriod === p;
               return (
                 <button key={p} onClick={() => setSelectedAttendancePeriod(p)} style={{
-                  padding: '0.4rem 0.75rem', borderRadius: '8px',
-                  border: isActive ? '2px solid #188038' : '1px solid var(--border-color)',
-                  background: isActive ? 'rgba(24, 128, 56,0.08)' : 'white',
-                  color: isActive ? '#188038' : 'var(--text-secondary)',
-                  fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem'
+                  padding: '0.4rem 0.85rem', borderRadius: '20px',
+                  border: isActive ? '1px solid var(--nav-active-fg)' : '1px solid var(--border-color)',
+                  background: isActive ? 'var(--nav-active-bg)' : 'var(--bg-color-surface)',
+                  color: isActive ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+                  fontWeight: 500, cursor: 'pointer', fontSize: '0.8rem'
                 }}>{p}° Bim.</button>
               );
             })}
@@ -374,13 +367,13 @@ export default function StudentProfile() {
             <StatCard icon={<CheckCircle size={22} />} label="Presente" value={String(filteredAttendanceStats.present)} color="#188038" large />
             <StatCard icon={<AlertCircle size={22} />} label="Tardanza" value={String(filteredAttendanceStats.late)} color="#e37400" large />
             <StatCard icon={<XCircle size={22} />} label="Falta" value={String(filteredAttendanceStats.absent)} color="#d93025" large />
-            <StatCard icon={<Clock size={22} />} label="Justificado" value={String(filteredAttendanceStats.justified)} color="#7627bb" large />
+            <StatCard icon={<Clock size={22} />} label="Justificado" value={String(filteredAttendanceStats.justified)} color="#007b83" large />
           </div>
 
-          {/* History */}
-          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <h3 style={{ fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={20} color="#188038" /> Historial de Asistencia
+          {/* Historial */}
+          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.5rem', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ fontWeight: 500, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+              <Clock size={20} color="var(--accent-primary)" /> Historial de Asistencia
             </h3>
             {filteredAttendanceDays.length === 0 ? (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem' }}>No hay registro de asistencia para este período.</p>
@@ -392,7 +385,7 @@ export default function StudentProfile() {
                     P: { label: 'Presente', color: '#188038', bg: '#18803815' },
                     T: { label: 'Tardanza', color: '#e37400', bg: '#e3740015' },
                     F: { label: 'Falta', color: '#d93025', bg: '#d9302515' },
-                    J: { label: 'Justificado', color: '#7627bb', bg: '#7627bb15' },
+                    J: { label: 'Justificado', color: '#007b83', bg: '#007b8315' },
                   };
                   const config = statusConfig[status] || { label: status, color: 'var(--text-secondary)', bg: 'var(--surface-muted)' };
                   return (
@@ -415,9 +408,9 @@ export default function StudentProfile() {
       )}
 
       {activeTab === 'diagnostic' && (
-        <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FileText size={20} color="#188038" /> Evaluación Diagnóstica
+        <div style={{ background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.5rem', border: '1px solid var(--border-color)' }}>
+          <h3 style={{ fontWeight: 500, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+            <FileText size={20} color="var(--accent-primary)" /> Evaluación Diagnóstica
           </h3>
           {studentDiagnostics.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
@@ -456,10 +449,10 @@ export default function StudentProfile() {
 function InfoRow({ label, value, color, icon }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--surface-muted)' }}>
-      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
         {icon}{label}
       </span>
-      <span style={{ fontWeight: 600, color: color || 'var(--text-primary)', textAlign: 'right' }}>{value}</span>
+      <span style={{ fontWeight: 500, color: color || 'var(--text-primary)', textAlign: 'right' }}>{value}</span>
     </div>
   );
 }
@@ -467,16 +460,21 @@ function InfoRow({ label, value, color, icon }) {
 function StatCard({ icon, label, value, color, large }) {
   return (
     <div style={{
-      background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '1.25rem',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-      border: `1px solid ${color}20`,
+      background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1.25rem',
+      border: '1px solid var(--border-color)',
       textAlign: 'center'
     }}>
-      <div style={{ color, marginBottom: '0.5rem', opacity: 0.7 }}>
+      <div style={{
+        width: '40px', height: '40px', borderRadius: '50%',
+        background: `${color}15`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 0.5rem auto',
+        color
+      }}>
         {icon}
       </div>
-      <div style={{ fontSize: large ? '1.75rem' : '1.5rem', fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.25rem' }}>{label}</div>
+      <div style={{ fontSize: large ? '1.6rem' : '1.35rem', fontWeight: 500, color: 'var(--text-primary)' }}>{value}</div>
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{label}</div>
     </div>
   );
 }
