@@ -223,26 +223,16 @@ const Reports = () => {
   return (
     <div>
       <div style={{
-        background: '#e37400',
-        borderRadius: '20px',
-        padding: '2rem',
+        background: 'var(--bg-color-surface)',
+        borderRadius: '12px',
+        padding: '1rem 1.5rem',
         marginBottom: '2rem',
-        color: 'white'
+        border: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '56px', height: '56px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <FileDown size={28} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Centro de Reportes</h2>
-              <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Exporta registros de asistencia y evaluaciones en formato Excel</p>
-            </div>
+          <div>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Centro de Reportes</h2>
+            <p style={{ fontSize: '0.85rem', margin: '0.15rem 0 0 0', color: 'var(--text-secondary)' }}>Exporta registros de asistencia y evaluaciones en formato Excel</p>
           </div>
         </div>
       </div>
@@ -251,19 +241,19 @@ const Reports = () => {
         
         <div style={{ 
           background: 'var(--bg-color-surface)', 
-          borderRadius: '16px', 
+          borderRadius: '12px', 
           padding: '2rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          border: '1px solid var(--border-color)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
             <div style={{ 
-              padding: '12px', 
-              background: 'rgba(26, 115, 232, 0.1)', 
-              borderRadius: '12px' 
+              padding: '10px', 
+              background: 'var(--nav-active-bg)', 
+              borderRadius: '10px' 
             }}>
-              <CalendarCheck size={24} color="#1a73e8" />
+              <CalendarCheck size={22} color="var(--nav-active-fg)" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>Reporte de Asistencia</h3>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>Reporte de Asistencia</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -315,19 +305,19 @@ const Reports = () => {
 
         <div style={{ 
           background: 'var(--bg-color-surface)', 
-          borderRadius: '16px', 
+          borderRadius: '12px', 
           padding: '2rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          border: '1px solid var(--border-color)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
             <div style={{ 
-              padding: '12px', 
-              background: 'rgba(24, 128, 56, 0.1)', 
-              borderRadius: '12px' 
+              padding: '10px', 
+              background: 'var(--surface-muted)', 
+              borderRadius: '10px' 
             }}>
-              <Table size={24} color="#188038" />
+              <Table size={22} color="var(--success-color)" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>Registro Auxiliar</h3>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>Registro Auxiliar</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -387,9 +377,7 @@ const Reports = () => {
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 gap: '8px', 
-                padding: '1rem',
-                backgroundColor: '#188038',
-                boxShadow: '0 4px 14px 0 rgba(24, 128, 56, 0.39)'
+                padding: '0.9rem'
               }}
             >
               <Download size={20} />
@@ -404,19 +392,19 @@ const Reports = () => {
 
         <div style={{ 
           background: 'var(--bg-color-surface)', 
-          borderRadius: '16px', 
+          borderRadius: '12px', 
           padding: '2rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          border: '1px solid var(--border-color)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
             <div style={{ 
-              padding: '12px', 
-              background: 'rgba(118, 39, 187, 0.1)', 
-              borderRadius: '12px' 
+              padding: '10px', 
+              background: 'var(--surface-muted)', 
+              borderRadius: '10px' 
             }}>
-              <FileDown size={24} color="#7627bb" />
+              <FileDown size={22} color="var(--accent-primary)" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>Reporte Final (Oficial)</h3>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>Reporte Final (Oficial)</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -476,9 +464,7 @@ const Reports = () => {
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 gap: '8px', 
-                padding: '1rem',
-                backgroundColor: 'var(--accent-primary)',
-                boxShadow: '0 4px 14px 0 rgba(118, 39, 187, 0.39)'
+                padding: '0.9rem'
               }}
             >
               <Download size={20} />
