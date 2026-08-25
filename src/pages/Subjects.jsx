@@ -27,21 +27,21 @@ export default function Subjects() {
   };
 
   const gradientColors = [
-    ['#667eea', '#764ba2'],
-    ['#10b981', '#059669'],
-    ['#f59e0b', '#d97706'],
-    ['#ef4444', '#dc2626'],
-    ['#8b5cf6', '#7c3aed'],
-    ['#ec4899', '#db2777'],
-    ['#14b8a6', '#0d9488'],
-    ['#3b82f6', '#2563eb']
+    ['#3f51b5', '#7627bb'],
+    ['#188038', '#146c2e'],
+    ['#e37400', '#b06000'],
+    ['#d93025', '#b3261e'],
+    ['#7627bb', '#6a1b9a'],
+    ['#c2185b', '#ad1457'],
+    ['#007b83', '#007b83'],
+    ['#1a73e8', '#174ea6']
   ];
 
   return (
     <div className="animate-fade-in">
       {/* Header con gradiente */}
       <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        background: '#c2185b',
         borderRadius: '20px',
         padding: '2rem 2.5rem',
         marginBottom: '1.5rem',
@@ -115,12 +115,12 @@ export default function Subjects() {
       {/* Formulario moderno */}
       {showForm && (
         <div style={{
-          background: 'white',
+          background: 'var(--bg-color-surface)',
           borderRadius: '20px',
           padding: '1.5rem',
           marginBottom: '1.5rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid rgba(102, 126, 234, 0.2)'
+          border: '1px solid rgba(26, 115, 232, 0.2)'
         }} className="animate-fade-in">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -128,7 +128,7 @@ export default function Subjects() {
                 width: '40px',
                 height: '40px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#7627bb',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -173,7 +173,7 @@ export default function Subjects() {
               type="submit" 
               className="btn-primary"
               style={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#7627bb',
                 border: 'none',
                 padding: '0.75rem 1.5rem',
                 whiteSpace: 'nowrap'
@@ -190,17 +190,17 @@ export default function Subjects() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
         {subjects.length === 0 ? (
           <div style={{
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+            background: 'var(--surface-muted)',
             borderRadius: '20px',
             padding: '4rem 2rem',
             textAlign: 'center',
-            border: '2px dashed #cbd5e1',
+            border: '2px dashed var(--border-color)',
             gridColumn: '1 / -1'
           }}>
             <div style={{
               width: '80px',
               height: '80px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: '#7627bb',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -218,7 +218,7 @@ export default function Subjects() {
             <button 
               onClick={() => setShowForm(true)}
               className="btn-primary"
-              style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+              style={{ marginTop: '1.5rem', background: '#7627bb' }}
             >
               <Plus size={18} style={{ marginRight: '0.5rem' }} />
               Agregar Primera Área
@@ -229,7 +229,7 @@ export default function Subjects() {
             const [color1, color2] = gradientColors[idx % gradientColors.length];
             return (
               <div key={subject.id} style={{
-                background: 'white',
+                background: 'var(--bg-color-surface)',
                 borderRadius: '20px',
                 padding: '1.5rem',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -246,7 +246,7 @@ export default function Subjects() {
                   right: '-20%',
                   width: '150px',
                   height: '150px',
-                  background: `linear-gradient(135deg, ${color1}10, ${color2}10)`,
+                  background: `${color1}10`,
                   borderRadius: '50%'
                 }} />
                 
@@ -256,7 +256,7 @@ export default function Subjects() {
                       width: '44px',
                       height: '44px',
                       borderRadius: '12px',
-                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                      background: `${color1}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -271,19 +271,19 @@ export default function Subjects() {
                   </div>
                   <button 
                     style={{
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      background: 'rgba(217, 48, 37, 0.1)',
+                      border: '1px solid rgba(217, 48, 37, 0.3)',
                       borderRadius: '10px',
                       padding: '0.5rem',
                       cursor: 'pointer',
-                      color: '#ef4444',
+                      color: '#d93025',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
                     onClick={() => {
                       if (window.confirm(`¿Estás seguro de que deseas eliminar el área completa "${subject.name}" con todas sus competencias?`)) {
                         deleteSubject(subject.id);
@@ -302,7 +302,7 @@ export default function Subjects() {
                     alignItems: 'center', 
                     gap: '8px',
                     padding: '0.5rem 0.75rem',
-                    background: `linear-gradient(135deg, ${color1}10, ${color2}10)`,
+                    background: `${color1}10`,
                     borderRadius: '8px',
                     marginBottom: '1rem'
                   }}>
@@ -316,18 +316,18 @@ export default function Subjects() {
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'flex-start',
-                        background: '#f8fafc',
+                        background: 'var(--surface-muted)',
                         padding: '0.75rem',
                         borderRadius: '10px',
                         fontSize: '0.875rem',
-                        border: '1px solid #e2e8f0'
+                        border: '1px solid var(--border-color)'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flex: 1 }}>
                           <div style={{
                             width: '24px',
                             height: '24px',
                             borderRadius: '6px',
-                            background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                            background: `${color1}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -342,7 +342,7 @@ export default function Subjects() {
                         </div>
                         <button 
                           style={{ 
-                            color: '#ef4444', 
+                            color: '#d93025', 
                             background: 'none', 
                             border: 'none', 
                             cursor: 'pointer', 
@@ -369,9 +369,9 @@ export default function Subjects() {
                         fontStyle: 'italic', 
                         padding: '1rem', 
                         textAlign: 'center', 
-                        background: '#f8fafc', 
+                        background: 'var(--surface-muted)', 
                         borderRadius: '10px',
-                        border: '1px dashed #cbd5e1'
+                        border: '1px dashed var(--border-color)'
                       }}>
                         Sin competencias definidas
                       </li>
@@ -380,7 +380,7 @@ export default function Subjects() {
                 </div>
 
                 {/* Input para nueva competencia */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
                   <input 
                     type="text" 
                     className="input-field" 
@@ -396,7 +396,7 @@ export default function Subjects() {
                       padding: '0.6rem', 
                       display: 'flex', 
                       alignItems: 'center',
-                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                      background: `${color1}`,
                       border: 'none'
                     }} 
                     onClick={() => handleAddCompetency(subject.id)}

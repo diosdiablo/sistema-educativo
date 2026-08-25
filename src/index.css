@@ -12,17 +12,17 @@
   --text-secondary: #5f6368;
   
   --sidebar-bg: #004d4d;
-  --accent-primary: #10b981;
-  --accent-hover: #059669;
+  --accent-primary: #1a73e8;
+  --accent-hover: #1765cc;
   
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
+  --success-color: #188038;
+  --warning-color: #e37400;
+  --danger-color: #d93025;
   
-  --grade-ad: #3b82f6;
-  --grade-a: #10b981;
-  --grade-b: #f59e0b;
-  --grade-c: #ef4444;
+  --grade-ad: #1967d2;
+  --grade-a: #188038;
+  --grade-b: #e37400;
+  --grade-c: #d93025;
   
   --border-color: #dadce0;
   --border-radius: 16px;
@@ -89,30 +89,26 @@ button {
   background-color: var(--accent-primary);
   color: white;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  border-radius: 20px;
   font-weight: 500;
   transition: all var(--transition-fast);
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
 }
 
 .btn-primary:hover {
   background-color: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .btn-danger {
-  background-color: var(--danger-color);
+  background-color: #d93025;
   color: white;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: 20px;
   font-weight: 500;
   transition: all var(--transition-fast);
 }
 
 .btn-danger:hover {
-  background-color: #dc2626;
-  transform: translateY(-1px);
+  background-color: #b3261e;
 }
 
 .input-field {
@@ -131,7 +127,7 @@ button {
 
 /* Custom chevron for select elements */
 select.input-field {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
@@ -140,8 +136,7 @@ select.input-field {
 .input-field:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), var(--shadow-md);
-  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--accent-primary);
 }
 
 .badge {
@@ -152,10 +147,10 @@ select.input-field {
   display: inline-block;
 }
 
-.badge-ad { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-.badge-a { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-b { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-.badge-c { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-ad { background-color: #e8f0fe; color: #1967d2; border: 1px solid #c6dafc; }
+.badge-a { background-color: #e6f4ea; color: #188038; border: 1px solid #ceead6; }
+.badge-b { background-color: #fef7e0; color: #b06000; border: 1px solid #feefc3; }
+.badge-c { background-color: #fce8e6; color: #d93025; border: 1px solid #fad2cf; }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
@@ -246,7 +241,7 @@ select.input-field {
 /* Dashboard Utility Classes */
 .dashboard-card {
   background: var(--bg-color-surface);
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-color);
@@ -277,10 +272,7 @@ select.input-field {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
 }
 
 .quick-action-btn {
@@ -336,13 +328,13 @@ select.input-field {
 }
 
 .stat-trend.up {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: #e6f4ea;
+  color: #188038;
 }
 
 .stat-trend.down {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: #fce8e6;
+  color: #d93025;
 }
 
 .activity-item {

@@ -68,7 +68,7 @@ export default function Behavior() {
   return (
     <div className="animate-fade-in">
       <div style={{
-        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+        background: '#e37400',
         borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
@@ -98,12 +98,12 @@ export default function Behavior() {
         }}>
           {availableClasses.map(c => (
             <button key={c.id} onClick={() => setSelectedClass(c.name)} style={{
-              padding: '1.25rem', borderRadius: '16px', border: '2px solid #e2e8f0',
-              background: 'white', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
-              transition: 'all 0.2s', color: '#1e293b'
+              padding: '1.25rem', borderRadius: '16px', border: '2px solid var(--border-color)',
+              background: 'var(--bg-color-surface)', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
+              transition: 'all 0.2s', color: 'var(--text-primary)'
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(245,158,11,0.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#e37400'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(227, 116, 0,0.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><Users size={24} /></div>
               {c.name}
@@ -114,29 +114,29 @@ export default function Behavior() {
         <>
           <div style={{
             display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center',
-            marginBottom: '1.5rem', padding: '1rem', background: 'white',
+            marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-color-surface)',
             borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
           }}>
             <button onClick={() => setSelectedClass('')} style={{
-              background: '#f1f5f9', border: 'none', padding: '0.5rem 1rem',
+              background: 'var(--surface-muted)', border: 'none', padding: '0.5rem 1rem',
               borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-              color: '#64748b'
+              color: 'var(--text-secondary)'
             }}>← Cambiar sección</button>
 
             <div style={{
               display: 'flex', gap: '0.5rem', alignItems: 'center',
-              padding: '0.35rem 0.75rem', background: '#f1f5f9', borderRadius: '10px', flex: 1, maxWidth: '250px'
+              padding: '0.35rem 0.75rem', background: 'var(--surface-muted)', borderRadius: '10px', flex: 1, maxWidth: '250px'
             }}>
-              <Search size={16} color="#94a3b8" />
+              <Search size={16} color="var(--text-secondary)" />
               <input type="text" placeholder="Buscar estudiante..." value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.85rem' }} />
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <Filter size={16} color="#94a3b8" />
+              <Filter size={16} color="var(--text-secondary)" />
               <select value={filterType} onChange={e => setFilterType(e.target.value)}
-                style={{ padding: '0.4rem 0.75rem', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem', background: 'white' }}>
+                style={{ padding: '0.4rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '0.85rem', background: 'var(--bg-color-surface)' }}>
                 <option value="all">Todas</option>
                 <option value="positive">Solo positivas</option>
                 <option value="negative">Solo negativas</option>
@@ -144,10 +144,10 @@ export default function Behavior() {
             </div>
 
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#16a34a', fontWeight: 600 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#188038', fontWeight: 600 }}>
                 <ThumbsUp size={16} /> {totalPositive} positivas
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#dc2626', fontWeight: 600 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#b3261e', fontWeight: 600 }}>
                 <ThumbsDown size={16} /> {totalNegative} negativas
               </span>
             </div>
@@ -157,24 +157,24 @@ export default function Behavior() {
             const records = (studentBehavior[student.id] || []).filter(r => filterType === 'all' || r.type === filterType);
             return (
               <div key={student.id} style={{
-                background: 'white', borderRadius: '16px', marginBottom: '1rem',
+                background: 'var(--bg-color-surface)', borderRadius: '16px', marginBottom: '1rem',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden'
               }}>
                 <div style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '1rem 1.25rem', borderBottom: '1px solid #f1f5f9',
-                  background: '#fafbfc'
+                  padding: '1rem 1.25rem', borderBottom: '1px solid var(--surface-muted)',
+                  background: 'var(--surface-muted)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{
                       width: '40px', height: '40px', borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      background: '#e37400',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'white', fontWeight: 700, fontSize: '1rem'
                     }}>{student.name?.charAt(0)?.toUpperCase() || '?'}</div>
                     <div>
-                      <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>{student.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{student.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                         {records.filter(r => r.type === 'positive').length} positivas · {records.filter(r => r.type === 'negative').length} negativas
                       </div>
                     </div>
@@ -182,47 +182,47 @@ export default function Behavior() {
                   <button onClick={() => { setAddingFor(student.id); setNewRecord({ type: 'positive', description: '', date: new Date().toISOString().split('T')[0] }); }} style={{
                     display: 'flex', alignItems: 'center', gap: '0.35rem',
                     padding: '0.5rem 1rem', borderRadius: '10px', border: 'none',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    background: '#188038',
                     color: 'white', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer'
                   }}><Plus size={16} /> Agregar</button>
                 </div>
 
                 {addingFor === student.id && (
                   <div style={{
-                    padding: '1rem 1.25rem', background: '#fefce8',
-                    borderBottom: '1px solid #fde68a'
+                    padding: '1rem 1.25rem', background: '#fef7e0',
+                    borderBottom: '1px solid #feefc3'
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => setNewRecord(prev => ({ ...prev, type: 'positive' }))} style={{
                           flex: 1, padding: '0.5rem', borderRadius: '8px', border: 'none',
                           fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-                          background: newRecord.type === 'positive' ? '#16a34a' : '#e2e8f0',
-                          color: newRecord.type === 'positive' ? 'white' : '#64748b'
+                          background: newRecord.type === 'positive' ? '#188038' : 'var(--border-color)',
+                          color: newRecord.type === 'positive' ? 'white' : 'var(--text-secondary)'
                         }}><ThumbsUp size={14} style={{ marginRight: '0.35rem' }} /> Positivo</button>
                         <button onClick={() => setNewRecord(prev => ({ ...prev, type: 'negative' }))} style={{
                           flex: 1, padding: '0.5rem', borderRadius: '8px', border: 'none',
                           fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-                          background: newRecord.type === 'negative' ? '#dc2626' : '#e2e8f0',
-                          color: newRecord.type === 'negative' ? 'white' : '#64748b'
+                          background: newRecord.type === 'negative' ? '#b3261e' : 'var(--border-color)',
+                          color: newRecord.type === 'negative' ? 'white' : 'var(--text-secondary)'
                         }}><ThumbsDown size={14} style={{ marginRight: '0.35rem' }} /> Negativo</button>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <input type="date" value={newRecord.date}
                           onChange={e => setNewRecord(prev => ({ ...prev, date: e.target.value }))}
-                          style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }} />
+                          style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }} />
                         <input type="text" placeholder="Describe el comportamiento..." value={newRecord.description}
                           onChange={e => setNewRecord(prev => ({ ...prev, description: e.target.value }))}
-                          style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}
+                          style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
                           onKeyDown={e => { if (e.key === 'Enter') handleAdd(student.id); }} />
                         <button onClick={() => handleAdd(student.id)} disabled={!newRecord.description.trim()} style={{
                           padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
-                          background: !newRecord.description.trim() ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
+                          background: !newRecord.description.trim() ? 'var(--text-secondary)' : '#188038',
                           color: 'white', fontWeight: 600, fontSize: '0.85rem', cursor: !newRecord.description.trim() ? 'not-allowed' : 'pointer'
                         }}>Guardar</button>
                         <button onClick={() => setAddingFor(null)} style={{
-                          padding: '0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0',
-                          background: 'white', color: '#64748b', cursor: 'pointer'
+                          padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)',
+                          background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', cursor: 'pointer'
                         }}>Cancelar</button>
                       </div>
                     </div>
@@ -230,7 +230,7 @@ export default function Behavior() {
                 )}
 
                 {records.length === 0 ? (
-                  <div style={{ padding: '1.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                  <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                     Sin registros de conducta
                   </div>
                 ) : (
@@ -238,18 +238,18 @@ export default function Behavior() {
                     {records.map(r => (
                       <div key={r.id} style={{
                         display: 'flex', alignItems: 'center', gap: '0.75rem',
-                        padding: '0.6rem 1.25rem', borderBottom: '1px solid #f8fafc'
+                        padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--surface-muted)'
                       }}>
                         <div style={{
                           width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: r.type === 'positive' ? '#dcfce7' : '#fee2e2'
+                          background: r.type === 'positive' ? '#ceead6' : '#fad2cf'
                         }}>
-                          {r.type === 'positive' ? <ThumbsUp size={16} color="#16a34a" /> : <ThumbsDown size={16} color="#dc2626" />}
+                          {r.type === 'positive' ? <ThumbsUp size={16} color="#188038" /> : <ThumbsDown size={16} color="#d93025" />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{r.description}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.description}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <Calendar size={12} />
                             {new Date(r.date).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
                             {r.userName && <span>· {r.userName}</span>}
@@ -257,7 +257,7 @@ export default function Behavior() {
                         </div>
                         <button onClick={() => { if (confirm('¿Eliminar este registro?')) deleteBehaviorRecord(r.id); }} style={{
                           background: 'none', border: 'none', cursor: 'pointer', padding: '0.35rem',
-                          color: '#94a3b8', flexShrink: 0
+                          color: 'var(--text-secondary)', flexShrink: 0
                         }}><Trash2 size={16} /></button>
                       </div>
                     ))}

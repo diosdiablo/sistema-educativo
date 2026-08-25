@@ -223,7 +223,7 @@ const Reports = () => {
   return (
     <div>
       <div style={{
-        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        background: '#e37400',
         borderRadius: '20px',
         padding: '2rem',
         marginBottom: '2rem',
@@ -250,7 +250,7 @@ const Reports = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
         
         <div style={{ 
-          background: 'white', 
+          background: 'var(--bg-color-surface)', 
           borderRadius: '16px', 
           padding: '2rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
@@ -258,12 +258,12 @@ const Reports = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
             <div style={{ 
               padding: '12px', 
-              background: 'rgba(59, 130, 246, 0.1)', 
+              background: 'rgba(26, 115, 232, 0.1)', 
               borderRadius: '12px' 
             }}>
-              <CalendarCheck size={24} color="#3b82f6" />
+              <CalendarCheck size={24} color="#1a73e8" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Reporte de Asistencia</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>Reporte de Asistencia</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -308,13 +308,13 @@ const Reports = () => {
             </button>
           </div>
 
-          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <div style={{ marginTop: '2rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
             <p><strong>Nota:</strong> El reporte incluirá todas las fechas registradas hasta el momento para la sección seleccionada.</p>
           </div>
         </div>
 
         <div style={{ 
-          background: 'white', 
+          background: 'var(--bg-color-surface)', 
           borderRadius: '16px', 
           padding: '2rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
@@ -322,12 +322,12 @@ const Reports = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
             <div style={{ 
               padding: '12px', 
-              background: 'rgba(34, 197, 94, 0.1)', 
+              background: 'rgba(24, 128, 56, 0.1)', 
               borderRadius: '12px' 
             }}>
-              <Table size={24} color="#22c55e" />
+              <Table size={24} color="#188038" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Registro Auxiliar</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>Registro Auxiliar</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -388,8 +388,8 @@ const Reports = () => {
                 justifyContent: 'center', 
                 gap: '8px', 
                 padding: '1rem',
-                backgroundColor: '#22c55e',
-                boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.39)'
+                backgroundColor: '#188038',
+                boxShadow: '0 4px 14px 0 rgba(24, 128, 56, 0.39)'
               }}
             >
               <Download size={20} />
@@ -397,13 +397,13 @@ const Reports = () => {
             </button>
           </div>
 
-          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <div style={{ marginTop: '2rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
             <p><strong>Nota:</strong> Este reporte muestra cada evaluación por competencia con notas literales y promedio.</p>
           </div>
         </div>
 
         <div style={{ 
-          background: 'white', 
+          background: 'var(--bg-color-surface)', 
           borderRadius: '16px', 
           padding: '2rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
@@ -411,12 +411,12 @@ const Reports = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
             <div style={{ 
               padding: '12px', 
-              background: 'rgba(139, 92, 246, 0.1)', 
+              background: 'rgba(118, 39, 187, 0.1)', 
               borderRadius: '12px' 
             }}>
-              <FileDown size={24} color="#8b5cf6" />
+              <FileDown size={24} color="#7627bb" />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b' }}>Reporte Final (Oficial)</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>Reporte Final (Oficial)</h3>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -478,7 +478,7 @@ const Reports = () => {
                 gap: '8px', 
                 padding: '1rem',
                 backgroundColor: 'var(--accent-primary)',
-                boxShadow: '0 4px 14px 0 rgba(139, 92, 246, 0.39)'
+                boxShadow: '0 4px 14px 0 rgba(118, 39, 187, 0.39)'
               }}
             >
               <Download size={20} />
@@ -486,7 +486,7 @@ const Reports = () => {
             </button>
           </div>
 
-          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f1f5f9', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <div style={{ marginTop: '2rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
             <p><strong>Nota:</strong> Este reporte incluye el número de orden, notas finales y conclusiones descriptivas por cada competencia.</p>
           </div>
         </div>

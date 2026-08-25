@@ -11,7 +11,7 @@ const NUM_TO_GRADE = (n) => {
   if (n >= 1.5) return 'B';
   return 'C';
 };
-const GRADE_COLOR = { AD: '#10b981', A: '#3b82f6', B: '#f59e0b', C: '#ef4444' };
+const GRADE_COLOR = { AD: '#188038', A: '#1a73e8', B: '#e37400', C: '#d93025' };
 const PERIODS = ['1', '2', '3', '4'];
 const PERIOD_LABEL = { '1': 'I Bimestre', '2': 'II Bimestre', '3': 'III Bimestre', '4': 'IV Bimestre' };
 
@@ -162,7 +162,7 @@ export default function BoletaNotas() {
         </div>
       </div>
       ${subjectsHtml}
-      <div style="margin-top:16px;padding:8px 12px;background:#fefce8;border-radius:8px;border:1px solid #fde68a;font-size:0.8rem;color:#92400e">
+      <div style="margin-top:16px;padding:8px 12px;background:#fefce8;border-radius:8px;border:1px solid #feefc3;font-size:0.8rem;color:#92400e">
         <strong>Leyenda:</strong> AD = Destacado (18-20) | A = Logrado (14-17) | B = En Proceso (11-13) | C = En Inicio (0-10)
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:24px;padding-top:10px;font-size:0.85rem">
@@ -240,7 +240,7 @@ export default function BoletaNotas() {
       `}</style>
 
       <div className="no-print" style={{
-        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
+        background: '#e37400',
         borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
@@ -269,10 +269,10 @@ export default function BoletaNotas() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
           <div style={{
             width: '44px', height: '44px', borderRadius: '12px',
-            background: 'rgba(245, 158, 11, 0.12)',
+            background: 'rgba(227, 116, 0, 0.12)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Users size={22} color="#d97706" />
+            <Users size={22} color="#b06000" />
           </div>
           <div>
             <label style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1e293b', display: 'block' }}>
@@ -310,7 +310,7 @@ export default function BoletaNotas() {
                     borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fefce8'}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fef7e0'}
                   onMouseLeave={e => e.currentTarget.style.background = 'white'}
                 >
                   <span style={{ color: '#1e293b', fontWeight: 500 }}>{s.name}</span>
@@ -335,32 +335,32 @@ export default function BoletaNotas() {
             <>
               <div style={{
                 flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem',
-                padding: '0.75rem 1rem', background: '#fefce8', borderRadius: '12px',
-                border: '1px solid #fde68a'
+                padding: '0.75rem 1rem', background: '#fef7e0', borderRadius: '12px',
+                border: '1px solid #feefc3'
               }}>
-                <Users size={18} color="#d97706" />
+                <Users size={18} color="#b06000" />
                 <span style={{ fontWeight: 600, color: '#1e293b', flex: 1 }}>
                   {students.find(s => s.id === selectedStudentId)?.name}
                 </span>
-                <span style={{ fontSize: '0.8rem', color: '#92400e', background: '#fde68a', padding: '2px 10px', borderRadius: '999px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#b06000', background: '#feefc3', padding: '2px 10px', borderRadius: '999px' }}>
                   {students.find(s => s.id === selectedStudentId)?.gradeLevel}
                 </span>
                 <button onClick={() => { setSelectedStudentId(''); setSearchTerm(''); }}
-                  style={{ background: 'none', border: 'none', color: '#92400e', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, padding: '4px 8px', borderRadius: '8px' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fde68a'}
+                  style={{ background: 'none', border: 'none', color: '#b06000', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, padding: '4px 8px', borderRadius: '8px' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#feefc3'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >Cambiar</button>
               </div>
               <button onClick={handlePrint} style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.75rem 1.5rem', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              background: '#e37400',
               color: 'white', border: 'none', fontWeight: 600, fontSize: '0.9rem',
-              cursor: 'pointer', boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
+              cursor: 'pointer', boxShadow: '0 4px 15px rgba(227, 116, 0, 0.3)',
               transition: 'all 0.2s ease', whiteSpace: 'nowrap'
             }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.3)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(227, 116, 0, 0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(227, 116, 0, 0.3)'; }}
             >
               <Printer size={18} /> Imprimir / PDF
             </button>
@@ -370,7 +370,7 @@ export default function BoletaNotas() {
 
         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <Download size={18} color="#d97706" />
+            <Download size={18} color="#b06000" />
             <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Generar PDF por Grado</span>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -380,15 +380,15 @@ export default function BoletaNotas() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                   padding: '0.5rem 1rem', borderRadius: '10px',
-                  background: generatingPdf === grade ? '#e2e8f0' : 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  background: generatingPdf === grade ? '#e2e8f0' : '#e37400',
                   color: generatingPdf === grade ? '#94a3b8' : 'white',
                   border: 'none', fontWeight: 600, fontSize: '0.8rem',
                   cursor: generatingPdf === grade ? 'not-allowed' : 'pointer',
-                  boxShadow: generatingPdf === grade ? 'none' : '0 4px 12px rgba(245, 158, 11, 0.25)',
+                  boxShadow: generatingPdf === grade ? 'none' : '0 4px 12px rgba(227, 116, 0, 0.25)',
                   transition: 'all 0.2s ease'
                 }}
-                onMouseEnter={e => { if (generatingPdf !== grade) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(245, 158, 11, 0.35)'; } }}
-                onMouseLeave={e => { if (generatingPdf !== grade) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)'; } }}
+                onMouseEnter={e => { if (generatingPdf !== grade) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(227, 116, 0, 0.35)'; } }}
+                onMouseLeave={e => { if (generatingPdf !== grade) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(227, 116, 0, 0.25)'; } }}
               >
                 <FileText size={14} />
                 {grade} ({sts.length})
@@ -480,8 +480,8 @@ export default function BoletaNotas() {
 
           <div style={{
             marginTop: '2rem', padding: '0.75rem 1rem',
-            background: '#fefce8', borderRadius: '8px',
-            border: '1px solid #fde68a', fontSize: '0.8rem', color: '#92400e'
+            background: '#fef7e0', borderRadius: '8px',
+            border: '1px solid #feefc3', fontSize: '0.8rem', color: '#b06000'
           }}>
             <strong>Leyenda:</strong>{' '}
             AD = Destacado (18-20) | A = Logrado (14-17) | B = En Proceso (11-13) | C = En Inicio (0-10)

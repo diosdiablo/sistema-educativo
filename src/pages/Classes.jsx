@@ -17,19 +17,19 @@ export default function Classes() {
   };
 
   const gradientColors = [
-    ['#667eea', '#764ba2'],
-    ['#10b981', '#059669'],
-    ['#f59e0b', '#d97706'],
-    ['#ef4444', '#dc2626'],
-    ['#8b5cf6', '#7c3aed'],
-    ['#ec4899', '#db2777']
+    ['#3f51b5', '#7627bb'],
+    ['#188038', '#146c2e'],
+    ['#e37400', '#b06000'],
+    ['#d93025', '#b3261e'],
+    ['#7627bb', '#6a1b9a'],
+    ['#c2185b', '#ad1457']
   ];
 
   return (
     <div className="animate-fade-in">
       {/* Header con gradiente */}
       <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        background: '#c2185b',
         borderRadius: '20px',
         padding: '2rem 2.5rem',
         marginBottom: '1.5rem',
@@ -103,12 +103,12 @@ export default function Classes() {
       {/* Formulario moderno */}
       {showForm && (
         <div style={{
-          background: 'white',
+          background: 'var(--bg-color-surface)',
           borderRadius: '20px',
           padding: '1.5rem',
           marginBottom: '1.5rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          border: '1px solid rgba(102, 126, 234, 0.2)'
+          border: '1px solid rgba(26, 115, 232, 0.2)'
         }} className="animate-fade-in">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -116,7 +116,7 @@ export default function Classes() {
                 width: '40px',
                 height: '40px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#7627bb',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -161,7 +161,7 @@ export default function Classes() {
               type="submit" 
               className="btn-primary"
               style={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#7627bb',
                 border: 'none',
                 padding: '0.75rem 1.5rem',
                 whiteSpace: 'nowrap'
@@ -177,16 +177,16 @@ export default function Classes() {
       {/* Tabla moderna */}
       {classes.length === 0 ? (
         <div style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+          background: 'var(--surface-muted)',
           borderRadius: '20px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '2px dashed #cbd5e1'
+          border: '2px dashed var(--border-color)'
         }}>
           <div style={{
             width: '80px',
             height: '80px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#7627bb',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -204,7 +204,7 @@ export default function Classes() {
           <button 
             onClick={() => setShowForm(true)}
             className="btn-primary"
-            style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+            style={{ marginTop: '1.5rem', background: '#7627bb' }}
           >
             <Plus size={18} style={{ marginRight: '0.5rem' }} />
             Agregar Primer Grado
@@ -217,7 +217,7 @@ export default function Classes() {
               <tr>
                 <th style={{ 
                   minWidth: '120px', 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  background: '#7627bb', 
                   color: 'white',
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -230,7 +230,7 @@ export default function Classes() {
                 </th>
                 <th style={{ 
                   minWidth: '250px', 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  background: '#7627bb', 
                   color: 'white',
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -243,7 +243,7 @@ export default function Classes() {
                 </th>
                 <th style={{ 
                   minWidth: '150px', 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  background: '#7627bb', 
                   color: 'white',
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -256,7 +256,7 @@ export default function Classes() {
                 </th>
                 <th style={{ 
                   minWidth: '120px', 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  background: '#7627bb', 
                   color: 'white',
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -285,7 +285,7 @@ export default function Classes() {
                         gap: '0.75rem',
                         padding: '0.5rem 1rem',
                         borderRadius: '10px',
-                        background: `linear-gradient(135deg, ${color1}15, ${color2}15)`,
+                        background: `${color1}15`,
                         border: `1px solid ${color1}30`
                       }}>
                         <GraduationCap size={18} color={color1} />
@@ -298,30 +298,30 @@ export default function Classes() {
                           width: '32px', 
                           height: '32px', 
                           borderRadius: '8px', 
-                          background: c.color || '#10b981',
+                          background: c.color || '#188038',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                         }} />
                         <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          {c.color || '#10b981'}
+                          {c.color || '#188038'}
                         </span>
                       </div>
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <button 
                         style={{
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          background: 'rgba(217, 48, 37, 0.1)',
+                          border: '1px solid rgba(217, 48, 37, 0.3)',
                           borderRadius: '10px',
                           padding: '0.6rem',
                           cursor: 'pointer',
-                          color: '#ef4444',
+                          color: '#d93025',
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
                         onClick={() => {
                           if (window.confirm(`¿Estás seguro de que deseas eliminar el grado "${c.name}"? Se perderán las asociaciones de este grado.`)) {
                             deleteClass(c.id);

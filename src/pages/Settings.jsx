@@ -35,11 +35,11 @@ export default function Settings() {
         <div style={{ 
           display: 'inline-flex', 
           padding: '1.5rem', 
-          background: 'rgba(239, 68, 68, 0.1)', 
+          background: 'rgba(217, 48, 37, 0.1)', 
           borderRadius: '50%', 
           marginBottom: '1.5rem' 
         }}>
-          <AlertCircle size={48} color="#ef4444" />
+          <AlertCircle size={48} color="#d93025" />
         </div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Acceso Restringido</h2>
         <p style={{ color: 'var(--text-secondary)' }}>Solo los administradores pueden configurar los periodos académicos.</p>
@@ -120,17 +120,17 @@ export default function Settings() {
   };
 
   const gradientColors = [
-    ['#6366f1', '#8b5cf6'],
-    ['#10b981', '#059669'],
-    ['#f59e0b', '#d97706'],
-    ['#ef4444', '#dc2626']
+    ['#3f51b5', '#7627bb'],
+    ['#188038', '#146c2e'],
+    ['#e37400', '#b06000'],
+    ['#d93025', '#b3261e']
   ];
 
   return (
     <div className="animate-fade-in">
       {/* Header con gradiente */}
       <div style={{
-        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)',
+        background: '#7627bb',
         borderRadius: '20px',
         padding: '2rem 2.5rem',
         marginBottom: '1.5rem',
@@ -181,19 +181,19 @@ export default function Settings() {
 
       {/* Sección Fechas de Bimestres */}
       <div style={{
-        background: 'white',
+        background: 'var(--bg-color-surface)',
         borderRadius: '20px',
         padding: '1.5rem',
         marginBottom: '1.5rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(99, 102, 241, 0.2)'
+        border: '1px solid rgba(63, 81, 181, 0.2)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
             width: '48px',
             height: '48px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            background: '#7627bb',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -216,7 +216,7 @@ export default function Settings() {
                 gap: '1.5rem', 
                 alignItems: 'center',
                 padding: '1.25rem',
-                background: `linear-gradient(135deg, ${color1}08, ${color2}08)`,
+                background: `${color1}08`,
                 borderRadius: '14px',
                 border: `1px solid ${color1}30`
               }}>
@@ -225,7 +225,7 @@ export default function Settings() {
                     width: '32px',
                     height: '32px',
                     borderRadius: '8px',
-                    background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                    background: `${color1}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -266,7 +266,7 @@ export default function Settings() {
 
         <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem' }}>
           {saved && (
-            <span style={{ color: '#10b981', fontWeight: 600, fontSize: '0.9rem' }} className="animate-fade-in">
+            <span style={{ color: '#188038', fontWeight: 600, fontSize: '0.9rem' }} className="animate-fade-in">
               ✓ ¡Configuración guardada!
             </span>
           )}
@@ -274,11 +274,11 @@ export default function Settings() {
             onClick={handleSave}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              background: '#7627bb',
               color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
               fontWeight: 600, transition: 'all 0.3s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.4)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(63, 81, 181, 0.4)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
             <Save size={20} /> Guardar Cambios
@@ -288,17 +288,17 @@ export default function Settings() {
 
       {/* Sincronización con la nube */}
       <div style={{
-        background: 'white',
+        background: 'var(--bg-color-surface)',
         borderRadius: '20px',
         padding: '1.5rem',
         marginBottom: '1.5rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(16, 185, 129, 0.2)'
+        border: '1px solid rgba(24, 128, 56, 0.2)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '12px',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
+            background: '#188038',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
             <RefreshCw size={24} color="white" />
@@ -309,9 +309,9 @@ export default function Settings() {
               Sube todos los datos locales a la nube para que otros usuarios los vean
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>📅 {events.length} eventos</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>👥 {users.length} usuarios</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>🎓 {students.length} alumnos</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'var(--surface-muted)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>📅 {events.length} eventos</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'var(--surface-muted)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>👥 {users.length} usuarios</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'var(--surface-muted)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>🎓 {students.length} alumnos</span>
             </div>
           </div>
         </div>
@@ -323,18 +323,18 @@ export default function Settings() {
             style={{
               display: 'flex', alignItems: 'center', gap: '8px',
               padding: '0.75rem 1.5rem',
-              background: isSyncing ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)',
+              background: isSyncing ? 'var(--text-secondary)' : '#188038',
               color: 'white', border: 'none', borderRadius: '12px', cursor: isSyncing ? 'not-allowed' : 'pointer',
               fontWeight: 600, transition: 'all 0.3s ease',
-              boxShadow: isSyncing ? 'none' : '0 4px 15px rgba(16, 185, 129, 0.3)'
+              boxShadow: isSyncing ? 'none' : '0 4px 15px rgba(24, 128, 56, 0.3)'
             }}
-            onMouseEnter={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'; } }}
-            onMouseLeave={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)'; } }}
+            onMouseEnter={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(24, 128, 56, 0.4)'; } }}
+            onMouseLeave={(e) => { if (!isSyncing) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(24, 128, 56, 0.3)'; } }}
           >
             <RefreshCw size={20} className={isSyncing ? 'spinner' : ''} /> {isSyncing ? 'Sincronizando...' : 'Sincronizar Todo'}
           </button>
           {syncMsg && (
-            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: syncMsg.includes('✓') ? '#10b981' : '#ef4444' }} className="animate-fade-in">
+            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: syncMsg.includes('✓') ? '#188038' : '#d93025' }} className="animate-fade-in">
               {syncMsg}
             </span>
           )}
@@ -343,7 +343,7 @@ export default function Settings() {
 
       {/* Info importante */}
       <div style={{
-        background: 'linear-gradient(135deg, #f59e0b15, #fcd34d15)',
+        background: 'rgba(227, 116, 0, 0.12)',
         borderRadius: '16px',
         padding: '1.25rem',
         marginBottom: '1.5rem',
@@ -355,17 +355,17 @@ export default function Settings() {
           width: '40px',
           height: '40px',
           borderRadius: '10px',
-          background: 'rgba(245, 158, 11, 0.15)',
+          background: 'rgba(227, 116, 0, 0.15)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0
         }}>
-          <Clock size={20} color="#f59e0b" />
+          <Clock size={20} color="#e37400" />
         </div>
         <div>
-          <h4 style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#b45309' }}>Información Importante</h4>
-          <p style={{ fontSize: '0.85rem', color: '#92400e', lineHeight: 1.5, margin: 0 }}>
+          <h4 style={{ fontWeight: 600, marginBottom: '0.25rem', color: '#b06000' }}>Información Importante</h4>
+          <p style={{ fontSize: '0.85rem', color: '#b06000', lineHeight: 1.5, margin: 0 }}>
             Estas fechas se utilizan para filtrar la asistencia en los reportes de Excel. 
             Asegúrate de que no haya solapamientos entre bimestres para garantizar la exactitud de los datos.
           </p>
@@ -374,19 +374,19 @@ export default function Settings() {
 
       {/* Sección de Limpiar Datos */}
       <div style={{
-        background: 'white',
+        background: 'var(--bg-color-surface)',
         borderRadius: '20px',
         padding: '1.5rem',
         marginBottom: '1.5rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(239, 68, 68, 0.2)'
+        border: '1px solid rgba(217, 48, 37, 0.2)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
             width: '48px',
             height: '48px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            background: '#d93025',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -394,7 +394,7 @@ export default function Settings() {
             <Trash2 size={24} color="white" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#ef4444' }}>Limpiar/Borrar Datos</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#d93025' }}>Limpiar/Borrar Datos</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Elimina datos para comenzar desde cero</p>
           </div>
         </div>
@@ -402,13 +402,13 @@ export default function Settings() {
         <div style={{ 
           display: 'flex', alignItems: 'center', gap: '0.75rem',
           padding: '1rem', 
-          background: 'rgba(239, 68, 68, 0.1)', 
+          background: 'rgba(217, 48, 37, 0.1)', 
           borderRadius: '12px', 
-          border: '1px solid rgba(239, 68, 68, 0.3)',
+          border: '1px solid rgba(217, 48, 37, 0.3)',
           marginBottom: '1.5rem'
         }}>
-          <AlertTriangle size={20} color="#ef4444" />
-          <p style={{ fontSize: '0.85rem', color: '#991b1b', margin: 0 }}>
+          <AlertTriangle size={20} color="#d93025" />
+          <p style={{ fontSize: '0.85rem', color: '#b3261e', margin: 0 }}>
             <strong>Peligro:</strong> Esta acción elimina datos de Supabase y es IRREVERSIBLE. Asegúrate de tener un respaldo antes de continuar.
           </p>
         </div>
@@ -419,16 +419,16 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'rgba(217, 48, 37, 0.1)',
+              border: '1px solid rgba(217, 48, 37, 0.3)',
               borderRadius: '12px',
-              color: '#ef4444',
+              color: '#d93025',
               cursor: 'pointer',
               fontWeight: 600,
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
           >
             <Trash2 size={16} /> Estudiantes ({students.length})
           </button>
@@ -437,16 +437,16 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'rgba(217, 48, 37, 0.1)',
+              border: '1px solid rgba(217, 48, 37, 0.3)',
               borderRadius: '12px',
-              color: '#ef4444',
+              color: '#d93025',
               cursor: 'pointer',
               fontWeight: 600,
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
           >
             <Trash2 size={16} /> Asistencia ({attendance.length})
           </button>
@@ -455,16 +455,16 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'rgba(217, 48, 37, 0.1)',
+              border: '1px solid rgba(217, 48, 37, 0.3)',
               borderRadius: '12px',
-              color: '#ef4444',
+              color: '#d93025',
               cursor: 'pointer',
               fontWeight: 600,
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
           >
             <Trash2 size={16} /> Notas ({grades.length})
           </button>
@@ -473,16 +473,16 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'rgba(217, 48, 37, 0.1)',
+              border: '1px solid rgba(217, 48, 37, 0.3)',
               borderRadius: '12px',
-              color: '#ef4444',
+              color: '#d93025',
               cursor: 'pointer',
               fontWeight: 600,
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(217, 48, 37, 0.1)'; }}
           >
             <Trash2 size={16} /> Instrumentos ({instruments.length})
           </button>
@@ -499,7 +499,7 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              background: '#e37400',
               border: 'none',
               borderRadius: '12px',
               color: 'white',
@@ -507,7 +507,7 @@ export default function Settings() {
               fontWeight: 600,
               width: '100%',
               transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+              boxShadow: '0 4px 15px rgba(227, 116, 0, 0.3)'
             }}
           >
             <Trash2 size={18} /> Limpiar Datos Huérfanos
@@ -520,7 +520,7 @@ export default function Settings() {
             style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              background: '#d93025',
               border: 'none',
               borderRadius: '12px',
               color: 'white',
@@ -528,10 +528,10 @@ export default function Settings() {
               fontWeight: 600,
               width: '100%',
               transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)'
+              boxShadow: '0 4px 15px rgba(217, 48, 37, 0.3)'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(217, 48, 37, 0.4)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(217, 48, 37, 0.3)'; }}
           >
             <Trash2 size={18} /> Borrar TODOS los Datos
           </button>
@@ -539,7 +539,7 @@ export default function Settings() {
 
         {clearMsg && (
           <p style={{ 
-            color: clearMsg.includes('✓') ? '#10b981' : '#ef4444', 
+            color: clearMsg.includes('✓') ? '#188038' : '#d93025', 
             fontSize: '0.85rem', 
             marginTop: '1rem',
             fontWeight: 600,
@@ -564,7 +564,7 @@ export default function Settings() {
             width: '100%', 
             textAlign: 'center', 
             padding: '2rem',
-            background: 'white',
+            background: 'var(--bg-color-surface)',
             borderRadius: '24px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             position: 'relative'
@@ -572,21 +572,21 @@ export default function Settings() {
             <div style={{ 
               position: 'absolute', top: '-30%', right: '-10%',
               width: '120px', height: '120px',
-              background: 'linear-gradient(135deg, #ef444420, #dc262620)',
+              background: 'rgba(26, 115, 232, 0.12)',
               borderRadius: '50%'
             }} />
             
             <div style={{ 
               width: '64px', 
               height: '64px', 
-              background: 'rgba(239, 68, 68, 0.1)', 
+              background: 'rgba(217, 48, 37, 0.1)', 
               borderRadius: '50%', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
               margin: '0 auto 1.5rem auto'
             }}>
-              <AlertTriangle size={32} color="#ef4444" />
+              <AlertTriangle size={32} color="#d93025" />
             </div>
             
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
@@ -603,8 +603,8 @@ export default function Settings() {
               <button 
                 style={{ 
                   flex: 1, padding: '0.8rem', borderRadius: '12px',
-                  background: '#f1f5f9', color: 'var(--text-secondary)',
-                  border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600
+                  background: 'var(--surface-muted)', color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 600
                 }}
                 onClick={() => setClearType(null)}
               >
@@ -614,13 +614,13 @@ export default function Settings() {
                 style={{ 
                   flex: 1, 
                   padding: '0.8rem', 
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  background: '#d93025',
                   border: 'none',
                   borderRadius: '12px',
                   color: 'white',
                   cursor: 'pointer',
                   fontWeight: 600,
-                  boxShadow: '0 4px 14px 0 rgba(239, 68, 68, 0.3)'
+                  boxShadow: '0 4px 14px 0 rgba(217, 48, 37, 0.3)'
                 }}
                 onClick={confirmClear}
               >
@@ -634,7 +634,7 @@ export default function Settings() {
       {/* Historial de Ingresos */}
       {isAdmin && (
         <div style={{
-          background: 'white',
+          background: 'var(--bg-color-surface)',
           borderRadius: '20px',
           padding: '1.5rem',
           marginTop: '1.5rem',
@@ -662,8 +662,8 @@ export default function Settings() {
                         <td>
                           <span style={{
                             display: 'inline-block', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600,
-                            background: entry.role === 'admin' ? 'rgba(239,68,68,0.1)' : entry.role === 'parent' ? 'rgba(234,179,8,0.1)' : 'rgba(16,185,129,0.1)',
-                            color: entry.role === 'admin' ? '#dc2626' : entry.role === 'parent' ? '#ca8a04' : '#059669'
+                            background: entry.role === 'admin' ? 'rgba(217, 48, 37,0.1)' : entry.role === 'parent' ? 'rgba(227, 116, 0,0.1)' : 'rgba(24, 128, 56,0.1)',
+                            color: entry.role === 'admin' ? '#b3261e' : entry.role === 'parent' ? '#b06000' : '#146c2e'
                           }}>
                             {entry.role === 'admin' ? 'Admin' : entry.role === 'parent' ? 'Padre' : 'Docente'}
                           </span>

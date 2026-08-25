@@ -11,7 +11,7 @@ const NUM_TO_GRADE = (n) => {
   return 'C';
 };
 const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
-const GRADE_COLORS = { AD: '#10b981', A: '#3b82f6', B: '#f59e0b', C: '#ef4444' };
+const GRADE_COLORS = { AD: '#188038', A: '#1a73e8', B: '#e37400', C: '#d93025' };
 const PERIODS = ['1', '2', '3', '4'];
 const PERIOD_LABELS = { '1': 'I Bimestre', '2': 'II Bimestre', '3': 'III Bimestre', '4': 'IV Bimestre' };
 
@@ -136,11 +136,11 @@ export default function StudentProfile() {
   if (!student) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-        <Users size={64} style={{ color: '#94a3b8', marginBottom: '1rem' }} />
+        <Users size={64} style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }} />
         <h2>Estudiante no encontrado</h2>
         <button onClick={() => navigate('/students')} style={{
           marginTop: '1rem', padding: '0.75rem 1.5rem',
-          background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+          background: '#188038',
           color: 'white', border: 'none', borderRadius: '12px',
           fontWeight: 600, cursor: 'pointer'
         }}>Volver a Estudiantes</button>
@@ -159,7 +159,7 @@ export default function StudentProfile() {
     <div className="animate-fade-in">
       <button onClick={() => navigate('/students')} style={{
         display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-        background: 'none', border: 'none', color: '#64748b',
+        background: 'none', border: 'none', color: 'var(--text-secondary)',
         cursor: 'pointer', fontWeight: 600, marginBottom: '1rem',
         padding: '0.5rem 0', fontSize: '0.9rem'
       }}>
@@ -168,7 +168,7 @@ export default function StudentProfile() {
 
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #4ade80 100%)',
+        background: '#188038',
         borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
@@ -205,9 +205,9 @@ export default function StudentProfile() {
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             padding: '0.75rem 1.25rem', borderRadius: '12px',
-            border: activeTab === tab.id ? '2px solid #22c55e' : '1px solid #e2e8f0',
-            background: activeTab === tab.id ? 'rgba(34, 197, 94, 0.08)' : 'white',
-            color: activeTab === tab.id ? '#16a34a' : '#64748b',
+            border: activeTab === tab.id ? '2px solid #188038' : '1px solid var(--border-color)',
+            background: activeTab === tab.id ? 'rgba(24, 128, 56, 0.08)' : 'white',
+            color: activeTab === tab.id ? '#188038' : 'var(--text-secondary)',
             fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem',
             transition: 'all 0.2s ease'
           }}>
@@ -219,23 +219,23 @@ export default function StudentProfile() {
       {/* Tab Content */}
       {activeTab === 'info' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-          <div style={{ background: 'white', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
             <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users size={20} color="#22c55e" /> Datos Personales
+              <Users size={20} color="#188038" /> Datos Personales
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <InfoRow label="DNI" value={student.dni || '-'} />
               <InfoRow label="Nombre Completo" value={student.name} />
-              <InfoRow label="Grado y Sección" value={student.gradeLevel || '-'} color="#22c55e" />
+              <InfoRow label="Grado y Sección" value={student.gradeLevel || '-'} color="#188038" />
               <InfoRow label="Fecha de Nacimiento" value={student.birthDate || '-'} icon={<Calendar size={14} />} />
               <InfoRow label="Dirección" value={student.address || '-'} icon={<MapPin size={14} />} />
               <InfoRow label="Teléfono" value={student.phone || '-'} icon={<Phone size={14} />} />
             </div>
           </div>
 
-          <div style={{ background: 'white', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
             <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <UserCheck size={20} color="#22c55e" /> Apoderado
+              <UserCheck size={20} color="#188038" /> Apoderado
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <InfoRow label="Nombre" value={student.guardianName || '-'} />
@@ -246,11 +246,11 @@ export default function StudentProfile() {
 
           {/* Stats cards */}
           <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard icon={<Users />} label="Total Asistencias" value={`${attendanceStats.total} días`} color="#3b82f6" />
-            <StatCard icon={<CheckCircle />} label="Asistencias" value={String(attendanceStats.present)} color="#10b981" />
-            <StatCard icon={<AlertCircle />} label="Tardanzas" value={String(attendanceStats.late)} color="#f59e0b" />
-            <StatCard icon={<XCircle />} label="Faltas" value={String(attendanceStats.absent)} color="#ef4444" />
-            <StatCard icon={<Award />} label="% Asistencia" value={`${attendanceStats.percentage}%`} color="#8b5cf6" />
+            <StatCard icon={<Users />} label="Total Asistencias" value={`${attendanceStats.total} días`} color="#1a73e8" />
+            <StatCard icon={<CheckCircle />} label="Asistencias" value={String(attendanceStats.present)} color="#188038" />
+            <StatCard icon={<AlertCircle />} label="Tardanzas" value={String(attendanceStats.late)} color="#e37400" />
+            <StatCard icon={<XCircle />} label="Faltas" value={String(attendanceStats.absent)} color="#d93025" />
+            <StatCard icon={<Award />} label="% Asistencia" value={`${attendanceStats.percentage}%`} color="#7627bb" />
           </div>
         </div>
       )}
@@ -266,15 +266,15 @@ export default function StudentProfile() {
             if (!hasAnyGrade) return null;
 
             return (
-              <div key={sub.id} style={{ background: 'white', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                <h3 style={{ fontWeight: 700, marginBottom: '1rem', color: '#1e293b' }}>{sub.name}</h3>
+              <div key={sub.id} style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <h3 style={{ fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>{sub.name}</h3>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
                       <tr>
-                        <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '2px solid #e2e8f0', color: '#64748b', fontWeight: 600 }}>Competencia</th>
+                        <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: 600 }}>Competencia</th>
                         {PERIODS.map(p => (
-                          <th key={p} style={{ textAlign: 'center', padding: '0.5rem', borderBottom: '2px solid #e2e8f0', color: '#64748b', fontWeight: 600, minWidth: '70px' }}>
+                          <th key={p} style={{ textAlign: 'center', padding: '0.5rem', borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: 600, minWidth: '70px' }}>
                             {p}° Bim.
                           </th>
                         ))}
@@ -286,11 +286,11 @@ export default function StudentProfile() {
                         if (!isAnyGrade) return null;
                         return (
                           <tr key={comp.id}>
-                            <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9', fontWeight: 500 }}>{comp.name}</td>
+                            <td style={{ padding: '0.5rem', borderBottom: '1px solid var(--surface-muted)', fontWeight: 500 }}>{comp.name}</td>
                             {PERIODS.map(p => {
                               const data = subData[p]?.competencies[comp.id];
                               return (
-                                <td key={p} style={{ textAlign: 'center', padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>
+                                <td key={p} style={{ textAlign: 'center', padding: '0.5rem', borderBottom: '1px solid var(--surface-muted)' }}>
                                   {data ? (
                                     <span style={{
                                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -299,7 +299,7 @@ export default function StudentProfile() {
                                       color: GRADE_COLORS[data.label],
                                       fontWeight: 700, fontSize: '0.8rem'
                                     }}>{data.label}</span>
-                                  ) : <span style={{ color: '#e2e8f0' }}>-</span>}
+                                  ) : <span style={{ color: 'var(--border-color)' }}>-</span>}
                                 </td>
                               );
                             })}
@@ -309,16 +309,16 @@ export default function StudentProfile() {
                       {/* Average row */}
                       {PERIODS.some(p => subData[p]?.average) && (
                         <tr>
-                          <td style={{ padding: '0.5rem', borderTop: '2px solid #e2e8f0', fontWeight: 700, color: '#1e293b' }}>Promedio</td>
+                          <td style={{ padding: '0.5rem', borderTop: '2px solid var(--border-color)', fontWeight: 700, color: 'var(--text-primary)' }}>Promedio</td>
                           {PERIODS.map(p => {
                             const avg = subData[p]?.average;
                             return (
-                              <td key={p} style={{ textAlign: 'center', padding: '0.5rem', borderTop: '2px solid #e2e8f0' }}>
+                              <td key={p} style={{ textAlign: 'center', padding: '0.5rem', borderTop: '2px solid var(--border-color)' }}>
                                 {avg ? (
                                   <span style={{
                                     fontWeight: 700, color: GRADE_COLORS[avg], fontSize: '0.9rem'
                                   }}>{avg}</span>
-                                ) : <span style={{ color: '#e2e8f0' }}>-</span>}
+                                ) : <span style={{ color: 'var(--border-color)' }}>-</span>}
                               </td>
                             );
                           })}
@@ -334,7 +334,7 @@ export default function StudentProfile() {
             const subData = gradesByPeriodAndSubject[sub.id];
             return !subData || PERIODS.every(p => Object.keys(subData[p]?.competencies || {}).length === 0);
           }) && (
-            <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: '20px', color: '#94a3b8' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-color-surface)', borderRadius: '20px', color: 'var(--text-secondary)' }}>
               <GraduationCap size={48} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
               <p>No hay calificaciones registradas para este estudiante.</p>
             </div>
@@ -346,13 +346,13 @@ export default function StudentProfile() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* Period selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <CalendarRange size={18} color="#64748b" />
-            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginRight: '0.25rem' }}>Filtrar por:</span>
+            <CalendarRange size={18} color="var(--text-secondary)" />
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, marginRight: '0.25rem' }}>Filtrar por:</span>
             <button onClick={() => setSelectedAttendancePeriod(null)} style={{
               padding: '0.4rem 0.75rem', borderRadius: '8px',
-              border: selectedAttendancePeriod === null ? '2px solid #22c55e' : '1px solid #e2e8f0',
-              background: selectedAttendancePeriod === null ? 'rgba(34,197,94,0.08)' : 'white',
-              color: selectedAttendancePeriod === null ? '#16a34a' : '#64748b',
+              border: selectedAttendancePeriod === null ? '2px solid #188038' : '1px solid var(--border-color)',
+              background: selectedAttendancePeriod === null ? 'rgba(24, 128, 56,0.08)' : 'white',
+              color: selectedAttendancePeriod === null ? '#188038' : 'var(--text-secondary)',
               fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem'
             }}>Todo</button>
             {PERIODS.map(p => {
@@ -360,9 +360,9 @@ export default function StudentProfile() {
               return (
                 <button key={p} onClick={() => setSelectedAttendancePeriod(p)} style={{
                   padding: '0.4rem 0.75rem', borderRadius: '8px',
-                  border: isActive ? '2px solid #22c55e' : '1px solid #e2e8f0',
-                  background: isActive ? 'rgba(34,197,94,0.08)' : 'white',
-                  color: isActive ? '#16a34a' : '#64748b',
+                  border: isActive ? '2px solid #188038' : '1px solid var(--border-color)',
+                  background: isActive ? 'rgba(24, 128, 56,0.08)' : 'white',
+                  color: isActive ? '#188038' : 'var(--text-secondary)',
                   fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem'
                 }}>{p}° Bim.</button>
               );
@@ -371,30 +371,30 @@ export default function StudentProfile() {
 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
-            <StatCard icon={<CheckCircle size={22} />} label="Presente" value={String(filteredAttendanceStats.present)} color="#10b981" large />
-            <StatCard icon={<AlertCircle size={22} />} label="Tardanza" value={String(filteredAttendanceStats.late)} color="#f59e0b" large />
-            <StatCard icon={<XCircle size={22} />} label="Falta" value={String(filteredAttendanceStats.absent)} color="#ef4444" large />
-            <StatCard icon={<Clock size={22} />} label="Justificado" value={String(filteredAttendanceStats.justified)} color="#8b5cf6" large />
+            <StatCard icon={<CheckCircle size={22} />} label="Presente" value={String(filteredAttendanceStats.present)} color="#188038" large />
+            <StatCard icon={<AlertCircle size={22} />} label="Tardanza" value={String(filteredAttendanceStats.late)} color="#e37400" large />
+            <StatCard icon={<XCircle size={22} />} label="Falta" value={String(filteredAttendanceStats.absent)} color="#d93025" large />
+            <StatCard icon={<Clock size={22} />} label="Justificado" value={String(filteredAttendanceStats.justified)} color="#7627bb" large />
           </div>
 
           {/* History */}
-          <div style={{ background: 'white', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
             <h3 style={{ fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={20} color="#22c55e" /> Historial de Asistencia
+              <Clock size={20} color="#188038" /> Historial de Asistencia
             </h3>
             {filteredAttendanceDays.length === 0 ? (
-              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '1rem' }}>No hay registro de asistencia para este período.</p>
+              <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem' }}>No hay registro de asistencia para este período.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto' }}>
                 {filteredAttendanceDays.map(day => {
                   const status = day.records[student.id];
                   const statusConfig = {
-                    P: { label: 'Presente', color: '#10b981', bg: '#10b98115' },
-                    T: { label: 'Tardanza', color: '#f59e0b', bg: '#f59e0b15' },
-                    F: { label: 'Falta', color: '#ef4444', bg: '#ef444415' },
-                    J: { label: 'Justificado', color: '#8b5cf6', bg: '#8b5cf615' },
+                    P: { label: 'Presente', color: '#188038', bg: '#10b98115' },
+                    T: { label: 'Tardanza', color: '#e37400', bg: '#f59e0b15' },
+                    F: { label: 'Falta', color: '#d93025', bg: '#ef444415' },
+                    J: { label: 'Justificado', color: '#7627bb', bg: '#8b5cf615' },
                   };
-                  const config = statusConfig[status] || { label: status, color: '#94a3b8', bg: '#f1f5f9' };
+                  const config = statusConfig[status] || { label: status, color: 'var(--text-secondary)', bg: 'var(--surface-muted)' };
                   return (
                     <div key={day.date} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -415,12 +415,12 @@ export default function StudentProfile() {
       )}
 
       {activeTab === 'diagnostic' && (
-        <div style={{ background: 'white', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: 'var(--bg-color-surface)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FileText size={20} color="#22c55e" /> Evaluación Diagnóstica
+            <FileText size={20} color="#188038" /> Evaluación Diagnóstica
           </h3>
           {studentDiagnostics.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
               <FileText size={48} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
               <p>No hay evaluaciones diagnósticas registradas.</p>
             </div>
@@ -431,7 +431,7 @@ export default function StudentProfile() {
                 if (!diag) return null;
                 return (
                   <div key={sub.id} style={{
-                    padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0',
+                    padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}>
                     <div>
@@ -440,7 +440,7 @@ export default function StudentProfile() {
                     <span style={{
                       padding: '0.25rem 0.75rem', borderRadius: '8px', fontWeight: 700,
                       background: diag.result === 'AD' ? '#10b98120' : diag.result === 'A' ? '#3b82f620' : diag.result === 'B' ? '#f59e0b20' : '#ef444420',
-                      color: diag.result === 'AD' ? '#10b981' : diag.result === 'A' ? '#3b82f6' : diag.result === 'B' ? '#f59e0b' : '#ef4444'
+                      color: diag.result === 'AD' ? '#188038' : diag.result === 'A' ? '#1a73e8' : diag.result === 'B' ? '#e37400' : '#d93025'
                     }}>{diag.result || diag.score || '-'}</span>
                   </div>
                 );
@@ -455,11 +455,11 @@ export default function StudentProfile() {
 
 function InfoRow({ label, value, color, icon }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>
-      <span style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--surface-muted)' }}>
+      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
         {icon}{label}
       </span>
-      <span style={{ fontWeight: 600, color: color || '#1e293b', textAlign: 'right' }}>{value}</span>
+      <span style={{ fontWeight: 600, color: color || 'var(--text-primary)', textAlign: 'right' }}>{value}</span>
     </div>
   );
 }
@@ -467,7 +467,7 @@ function InfoRow({ label, value, color, icon }) {
 function StatCard({ icon, label, value, color, large }) {
   return (
     <div style={{
-      background: 'white', borderRadius: '16px', padding: '1.25rem',
+      background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '1.25rem',
       boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
       border: `1px solid ${color}20`,
       textAlign: 'center'
@@ -476,7 +476,7 @@ function StatCard({ icon, label, value, color, large }) {
         {icon}
       </div>
       <div style={{ fontSize: large ? '1.75rem' : '1.5rem', fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500, marginTop: '0.25rem' }}>{label}</div>
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.25rem' }}>{label}</div>
     </div>
   );
 }

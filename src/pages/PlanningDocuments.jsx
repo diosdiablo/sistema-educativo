@@ -264,12 +264,12 @@ export default function PlanningDocuments() {
   };
 
   const gradientColors = [
-    ['#3b82f6', '#2563eb'],
-    ['#10b981', '#059669'],
-    ['#f59e0b', '#d97706'],
-    ['#ef4444', '#dc2626'],
-    ['#8b5cf6', '#7c3aed'],
-    ['#ec4899', '#db2777']
+    ['#1a73e8', '#174ea6'],
+    ['#188038', '#146c2e'],
+    ['#e37400', '#b06000'],
+    ['#d93025', '#b3261e'],
+    ['#7627bb', '#6a1b9a'],
+    ['#c2185b', '#ad1457']
   ];
 
   const DocIcon = useMemo(() => {
@@ -282,7 +282,7 @@ export default function PlanningDocuments() {
       <div style={{
         width: '280px',
         flexShrink: 0,
-        background: 'white',
+        background: 'var(--bg-color-surface)',
         borderRadius: '20px',
         padding: '1.25rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -295,7 +295,7 @@ export default function PlanningDocuments() {
           alignItems: 'center', 
           gap: '0.75rem', 
           padding: '0.75rem',
-          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+          background: '#e37400',
           borderRadius: '14px',
           color: 'white',
           marginBottom: '1rem'
@@ -313,7 +313,7 @@ export default function PlanningDocuments() {
               padding: '0.6rem 0.5rem',
               borderRadius: '10px',
               border: 'none',
-              background: contentType === 'planifications' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#f1f5f9',
+              background: contentType === 'planifications' ? '#e37400' : 'var(--surface-muted)',
               color: contentType === 'planifications' ? 'white' : 'var(--text-secondary)',
               fontWeight: 600,
               fontSize: '0.75rem',
@@ -334,7 +334,7 @@ export default function PlanningDocuments() {
               padding: '0.6rem 0.5rem',
               borderRadius: '10px',
               border: 'none',
-              background: contentType === 'sessions' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#f1f5f9',
+              background: contentType === 'sessions' ? '#e37400' : 'var(--surface-muted)',
               color: contentType === 'sessions' ? 'white' : 'var(--text-secondary)',
               fontWeight: 600,
               fontSize: '0.75rem',
@@ -355,7 +355,7 @@ export default function PlanningDocuments() {
               padding: '0.6rem 0.5rem',
               borderRadius: '10px',
               border: 'none',
-              background: contentType === 'reports' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#f1f5f9',
+              background: contentType === 'reports' ? '#e37400' : 'var(--surface-muted)',
               color: contentType === 'reports' ? 'white' : 'var(--text-secondary)',
               fontWeight: 600,
               fontSize: '0.75rem',
@@ -380,16 +380,16 @@ export default function PlanningDocuments() {
             gap: '0.75rem',
             padding: '0.75rem',
             borderRadius: '12px',
-            border: !selectedSection ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-            background: !selectedSection ? '#fef3c7' : 'white',
+            border: !selectedSection ? '2px solid #e37400' : '1px solid var(--border-color)',
+            background: !selectedSection ? '#fef7e0' : 'var(--bg-color-surface)',
             cursor: 'pointer',
             width: '100%',
             textAlign: 'left',
             marginBottom: '0.75rem'
           }}
         >
-          <LayoutGrid size={18} color={!selectedSection ? '#d97706' : '#64748b'} />
-          <span style={{ fontWeight: !selectedSection ? 700 : 500, color: !selectedSection ? '#d97706' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+          <LayoutGrid size={18} color={!selectedSection ? '#b06000' : 'var(--text-secondary)'} />
+          <span style={{ fontWeight: !selectedSection ? 700 : 500, color: !selectedSection ? '#b06000' : 'var(--text-primary)', fontSize: '0.9rem' }}>
             Ver Todo
           </span>
         </button>
@@ -407,19 +407,19 @@ export default function PlanningDocuments() {
                     gap: '0.75rem',
                     padding: '0.75rem',
                     borderRadius: '12px',
-                    border: !selectedTeacherId ? '2px solid #ef4444' : '1px solid #e2e8f0',
-                    background: !selectedTeacherId ? '#fef2f2' : 'white',
+                    border: !selectedTeacherId ? '2px solid #d93025' : '1px solid var(--border-color)',
+                    background: !selectedTeacherId ? '#fce8e6' : 'var(--bg-color-surface)',
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
                     marginBottom: '0.5rem'
                   }}
                 >
-                  <Users size={18} color={!selectedTeacherId ? '#ef4444' : '#64748b'} />
-                  <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#ef4444' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                  <Users size={18} color={!selectedTeacherId ? '#d93025' : 'var(--text-secondary)'} />
+                  <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#d93025' : 'var(--text-primary)', fontSize: '0.9rem' }}>
                     Todos los Docentes
                   </span>
-                  <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                  <span style={{ marginLeft: 'auto', background: 'var(--surface-muted)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
                     {reportFiles.length}
                   </span>
                 </button>
@@ -433,8 +433,8 @@ export default function PlanningDocuments() {
                       gap: '0.75rem',
                       padding: '0.6rem 0.75rem',
                       borderRadius: '10px',
-                      border: selectedTeacherId === teacher.id ? '2px solid #ef4444' : '1px solid #e2e8f0',
-                      background: selectedTeacherId === teacher.id ? '#fef2f2' : 'white',
+                      border: selectedTeacherId === teacher.id ? '2px solid #d93025' : '1px solid var(--border-color)',
+                      background: selectedTeacherId === teacher.id ? '#fce8e6' : 'var(--bg-color-surface)',
                       cursor: 'pointer',
                       width: '100%',
                       textAlign: 'left',
@@ -442,12 +442,12 @@ export default function PlanningDocuments() {
                     }}
                   >
                     <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ef444420', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <UserCheck size={16} color="#ef4444" />
+                      <UserCheck size={16} color="#d93025" />
                     </div>
                     <span style={{ fontWeight: selectedTeacherId === teacher.id ? 600 : 400, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
                       {teacher.name}
                     </span>
-                    <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                    <span style={{ marginLeft: 'auto', background: 'var(--surface-muted)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
                       {teacher.count}
                     </span>
                   </button>
@@ -462,19 +462,19 @@ export default function PlanningDocuments() {
                   gap: '0.75rem',
                   padding: '0.75rem',
                   borderRadius: '12px',
-                  border: !selectedTeacherId ? '2px solid #ef4444' : '1px solid #e2e8f0',
-                  background: !selectedTeacherId ? '#fef2f2' : 'white',
+                  border: !selectedTeacherId ? '2px solid #d93025' : '1px solid var(--border-color)',
+                  background: !selectedTeacherId ? '#fce8e6' : 'var(--bg-color-surface)',
                   cursor: 'pointer',
                   width: '100%',
                   textAlign: 'left',
                   marginBottom: '0.5rem'
                 }}
               >
-                <FileText size={18} color={!selectedTeacherId ? '#ef4444' : '#64748b'} />
-                <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#ef4444' : 'var(--text-primary)', fontSize: '0.9rem' }}>
+                <FileText size={18} color={!selectedTeacherId ? '#d93025' : 'var(--text-secondary)'} />
+                <span style={{ fontWeight: !selectedTeacherId ? 700 : 500, color: !selectedTeacherId ? '#d93025' : 'var(--text-primary)', fontSize: '0.9rem' }}>
                   Mis Informes
                 </span>
-                <span style={{ marginLeft: 'auto', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
+                <span style={{ marginLeft: 'auto', background: 'var(--surface-muted)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem' }}>
                   {myReports.length}
                 </span>
               </button>
@@ -579,7 +579,7 @@ export default function PlanningDocuments() {
             }}
             style={{
               marginTop: 'auto',
-              background: contentType === 'reports' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
+              background: contentType === 'reports' ? '#d93025' : '#e37400',
               color: 'white',
               border: 'none',
               padding: '0.9rem',
@@ -590,7 +590,7 @@ export default function PlanningDocuments() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+              boxShadow: '0 4px 15px rgba(227, 116, 0, 0.3)'
             }}
           >
             <Plus size={18} /> Subir {contentType === 'planifications' ? 'Planificación' : contentType === 'sessions' ? 'Sesión' : 'Informe'}
@@ -602,7 +602,7 @@ export default function PlanningDocuments() {
       <div style={{ flex: 1, width: contentType === 'reports' ? '100%' : 'auto' }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%)',
+          background: '#e37400',
           borderRadius: '20px',
           padding: '1.5rem 2rem',
           marginBottom: '1.5rem',
@@ -657,7 +657,7 @@ export default function PlanningDocuments() {
                   style={{
                     padding: '0.6rem 1rem 0.6rem 2.5rem',
                     borderRadius: '10px',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid var(--border-color)',
                     fontSize: '0.9rem',
                     width: '180px',
                     outline: 'none'
@@ -672,8 +672,8 @@ export default function PlanningDocuments() {
                     padding: '0.5rem 0.75rem',
                     borderRadius: '8px',
                     border: 'none',
-                    background: viewMode === 'grid' ? 'white' : 'transparent',
-                    color: viewMode === 'grid' ? '#d97706' : 'rgba(255,255,255,0.8)',
+                    background: viewMode === 'grid' ? 'var(--bg-color-surface)' : 'transparent',
+                    color: viewMode === 'grid' ? '#b06000' : 'rgba(255,255,255,0.8)',
                     cursor: 'pointer'
                   }}
                 >
@@ -685,8 +685,8 @@ export default function PlanningDocuments() {
                     padding: '0.5rem 0.75rem',
                     borderRadius: '8px',
                     border: 'none',
-                    background: viewMode === 'list' ? 'white' : 'transparent',
-                    color: viewMode === 'list' ? '#d97706' : 'rgba(255,255,255,0.8)',
+                    background: viewMode === 'list' ? 'var(--bg-color-surface)' : 'transparent',
+                    color: viewMode === 'list' ? '#b06000' : 'rgba(255,255,255,0.8)',
                     cursor: 'pointer'
                   }}
                 >
@@ -702,16 +702,16 @@ export default function PlanningDocuments() {
         {/* Contenido */}
         {filteredDocuments.length === 0 ? (
           <div style={{
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+            background: 'var(--surface-muted)',
             borderRadius: '20px',
             padding: '4rem 2rem',
             textAlign: 'center',
-            border: '2px dashed #cbd5e1'
+            border: '2px dashed var(--border-color)'
           }}>
             <div style={{
               width: '80px',
               height: '80px',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              background: '#e37400',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -738,7 +738,7 @@ export default function PlanningDocuments() {
               
               return (
                 <div key={doc.id} style={{
-                  background: 'white',
+                  background: 'var(--bg-color-surface)',
                   borderRadius: '16px',
                   padding: '1.25rem',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -753,7 +753,7 @@ export default function PlanningDocuments() {
                       width: '48px',
                       height: '48px',
                       borderRadius: '12px',
-                      background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                      background: `${color1}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -765,12 +765,12 @@ export default function PlanningDocuments() {
                       <button
                         onClick={() => handleDelete(doc.id)}
                         style={{
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          background: 'rgba(217, 48, 37, 0.1)',
+                          border: '1px solid rgba(217, 48, 37, 0.3)',
                           borderRadius: '8px',
                           padding: '0.5rem',
                           cursor: 'pointer',
-                          color: '#ef4444',
+                          color: '#d93025',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
@@ -816,7 +816,7 @@ export default function PlanningDocuments() {
                         justifyContent: 'center',
                         gap: '0.5rem',
                         padding: '0.6rem',
-                        background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                        background: `${color1}`,
                         border: 'none',
                         borderRadius: '10px',
                         color: 'white',
@@ -837,7 +837,7 @@ export default function PlanningDocuments() {
                         justifyContent: 'center',
                         gap: '0.5rem',
                         padding: '0.6rem',
-                        background: 'white',
+                        background: 'var(--bg-color-surface)',
                         border: `1px solid ${color1}`,
                         borderRadius: '10px',
                         color: color1,
@@ -867,24 +867,24 @@ export default function PlanningDocuments() {
               
               return (
                 <div key={doc.id} style={{
-                  background: 'white',
+                  background: 'var(--bg-color-surface)',
                   borderRadius: '14px',
                   padding: '1rem 1.25rem',
                   boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-                  border: '1px solid #f1f5f9',
+                  border: '1px solid var(--surface-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1rem',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = color1; e.currentTarget.style.boxShadow = `0 4px 15px ${color1}20`; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--surface-muted)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.06)'; }}
                 >
                   <div style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '10px',
-                    background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                    background: `${color1}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -923,7 +923,7 @@ export default function PlanningDocuments() {
                       onClick={(e) => { e.preventDefault(); downloadDoc(doc); }}
                       style={{
                         padding: '0.5rem',
-                        background: 'white',
+                        background: 'var(--bg-color-surface)',
                         border: `1px solid ${color1}`,
                         borderRadius: '8px',
                         color: color1,
@@ -940,11 +940,11 @@ export default function PlanningDocuments() {
                         onClick={() => handleDelete(doc.id)}
                         style={{
                           padding: '0.5rem',
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          background: 'rgba(217, 48, 37, 0.1)',
+                          border: '1px solid rgba(217, 48, 37, 0.3)',
                           borderRadius: '8px',
                           cursor: 'pointer',
-                          color: '#ef4444'
+                          color: '#d93025'
                         }}
                       >
                         <Trash2 size={16} />
@@ -962,14 +962,14 @@ export default function PlanningDocuments() {
         }}>
           <div style={{ 
             maxWidth: '500px', width: '100%', 
-            background: 'white', borderRadius: '24px', padding: '2rem',
+            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             position: 'relative'
           }}>
             <div style={{ 
               position: 'absolute', top: '-30%', right: '-10%',
               width: '150px', height: '150px',
-              background: 'linear-gradient(135deg, #ef444420, #dc262620)',
+              background: 'rgba(26, 115, 232, 0.12)',
               borderRadius: '50%'
             }} />
             
@@ -979,7 +979,7 @@ export default function PlanningDocuments() {
                   width: '48px',
                   height: '48px',
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  background: '#d93025',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -1049,15 +1049,15 @@ export default function PlanningDocuments() {
                 <div 
                   onClick={() => document.getElementById('reportFileInput')?.click()}
                   style={{
-                    border: '2px dashed #e2e8f0',
+                    border: '2px dashed var(--border-color)',
                     borderRadius: '12px',
                     padding: '2rem',
                     textAlign: 'center',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#f59e0b'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#e37400'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                 >
                   <Upload size={32} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Haz clic para seleccionar archivo</p>
@@ -1067,7 +1067,7 @@ export default function PlanningDocuments() {
 
               <button 
                 style={{
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  background: '#d93025',
                   color: 'white',
                   border: 'none',
                   padding: '1rem',
@@ -1100,14 +1100,14 @@ export default function PlanningDocuments() {
         }}>
           <div style={{ 
             maxWidth: '500px', width: '100%', 
-            background: 'white', borderRadius: '24px', padding: '2rem',
+            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
             <div style={{ 
               position: 'absolute', top: '-30%', right: '-10%',
               width: '150px', height: '150px',
-              background: 'linear-gradient(135deg, #f59e0b20, #d9770620)',
+              background: 'rgba(227, 116, 0, 0.12)',
               borderRadius: '50%'
             }} />
             
@@ -1117,7 +1117,7 @@ export default function PlanningDocuments() {
                   width: '48px',
                   height: '48px',
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  background: '#e37400',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -1157,9 +1157,9 @@ export default function PlanningDocuments() {
                   maxHeight: '180px',
                   overflowY: 'auto',
                   padding: '0.5rem',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '10px',
-                  background: '#f8fafc'
+                  background: 'var(--surface-muted)'
                 }}>
                   {classes.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map(cls => {
                     const isSelected = uploadData.sections.includes(cls.id);
@@ -1176,8 +1176,8 @@ export default function PlanningDocuments() {
                         style={{
                           padding: '0.35rem 0.6rem',
                           borderRadius: '20px',
-                          border: isSelected ? 'none' : '1px solid #cbd5e1',
-                          background: isSelected ? cls.color : 'white',
+                          border: isSelected ? 'none' : '1px solid var(--border-color)',
+                          background: isSelected ? cls.color : 'var(--bg-color-surface)',
                           color: isSelected ? 'white' : 'var(--text-primary)',
                           fontWeight: 500,
                           fontSize: '0.7rem',
@@ -1193,12 +1193,12 @@ export default function PlanningDocuments() {
                   })}
                 </div>
                 {uploadData.sections.length === 0 && (
-                  <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem' }}>
+                  <p style={{ fontSize: '0.75rem', color: '#b3261e', marginTop: '0.25rem' }}>
                     ⚠️ Selecciona al menos una sección
                   </p>
                 )}
                 {uploadData.sections.length > 0 && (
-                  <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
+                  <p style={{ fontSize: '0.75rem', color: '#188038', marginTop: '0.25rem' }}>
                     ✓ {uploadData.sections.length} sección(es) seleccionada(s)
                   </p>
                 )}
@@ -1224,7 +1224,7 @@ export default function PlanningDocuments() {
                   onChange={handleFileChange}
                   style={{ 
                     padding: '0.6rem', 
-                    border: '1px dashed #cbd5e1', 
+                    border: '1px dashed var(--border-color)', 
                     borderRadius: '8px',
                     width: '100%'
                   }}
@@ -1246,10 +1246,10 @@ export default function PlanningDocuments() {
                 <div style={{ 
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
                   padding: '0.75rem',
-                  background: '#f0fdf4',
+                  background: '#e6f4ea',
                   borderRadius: '10px',
                   border: '1px solid #22c55e40',
-                  color: '#16a34a'
+                  color: '#188038'
                 }}>
                   <FileText size={18} />
                   <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{uploadData.fileName}</span>
@@ -1261,8 +1261,8 @@ export default function PlanningDocuments() {
                   onClick={() => setShowUploadModal(false)}
                   style={{ 
                     flex: 1, padding: '0.75rem', borderRadius: '12px',
-                    background: '#f1f5f9', color: 'var(--text-secondary)',
-                    border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600
+                    background: 'var(--surface-muted)', color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 600
                   }}
                 >
                   Cancelar
@@ -1271,7 +1271,7 @@ export default function PlanningDocuments() {
                   onClick={handleUpload}
                   style={{ 
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white',
+                    background: '#e37400', color: 'white',
                     border: 'none', borderRadius: '12px', padding: '0.75rem', cursor: 'pointer', fontWeight: 600
                   }}
                 >
@@ -1293,13 +1293,13 @@ export default function PlanningDocuments() {
         }}>
           <div style={{ 
             maxWidth: '900px', width: '100%', height: '90vh',
-            background: 'white', borderRadius: '24px',
+            background: 'var(--bg-color-surface)', borderRadius: '24px',
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden'
           }} className="animate-fade-in">
             <div style={{ 
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '1rem 1.5rem', borderBottom: '1px solid #e2e8f0'
+              padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)'
             }}>
               <div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{viewingDoc.title}</h3>
@@ -1316,7 +1316,7 @@ export default function PlanningDocuments() {
                     alignItems: 'center',
                     gap: '0.5rem',
                     padding: '0.5rem 1rem',
-                    background: '#f59e0b',
+                    background: '#e37400',
                     border: 'none',
                     borderRadius: '10px',
                     color: 'white',
@@ -1332,8 +1332,8 @@ export default function PlanningDocuments() {
                   onClick={() => setViewingDoc(null)}
                   style={{
                     padding: '0.5rem 1rem',
-                    background: '#f1f5f9',
-                    border: '1px solid #e2e8f0',
+                    background: 'var(--surface-muted)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '10px',
                     color: 'var(--text-secondary)',
                     fontWeight: 600,
@@ -1344,7 +1344,7 @@ export default function PlanningDocuments() {
                 </button>
               </div>
             </div>
-            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-muted)' }}>
               {viewingDoc.fileData ? (
                 <embed
                   src={viewingDoc.fileData}

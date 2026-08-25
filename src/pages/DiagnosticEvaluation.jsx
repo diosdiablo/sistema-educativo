@@ -4,17 +4,17 @@ import { Download, Save, RotateCcw, Check, Plus, Trash2, Edit2, X, Settings, Cli
 import * as XLSX from 'xlsx';
 
 const NIVEL_COLORS = {
-  AD: { bg: '#10b981', text: '#ffffff' },
-  A: { bg: '#3b82f6', text: '#ffffff' },
-  B: { bg: '#f59e0b', text: '#ffffff' },
-  C: { bg: '#ef4444', text: '#ffffff' },
+  AD: { bg: '#188038', text: '#ffffff' },
+  A: { bg: '#1a73e8', text: '#ffffff' },
+  B: { bg: '#e37400', text: '#ffffff' },
+  C: { bg: '#d93025', text: '#ffffff' },
 };
 
 const NIVELES_LOGRO = [
-  { code: 'AD', label: 'Logro Destacado', minPercent: 90, color: '#10b981' },
-  { code: 'A', label: 'Logro Esperado', minPercent: 70, color: '#3b82f6' },
-  { code: 'B', label: 'En Proceso', minPercent: 50, color: '#f59e0b' },
-  { code: 'C', label: 'En Inicio', minPercent: 0, color: '#ef4444' },
+  { code: 'AD', label: 'Logro Destacado', minPercent: 90, color: '#188038' },
+  { code: 'A', label: 'Logro Esperado', minPercent: 70, color: '#1a73e8' },
+  { code: 'B', label: 'En Proceso', minPercent: 50, color: '#e37400' },
+  { code: 'C', label: 'En Inicio', minPercent: 0, color: '#d93025' },
 ];
 
 const CICLOS = {
@@ -315,14 +315,14 @@ export default function DiagnosticEvaluation() {
 body { font-family: Arial, sans-serif; margin: 10px; }
 table { border-collapse: collapse; margin-bottom: 0; font-size: 11px; }
 td, th { border: 1px solid #000; padding: 4px 6px; }
-.grade-ad { background: #10b981; color: white; font-weight: bold; text-align: center; }
-.grade-a { background: #3b82f6; color: white; font-weight: bold; text-align: center; }
-.grade-b { background: #f59e0b; color: white; font-weight: bold; text-align: center; }
-.grade-c { background: #ef4444; color: white; font-weight: bold; text-align: center; }
+.grade-ad { background: #188038; color: white; font-weight: bold; text-align: center; }
+.grade-a { background: #1a73e8; color: white; font-weight: bold; text-align: center; }
+.grade-b { background: #e37400; color: white; font-weight: bold; text-align: center; }
+.grade-c { background: #d93025; color: white; font-weight: bold; text-align: center; }
 .nivel-c { background: #fecaca; text-align: center; }
-.nivel-b { background: #fef08a; text-align: center; }
+.nivel-b { background: #feefc3; text-align: center; }
 .nivel-a { background: #bfdbfe; text-align: center; }
-.nivel-ad { background: #bbf7d0; text-align: center; }
+.nivel-ad { background: #ceead6; text-align: center; }
 .student-name { font-weight: 500; }
 .comp-header { background: #e5e7eb; font-weight: bold; font-size: 9px; text-align: center; }
 </style>
@@ -508,17 +508,17 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
   };
 
   const gradientColors = [
-    ['#ec4899', '#db2777'],
-    ['#8b5cf6', '#7c3aed'],
-    ['#06b6d4', '#0891b2'],
-    ['#f59e0b', '#d97706']
+    ['#c2185b', '#ad1457'],
+    ['#7627bb', '#6a1b9a'],
+    ['#007b83', '#007b83'],
+    ['#e37400', '#b06000']
   ];
 
   return (
     <div className="animate-fade-in">
       {/* Header con gradiente */}
       <div style={{
-        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 50%, #f472b6 100%)',
+        background: '#c2185b',
         borderRadius: '20px',
         padding: '2rem 2.5rem',
         marginBottom: '1.5rem',
@@ -567,12 +567,12 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
 
       {/* Tarjeta de configuración */}
       <div style={{ 
-        background: 'white', 
+        background: 'var(--bg-color-surface)', 
         borderRadius: '20px', 
         padding: '1.5rem',
         marginBottom: '1.5rem',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(236, 72, 153, 0.2)'
+        border: '1px solid rgba(194, 24, 91, 0.2)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -580,25 +580,25 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               width: '40px',
               height: '40px',
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #ec4899, #db2777)',
+              background: '#c2185b',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
               <Settings size={20} color="white" />
             </div>
-            <h3 style={{ color: '#ec4899', margin: 0, fontWeight: 700, fontSize: '1.1rem' }}>Configuración de Evaluación</h3>
+            <h3 style={{ color: '#c2185b', margin: 0, fontWeight: 700, fontSize: '1.1rem' }}>Configuración de Evaluación</h3>
           </div>
           {selectedSubject && (
             <button 
               onClick={() => setShowRubricModal(true)}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'linear-gradient(135deg, #ec4899, #db2777)', color: 'white', border: 'none',
+                background: '#c2185b', color: 'white', border: 'none',
                 padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(236, 72, 153, 0.4)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(194, 24, 91, 0.4)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Settings size={16} /> Configurar Rúbrica
@@ -655,33 +655,33 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
             <button onClick={handleLoadExisting} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
+              background: 'var(--surface-muted)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)',
               padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-color)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface-muted)'; }}
             >
               <RotateCcw size={16} /> Cargar Datos
             </button>
             <button onClick={handleReset} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
+              background: '#fce8e6', color: '#d93025', border: '1px solid #fecaca',
               padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#fee2e2'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#fad2cf'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#fce8e6'; }}
             >
               <RotateCcw size={16} /> Limpiar Todo
             </button>
             <button onClick={handleSave} style={{ 
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: saved ? '#10b981' : 'linear-gradient(135deg, #ec4899, #db2777)', color: 'white', border: 'none',
+              background: saved ? '#188038' : '#c2185b', color: 'white', border: 'none',
               padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
               transition: 'all 0.3s ease'
             }}
-            onMouseEnter={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(236, 72, 153, 0.4)'; } }}
+            onMouseEnter={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(194, 24, 91, 0.4)'; } }}
             onMouseLeave={(e) => { if (!saved) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; } }}
             >
               {saved ? <Check size={16} /> : <Save size={16} />}
@@ -691,11 +691,11 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
               onClick={generateExcel}
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '8px', 
-                background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none',
+                background: '#188038', color: 'white', border: 'none',
                 padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(24, 128, 56, 0.4)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Download size={16} /> Exportar
@@ -708,7 +708,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
       {selectedClass && selectedSubject && (
         <>
           <div style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#7627bb',
             borderRadius: '20px',
             padding: '1.5rem',
             marginBottom: '1.5rem',
@@ -777,16 +777,16 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
 
           {filteredStudents.length === 0 ? (
             <div style={{
-              background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+              background: 'var(--surface-muted)',
               borderRadius: '20px',
               padding: '4rem 2rem',
               textAlign: 'center',
-              border: '2px dashed #cbd5e1'
+              border: '2px dashed var(--border-color)'
             }}>
               <div style={{
                 width: '80px',
                 height: '80px',
-                background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                background: '#c2185b',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -809,7 +809,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                   <tr>
                     <th style={{ 
                       width: '60px', 
-                      background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 
+                      background: '#c2185b', 
                       color: 'white',
                       fontWeight: 700,
                       fontSize: '0.85rem',
@@ -818,7 +818,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                     }}>N°</th>
                     <th style={{ 
                       minWidth: '180px', 
-                      background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 
+                      background: '#c2185b', 
                       color: 'white',
                       fontWeight: 700,
                       fontSize: '0.85rem',
@@ -835,7 +835,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                         <th key={comp.id || idx} style={{ 
                           minWidth: '200px', 
                           textAlign: 'center',
-                          background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`,
+                          background: `${color1}`,
                           color: 'white',
                           fontWeight: 700,
                           fontSize: '0.8rem',
@@ -852,7 +852,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                     })}
                     <th style={{ 
                       width: '80px', 
-                      background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 
+                      background: '#c2185b', 
                       color: 'white',
                       fontWeight: 700,
                       fontSize: '0.85rem',
@@ -902,8 +902,8 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                                           style={{
                                             padding: '6px 10px',
                                             borderRadius: '8px',
-                                            border: isSelected ? `2px solid ${getGradeColor(nivelCode)}` : '1px solid #e2e8f0',
-                                            background: isSelected ? getGradeColor(nivelCode) : 'white',
+                                            border: isSelected ? `2px solid ${getGradeColor(nivelCode)}` : '1px solid var(--border-color)',
+                                            background: isSelected ? getGradeColor(nivelCode) : 'var(--bg-color-surface)',
                                             color: isSelected ? 'white' : getGradeColor(nivelCode),
                                             fontWeight: 700,
                                             fontSize: '0.85rem',
@@ -929,7 +929,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                                       width: '70px',
                                       padding: '0.5rem',
                                       borderRadius: '8px',
-                                      border: `2px solid ${nivel ? getGradeColor(nivel) : '#e2e8f0'}`,
+                                      border: `2px solid ${nivel ? getGradeColor(nivel) : 'var(--border-color)'}`,
                                       background: nivel ? `${getGradeColor(nivel)}10` : 'white',
                                       color: 'var(--text-primary)',
                                       fontWeight: 600,
@@ -947,16 +947,16 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                             style={{ 
                               padding: '0.5rem', 
                               borderRadius: '8px',
-                              background: '#f1f5f9',
-                              border: '1px solid #e2e8f0',
+                              background: 'var(--surface-muted)',
+                              border: '1px solid var(--border-color)',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               transition: 'all 0.2s ease'
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-color)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface-muted)'; }}
                             onClick={() => {
                               const newGrades = {};
                               for (let i = 0; i < rubricConfig.competencies.length; i++) {
@@ -967,7 +967,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                             }}
                             title="Limpiar"
                           >
-                            <RotateCcw size={14} color="#64748b" />
+                            <RotateCcw size={14} color="var(--text-secondary)" />
                           </button>
                         </td>
                       </tr>
@@ -983,16 +983,16 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
       {/* Empty state */}
       {(!selectedClass || !selectedSubject) && (
         <div style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+          background: 'var(--surface-muted)',
           borderRadius: '20px',
           padding: '4rem 2rem',
           textAlign: 'center',
-          border: '2px dashed #cbd5e1'
+          border: '2px dashed var(--border-color)'
         }}>
           <div style={{
             width: '80px',
             height: '80px',
-            background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+            background: '#c2185b',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -1020,14 +1020,14 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
         }}>
           <div style={{ 
             maxWidth: '900px', width: '100%', 
-            background: 'white', borderRadius: '24px', padding: '2rem',
+            background: 'var(--bg-color-surface)', borderRadius: '24px', padding: '2rem',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             position: 'relative'
           }} className="animate-fade-in">
             <div style={{ 
               position: 'absolute', top: '-30%', right: '-10%',
               width: '150px', height: '150px',
-              background: 'linear-gradient(135deg, #ec489920, #db277720)',
+              background: 'rgba(194, 24, 91, 0.12)',
               borderRadius: '50%'
             }} />
             
@@ -1037,7 +1037,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                   width: '48px',
                   height: '48px',
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #ec4899, #db2777)',
+                  background: '#c2185b',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -1052,7 +1052,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
             </div>
 
             <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fdf2f8', borderRadius: '12px', border: '1px solid #fce7f3' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#be185d' }}>Modo de Evaluación</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#ad1457' }}>Modo de Evaluación</label>
               <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 500 }}>
                   <input
@@ -1073,7 +1073,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                   Rúbrica (seleccionar nivel)
                 </label>
               </div>
-              <p style={{ fontSize: '0.8rem', color: '#9d174d', marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.8rem', color: '#ad1457', marginTop: '0.5rem' }}>
                 {rubricConfig.mode === 'rubrica' 
                   ? 'Para Matemática: el docente selecciona directamente el nivel AD, A, B o C basado en una rúbrica con descriptores por cada competencia.'
                   : 'Ingresa el número de respuestas correctas y el sistema calcula el nivel automáticamente.'}
@@ -1088,7 +1088,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                     border: `1px solid ${color1}30`, 
                     borderRadius: '16px', 
                     padding: '1.25rem',
-                    background: `linear-gradient(135deg, ${color1}08, ${color2}08)`
+                    background: `${color1}08`
                   }}>
                     <div style={{ marginBottom: '1rem' }}>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Nombre de Competencia</label>
@@ -1125,7 +1125,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                             padding: '0.75rem',
                             borderRadius: '10px',
                             border: `2px solid ${getGradeColor(level.code)}`,
-                            background: 'white'
+                            background: 'var(--bg-color-surface)'
                           }}>
                             <div style={{ 
                               display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1176,8 +1176,8 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                 onClick={() => setShowRubricModal(false)}
                 style={{ 
                   padding: '0.75rem 1.5rem', borderRadius: '12px',
-                  background: '#f1f5f9', color: 'var(--text-secondary)',
-                  border: '1px solid #e2e8f0', cursor: 'pointer', fontWeight: 600
+                  background: 'var(--surface-muted)', color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: 600
                 }}
               >
                 Cancelar
@@ -1186,7 +1186,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
                 onClick={saveRubric} 
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'linear-gradient(135deg, #ec4899, #db2777)', color: 'white', border: 'none',
+                  background: '#c2185b', color: 'white', border: 'none',
                   padding: '0.75rem 1.5rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 600
                 }}
               >
@@ -1206,13 +1206,13 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           transform: 'translate(-50%, 0)',
           background: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(10px)',
-          color: '#1e293b',
+          color: 'var(--text-primary)',
           padding: '14px 18px',
           borderRadius: '12px',
           fontSize: '0.85rem',
           maxWidth: '400px',
           zIndex: 9999,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(16,185,129,0.1)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(24, 128, 56,0.1)',
           pointerEvents: 'none',
           textAlign: 'center'
         }}>
@@ -1227,7 +1227,7 @@ td, th { border: 1px solid #000; padding: 4px 6px; }
           }}>
             {tooltipInfo.code}
           </div>
-          <div style={{ color: '#475569', lineHeight: '1.5' }}>{tooltipInfo.text}</div>
+          <div style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>{tooltipInfo.text}</div>
         </div>
       )}
     </div>

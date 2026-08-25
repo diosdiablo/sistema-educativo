@@ -70,12 +70,12 @@ export default function ParentDashboard() {
 
   if (!parentDni || children.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '1rem', background: '#f8fafc' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '1rem', background: 'var(--surface-muted)' }}>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: '#64748b' }}>No se encontraron hijos con este DNI</h2>
+          <h2 style={{ color: 'var(--text-secondary)' }}>No se encontraron hijos con este DNI</h2>
           <button onClick={() => navigate('/parent')} style={{
             marginTop: '1rem', padding: '0.75rem 1.5rem', border: 'none',
-            borderRadius: '12px', background: '#10b981', color: 'white',
+            borderRadius: '12px', background: '#188038', color: 'white',
             fontWeight: 600, cursor: 'pointer'
           }}>Volver</button>
         </div>
@@ -84,10 +84,10 @@ export default function ParentDashboard() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '2rem' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--surface-muted)', paddingBottom: '2rem' }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)',
+        background: '#188038',
         padding: '1.25rem 1.5rem', color: 'white'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto' }}>
@@ -110,12 +110,12 @@ export default function ParentDashboard() {
         {/* Student selector */}
         {children.length > 1 && (
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>
               Seleccionar hijo:
             </label>
             <select value={selectedStudentIdx} onChange={e => setSelectedStudentIdx(Number(e.target.value))} style={{
               width: '100%', padding: '0.75rem 1rem', borderRadius: '12px',
-              border: '1px solid #e2e8f0', fontSize: '0.95rem', background: 'white',
+              border: '1px solid var(--border-color)', fontSize: '0.95rem', background: 'var(--bg-color-surface)',
               cursor: 'pointer'
             }}>
               {children.map((c, i) => (
@@ -129,19 +129,19 @@ export default function ParentDashboard() {
           <>
             {/* Student info card */}
             <div style={{
-              background: 'white', borderRadius: '16px', padding: '1.25rem',
+              background: 'var(--bg-color-surface)', borderRadius: '16px', padding: '1.25rem',
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '1.5rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{
                   width: '56px', height: '56px', borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  background: '#188038',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontWeight: 700, fontSize: '1.3rem'
                 }}>{currentChild.name?.charAt(0)?.toUpperCase() || '?'}</div>
                 <div>
-                  <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: '#1e293b' }}>{currentChild.name}</h2>
-                  <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0' }}>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{currentChild.name}</h2>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
                     {getStudentClass(currentChild)?.name || 'Sin sección'} | {currentChild.gradeLevel || currentChild.grade || ''}
                   </p>
                 </div>
@@ -154,8 +154,8 @@ export default function ParentDashboard() {
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                 padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
                 cursor: 'pointer', transition: 'all 0.2s',
-                background: view === 'grades' ? '#10b981' : '#e2e8f0',
-                color: view === 'grades' ? 'white' : '#64748b'
+                background: view === 'grades' ? '#188038' : 'var(--border-color)',
+                color: view === 'grades' ? 'white' : 'var(--text-secondary)'
               }}>
                 <GraduationCap size={18} /> Notas
               </button>
@@ -163,8 +163,8 @@ export default function ParentDashboard() {
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                 padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
                 cursor: 'pointer', transition: 'all 0.2s',
-                background: view === 'attendance' ? '#10b981' : '#e2e8f0',
-                color: view === 'attendance' ? 'white' : '#64748b'
+                background: view === 'attendance' ? '#188038' : 'var(--border-color)',
+                color: view === 'attendance' ? 'white' : 'var(--text-secondary)'
               }}>
                 <CalendarCheck size={18} /> Asistencia
               </button>
@@ -172,8 +172,8 @@ export default function ParentDashboard() {
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                 padding: '0.75rem', borderRadius: '12px', border: 'none', fontSize: '0.85rem', fontWeight: 600,
                 cursor: 'pointer', transition: 'all 0.2s',
-                background: view === 'behavior' ? '#10b981' : '#e2e8f0',
-                color: view === 'behavior' ? 'white' : '#64748b'
+                background: view === 'behavior' ? '#188038' : 'var(--border-color)',
+                color: view === 'behavior' ? 'white' : 'var(--text-secondary)'
               }}>
                 <ThumbsUp size={18} /> Conducta
               </button>
@@ -184,7 +184,7 @@ export default function ParentDashboard() {
               <div style={{ marginBottom: '1rem' }}>
                 <select value={selectedPeriod} onChange={e => setSelectedPeriod(Number(e.target.value))} style={{
                   width: '100%', padding: '0.75rem 1rem', borderRadius: '12px',
-                  border: '1px solid #e2e8f0', fontSize: '0.9rem', background: 'white',
+                  border: '1px solid var(--border-color)', fontSize: '0.9rem', background: 'var(--bg-color-surface)',
                   cursor: 'pointer'
                 }}>
                   {PERIODS.map((p, i) => <option key={i} value={i}>{p}</option>)}
@@ -196,20 +196,20 @@ export default function ParentDashboard() {
             {view === 'grades' && (
               <div>
                 {subjectsWithGrades.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
                     <BookOpen size={48} style={{ opacity: 0.3, marginBottom: '0.75rem' }} />
                     <p>No hay notas registradas para este período</p>
                   </div>
                 ) : (
                   subjectsWithGrades.map(({ subject, grades: sg }) => (
                     <div key={subject.id || subject.name} style={{
-                      background: 'white', borderRadius: '16px',
+                      background: 'var(--bg-color-surface)', borderRadius: '16px',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                       marginBottom: '1rem', overflow: 'hidden'
                     }}>
                       <div style={{
                         padding: '0.75rem 1rem',
-                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                        background: '#e37400',
                         color: 'white', fontWeight: 700, fontSize: '0.9rem'
                       }}>
                         <BookOpen size={14} style={{ marginRight: '0.5rem' }} />
@@ -224,15 +224,15 @@ export default function ParentDashboard() {
                           return (
                             <div key={g.id} style={{
                               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                              padding: '0.5rem 0', borderBottom: '1px solid #f1f5f9'
+                              padding: '0.5rem 0', borderBottom: '1px solid var(--surface-muted)'
                             }}>
-                              <div style={{ fontSize: '0.85rem', color: '#475569', flex: 1 }}>
-                                <Target size={12} style={{ marginRight: '0.25rem', color: '#94a3b8' }} />
+                              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', flex: 1 }}>
+                                <Target size={12} style={{ marginRight: '0.25rem', color: 'var(--text-secondary)' }} />
                                 {comp?.name || g.competencyId || 'Competencia'}
                               </div>
                               <div style={{
                                 fontWeight: 700, fontSize: '1rem',
-                                color: qual === 'AD' ? '#10b981' : qual === 'A' ? '#3b82f6' : qual === 'B' ? '#f59e0b' : '#ef4444',
+                                color: qual === 'AD' ? '#188038' : qual === 'A' ? '#1a73e8' : qual === 'B' ? '#e37400' : '#d93025',
                                 minWidth: '40px', textAlign: 'right'
                               }}>
                                 {g.score !== undefined ? `${g.score} (${qual})` : '-'}
@@ -251,16 +251,16 @@ export default function ParentDashboard() {
             {view === 'behavior' && (
               <div>
                 {childBehavior.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
                     <ThumbsUp size={48} style={{ opacity: 0.3, marginBottom: '0.75rem' }} />
                     <p>No hay registros de conducta</p>
                   </div>
                 ) : (
-                  <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--bg-color-surface)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
                     <div style={{
-                      padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9',
-                      background: '#fafbfc', fontWeight: 700, fontSize: '0.9rem',
-                      color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                      padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-muted)',
+                      background: 'var(--surface-muted)', fontWeight: 700, fontSize: '0.9rem',
+                      color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem'
                     }}>
                       <ThumbsUp size={16} /> Registro de Conducta
                     </div>
@@ -268,25 +268,25 @@ export default function ParentDashboard() {
                       {childBehavior.map((r, idx) => (
                         <div key={idx} style={{
                           display: 'flex', alignItems: 'center', gap: '0.75rem',
-                          padding: '0.65rem 1rem', borderBottom: '1px solid #f8fafc'
+                          padding: '0.65rem 1rem', borderBottom: '1px solid var(--surface-muted)'
                         }}>
                           <div style={{
                             width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: r.type === 'positive' ? '#dcfce7' : '#fee2e2'
+                            background: r.type === 'positive' ? '#ceead6' : '#fad2cf'
                           }}>
-                            {r.type === 'positive' ? <ThumbsUp size={16} color="#16a34a" /> : <ThumbsDown size={16} color="#dc2626" />}
+                            {r.type === 'positive' ? <ThumbsUp size={16} color="#188038" /> : <ThumbsDown size={16} color="#d93025" />}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{r.description}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.description}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                               {new Date(r.date).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </div>
                           </div>
                           <span style={{
                             padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600,
-                            background: r.type === 'positive' ? '#dcfce7' : '#fee2e2',
-                            color: r.type === 'positive' ? '#16a34a' : '#dc2626'
+                            background: r.type === 'positive' ? '#ceead6' : '#fad2cf',
+                            color: r.type === 'positive' ? '#188038' : '#b3261e'
                           }}>
                             {r.type === 'positive' ? 'Positivo' : 'Negativo'}
                           </span>
@@ -302,16 +302,16 @@ export default function ParentDashboard() {
             {view === 'attendance' && (
               <div>
                 {childAttendance.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
                     <CalendarCheck size={48} style={{ opacity: 0.3, marginBottom: '0.75rem' }} />
                     <p>No hay registros de asistencia</p>
                   </div>
                 ) : (
-                  <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--bg-color-surface)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
                     <div style={{
-                      padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9',
-                      background: '#fafbfc', fontWeight: 700, fontSize: '0.9rem',
-                      color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                      padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-muted)',
+                      background: 'var(--surface-muted)', fontWeight: 700, fontSize: '0.9rem',
+                      color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem'
                     }}>
                       <CalendarCheck size={16} /> Registro de Asistencia
                     </div>
@@ -319,16 +319,16 @@ export default function ParentDashboard() {
                       {childAttendance.map((a, idx) => (
                         <div key={idx} style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: '0.65rem 1rem', borderBottom: '1px solid #f8fafc'
+                          padding: '0.65rem 1rem', borderBottom: '1px solid var(--surface-muted)'
                         }}>
-                          <span style={{ fontSize: '0.85rem', color: '#475569' }}>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                             {new Date(a.date).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
                           <span style={{
                             padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem',
                             fontWeight: 600,
-                            background: a.status === 'presente' ? '#dcfce7' : a.status === 'tardanza' ? '#fef9c3' : '#fee2e2',
-                            color: a.status === 'presente' ? '#16a34a' : a.status === 'tardanza' ? '#ca8a04' : '#dc2626'
+                            background: a.status === 'presente' ? '#ceead6' : a.status === 'tardanza' ? '#fef9c3' : '#fad2cf',
+                            color: a.status === 'presente' ? '#188038' : a.status === 'tardanza' ? '#b06000' : '#b3261e'
                           }}>
                             {a.status === 'presente' ? 'Presente' : a.status === 'tardanza' ? 'Tardanza' : a.status === 'justificado' ? 'Justificado' : 'Falta'}
                           </span>

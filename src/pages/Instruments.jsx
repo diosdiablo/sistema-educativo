@@ -15,7 +15,7 @@ const INSTRUMENT_TYPES = [
     id: 'checklist',
     label: 'Lista de Cotejo',
     icon: CheckSquare,
-    color: '#10b981',
+    color: '#188038',
     description: 'Registra si el estudiante logra o no cada indicador (Sí / No)',
     scoring: 'binary'   // logrado / no logrado
   },
@@ -23,7 +23,7 @@ const INSTRUMENT_TYPES = [
     id: 'scale',
     label: 'Escala de Valoración',
     icon: BarChart2,
-    color: '#3b82f6',
+    color: '#1a73e8',
     description: 'Mide el grado de logro con una escala AD / A / B / C por indicador',
     scoring: 'qualitative'
   },
@@ -31,7 +31,7 @@ const INSTRUMENT_TYPES = [
     id: 'rubric',
     label: 'Rúbrica de Evaluación',
     icon: Grid,
-    color: '#8b5cf6',
+    color: '#7627bb',
     description: 'Describe niveles de desempeño detallados por cada criterio',
     scoring: 'qualitative'
   },
@@ -39,7 +39,7 @@ const INSTRUMENT_TYPES = [
     id: 'observation',
     label: 'Ficha de Observación',
     icon: Eye,
-    color: '#f59e0b',
+    color: '#e37400',
     description: 'Registra conductas y actitudes con frecuencias (Siempre / A veces / Nunca)',
     scoring: 'frequency'  // 3 / 2 / 1
   },
@@ -47,7 +47,7 @@ const INSTRUMENT_TYPES = [
     id: 'written',
     label: 'Prueba Escrita',
     icon: FileText,
-    color: '#ef4444',
+    color: '#d93025',
     description: 'Evalúa con puntaje numérico (vigesimal 0–20) convertido a escala cualitativa',
     scoring: 'numeric'    // 0-20 → AD/A/B/C
   },
@@ -55,7 +55,7 @@ const INSTRUMENT_TYPES = [
     id: 'selfeval',
     label: 'Ficha de Autoevaluación',
     icon: Star,
-    color: '#ec4899',
+    color: '#c2185b',
     description: 'El propio estudiante reflexiona sobre su aprendizaje usando criterios establecidos',
     scoring: 'qualitative'
   },
@@ -63,7 +63,7 @@ const INSTRUMENT_TYPES = [
     id: 'portfolio',
     label: 'Portafolio',
     icon: BookOpen,
-    color: '#14b8a6',
+    color: '#007b83',
     description: 'Colección de evidencias del proceso de aprendizaje evaluadas holísticamente',
     scoring: 'direct'     // asignación directa AD/A/B/C
   },
@@ -71,7 +71,7 @@ const INSTRUMENT_TYPES = [
     id: 'anecdotal',
     label: 'Registro Anecdótico',
     icon: MessageSquare,
-    color: '#6366f1',
+    color: '#3f51b5',
     description: 'Registra hechos o situaciones significativas observadas durante el aprendizaje',
     scoring: 'direct'
   },
@@ -509,7 +509,7 @@ export default function Instruments() {
       <div className="animate-fade-in">
         {/* Header moderno con botón de volver */}
         <div style={{
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+          background: '#7627bb',
           borderRadius: '20px',
           padding: '2rem',
           marginBottom: '2rem',
@@ -572,7 +572,7 @@ export default function Instruments() {
         </div>
 
         <div style={{ 
-          background: 'white', 
+          background: 'var(--bg-color-surface)', 
           borderRadius: '20px', 
           padding: '2rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -583,7 +583,7 @@ export default function Instruments() {
 
             {/* Título */}
             <div>
-              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem', color: '#1e293b' }}>
+              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem', color: 'var(--text-primary)' }}>
                 Título del Instrumento
               </label>
               <input 
@@ -594,18 +594,18 @@ export default function Instruments() {
                 style={{
                   padding: '1rem',
                   fontSize: '1rem',
-                  borderColor: '#e2e8f0',
+                  borderColor: 'var(--border-color)',
                   borderRadius: '12px',
-                  background: '#f8fafc'
+                  background: 'var(--surface-muted)'
                 }}
               />
             </div>
 
             {/* Selector de tipo */}
             <div>
-              <label style={{ display: 'block', marginBottom: '1rem', fontWeight: 600, fontSize: '1rem', color: '#1e293b' }}>
+              <label style={{ display: 'block', marginBottom: '1rem', fontWeight: 600, fontSize: '1rem', color: 'var(--text-primary)' }}>
                 Tipo de Instrumento 
-                <span style={{ fontWeight: 400, color: '#64748b', fontSize: '0.85rem', marginLeft: '8px' }}>(DCNEB)</span>
+                <span style={{ fontWeight: 400, color: 'var(--text-secondary)', fontSize: '0.85rem', marginLeft: '8px' }}>(DCNEB)</span>
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                 {INSTRUMENT_TYPES.map(t => {
@@ -618,8 +618,8 @@ export default function Instruments() {
                       style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px',
                         padding: '1.25rem 1rem', borderRadius: '14px', textAlign: 'left',
-                        border: `2px solid ${active ? t.color : '#e2e8f0'}`,
-                        background: active ? `${t.color}12` : '#f8fafc',
+                        border: `2px solid ${active ? t.color : 'var(--border-color)'}`,
+                        background: active ? `${t.color}12` : 'var(--surface-muted)',
                         cursor: 'pointer', transition: 'all 0.2s',
                         boxShadow: active ? `0 4px 12px ${t.color}30` : 'none'
                       }}
@@ -628,15 +628,15 @@ export default function Instruments() {
                         width: '40px',
                         height: '40px',
                         borderRadius: '10px',
-                        background: active ? `${t.color}20` : '#e2e8f0',
+                        background: active ? `${t.color}20` : 'var(--border-color)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        <Icon size={20} color={active ? t.color : '#94a3b8'} />
+                        <Icon size={20} color={active ? t.color : 'var(--text-secondary)'} />
                       </div>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: active ? t.color : '#334155' }}>{t.label}</span>
-                      <span style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.4 }}>{t.description}</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: active ? t.color : 'var(--text-secondary)' }}>{t.label}</span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{t.description}</span>
                     </button>
                   );
                 })}
@@ -645,14 +645,14 @@ export default function Instruments() {
 
             {/* Área curricular */}
             <div>
-              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem', color: '#1e293b' }}>
+              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem', color: 'var(--text-primary)' }}>
                 Área Curricular
               </label>
               <select
                 value={instrumentSubjectId}
                 onChange={e => setInstrumentSubjectId(e.target.value)}
                 className="input-field"
-                style={{ padding: '1rem', fontSize: '1rem', borderRadius: '12px', background: '#f8fafc', width: '100%' }}
+                style={{ padding: '1rem', fontSize: '1rem', borderRadius: '12px', background: 'var(--surface-muted)', width: '100%' }}
               >
                 <option value="">-- Sin área específica --</option>
                 {availableSubjects.map(s => (
@@ -663,9 +663,9 @@ export default function Instruments() {
 
             {/* Criterios — solo si el tipo los requiere */}
             {needsCriteria && (
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{
                       width: '32px',
                       height: '32px',
@@ -685,7 +685,7 @@ export default function Instruments() {
                   </h3>
                   <button onClick={() => setCriteria([...criteria, { id: Date.now().toString(), text: '', descriptors: { AD: '', A: '', B: '', C: '' } }])} 
                     style={{ 
-                      color: '#8b5cf6', 
+                      color: '#7627bb', 
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '6px',
@@ -702,10 +702,10 @@ export default function Instruments() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {criteria.map((c, idx) => (
                     <div key={c.id} style={{
-                      background: '#f8fafc',
+                      background: 'var(--surface-muted)',
                       borderRadius: '12px',
                       padding: '1rem',
-                      border: '1px solid #e2e8f0'
+                      border: '1px solid var(--border-color)'
                     }}>
                       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.75rem' }}>
                         <div style={{
@@ -721,14 +721,14 @@ export default function Instruments() {
                           fontSize: '0.8rem'
                         }}>{idx + 1}</div>
                         <input
-                          className="input-field" style={{ flex: 1, borderColor: '#e2e8f0' }} value={c.text}
+                          className="input-field" style={{ flex: 1, borderColor: 'var(--border-color)' }} value={c.text}
                           onChange={e => { const n = [...criteria]; n[idx].text = e.target.value; setCriteria(n); }}
                           placeholder="Describe el indicador o criterio..."
                         />
                         <button onClick={() => { if (criteria.length > 1) { if (window.confirm('¿Eliminar?')) setCriteria(criteria.filter(x => x.id !== c.id)); } else alert('Mínimo 1 criterio.'); }} 
                           style={{ 
-                            color: '#ef4444', 
-                            background: '#fef2f2',
+                            color: '#d93025', 
+                            background: '#fce8e6',
                             border: '1px solid #ef444420',
                             padding: '8px',
                             borderRadius: '8px',
@@ -745,7 +745,7 @@ export default function Instruments() {
                               <label style={{ 
                                 fontSize: '0.75rem', 
                                 fontWeight: 700, 
-                                color: level === 'AD' ? '#10b981' : level === 'A' ? '#3b82f6' : level === 'B' ? '#f59e0b' : '#ef4444', 
+                                color: level === 'AD' ? '#188038' : level === 'A' ? '#1a73e8' : level === 'B' ? '#e37400' : '#d93025', 
                                 display: 'block', 
                                 marginBottom: '6px',
                                 textAlign: 'center'
@@ -783,12 +783,12 @@ export default function Instruments() {
             {/* Prueba escrita — no necesita lista de criterios */}
             {instrumentType === 'numeric' && (
               <div style={{ 
-                background: 'linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%)', 
+                background: '#fef7e0', 
                 border: '1px solid #ef444420', 
                 borderRadius: '12px', 
                 padding: '1.25rem', 
                 fontSize: '0.9rem', 
-                color: '#991b1b',
+                color: '#b3261e',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px'
@@ -802,7 +802,7 @@ export default function Instruments() {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <FileText size={20} color="#ef4444" />
+                  <FileText size={20} color="#d93025" />
                 </div>
                 <div>
                   <strong>Prueba Escrita:</strong> Al aplicar esta prueba ingresarás un puntaje de <strong>0 a 20</strong> que se convertirá automáticamente a la escala cualitativa AD / A / B / C.
@@ -813,12 +813,12 @@ export default function Instruments() {
             {/* Portafolio / Registro anecdótico */}
             {(instrumentType === 'portfolio' || instrumentType === 'anecdotal') && (
               <div style={{ 
-                background: 'linear-gradient(135deg, #eef2ff 0%, #f0f9ff 100%)', 
+                background: '#e8f0fe', 
                 border: '1px solid #6366f120', 
                 borderRadius: '12px', 
                 padding: '1.25rem', 
                 fontSize: '0.9rem', 
-                color: '#4338ca',
+                color: '#3f51b5',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px'
@@ -832,7 +832,7 @@ export default function Instruments() {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {instrumentType === 'portfolio' ? <BookOpen size={20} color="#6366f1" /> : <MessageSquare size={20} color="#6366f1" />}
+                  {instrumentType === 'portfolio' ? <BookOpen size={20} color="#3f51b5" /> : <MessageSquare size={20} color="#3f51b5" />}
                 </div>
                 <div>
                   {instrumentType === 'portfolio'
@@ -871,7 +871,7 @@ export default function Instruments() {
       <div className="animate-fade-in">
         {/* Header moderno */}
         <div style={{
-          background: `linear-gradient(135deg, ${typeDef.color} 0%, ${typeDef.color}dd 100%)`,
+          background: `${typeDef.color}`,
           borderRadius: '20px',
           padding: '2rem',
           marginBottom: '2rem',
@@ -1031,8 +1031,8 @@ export default function Instruments() {
                     const availableStudents = filteredStudents.filter(s => !savedGroupMembers.has(s.id)).sort((a, b) => a.name.localeCompare(b.name));
                     if (availableStudents.length === 0) {
                       return (
-                        <div style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(16,185,129,0.1)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.3)' }}>
-                          <p style={{ fontSize: '0.8rem', color: '#10b981', marginBottom: '0.5rem' }}>Todos los estudiantes de esta sección ya fueron evaluados</p>
+                        <div style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(24, 128, 56,0.1)', borderRadius: '8px', border: '1px solid rgba(24, 128, 56,0.3)' }}>
+                          <p style={{ fontSize: '0.8rem', color: '#188038', marginBottom: '0.5rem' }}>Todos los estudiantes de esta sección ya fueron evaluados</p>
                           <button 
                             onClick={() => setSavedGroupMembers(new Set())}
                             style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
@@ -1168,13 +1168,13 @@ export default function Instruments() {
                       {allAssignedStudentIds.size > 0 && (
                         <div style={{ 
                           padding: '0.5rem', 
-                          background: 'rgba(245,158,11,0.1)', 
-                          border: '1px solid rgba(245,158,11,0.3)',
+                          background: 'rgba(227, 116, 0,0.1)', 
+                          border: '1px solid rgba(227, 116, 0,0.3)',
                           borderRadius: '6px',
                           marginBottom: '0.5rem',
                           fontSize: '0.72rem'
                         }}>
-                          <div style={{ color: '#f59e0b', fontWeight: 600, marginBottom: '0.25rem' }}>
+                          <div style={{ color: '#e37400', fontWeight: 600, marginBottom: '0.25rem' }}>
                             ⚠️ {allAssignedStudentIds.size} estudiante(s) ya asignado(s) a otros grupos:
                           </div>
                           <div style={{ color: 'var(--text-secondary)', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -1182,7 +1182,7 @@ export default function Instruments() {
                               const student = filteredStudents.find(s => s.id === id);
                               return student ? (
                                 <span key={id} style={{ 
-                                  background: 'rgba(245,158,11,0.15)', 
+                                  background: 'rgba(227, 116, 0,0.15)', 
                                   padding: '2px 6px', 
                                   borderRadius: '4px',
                                   fontSize: '0.68rem'
@@ -1303,12 +1303,12 @@ export default function Instruments() {
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <button className={`nav-item ${evaluationScores[c.id] === true ? 'active' : ''}`}
                       onClick={() => setEvaluationScores({ ...evaluationScores, [c.id]: true })}
-                      style={{ flex: 1, justifyContent: 'center', border: evaluationScores[c.id] === true ? '2px solid #10b981' : '2px solid transparent' }}>
+                      style={{ flex: 1, justifyContent: 'center', border: evaluationScores[c.id] === true ? '2px solid #188038' : '2px solid transparent' }}>
                       ✅ Logrado
                     </button>
                     <button className={`nav-item ${evaluationScores[c.id] === false ? 'active' : ''}`}
                       onClick={() => setEvaluationScores({ ...evaluationScores, [c.id]: false })}
-                      style={{ flex: 1, justifyContent: 'center', border: evaluationScores[c.id] === false ? '2px solid #ef4444' : '2px solid transparent' }}>
+                      style={{ flex: 1, justifyContent: 'center', border: evaluationScores[c.id] === false ? '2px solid #d93025' : '2px solid transparent' }}>
                       ❌ No Logrado
                     </button>
                   </div>
@@ -1338,7 +1338,7 @@ export default function Instruments() {
                 <div key={c.id} style={{ paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-color)' }}>
                   <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>{idx + 1}. {c.text}</p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
-                    {[{ v: 4, g: 'AD', l: 'Destacado', color: '#10b981' }, { v: 3, g: 'A', l: 'Logrado', color: '#3b82f6' }, { v: 2, g: 'B', l: 'En Proceso', color: '#f59e0b' }, { v: 1, g: 'C', l: 'En Inicio', color: '#ef4444' }].map(level => {
+                    {[{ v: 4, g: 'AD', l: 'Destacado', color: '#188038' }, { v: 3, g: 'A', l: 'Logrado', color: '#1a73e8' }, { v: 2, g: 'B', l: 'En Proceso', color: '#e37400' }, { v: 1, g: 'C', l: 'En Inicio', color: '#d93025' }].map(level => {
                       const selected = evaluationScores[c.id] == level.v;
                       return (
                         <button key={level.v}
@@ -1361,10 +1361,10 @@ export default function Instruments() {
               {/* RÚBRICA — tabla horizontal con encabezados de color */}
               {scoring === 'qualitative' && applyingInstrument.type === 'rubric' && (() => {
                 const LEVELS = [
-                  { v: 4, g: 'AD', l: 'Destacado',   color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
-                  { v: 3, g: 'A',  l: 'Logrado',      color: '#3b82f6', bg: 'rgba(59,130,246,0.10)' },
-                  { v: 2, g: 'B',  l: 'En Proceso',   color: '#f59e0b', bg: 'rgba(245,158,11,0.10)' },
-                  { v: 1, g: 'C',  l: 'En Inicio',    color: '#ef4444', bg: 'rgba(239,68,68,0.10)'  },
+                  { v: 4, g: 'AD', l: 'Destacado',   color: '#188038', bg: 'rgba(24, 128, 56,0.10)' },
+                  { v: 3, g: 'A',  l: 'Logrado',      color: '#1a73e8', bg: 'rgba(26, 115, 232,0.10)' },
+                  { v: 2, g: 'B',  l: 'En Proceso',   color: '#e37400', bg: 'rgba(227, 116, 0,0.10)' },
+                  { v: 1, g: 'C',  l: 'En Inicio',    color: '#d93025', bg: 'rgba(217, 48, 37,0.10)'  },
                 ];
                 return (
                   <div style={{ overflowX: 'auto' }}>
@@ -1465,7 +1465,7 @@ export default function Instruments() {
     <div className="animate-fade-in">
       {/* Header moderno */}
       <div style={{
-        background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+        background: '#7627bb',
         borderRadius: '20px',
         padding: '2rem',
         marginBottom: '2rem',
@@ -1545,8 +1545,8 @@ export default function Instruments() {
               display: 'flex', 
               alignItems: 'center', 
               gap: '8px',
-              background: 'white',
-              color: '#8b5cf6',
+              background: 'var(--bg-color-surface)',
+              color: '#7627bb',
               border: 'none',
               fontWeight: 600
             }}>
@@ -1564,10 +1564,10 @@ export default function Instruments() {
           const evCount = instrumentEvaluations.filter(e => e.instrumentId === ins.id).length;
           return (
             <div key={ins.id} style={{
-              background: 'white',
+              background: 'var(--bg-color-surface)',
               borderRadius: '16px',
               padding: '1.5rem',
-              border: '1px solid #e2e8f0',
+              border: '1px solid var(--border-color)',
               transition: 'all 0.3s ease',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
               ':hover': { boxShadow: '0 8px 25px rgba(0,0,0,0.08)', transform: 'translateY(-2px)' }
@@ -1586,8 +1586,8 @@ export default function Instruments() {
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button onClick={() => handleEditInstrument(ins)} style={{ 
-                    color: '#6366f1', 
-                    background: '#f1f5f9', 
+                    color: '#3f51b5', 
+                    background: 'var(--surface-muted)', 
                     border: 'none', 
                     cursor: 'pointer',
                     padding: '8px',
@@ -1599,8 +1599,8 @@ export default function Instruments() {
                     <Edit2 size={16} />
                   </button>
                   <button onClick={() => { if (window.confirm('¿Eliminar instrumento?')) deleteInstrument(ins.id); }} style={{ 
-                    color: '#ef4444', 
-                    background: '#fef2f2', 
+                    color: '#d93025', 
+                    background: '#fce8e6', 
                     border: 'none', 
                     cursor: 'pointer',
                     padding: '8px',
@@ -1614,7 +1614,7 @@ export default function Instruments() {
                 </div>
               </div>
               <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px', color: '#1e293b' }}>{ins.title}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px', color: 'var(--text-primary)' }}>{ins.title}</h3>
                 <span style={{ 
                   fontSize: '0.78rem', 
                   color: typeDef.color, 
@@ -1626,7 +1626,7 @@ export default function Instruments() {
                 }}>
                   {typeDef.label}
                 </span>
-                <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '8px' }}>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
                   {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
                 </p>
               </div>
@@ -1649,24 +1649,24 @@ export default function Instruments() {
             gridColumn: '1/-1', 
             textAlign: 'center', 
             padding: '4rem', 
-            background: '#f8fafc',
-            border: '2px dashed #e2e8f0', 
+            background: 'var(--surface-muted)',
+            border: '2px dashed var(--border-color)', 
             borderRadius: '16px' 
           }}>
             <div style={{ 
               width: '80px', 
               height: '80px', 
               margin: '0 auto 1.5rem',
-              background: '#f1f5f9',
+              background: 'var(--surface-muted)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <ClipboardCheck size={36} color="#94a3b8" />
+              <ClipboardCheck size={36} color="var(--text-secondary)" />
             </div>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Aún no tienes instrumentos creados</p>
-            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Haz clic en <strong style={{ color: '#8b5cf6' }}>Nuevo Instrumento</strong> para comenzar</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Aún no tienes instrumentos creados</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Haz clic en <strong style={{ color: '#7627bb' }}>Nuevo Instrumento</strong> para comenzar</p>
           </div>
         )}
       </div>
@@ -1675,7 +1675,7 @@ export default function Instruments() {
       {instrumentEvaluations.length > 0 && (
         <div style={{ marginTop: '3rem' }}>
           <div style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            background: '#188038',
             borderRadius: '16px',
             padding: '1.5rem',
             marginBottom: '1.5rem',
@@ -1715,7 +1715,7 @@ export default function Instruments() {
               <thead>
                 <tr>
                   <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: '#188038',
                     color: 'white',
                     padding: '1rem'
                   }}>
@@ -1725,7 +1725,7 @@ export default function Instruments() {
                     </div>
                   </th>
                   <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: '#188038',
                     color: 'white',
                     padding: '1rem'
                   }}>
@@ -1735,7 +1735,7 @@ export default function Instruments() {
                     </div>
                   </th>
                   <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: '#188038',
                     color: 'white',
                     padding: '1rem'
                   }}>
@@ -1745,7 +1745,7 @@ export default function Instruments() {
                     </div>
                   </th>
                   <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: '#188038',
                     color: 'white',
                     padding: '1rem',
                     textAlign: 'center'
@@ -1756,7 +1756,7 @@ export default function Instruments() {
                     </div>
                   </th>
                   <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: '#188038',
                     color: 'white',
                     padding: '1rem'
                   }}>
@@ -1766,7 +1766,7 @@ export default function Instruments() {
                     </div>
                   </th>
                   <th style={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: '#188038',
                     color: 'white',
                     padding: '1rem',
                     textAlign: 'center'
@@ -1798,11 +1798,11 @@ export default function Instruments() {
                     return d.toLocaleDateString('es-PE');
                   };
                   return (
-                    <tr key={ev.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                    <tr key={ev.id} style={{ background: idx % 2 === 0 ? 'var(--bg-color-surface)' : 'var(--surface-muted)' }}>
                       <td style={{ fontWeight: 600, padding: '1rem' }}>{displayStudent}</td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ fontWeight: 500 }}>{ev.activityName || 'Sin actividad'}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{displayTitle}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{displayTitle}</div>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <span style={{ fontSize: '0.78rem', color: td.color, fontWeight: 600, background: `${td.color}15`, padding: '4px 10px', borderRadius: '6px' }}>
@@ -1814,7 +1814,7 @@ export default function Instruments() {
                           {ev.qualitative} – {GRADE_LABEL[ev.qualitative]}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.82rem', color: '#64748b', padding: '1rem' }}>
+                      <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', padding: '1rem' }}>
                         {formatDate(ev.date)}
                       </td>
                       <td style={{ textAlign: 'center', padding: '1rem' }}>
@@ -1876,15 +1876,15 @@ export default function Instruments() {
             <div style={{ 
               display: 'flex', alignItems: 'center', gap: '1rem', 
               padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem',
-              background: viewingEvaluation.qualitative === 'AD' ? 'rgba(16,185,129,0.1)' :
-                         viewingEvaluation.qualitative === 'A' ? 'rgba(59,130,246,0.1)' :
-                         viewingEvaluation.qualitative === 'B' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)'
+              background: viewingEvaluation.qualitative === 'AD' ? 'rgba(24, 128, 56,0.1)' :
+                         viewingEvaluation.qualitative === 'A' ? 'rgba(26, 115, 232,0.1)' :
+                         viewingEvaluation.qualitative === 'B' ? 'rgba(227, 116, 0,0.1)' : 'rgba(217, 48, 37,0.1)'
             }}>
               <div style={{ 
                 width: '56px', height: '56px', borderRadius: '12px',
-                background: viewingEvaluation.qualitative === 'AD' ? '#10b981' :
-                           viewingEvaluation.qualitative === 'A' ? '#3b82f6' :
-                           viewingEvaluation.qualitative === 'B' ? '#f59e0b' : '#ef4444',
+                background: viewingEvaluation.qualitative === 'AD' ? '#188038' :
+                           viewingEvaluation.qualitative === 'A' ? '#1a73e8' :
+                           viewingEvaluation.qualitative === 'B' ? '#e37400' : '#d93025',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.5rem', fontWeight: 800, color: 'white'
               }}>
@@ -1919,15 +1919,15 @@ export default function Instruments() {
                     return (
                       <div key={criterionId} style={{ 
                         display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                        padding: '0.75rem', background: '#f8fafc', borderRadius: '8px',
+                        padding: '0.75rem', background: 'var(--surface-muted)', borderRadius: '8px',
                         border: '1px solid var(--border-color)'
                       }}>
                         <span style={{ flex: 1, fontSize: '0.9rem' }}>{criterion.text || criterionId}</span>
                         <span style={{ 
                           fontWeight: 700, marginLeft: '1rem',
                           color: viewingEvaluation.instrumentType === 'checklist' 
-                            ? (score ? '#10b981' : '#ef4444')
-                            : score === 4 ? '#10b981' : score === 3 ? '#3b82f6' : score === 2 ? '#f59e0b' : '#ef4444'
+                            ? (score ? '#188038' : '#d93025')
+                            : score === 4 ? '#188038' : score === 3 ? '#1a73e8' : score === 2 ? '#e37400' : '#d93025'
                         }}>
                           {scoreLabel}
                         </span>
@@ -1941,11 +1941,11 @@ export default function Instruments() {
             {/* Nota adicional (para registro anecdótico) */}
             {viewingEvaluation.scores?.__note__ && (
               <div style={{ 
-                padding: '1rem', background: 'rgba(99,102,241,0.05)',
-                border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px',
+                padding: '1rem', background: 'rgba(63, 81, 181,0.05)',
+                border: '1px solid rgba(63, 81, 181,0.2)', borderRadius: '8px',
                 marginBottom: '1rem'
               }}>
-                <h4 style={{ fontSize: '0.85rem', color: '#6366f1', marginBottom: '0.5rem' }}>Nota del docente:</h4>
+                <h4 style={{ fontSize: '0.85rem', color: '#3f51b5', marginBottom: '0.5rem' }}>Nota del docente:</h4>
                 <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>{viewingEvaluation.scores.__note__}</p>
               </div>
             )}
@@ -1953,7 +1953,7 @@ export default function Instruments() {
             {/* Detalles adicionales */}
             <div style={{ 
               display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: '0.75rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px',
+              gap: '0.75rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '8px',
               fontSize: '0.85rem'
             }}>
               <div>

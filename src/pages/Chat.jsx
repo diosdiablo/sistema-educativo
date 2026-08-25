@@ -139,7 +139,7 @@ function ChatContacts({ onSelect }) {
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       <div style={{
-        background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)',
+        background: '#7627bb',
         borderRadius: '20px', padding: '2rem 2.5rem', marginBottom: '1.5rem',
         color: 'white', position: 'relative', overflow: 'hidden'
       }}>
@@ -160,24 +160,24 @@ function ChatContacts({ onSelect }) {
       </div>
 
       <div style={{
-        background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        background: 'var(--bg-color-surface)', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         overflow: 'hidden'
       }}>
-        <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+        <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-muted)' }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: '#f8fafc', borderRadius: '12px', padding: '0.5rem 1rem',
-            border: '1px solid #e2e8f0'
+            background: 'var(--surface-muted)', borderRadius: '12px', padding: '0.5rem 1rem',
+            border: '1px solid var(--border-color)'
           }}>
-            <Search size={18} color="#94a3b8" />
+            <Search size={18} color="var(--text-secondary)" />
             <input type="text" placeholder="Buscar docente..." value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.85rem', background: 'transparent', color: '#1e293b' }} />
+              style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.85rem', background: 'transparent', color: 'var(--text-primary)' }} />
           </div>
         </div>
 
         {filteredContacts.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
             <Users size={48} style={{ opacity: 0.4, marginBottom: '1rem' }} />
             <div>{searchTerm ? 'Sin resultados' : 'No hay otros docentes'}</div>
           </div>
@@ -191,23 +191,23 @@ function ChatContacts({ onSelect }) {
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.75rem',
                     padding: '0.85rem 1rem', cursor: 'pointer', transition: 'background 0.15s',
-                    borderBottom: '1px solid #f8fafc'
+                    borderBottom: '1px solid var(--surface-muted)'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-muted)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                   <div style={{
                     width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
-                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    background: '#7627bb',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: 'white', fontWeight: 700, fontSize: '1.1rem'
                   }}>{contact.name?.charAt(0)?.toUpperCase() || '?'}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>{contact.name}</strong>
-                      {preview && <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{formatTime(new Date(preview.createdAt))}</span>}
+                      <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{contact.name}</strong>
+                      {preview && <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{formatTime(new Date(preview.createdAt))}</span>}
                     </div>
                     <div style={{
-                      fontSize: '0.8rem', color: unread > 0 ? '#1e293b' : '#94a3b8',
+                      fontSize: '0.8rem', color: unread > 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
                       marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       fontWeight: unread > 0 ? 600 : 400
                     }}>
@@ -219,7 +219,7 @@ function ChatContacts({ onSelect }) {
                   {unread > 0 && (
                     <div style={{
                       width: '24px', height: '24px', borderRadius: '50%',
-                      background: '#6366f1', color: 'white', fontSize: '0.7rem',
+                      background: '#3f51b5', color: 'white', fontSize: '0.7rem',
                       fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                     }}>{unread > 9 ? '9+' : unread}</div>
                   )}
@@ -375,36 +375,36 @@ function ChatConversation({ userId, onBack }) {
   return (
     <div id="chat-conversation-root" style={{ flex: 1, minHeight: 200, display: 'flex', flexDirection: 'column', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
       <div style={{
-        background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        background: 'var(--bg-color-surface)', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0
       }}>
         <div style={{
-          padding: '1rem 1.25rem', borderBottom: '1px solid #f1f5f9',
+          padding: '1rem 1.25rem', borderBottom: '1px solid var(--surface-muted)',
           display: 'flex', alignItems: 'center', gap: '0.75rem',
-          background: '#fafbfc', flexShrink: 0
+          background: 'var(--surface-muted)', flexShrink: 0
         }}>
           <button onClick={onBack}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: '#6366f1' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: '#3f51b5' }}>
             <ArrowLeft size={24} />
           </button>
           <div style={{
             width: '42px', height: '42px', borderRadius: '12px', flexShrink: 0,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            background: '#7627bb',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'white', fontWeight: 700, fontSize: '1rem'
           }}>{contact?.name?.charAt(0)?.toUpperCase() || '?'}</div>
           <div>
-            <strong style={{ fontSize: '0.95rem', color: '#1e293b' }}>{contact?.name || 'Usuario'}</strong>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{contact?.role === 'admin' ? 'Administrador' : 'Docente'}</div>
+            <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{contact?.name || 'Usuario'}</strong>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{contact?.role === 'admin' ? 'Administrador' : 'Docente'}</div>
           </div>
         </div>
 
         <div style={{
           flex: 1, overflowY: 'auto', padding: '1.25rem',
-          background: '#f8fafc', minHeight: 0
+          background: 'var(--surface-muted)', minHeight: 0
         }}>
           {conversationMessages.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem', paddingTop: '3rem' }}>
+            <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', paddingTop: '3rem' }}>
               No hay mensajes aún. ¡Envía el primero!
             </div>
           ) : (
@@ -415,20 +415,20 @@ function ChatConversation({ userId, onBack }) {
                 <div key={msg.id}>
                   {showDate && (
                     <div style={{ textAlign: 'center', margin: '1rem 0 0.75rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f1f5f9', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>{formatDateSeparator(msg.createdAt)}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'var(--surface-muted)', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>{formatDateSeparator(msg.createdAt)}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', marginBottom: '0.5rem' }}>
                     <div style={{
                       maxWidth: '80%', padding: '0.65rem 1rem',
                       borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: isMine ? '#6366f1' : 'white',
-                      color: isMine ? 'white' : '#1e293b',
+                      background: isMine ? '#3f51b5' : 'var(--bg-color-surface)',
+                      color: isMine ? 'white' : 'var(--text-primary)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
                     }}>
                       <div style={{ fontSize: '0.88rem', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>{msg.message}</div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
-                        <span style={{ fontSize: '0.65rem', color: isMine ? 'rgba(255,255,255,0.7)' : '#94a3b8' }}>{formatTime(new Date(msg.createdAt))}</span>
+                        <span style={{ fontSize: '0.65rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>{formatTime(new Date(msg.createdAt))}</span>
                         {isMine && (msg.readAt ? <CheckCheck size={12} color="#a5b4fc" /> : <Check size={12} color="rgba(255,255,255,0.5)" />)}
                       </div>
                     </div>
@@ -440,25 +440,25 @@ function ChatConversation({ userId, onBack }) {
           <div ref={messagesEndRef} />
         </div>
 
-        <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid #f1f5f9', background: 'white', flexShrink: 0 }}>
+        <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--surface-muted)', background: 'var(--bg-color-surface)', flexShrink: 0 }}>
           <div style={{
             display: 'flex', alignItems: 'flex-end', gap: '0.75rem',
-            background: '#f8fafc', borderRadius: '14px', padding: '0.5rem 1rem',
-            border: '1px solid #e2e8f0'
+            background: 'var(--surface-muted)', borderRadius: '14px', padding: '0.5rem 1rem',
+            border: '1px solid var(--border-color)'
           }}>
             <textarea value={inputText} onChange={e => setInputText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
               placeholder="Escribe un mensaje..." rows={1}
               style={{
                 flex: 1, border: 'none', outline: 'none', resize: 'none',
-                fontSize: '0.88rem', background: 'transparent', color: '#1e293b',
+                fontSize: '0.88rem', background: 'transparent', color: 'var(--text-primary)',
                 fontFamily: 'inherit', maxHeight: '120px', padding: '0.25rem 0'
               }} />
             <button onClick={sendMessage} disabled={!inputText.trim()}
               style={{
                 width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
                 border: 'none', cursor: inputText.trim() ? 'pointer' : 'not-allowed',
-                background: inputText.trim() ? '#6366f1' : '#e2e8f0',
+                background: inputText.trim() ? '#3f51b5' : 'var(--border-color)',
                 color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s ease'
               }}>
