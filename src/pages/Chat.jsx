@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/Toast';
-import { Send, MessageCircle, Check, CheckCheck, Search, Users, ArrowLeft, Smile } from 'lucide-react';
+import { Send, MessageCircle, Check, CheckCheck, Search, Users, ArrowLeft, Smile, MessagesSquare, Zap, Bell } from 'lucide-react';
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -143,9 +143,18 @@ function ChatContacts({ onSelect }) {
   };
 
   const totalUnread = Object.values(unreadCount).reduce((a, b) => a + b, 0);
+  const activeConvos = Object.keys(lastMessagePreview).length;
+  const myMessageCount = currentUser ? messages.filter(m => m.senderId === currentUser.id || m.receiverId === currentUser.id).length : 0;
+
+  const statCards = [
+    { icon: Users, label: 'Docentes', value: contacts.length, tint: 'var(--nav-active-bg)', fg: 'var(--nav-active-fg)' },
+    { icon: MessagesSquare, label: 'Conversaciones activas', value: activeConvos, tint: 'var(--surface-muted)', fg: 'var(--success-color)' },
+    { icon: MessageCircle, label: 'Sin leer', value: totalUnread, tint: totalUnread > 0 ? 'var(--danger-tint-bg)' : 'var(--surface-muted)', fg: totalUnread > 0 ? 'var(--danger-tint-fg)' : 'var(--text-secondary)' },
+    { icon: CheckCheck, label: 'Mensajes totales', value: myMessageCount, tint: 'var(--surface-muted)', fg: 'var(--text-secondary)' }
+  ];
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1150px', margin: '0 auto' }}>
       {/* Barra de herramientas */}
       <div style={{
         background: 'var(--bg-color-surface)', borderRadius: '12px', padding: '1rem 1.5rem', marginBottom: '1.5rem',
@@ -166,97 +175,204 @@ function ChatContacts({ onSelect }) {
         )}
       </div>
 
-      {/* Lista de conversaciones */}
-      <div style={{
-        background: 'var(--bg-color-surface)', borderRadius: '16px',
-        border: '1px solid var(--border-color)',
-        overflow: 'hidden'
-      }}>
-        <div style={{ padding: '1rem 1rem 0.75rem' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.6rem',
-            background: 'var(--surface-muted)', borderRadius: '24px', padding: '0.55rem 1.15rem',
-            border: '1px solid var(--border-color)'
-          }}>
-            <Search size={18} color="var(--text-secondary)" />
-            <input type="text" placeholder="Buscar en el chat..." value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.9rem', background: 'transparent', color: 'var(--text-primary)' }} />
+      {/* Resumen */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {statCards.map(card => {
+          const Icon = card.icon;
+          return (
+            <div key={card.label} style={{
+              background: 'var(--bg-color-surface)', borderRadius: '12px',
+              border: '1px solid var(--border-color)',
+              padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.9rem'
+            }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0,
+                background: card.tint, display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Icon size={20} color={card.fg} />
+              </div>
+              <div>
+                <div style={{ fontSize: '1.35rem', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.1 }}>{card.value}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{card.label}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Cuerpo: lista + panel lateral */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '1.5rem', alignItems: 'start' }}>
+        {/* Lista de conversaciones */}
+        <div style={{
+          background: 'var(--bg-color-surface)', borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ padding: '1rem 1rem 0.75rem' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
+              background: 'var(--surface-muted)', borderRadius: '24px', padding: '0.55rem 1.15rem',
+              border: '1px solid var(--border-color)'
+            }}>
+              <Search size={18} color="var(--text-secondary)" />
+              <input type="text" placeholder="Buscar en el chat..." value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.9rem', background: 'transparent', color: 'var(--text-primary)' }} />
+            </div>
           </div>
+
+          {filteredContacts.length === 0 ? (
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <div style={{
+                width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 1.25rem',
+                background: 'var(--surface-muted)', border: '1px solid var(--border-color)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Users size={32} color="var(--text-secondary)" />
+              </div>
+              <div style={{ fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+                {searchTerm ? 'Sin resultados' : 'No hay otros docentes'}
+              </div>
+              <div style={{ fontSize: '0.85rem' }}>{searchTerm ? 'Intenta con otro nombre' : 'Cuando haya docentes registrados aparecerán aquí'}</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ padding: '0.25rem 1.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Mensajes directos</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{filteredContacts.length}</span>
+              </div>
+              <div style={{ maxHeight: 'calc(100dvh - 560px)', minHeight: '240px', overflowY: 'auto', padding: '0 0.5rem 0.5rem' }}>
+                {filteredContacts.map(contact => {
+                  const preview = lastMessagePreview[contact.id];
+                  const unread = unreadCount[contact.id] || 0;
+                  return (
+                    <div key={contact.id} onClick={() => onSelect(contact.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.85rem',
+                        padding: '0.7rem 0.9rem', cursor: 'pointer', transition: 'background 0.15s',
+                        borderRadius: '14px'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-muted)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <div style={{
+                        position: 'relative', flexShrink: 0
+                      }}>
+                        <div style={{
+                          width: '46px', height: '46px', borderRadius: '50%',
+                          background: getAvatarColor(contact.name),
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'white', fontWeight: 500, fontSize: '1.15rem'
+                        }}>{contact.name?.charAt(0)?.toUpperCase() || '?'}</div>
+                        {unread > 0 && (
+                          <div style={{
+                            position: 'absolute', top: '-4px', right: '-6px',
+                            minWidth: '20px', height: '20px', borderRadius: '10px', padding: '0 6px',
+                            background: 'var(--accent-primary)', color: 'white', fontSize: '0.68rem',
+                            fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: '2px solid var(--bg-color-surface)'
+                          }}>{unread > 9 ? '9+' : unread}</div>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                          <strong style={{ fontSize: '0.92rem', fontWeight: unread > 0 ? 600 : 500, color: 'var(--text-primary)' }}>{contact.name}</strong>
+                          {preview && <span style={{ fontSize: '0.7rem', color: unread > 0 ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>{formatTime(new Date(preview.createdAt))}</span>}
+                        </div>
+                        <div style={{
+                          fontSize: '0.82rem', color: unread > 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          fontWeight: unread > 0 ? 500 : 400
+                        }}>
+                          {preview ? (
+                            <>{preview.senderId === currentUser?.id && (preview.readAt ? <CheckCheck size={12} style={{ display: 'inline', marginRight: 4 }} /> : <Check size={12} style={{ display: 'inline', marginRight: 4 }} />)}{preview.message}</>
+                          ) : (contact.role === 'admin' ? 'Administrador · Sin mensajes aún' : 'Docente · Sin mensajes aún')}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
-        {filteredContacts.length === 0 ? (
-          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <div style={{
-              width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 1.25rem',
-              background: 'var(--surface-muted)', border: '1px solid var(--border-color)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Users size={32} color="var(--text-secondary)" />
+        {/* Panel lateral */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{
+            background: 'var(--bg-color-surface)', borderRadius: '16px',
+            border: '1px solid var(--border-color)', padding: '1.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+              <div style={{
+                width: '34px', height: '34px', borderRadius: '50%',
+                background: isOnline ? '#18803815' : 'var(--surface-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Zap size={17} color={isOnline ? '#188038' : 'var(--text-secondary)'} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>Estado del sistema</div>
+                <div style={{ fontSize: '0.75rem', color: isOnline ? '#188038' : 'var(--text-secondary)', fontWeight: 500 }}>
+                  {isOnline ? 'En línea · sincronizando' : 'Sin conexión · modo local'}
+                </div>
+              </div>
             </div>
-            <div style={{ fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-              {searchTerm ? 'Sin resultados' : 'No hay otros docentes'}
-            </div>
-            <div style={{ fontSize: '0.85rem' }}>{searchTerm ? 'Intenta con otro nombre' : 'Cuando haya docentes registrados aparecerán aquí'}</div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+              Tus mensajes se guardan automáticamente y se envían en cuanto haya conexión.
+            </p>
           </div>
-        ) : (
-          <>
-            <div style={{ padding: '0.25rem 1.5rem 0.5rem' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Mensajes directos</span>
+
+          <div style={{
+            background: 'var(--bg-color-surface)', borderRadius: '16px',
+            border: '1px solid var(--border-color)', padding: '1.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+              <div style={{
+                width: '34px', height: '34px', borderRadius: '10px',
+                background: 'var(--nav-active-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Bell size={17} color="var(--nav-active-fg)" />
+              </div>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>Cómo funciona</div>
             </div>
-            <div style={{ maxHeight: 'calc(100dvh - 430px)', overflowY: 'auto', padding: '0 0.5rem 0.5rem' }}>
-              {filteredContacts.map(contact => {
-                const preview = lastMessagePreview[contact.id];
-                const unread = unreadCount[contact.id] || 0;
-                return (
-                  <div key={contact.id} onClick={() => onSelect(contact.id)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '0.85rem',
-                      padding: '0.7rem 0.9rem', cursor: 'pointer', transition: 'background 0.15s',
-                      borderRadius: '14px'
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-muted)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <div style={{
-                      position: 'relative', flexShrink: 0
-                    }}>
-                      <div style={{
-                        width: '46px', height: '46px', borderRadius: '50%',
-                        background: getAvatarColor(contact.name),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white', fontWeight: 500, fontSize: '1.15rem'
-                      }}>{contact.name?.charAt(0)?.toUpperCase() || '?'}</div>
-                      {unread > 0 && (
-                        <div style={{
-                          position: 'absolute', top: '-4px', right: '-6px',
-                          minWidth: '20px', height: '20px', borderRadius: '10px', padding: '0 6px',
-                          background: 'var(--accent-primary)', color: 'white', fontSize: '0.68rem',
-                          fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          border: '2px solid var(--bg-color-surface)'
-                        }}>{unread > 9 ? '9+' : unread}</div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <strong style={{ fontSize: '0.92rem', fontWeight: unread > 0 ? 600 : 500, color: 'var(--text-primary)' }}>{contact.name}</strong>
-                        {preview && <span style={{ fontSize: '0.7rem', color: unread > 0 ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>{formatTime(new Date(preview.createdAt))}</span>}
-                      </div>
-                      <div style={{
-                        fontSize: '0.82rem', color: unread > 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                        marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        fontWeight: unread > 0 ? 500 : 400
-                      }}>
-                        {preview ? (
-                          <>{preview.senderId === currentUser?.id && (preview.readAt ? <CheckCheck size={12} style={{ display: 'inline', marginRight: 4 }} /> : <Check size={12} style={{ display: 'inline', marginRight: 4 }} />)}{preview.message}</>
-                        ) : 'Sin mensajes aún'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            {[
+              ['Enter', 'Envía el mensaje al instante'],
+              ['Shift + Enter', 'Salto de línea sin enviar'],
+              ['Notificaciones', 'Aviso automático de mensajes nuevos']
+            ].map(([k, d]) => (
+              <div key={k} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.65rem' }}>
+                <span style={{
+                  fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-primary)',
+                  background: 'var(--surface-muted)', border: '1px solid var(--border-color)',
+                  padding: '0.15rem 0.5rem', borderRadius: '6px', whiteSpace: 'nowrap'
+                }}>{k}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{d}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            background: 'var(--bg-color-surface)', borderRadius: '16px',
+            border: '1px solid var(--border-color)', padding: '1.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <div style={{
+                width: '34px', height: '34px', borderRadius: '50%',
+                background: getAvatarColor(currentUser?.name),
+                color: 'white', fontWeight: 500, fontSize: '0.85rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>{currentUser?.name?.charAt(0)?.toUpperCase() || '?'}</div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{currentUser?.name}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Tú · {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}</div>
+              </div>
             </div>
-          </>
-        )}
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+              Tu perfil es visible para los demás docentes en cada conversación.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -452,7 +568,22 @@ function ChatConversation({ userId, onBack }) {
                 <MessageCircle size={32} color="var(--text-secondary)" />
               </div>
               <div style={{ fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Aún no hay mensajes</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Envía el primero para comenzar la conversación</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>Envía el primero para comenzar la conversación</div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {['¡Hola! 👋', 'Buenos días', '¿Cómo van los registros?'].map(quick => (
+                  <button key={quick} onClick={() => setInputText(quick)}
+                    style={{
+                      padding: '0.45rem 1rem', borderRadius: '20px',
+                      background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)',
+                      color: 'var(--accent-primary)', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--nav-active-bg)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-color-surface)'; }}
+                  >
+                    {quick}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             conversationMessages.map((msg, idx) => {
