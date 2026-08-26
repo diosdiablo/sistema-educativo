@@ -447,6 +447,31 @@ function xmlSetCellText(xml, ref, text) {
   return xml;
 }
 
+function xmlSetValueNoFormula(xml, ref, text) {
+  const escaped = escapeXml(text);
+  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<f[^>]*>[\\s\\S]*?</f>)?<v>[^<]*</v>');
+  if (reFormula.test(xml)) {
+    return xml.replace(reFormula, '$1<v>' + escaped + '</v>');
+  }
+  const reShared = new RegExp('(<c r="' + ref + '"[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
+  if (reShared.test(xml)) {
+    return xml.replace(reShared, '$1$2<v>' + escaped + '</v>');
+  }
+  const reInline = new RegExp('(<c r="' + ref + '"[^>]*>)<is><t>[^<]*</t></is></c>');
+  if (reInline.test(xml)) {
+    return xml.replace(reInline, '$1<v>' + escaped + '</v>');
+  }
+  const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<v>[^<]*</v>|<v/>|<is>[^<]*</is>)?</c>');
+  if (reValue.test(xml)) {
+    return xml.replace(reValue, '$1<v>' + escaped + '</v></c>');
+  }
+  const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (reEmpty.test(xml)) {
+    return xml.replace(reEmpty, '$1><v>' + escaped + '</v></c>');
+  }
+  return xml;
+}
+
 function xmlSetCellNum(xml, ref, num) {
   const val = String(num);
   const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(<f[^>]*>[\\s\\S]*?</f>)<v>[^<]*</v>');
@@ -609,7 +634,7 @@ export const exportTemplateAuxiliar = async (
           }
         }
 
-        xml = xmlSetCellText(xml, `${col.nivel}${row}`, avgQual);
+        xml = xmlSetValueNoFormula(xml, `${col.nivel}${row}`, avgQual);
         xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual ? (QUAL_TO_CONCLUSION[avgQual] || '') : '');
       });
     } else {
@@ -620,7 +645,7 @@ export const exportTemplateAuxiliar = async (
         for (let c = 0; c < 4; c++) {
           xml = xmlSetCellText(xml, `${col.criteria[c]}${row}`, '');
         }
-        xml = xmlSetCellText(xml, `${col.nivel}${row}`, '');
+        xml = xmlSetValueNoFormula(xml, `${col.nivel}${row}`, '');
         xml = xmlSetCellText(xml, `${col.conclusion}${row}`, '');
       });
     }
