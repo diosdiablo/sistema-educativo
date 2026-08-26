@@ -292,9 +292,14 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
     subject.competencies.forEach(comp => {
       const compEvals = studentEvals.filter(ev => {
         const cid = ev.competencyId || ev.competency_id;
-        return cid === comp.id || cid === '__all__';
+        return cid === comp.id;
       });
-      const compCount = compEvals.length;
+      const groupedByInstrument = {};
+      compEvals.forEach(ev => {
+        const key = ev.activityName || ev.instrumentId;
+        if (!groupedByInstrument[key]) groupedByInstrument[key] = ev;
+      });
+      const compCount = Object.keys(groupedByInstrument).length;
       if (!maxGradesPerCompetency[comp.id] || compCount > maxGradesPerCompetency[comp.id]) {
         maxGradesPerCompetency[comp.id] = compCount;
       }
@@ -324,17 +329,23 @@ export const buildDetailedGradesReport = (students, instrumentEvaluations, subje
     
     const row = [student.name];
     
-    subject.competencies.forEach(comp => {
+      subject.competencies.forEach(comp => {
       const compEvals = studentEvals.filter(ev => {
         const cid = ev.competencyId || ev.competency_id;
-        return cid === comp.id || cid === '__all__';
+        return cid === comp.id;
       });
+      const groupedByInstrument = {};
+      compEvals.forEach(ev => {
+        const key = ev.activityName || ev.instrumentId;
+        if (!groupedByInstrument[key]) groupedByInstrument[key] = ev;
+      });
+      const instruments = Object.values(groupedByInstrument);
       const numCols = maxGradesPerCompetency[comp.id] || 1;
       const compQualitatives = [];
       
       for (let i = 0; i < numCols; i++) {
-        if (i < compEvals.length) {
-          const qual = compEvals[i].qualitative || '-';
+        if (i < instruments.length) {
+          const qual = instruments[i].qualitative || '-';
           compQualitatives.push(qual);
           row.push(qual);
         } else {
