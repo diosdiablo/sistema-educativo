@@ -63,8 +63,8 @@ export default function Login() {
         {error && (
           <div style={{
             padding: '0.875rem 1rem', marginBottom: '1.5rem',
-            background: '#fce8e6', color: '#d93025',
-            borderRadius: '8px', fontSize: '0.875rem',
+            background: 'var(--danger-tint-bg)', color: 'var(--danger-tint-fg)',
+            borderRadius: '12px', fontSize: '0.875rem',
             display: 'flex', alignItems: 'center', gap: '0.5rem'
           }}>
             <Lock size={16} />
@@ -79,7 +79,7 @@ export default function Login() {
               placeholder="Usuario"
               value={username}
               onChange={e => setUsername(e.target.value)}
-              onFocus={e => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.boxShadow = 'inset 0 0 0 1px #1a73e8'; }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.boxShadow = 'none'; }}
               onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
               style={{
                 width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
@@ -103,7 +103,7 @@ export default function Login() {
               placeholder="Contraseña"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              onFocus={e => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.boxShadow = 'inset 0 0 0 1px #1a73e8'; }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.boxShadow = 'none'; }}
               onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
               style={{
                 width: '100%', padding: '0.875rem 1rem 0.875rem 2.75rem',
@@ -141,7 +141,7 @@ export default function Login() {
               display: 'flex', justifyContent: 'center', alignItems: 'center',
               gap: '0.5rem', width: '100%', padding: '0.875rem',
               marginTop: '0.5rem',
-              background: loading ? 'var(--hover-bg)' : '#1a73e8',
+              background: loading ? 'var(--hover-bg)' : 'var(--accent-primary)',
               color: loading ? 'var(--text-secondary)' : 'white', border: 'none', borderRadius: '20px',
               fontWeight: 500, fontSize: '1rem',
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -155,7 +155,7 @@ export default function Login() {
 
         <div style={{ textAlign: 'center', marginTop: '1.75rem' }}>
           <button onClick={() => navigate('/parent')} style={{
-            background: 'none', border: 'none', color: '#1a73e8',
+            background: 'none', border: 'none', color: 'var(--accent-primary)',
             fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer',
             display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
           }}>
