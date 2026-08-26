@@ -464,6 +464,22 @@ function xmlSetCellNum(xml, ref, num) {
   return xml;
 }
 
+function xmlSetCellEmpty(xml, ref) {
+  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<f[^>]*>[\\s\\S]*?</f>)?<v>[^<]*</v>');
+  if (reFormula.test(xml)) {
+    return xml.replace(reFormula, '$1<v/>');
+  }
+  const reShared = new RegExp('(<c r="' + ref + '"[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
+  if (reShared.test(xml)) {
+    return xml.replace(reShared, '$1$2<v/>');
+  }
+  const reInline = new RegExp('(<c r="' + ref + '"[^>]*>)<is><t>[^<]*</t></is></c>');
+  if (reInline.test(xml)) {
+    return xml.replace(reInline, '$1<v/>');
+  }
+  return xml;
+}
+
 export const exportTemplateAuxiliar = async (
   students, instrumentEvaluations, subjects, subjectId, period,
   className, periodName, config = {}
@@ -490,6 +506,11 @@ export const exportTemplateAuxiliar = async (
   xml = xmlSetCellText(xml, 'AH4', grado.toUpperCase());
   xml = xmlSetCellText(xml, 'AH5', seccion.toUpperCase());
 
+  const trimestreLabelRe = /(<c r="Y3"[^>]*>)(?:<v>[^<]*<\/v>|<is>[^<]*<\/is>)?<\/c>/;
+  if (trimestreLabelRe.test(xml)) {
+    xml = xml.replace(trimestreLabelRe, '$1><is><t>BIMESTRE</t></is></c>');
+  }
+
   const newTitle = `REGISTRO AUXILIAR DE EVALUACIÓN ${year} - SECUNDARIA`;
   const titleRe = /(<c r="D1"[^>]*>)(?:<v>[^<]*<\/v>|<is>[^<]*<\/is>)?<\/c>/;
   if (titleRe.test(xml)) {
@@ -511,6 +532,23 @@ export const exportTemplateAuxiliar = async (
       xml = xmlSetCellText(xml, `${col.criteria[c]}10`, `Criterio ${c + 1}`);
     }
   });
+
+  for (let row = 11; row <= 40; row++) {
+    const rowRe = new RegExp('<row r="' + row + '"[^>]*>[\\s\\S]*?</row>');
+    if (rowRe.test(xml)) {
+      for (let ci = 0; ci < compCols.length; ci++) {
+        const col = compCols[ci];
+        for (let c = 0; c < 4; c++) {
+          xml = xmlSetCellEmpty(xml, `${col.criteria[c]}${row}`);
+        }
+        xml = xmlSetCellEmpty(xml, `${col.nivel}${row}`);
+        xml = xmlSetCellEmpty(xml, `${col.conclusion}${row}`);
+        xml = xmlSetCellEmpty(xml, `${['AO', 'AP', 'AQ', 'AR'][ci]}${row}`);
+      }
+      xml = xmlSetCellEmpty(xml, `A${row}`);
+      xml = xmlSetCellEmpty(xml, `B${row}`);
+    }
+  }
 
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
   const maxRows = Math.max(sortedStudents.length, 10);
