@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative } from '../templates/exportTemplates';
+import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative, exportTemplateAuxiliar } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
@@ -212,12 +212,24 @@ const Reports = () => {
       return;
     }
 
-    const workbook = exportDetailedGradesToExcel(classStudents, instrumentEvaluations, subjects, selectedSubjectAux, selectedPeriodAux, selectedClassAux, selectedPeriodAux);
+    const parts = (selectedClassAux || '').split(' ');
+    const grado = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || '';
+    const seccion = parts.length > 1 ? parts[parts.length - 1] : '';
+
+    const periodLabels = { 1: 'PRIMERO', 2: 'SEGUNDO', 3: 'TERCERO', 4: 'CUARTO' };
+    const periodLabel = periodLabels[selectedPeriodAux] || `BIMESTRE ${selectedPeriodAux}`;
+
+    const workbook = await exportTemplateAuxiliar(
+      classStudents, instrumentEvaluations, subjects,
+      selectedSubjectAux, selectedPeriodAux,
+      selectedClassAux, periodLabel,
+      { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado }
+    );
     if (!workbook) {
       alert('No se pudo generar el reporte');
       return;
     }
-    XLSX.writeFile(workbook, `Calificaciones_Detallado_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`);
+    XLSX.writeFile(workbook, `Registro_Auxiliar_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`);
   };
 
   return (

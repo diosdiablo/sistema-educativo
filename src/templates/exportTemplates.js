@@ -398,3 +398,143 @@ export const exportDetailedGradesToExcel = (students, instrumentEvaluations, sub
   XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones Detallado');
   return wb;
 };
+
+const QUAL_TO_CONCLUSION = {
+  'AD': 'Logra realizar las actividades propuestas de manera destacada, demostrando un dominio excelente.',
+  'A': 'Logra realizar las actividades propuestas de manera satisfactoria.',
+  'B': 'Presenta dificultades para realizar las actividades propuestas.',
+  'C': 'No logra realizar las actividades propuestas.',
+};
+
+const QUAL_TO_NUMBER = { 'AD': 4, 'A': 3, 'B': 2, 'C': 1 };
+
+const getQualFromScore = (score) => {
+  if (score === null || score === undefined) return null;
+  const n = Number(score);
+  if (n >= 18) return 'AD';
+  if (n >= 14) return 'A';
+  if (n >= 11) return 'B';
+  return 'C';
+};
+
+export const exportTemplateAuxiliar = async (
+  students, instrumentEvaluations, subjects, subjectId, period,
+  className, periodName, config = {}
+) => {
+  const subject = subjects.find(s => s.id === subjectId);
+  if (!subject) return null;
+
+  const resp = await fetch('/templates/plantilla-registro-auxiliar.xlsx');
+  const buf = await resp.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+
+  const iep = config.iep || 'IEP';
+  const docente = config.docente || '';
+  const seccion = config.seccion || className || '';
+  const grado = config.grado || '';
+  const trimestre = periodName || `Bimestre ${period}`;
+
+  XLSX.utils.sheet_add_aoa(ws, [[iep]], { origin: 'M3' });
+  XLSX.utils.sheet_add_aoa(ws, [[subject.name.toUpperCase()]], { origin: 'M4' });
+  XLSX.utils.sheet_add_aoa(ws, [[docente]], { origin: 'M5' });
+  XLSX.utils.sheet_add_aoa(ws, [[grado.toUpperCase()]], { origin: 'AH4' });
+  XLSX.utils.sheet_add_aoa(ws, [[seccion.toUpperCase()]], { origin: 'AH5' });
+  XLSX.utils.sheet_add_aoa(ws, [[trimestre.toUpperCase()]], { origin: 'AH3' });
+
+  const competencies = (subject.competencies || []).slice(0, 4);
+  const compCols = [
+    { criteria: ['D', 'E', 'F', 'G', 'H', 'I', 'J'], nivel: 'K', conclusion: 'L' },
+    { criteria: ['M', 'N', 'O', 'P', 'Q', 'R', 'S'], nivel: 'T', conclusion: 'U' },
+    { criteria: ['V', 'W', 'X', 'Y', 'Z', 'AA', 'AB'], nivel: 'AC', conclusion: 'AD' },
+    { criteria: ['AE', 'AF', 'AG', 'AH_c', 'AI', 'AJ', 'AK'], nivel: 'AL', conclusion: 'AM' },
+  ];
+
+  competencies.forEach((comp, ci) => {
+    const col = compCols[ci];
+    XLSX.utils.sheet_add_aoa(ws, [[comp.name]], { origin: `${col.criteria[0]}8` });
+
+    const compInstruments = {};
+    students.forEach(student => {
+      const stdEvals = instrumentEvaluations.filter(ev => {
+        const cid = ev.competencyId || ev.competency_id;
+        if (cid !== comp.id) return false;
+        if (ev.period !== period) return false;
+        const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+        const nameMatch = ev.student_name && ev.student_name === student.name;
+        return idMatch || nameMatch;
+      });
+      stdEvals.forEach(ev => {
+        const key = ev.activityName || ev.instrumentId;
+        if (!compInstruments[key]) {
+          compInstruments[key] = ev.activityName || key;
+        }
+      });
+    });
+
+    const instrumentKeys = Object.keys(compInstruments);
+    const maxC = Math.min(instrumentKeys.length, 7);
+    for (let c = 0; c < maxC; c++) {
+      XLSX.utils.sheet_add_aoa(ws, [[`Criterio ${c + 1}`]], { origin: `${col.criteria[c]}10` });
+    }
+  });
+
+  const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
+  sortedStudents.forEach((student, si) => {
+    const row = 11 + si;
+    XLSX.utils.sheet_add_aoa(ws, [[si + 1]], { origin: `A${row}` });
+    XLSX.utils.sheet_add_aoa(ws, [[student.name.toUpperCase()]], { origin: `B${row}` });
+
+    competencies.forEach((comp, ci) => {
+      const col = compCols[ci];
+
+      const stdEvals = instrumentEvaluations.filter(ev => {
+        const cid = ev.competencyId || ev.competency_id;
+        if (cid !== comp.id) return false;
+        if (ev.period !== period) return false;
+        const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+        const nameMatch = ev.student_name && ev.student_name === student.name;
+        return idMatch || nameMatch;
+      });
+
+      const groupedByInstrument = {};
+      stdEvals.forEach(ev => {
+        const key = ev.activityName || ev.instrumentId;
+        if (!groupedByInstrument[key]) groupedByInstrument[key] = ev;
+      });
+      const instruments = Object.values(groupedByInstrument);
+
+      const instrumentKeys = Object.keys(groupedByInstrument);
+      const maxC = Math.min(instrumentKeys.length, 7);
+      const quals = [];
+      for (let c = 0; c < maxC; c++) {
+        const ev = instruments[c];
+        const qual = ev ? (ev.qualitative || getQualFromScore(ev.score) || '-') : '-';
+        quals.push(qual);
+        XLSX.utils.sheet_add_aoa(ws, [[qual]], { origin: `${col.criteria[c]}${row}` });
+      }
+
+      const validQuals = quals.filter(q => q && q !== '-');
+      let avgQual = '-';
+      if (validQuals.length > 0) {
+        const nums = validQuals.map(q => QUAL_TO_NUMBER[q]).filter(n => n);
+        if (nums.length > 0) {
+          const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+          if (avg >= 3.5) avgQual = 'AD';
+          else if (avg >= 2.5) avgQual = 'A';
+          else if (avg >= 1.5) avgQual = 'B';
+          else avgQual = 'C';
+        }
+      }
+
+      XLSX.utils.sheet_add_aoa(ws, [[avgQual]], { origin: `${col.nivel}${row}` });
+      XLSX.utils.sheet_add_aoa(ws, [[QUAL_TO_CONCLUSION[avgQual] || '']], { origin: `${col.conclusion}${row}` });
+
+      XLSX.utils.sheet_add_aoa(ws, [[avgQual]], { origin: `AO${row + ci * 0}` });
+      const resumenCol = ['AO', 'AP', 'AQ', 'AR'][ci];
+      XLSX.utils.sheet_add_aoa(ws, [[avgQual]], { origin: `${resumenCol}${row}` });
+    });
+  });
+
+  return wb;
+};
