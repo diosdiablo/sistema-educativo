@@ -216,7 +216,7 @@ const Reports = () => {
     const grado = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || '';
     const seccion = parts.length > 1 ? parts[parts.length - 1] : '';
 
-    const periodLabels = { 1: 'BIMESTRE 1', 2: 'BIMESTRE 2', 3: 'BIMESTRE 3', 4: 'BIMESTRE 4' };
+    const periodLabels = { 1: 'PRIMERO', 2: 'SEGUNDO', 3: 'TERCERO', 4: 'CUARTO' };
     const periodLabel = periodLabels[selectedPeriodAux] || `BIMESTRE ${selectedPeriodAux}`;
 
     const buf = await exportTemplateAuxiliar(
