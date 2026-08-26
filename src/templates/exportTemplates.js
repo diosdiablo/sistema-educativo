@@ -536,12 +536,21 @@ export const exportTemplateAuxiliar = async (
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
   const maxRows = Math.max(sortedStudents.length, 10);
 
-  console.log('[EXPORT DEBUG] students:', sortedStudents.map(s => `${s.name}(id=${s.id})`));
+  const evalSubjectIds = [...new Set(instrumentEvaluations.map(ev => ev.subjectId || ev.subject_id))];
+  const compIds = competencies.map(c => c.id);
+  console.log('[EXPORT DEBUG] subject:', subject.name, 'id:', subject.id);
+  console.log('[EXPORT DEBUG] competencies:', compIds);
+  console.log('[EXPORT DEBUG] students:', sortedStudents.length, sortedStudents.map(s => s.name));
   console.log('[EXPORT DEBUG] period:', period, 'type:', typeof period);
-  console.log('[EXPORT DEBUG] evals count:', instrumentEvaluations.length);
-  if (instrumentEvaluations.length > 0) {
-    const ev0 = instrumentEvaluations[0];
-    console.log('[EXPORT DEBUG] first eval:', { studentId: ev0.studentId, student_id: ev0.student_id, student_name: ev0.student_name, competencyId: ev0.competencyId, competency_id: ev0.competency_id, period: ev0.period, periodo: ev0.periodo });
+  console.log('[EXPORT DEBUG] total evals:', instrumentEvaluations.length, 'subjectIds in evals:', evalSubjectIds);
+  const matchingEvals = instrumentEvaluations.filter(ev => {
+    const sid = ev.subjectId || ev.subject_id;
+    return sid === subject.id || compIds.includes(ev.competencyId || ev.competency_id);
+  });
+  console.log('[EXPORT DEBUG] matching evals (by subject or competency):', matchingEvals.length);
+  if (matchingEvals.length > 0) {
+    const ev0 = matchingEvals[0];
+    console.log('[EXPORT DEBUG] sample eval:', { studentId: ev0.studentId, student_id: ev0.student_id, student_name: ev0.student_name, competencyId: ev0.competencyId, competency_id: ev0.competency_id, subjectId: ev0.subjectId, subject_id: ev0.subject_id, period: ev0.period, periodo: ev0.periodo, classId: ev0.classId, class_id: ev0.class_id });
   }
 
   for (let si = 0; si < maxRows; si++) {

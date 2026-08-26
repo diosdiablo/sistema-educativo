@@ -27,10 +27,20 @@ const Reports = () => {
   const periods = ['1', '2', '3', '4'];
 
   const cleanClassFilter = (s, selected) => {
+    if (!selected) return false;
     const cleanSelected = selected.trim().toLowerCase();
     const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
     const cleanClass = (s.classId || '').trim().toLowerCase();
-    return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+    if (cleanGrade === cleanSelected || cleanClass === cleanSelected) return true;
+    const matchedClass = classes.find(c => c.name.trim().toLowerCase() === cleanSelected);
+    if (!matchedClass) return false;
+    if (cleanClass === matchedClass.id.toLowerCase()) return true;
+    const classParts = matchedClass.name.trim().toLowerCase().split(/\s+/);
+    const gradeSearch = classParts.slice(0, -1).join(' ');
+    const sectionSearch = classParts[classParts.length - 1];
+    if (gradeSearch && cleanGrade.includes(gradeSearch) && (cleanClass.includes(sectionSearch) || cleanGrade.includes(sectionSearch))) return true;
+    if (gradeSearch && cleanGrade === gradeSearch) return true;
+    return false;
   };
 
   const exportAttendance = async () => {
