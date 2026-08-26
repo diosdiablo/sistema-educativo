@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative, exportTemplateAuxiliar } from '../templates/exportTemplates';
 
 const Reports = () => {
-  const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments } = useStore();
+  const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments, isAdmin } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -25,6 +25,18 @@ const Reports = () => {
   const [selectedPeriodFinal, setSelectedPeriodFinal] = useState(currentPeriod);
 
   const periods = ['1', '2', '3', '4'];
+
+  const availableSubjects = useMemo(() => {
+    if (!selectedClassAux) return subjects;
+    const classObj = classes.find(c => c.name === selectedClassAux);
+    if (!classObj) return subjects;
+    if (isAdmin) return subjects;
+    if (!currentUser?.assignments) return [];
+    const ids = currentUser.assignments
+      .filter(a => a.classId === classObj.id)
+      .map(a => a.subjectId);
+    return subjects.filter(s => ids.includes(s.id));
+  }, [selectedClassAux, isAdmin, currentUser, classes, subjects]);
 
   const cleanClassFilter = (s, selected) => {
     if (!selected) return false;
@@ -351,7 +363,7 @@ const Reports = () => {
                 <select 
                   className="input-field"
                   value={selectedClassAux}
-                  onChange={(e) => setSelectedClassAux(e.target.value)}
+                  onChange={(e) => { setSelectedClassAux(e.target.value); setSelectedSubjectAux(''); }}
                 >
                   <option value="">-- Sección --</option>
                   {classes.map(c => (
@@ -385,7 +397,7 @@ const Reports = () => {
                 onChange={(e) => setSelectedSubjectAux(e.target.value)}
               >
                 <option value="">-- Selecciona el Área --</option>
-                {subjects.map(s => (
+                {availableSubjects.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
@@ -472,7 +484,7 @@ const Reports = () => {
                 onChange={(e) => setSelectedSubjectFinal(e.target.value)}
               >
                 <option value="">-- Selecciona el Área --</option>
-                {subjects.map(s => (
+                {availableSubjects.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
