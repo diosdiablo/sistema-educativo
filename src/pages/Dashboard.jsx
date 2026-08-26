@@ -134,14 +134,15 @@ export default function Dashboard() {
     return 'Buenas noches';
   };
 
-  const daysMapping = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+  const daysMapping = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const monthsMapping = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const todayDate = currentTime;
   const todayName = daysMapping[todayDate.getDay()];
   const formattedDate = `${todayDate.getDate()} de ${monthsMapping[todayDate.getMonth()]} ${todayDate.getFullYear()}`;
   const timeString = todayDate.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
 
-  const todayScheduleRaw = schedule.filter(s => s.day === todayName);
+  const normalizeDay = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const todayScheduleRaw = schedule.filter(s => normalizeDay(s.day) === normalizeDay(todayName));
   const todaySchedule = groupScheduleByCourse(todayScheduleRaw);
 
   const motivationalMessages = [
