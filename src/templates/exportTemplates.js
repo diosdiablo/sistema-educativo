@@ -490,11 +490,20 @@ export const exportTemplateAuxiliar = async (
   xml = xmlSetCellText(xml, 'AH4', grado.toUpperCase());
   xml = xmlSetCellText(xml, 'AH5', seccion.toUpperCase());
 
+  const trimestreRe = /(<c r="Y3"[^>]*>)(?:<v>[^<]*<\/v>|<is>[^<]*<\/is>)?<\/c>/;
+  if (trimestreRe.test(xml)) {
+    xml = xml.replace(trimestreRe, '$1><is><t>BIMESTRE</t></is></c>');
+  }
+
   const newTitle = `REGISTRO AUXILIAR DE EVALUACIÓN ${year} - SECUNDARIA`;
   const titleRe = /(<c r="D1"[^>]*>)(?:<v>[^<]*<\/v>|<is>[^<]*<\/is>)?<\/c>/;
   if (titleRe.test(xml)) {
     xml = xml.replace(titleRe, '$1><is><t>' + escapeXml(newTitle) + '</t></is></c>');
   }
+
+  xml = xml.replace(/(<row r="(?:1[1-9]|2\d|3\d|40)"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, content, close) => {
+    return open + content.replace(/<v>[^<]*<\/v>/g, '<v/>').replace(/<is><t>[^<]*<\/t><\/is>/g, '<is><t></t></is>') + close;
+  });
 
   const competencies = (subject.competencies || []).slice(0, 4);
   const compCols = [
