@@ -105,34 +105,25 @@ export default function AIPlanningGenerator() {
       {!showGenerator ? (
         <button
           onClick={() => setShowGenerator(true)}
+          className="btn-primary"
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
             padding: '1rem 1.5rem',
-            background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '14px',
-            cursor: 'pointer',
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            boxShadow: '0 4px 20px rgba(124, 58, 237, 0.3)',
-            transition: 'all 0.3s ease'
+            borderRadius: '20px',
+            fontSize: '0.95rem'
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 25px rgba(124, 58, 237, 0.4)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(124, 58, 237, 0.3)'; }}
         >
           <Sparkles size={20} />
           Generar Plan con IA
         </button>
       ) : (
         <div style={{
-          background: 'white',
-          borderRadius: '20px',
+          background: 'var(--bg-color-surface)',
+          borderRadius: '16px',
           padding: '1.5rem',
-          boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
-          border: '2px solid #7c3aed20'
+          border: '1px solid var(--border-color)'
         }}>
           <div style={{
             display: 'flex',
@@ -146,13 +137,13 @@ export default function AIPlanningGenerator() {
               <div style={{
                 width: '44px',
                 height: '44px',
-                background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                background: 'var(--nav-active-bg)',
                 borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Sparkles size={22} color="white" />
+                <Sparkles size={22} color="var(--nav-active-fg)" />
               </div>
               <div>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
@@ -166,7 +157,7 @@ export default function AIPlanningGenerator() {
             <button
               onClick={() => { setShowGenerator(false); setGeneratedPlan(null); }}
               style={{
-                background: '#f1f5f9',
+                background: 'var(--surface-muted)',
                 border: 'none',
                 borderRadius: '10px',
                 padding: '0.5rem',
@@ -267,7 +258,7 @@ export default function AIPlanningGenerator() {
               background: '#fef2f2',
               border: '1px solid #fecaca',
               borderRadius: '10px',
-              color: '#dc2626',
+              color: 'var(--danger-tint-fg)',
               fontSize: '0.9rem',
               marginBottom: '1rem'
             }}>
@@ -278,22 +269,22 @@ export default function AIPlanningGenerator() {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem',
-              width: '100%',
-              padding: '1rem',
-              background: isGenerating ? '#9ca3af' : 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: isGenerating ? 'not-allowed' : 'pointer',
-              fontWeight: 600,
-              fontSize: '1rem',
-              transition: 'all 0.3s ease'
-            }}
+              className={isGenerating ? '' : 'btn-primary'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                width: '100%',
+                padding: '1rem',
+                background: isGenerating ? 'var(--hover-bg)' : undefined,
+                color: isGenerating ? 'var(--text-secondary)' : undefined,
+                border: 'none',
+                borderRadius: '20px',
+                cursor: isGenerating ? 'not-allowed' : 'pointer',
+                fontWeight: 500,
+                fontSize: '1rem'
+              }}
           >
             {isGenerating ? (
               <>
@@ -309,63 +300,59 @@ export default function AIPlanningGenerator() {
           </button>
 
           {generatedPlan && (
-            <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
+            <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
               <div style={{
-                display: 'flex',
-                gap: '0.75rem',
-                marginBottom: '1.5rem'
-              }}>
-                <button
-                  onClick={handleCopy}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    padding: '0.75rem',
-                    background: copied ? '#10b981' : '#f1f5f9',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    color: copied ? 'white' : 'var(--text-primary)'
-                  }}
-                >
+              display: 'flex',
+              gap: '0.75rem',
+              marginBottom: '1.5rem'
+            }}>
+              <button
+                onClick={handleCopy}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  background: copied ? '#18803815' : 'var(--surface-muted)',
+                  border: 'none',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  color: copied ? '#188038' : 'var(--text-primary)'
+                }}
+              >
                   <Copy size={16} />
                   {copied ? '¡Copiado!' : 'Copiar'}
                 </button>
-                <button
-                  onClick={handleSaveAsDocument}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    padding: '0.75rem',
-                    background: '#10b981',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    color: 'white'
-                  }}
-                >
+              <button
+                onClick={handleSaveAsDocument}
+                className="btn-primary"
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  borderRadius: '20px'
+                }}
+              >
                   <Save size={16} />
                   Guardar
                 </button>
               </div>
 
               <div style={{
-                background: '#faf5ff',
+                background: 'var(--surface-muted)',
                 borderRadius: '16px',
                 padding: '1.25rem',
-                border: '1px solid #e9d5ff'
+                border: '1px solid var(--border-color)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <Sparkles size={18} color="#7c3aed" />
-                  <span style={{ fontWeight: 700, color: '#7c3aed', fontSize: '0.9rem' }}>Sesión de Aprendizaje Generada con IA</span>
+                  <Sparkles size={18} color="var(--accent-primary)" />
+                  <span style={{ fontWeight: 500, color: 'var(--accent-primary)', fontSize: '0.9rem' }}>Sesión de Aprendizaje Generada con IA</span>
                 </div>
 
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>

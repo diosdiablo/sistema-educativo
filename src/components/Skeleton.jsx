@@ -5,7 +5,7 @@ export function Skeleton({ width = '100%', height = '20px', radius = '8px', marg
         width,
         height,
         borderRadius: radius,
-        background: 'linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%)',
+        background: 'linear-gradient(90deg, var(--surface-muted) 25%, var(--hover-bg) 50%, var(--surface-muted) 75%)',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s infinite',
         margin,
@@ -17,11 +17,10 @@ export function Skeleton({ width = '100%', height = '20px', radius = '8px', marg
 export function CardSkeleton() {
   return (
     <div style={{
-      background: 'white',
+      background: 'var(--bg-color-surface)',
       borderRadius: '16px',
       padding: '1.25rem',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-      border: '1px solid #f3f4f6'
+      border: '1px solid var(--border-color)'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <Skeleton width="48px" height="48px" radius="12px" />
@@ -40,7 +39,7 @@ export function CardSkeleton() {
 export function TableSkeleton({ rows = 5 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      <div style={{ display: 'flex', gap: '1rem', padding: '0.75rem 1rem', background: '#f9fafb', borderRadius: '10px' }}>
+      <div style={{ display: 'flex', gap: '1rem', padding: '0.75rem 1rem', background: 'var(--surface-muted)', borderRadius: '10px' }}>
         <Skeleton width="30%" height="16px" />
         <Skeleton width="20%" height="16px" />
         <Skeleton width="20%" height="16px" />
@@ -48,7 +47,7 @@ export function TableSkeleton({ rows = 5 }) {
         <Skeleton width="15%" height="16px" />
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} style={{ display: 'flex', gap: '1rem', padding: '0.75rem 1rem', background: 'white', borderRadius: '10px', border: '1px solid #f3f4f6' }}>
+        <div key={i} style={{ display: 'flex', gap: '1rem', padding: '0.75rem 1rem', background: 'var(--bg-color-surface)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
           <Skeleton width="30%" height="20px" />
           <Skeleton width="20%" height="20px" />
           <Skeleton width="20%" height="20px" />

@@ -321,11 +321,11 @@ export default function Schedule() {
                             justifyContent: 'center',
                             border: '1px dashed var(--border-color)',
                             borderRadius: '6px',
-                            color: '#bdc1c6',
+                            color: 'var(--text-secondary)',
                             transition: 'border-color 0.15s ease, color 0.15s ease'
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1a73e8'; e.currentTarget.style.color = '#1a73e8'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = '#bdc1c6'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.color = 'var(--accent-primary)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
                           >
                             <Plus size={18} />
                           </div>
