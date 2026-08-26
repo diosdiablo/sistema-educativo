@@ -1715,7 +1715,7 @@ export default function Grades() {
         return (
         <div style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.85)', zIndex: 9999,
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 9999,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
           paddingTop: '2rem', overflow: 'auto'
         }} onClick={() => { if (!quickAzarSpinning) setQuickAzarOpen(false); }}>
@@ -1726,16 +1726,16 @@ export default function Grades() {
                 transform: 'translateX(-50%)', zIndex: 10,
                 width: 0, height: 0,
                   borderLeft: '18px solid transparent', borderRight: '18px solid transparent',
-                  borderTop: '32px solid #fbbf24',
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
+                  borderTop: '32px solid #e37400',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
               }} />
               <div style={{
                 width: wheelSize, height: wheelSize, borderRadius: '50%',
                 position: 'relative', overflow: 'hidden',
                 transform: `rotate(${quickAzarDeg}deg)`,
                 transition: quickAzarSpinning ? `transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)` : 'none',
-                background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : '#94a3b8',
-                boxShadow: '0 0 0 6px #1e293b, 0 0 40px rgba(0,0,0,0.4)'
+                background: n > 0 ? `conic-gradient(${azarStudents.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ')})` : 'var(--surface-muted)',
+                boxShadow: '0 0 0 4px var(--border-color)'
               }}>
                 {azarStudents.map((s, i) => {
                   const mid = i * seg + seg / 2;
@@ -1746,8 +1746,8 @@ export default function Grades() {
                       marginTop: '-12px',
                       transform: `rotate(${mid - 90}deg) translate(40px)`,
                       transformOrigin: 'left center',
-                      fontSize, fontWeight: 700, color: 'white',
-                      textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                      fontSize, fontWeight: 500, color: 'white',
+                      textShadow: '0 1px 3px rgba(0,0,0,0.4)',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       pointerEvents: 'none', display: 'flex', alignItems: 'center', textAlign: 'left'
                     }}>{s.name}</div>
@@ -1756,38 +1756,36 @@ export default function Grades() {
                 <div style={{
                   position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
                     width: '90px', height: '90px', borderRadius: '50%',
-                  background: 'radial-gradient(circle, #334155, #1e293b)', zIndex: 5,
+                  background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)', zIndex: 5,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 800, fontSize: '1.2rem',
-                  boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4)'
+                  fontSize: '1.2rem'
                 }}>🎯</div>
               </div>
             </div>
             {quickAzarSpinning && (
-              <div style={{ color: '#fbbf24', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 700, letterSpacing: '0.05em' }}>SORTEANDO...</div>
+              <div style={{ color: '#e37400', fontSize: '1.1rem', marginTop: '1.5rem', fontWeight: 500, letterSpacing: '0.05em' }}>SORTEANDO...</div>
             )}
             {stopped && (
               <div style={{
                 marginTop: '1.5rem', background: 'var(--bg-color-surface)', borderRadius: '16px',
                 padding: '1.2rem 2.5rem', textAlign: 'center',
                 animation: 'bounceIn 0.5s ease',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+                border: '1px solid var(--border-color)'
               }}>
                 <div style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>🎉</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>{quickAzarWinner.name}</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--text-primary)' }}>{quickAzarWinner.name}</div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>¡Seleccionado!</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.35rem' }}>{pickedCount}/{total} alumnos sorteados</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>{pickedCount}/{total} alumnos sorteados</div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                  <button onClick={() => setQuickAzarOpen(false)} style={{
-                    padding: '0.6rem 1.5rem', borderRadius: '10px',
-                    border: 'none', background: '#188038',
-                    color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  <button onClick={() => setQuickAzarOpen(false)} className="btn-primary" style={{
+                    padding: '0.6rem 1.5rem', borderRadius: '20px',
+                    fontSize: '0.85rem'
                   }}>OK</button>
                   {pickedCount >= total && (
                     <button onClick={() => { setQuickAzarPicked(new Set()); setQuickAzarOpen(false); }} style={{
-                      padding: '0.6rem 1.5rem', borderRadius: '10px',
+                      padding: '0.6rem 1.5rem', borderRadius: '20px',
                       border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)',
-                      color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                      color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem'
                     }}>Reiniciar ciclo</button>
                   )}
                 </div>
