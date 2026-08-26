@@ -502,7 +502,7 @@ export default function Grades() {
               // Solo obtener evaluaciones de estudiantes de la clase seleccionada
               const studentIds = new Set(filteredStudents.map(s => s.id));
               const evs = instrumentEvaluations.filter(
-                ev => ev.competencyId === competencyId && 
+                ev => (ev.competencyId === competencyId || ev.competency_id === competencyId) && 
                       ev.period === selectedPeriod &&
                       studentIds.has(ev.studentId)
               );
@@ -695,11 +695,11 @@ export default function Grades() {
                                       } else {
                                         const oldName = inst.activityName || inst.title || '';
                                         const matching = instrumentEvaluations.filter(ev =>
-                                          (ev.activityName || ev.instrumentId) === oldName && ev.competencyId === comp.id && ev.period === selectedPeriod
+                                          (ev.activityName || ev.instrumentId) === oldName && (ev.competencyId === comp.id || ev.competency_id === comp.id) && ev.period === selectedPeriod
                                         );
                                         setInstrumentEvaluations(prev =>
                                           prev.map(ev =>
-                                            (ev.activityName || ev.instrumentId) === oldName && ev.competencyId === comp.id && ev.period === selectedPeriod
+                                            (ev.activityName || ev.instrumentId) === oldName && (ev.competencyId === comp.id || ev.competency_id === comp.id) && ev.period === selectedPeriod
                                               ? { ...ev, activityName: val }
                                               : ev
                                           )
@@ -783,7 +783,7 @@ export default function Grades() {
                                           } else {
                                             const name = inst.activityName || inst.title || '';
                                             const toDelete = instrumentEvaluations.filter(e =>
-                                              (e.activityName || e.instrumentId) === name && e.competencyId === comp.id && e.period === selectedPeriod
+                                              (e.activityName || e.instrumentId) === name && (e.competencyId === comp.id || e.competency_id === comp.id) && e.period === selectedPeriod
                                             );
                                             setInstrumentEvaluations(prev => prev.filter(e => !toDelete.find(d => d.id === e.id)));
                                             toDelete.forEach(e => {

@@ -417,6 +417,18 @@ const getQualFromScore = (score) => {
   return 'C';
 };
 
+function setCell(ws, ref, value) {
+  const cell = { v: value, t: 's' };
+  cell.s = (ws[ref] && ws[ref].s) ? ws[ref].s : {};
+  ws[ref] = cell;
+}
+
+function setCellNum(ws, ref, value) {
+  const cell = { v: Number(value), t: 'n' };
+  cell.s = (ws[ref] && ws[ref].s) ? ws[ref].s : {};
+  ws[ref] = cell;
+}
+
 export const exportTemplateAuxiliar = async (
   students, instrumentEvaluations, subjects, subjectId, period,
   className, periodName, config = {}
@@ -434,13 +446,18 @@ export const exportTemplateAuxiliar = async (
   const seccion = config.seccion || className || '';
   const grado = config.grado || '';
   const trimestre = periodName || `Bimestre ${period}`;
+  const year = new Date().getFullYear();
 
-  XLSX.utils.sheet_add_aoa(ws, [[iep]], { origin: 'M3' });
-  XLSX.utils.sheet_add_aoa(ws, [[subject.name.toUpperCase()]], { origin: 'M4' });
-  XLSX.utils.sheet_add_aoa(ws, [[docente]], { origin: 'M5' });
-  XLSX.utils.sheet_add_aoa(ws, [[grado.toUpperCase()]], { origin: 'AH4' });
-  XLSX.utils.sheet_add_aoa(ws, [[seccion.toUpperCase()]], { origin: 'AH5' });
-  XLSX.utils.sheet_add_aoa(ws, [[trimestre.toUpperCase()]], { origin: 'AH3' });
+  setCell(ws, 'M3', iep);
+  setCell(ws, 'M4', subject.name.toUpperCase());
+  setCell(ws, 'M5', docente);
+  setCell(ws, 'AH4', grado.toUpperCase());
+  setCell(ws, 'AH5', seccion.toUpperCase());
+  setCell(ws, 'AH3', trimestre.toUpperCase());
+
+  if (ws['D1'] && ws['D1'].v) {
+    ws['D1'].v = ws['D1'].v.replace(/20\d\d/, String(year));
+  }
 
   const competencies = (subject.competencies || []).slice(0, 4);
   const compCols = [
@@ -452,38 +469,18 @@ export const exportTemplateAuxiliar = async (
 
   competencies.forEach((comp, ci) => {
     const col = compCols[ci];
-    XLSX.utils.sheet_add_aoa(ws, [[comp.name]], { origin: `${col.criteria[0]}8` });
+    setCell(ws, `${col.criteria[0]}8`, comp.name);
 
-    const compInstruments = {};
-    students.forEach(student => {
-      const stdEvals = instrumentEvaluations.filter(ev => {
-        const cid = ev.competencyId || ev.competency_id;
-        if (cid !== comp.id) return false;
-        if (ev.period !== period) return false;
-        const idMatch = ev.studentId === student.id || ev.student_id === student.id;
-        const nameMatch = ev.student_name && ev.student_name === student.name;
-        return idMatch || nameMatch;
-      });
-      stdEvals.forEach(ev => {
-        const key = ev.activityName || ev.instrumentId;
-        if (!compInstruments[key]) {
-          compInstruments[key] = ev.activityName || key;
-        }
-      });
-    });
-
-    const instrumentKeys = Object.keys(compInstruments);
-    const maxC = Math.min(instrumentKeys.length, 7);
-    for (let c = 0; c < maxC; c++) {
-      XLSX.utils.sheet_add_aoa(ws, [[`Criterio ${c + 1}`]], { origin: `${col.criteria[c]}10` });
+    for (let c = 0; c < 7; c++) {
+      setCell(ws, `${col.criteria[c]}10`, `Criterio ${c + 1}`);
     }
   });
 
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
   sortedStudents.forEach((student, si) => {
     const row = 11 + si;
-    XLSX.utils.sheet_add_aoa(ws, [[si + 1]], { origin: `A${row}` });
-    XLSX.utils.sheet_add_aoa(ws, [[student.name.toUpperCase()]], { origin: `B${row}` });
+    setCellNum(ws, `A${row}`, si + 1);
+    setCell(ws, `B${row}`, student.name.toUpperCase());
 
     competencies.forEach((comp, ci) => {
       const col = compCols[ci];
@@ -504,14 +501,17 @@ export const exportTemplateAuxiliar = async (
       });
       const instruments = Object.values(groupedByInstrument);
 
-      const instrumentKeys = Object.keys(groupedByInstrument);
-      const maxC = Math.min(instrumentKeys.length, 7);
+      const maxC = Math.min(instruments.length, 7);
       const quals = [];
-      for (let c = 0; c < maxC; c++) {
-        const ev = instruments[c];
-        const qual = ev ? (ev.qualitative || getQualFromScore(ev.score) || '-') : '-';
-        quals.push(qual);
-        XLSX.utils.sheet_add_aoa(ws, [[qual]], { origin: `${col.criteria[c]}${row}` });
+      for (let c = 0; c < 7; c++) {
+        if (c < maxC) {
+          const ev = instruments[c];
+          const qual = ev ? (ev.qualitative || getQualFromScore(ev.score) || '-') : '-';
+          quals.push(qual);
+          setCell(ws, `${col.criteria[c]}${row}`, qual);
+        } else {
+          setCell(ws, `${col.criteria[c]}${row}`, '-');
+        }
       }
 
       const validQuals = quals.filter(q => q && q !== '-');
@@ -527,12 +527,11 @@ export const exportTemplateAuxiliar = async (
         }
       }
 
-      XLSX.utils.sheet_add_aoa(ws, [[avgQual]], { origin: `${col.nivel}${row}` });
-      XLSX.utils.sheet_add_aoa(ws, [[QUAL_TO_CONCLUSION[avgQual] || '']], { origin: `${col.conclusion}${row}` });
+      setCell(ws, `${col.nivel}${row}`, avgQual);
+      setCell(ws, `${col.conclusion}${row}`, QUAL_TO_CONCLUSION[avgQual] || '');
 
-      XLSX.utils.sheet_add_aoa(ws, [[avgQual]], { origin: `AO${row + ci * 0}` });
       const resumenCol = ['AO', 'AP', 'AQ', 'AR'][ci];
-      XLSX.utils.sheet_add_aoa(ws, [[avgQual]], { origin: `${resumenCol}${row}` });
+      setCell(ws, `${resumenCol}${row}`, avgQual);
     });
   });
 
