@@ -424,11 +424,12 @@ function escapeXml(s) {
 
 function xmlSetCellText(xml, ref, text) {
   const escaped = escapeXml(text);
+  const cellTag = '<c r="' + ref + '"';
   const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(<f[^>]*>[\\s\\S]*?</f>)<v>[^<]*</v>');
   if (reFormula.test(xml)) {
     return xml.replace(reFormula, '$1$2<v>' + escaped + '</v>');
   }
-  const reShared = new RegExp('(<c r="' + ref + '"[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
+  const reShared = new RegExp('(<' + cellTag.slice(1) + '[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
   if (reShared.test(xml)) {
     return xml.replace(reShared, '$1$2<is><t>' + escaped + '</t></is></c>');
   }
@@ -436,9 +437,13 @@ function xmlSetCellText(xml, ref, text) {
   if (reInline.test(xml)) {
     return xml.replace(reInline, '$1<is><t>' + escaped + '</t></is></c>');
   }
-  const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)(<v>[^<]*</v></c>|<v/>)');
+  const reValue = new RegExp('(<' + cellTag.slice(1) + '[^>]*?)t="(?:s|str)"([^>]*>)(<v>[^<]*</v></c>|<v/>)');
   if (reValue.test(xml)) {
-    return xml.replace(reValue, '$1<is><t>' + escaped + '</t></is></c>');
+    return xml.replace(reValue, '$1$2<is><t>' + escaped + '</t></is></c>');
+  }
+  const reValueNoType = new RegExp('(<c r="' + ref + '"[^>]*>)(<v>[^<]*</v></c>|<v/>)');
+  if (reValueNoType.test(xml)) {
+    return xml.replace(reValueNoType, '$1<is><t>' + escaped + '</t></is></c>');
   }
   const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
   if (reEmpty.test(xml)) {
@@ -460,6 +465,10 @@ function xmlSetValueNoFormula(xml, ref, text) {
   const reInline = new RegExp('(<c r="' + ref + '"[^>]*>)<is><t>[^<]*</t></is></c>');
   if (reInline.test(xml)) {
     return xml.replace(reInline, '$1<v>' + escaped + '</v>');
+  }
+  const reValueType = new RegExp('(<c r="' + ref + '"[^>]*?)t="(?:s|str)"([^>]*>)(?:<v>[^<]*</v>|<v/>|<is>[^<]*</is>)?</c>');
+  if (reValueType.test(xml)) {
+    return xml.replace(reValueType, '$1$2<v>' + escaped + '</v></c>');
   }
   const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<v>[^<]*</v>|<v/>|<is>[^<]*</is>)?</c>');
   if (reValue.test(xml)) {
@@ -548,6 +557,14 @@ export const exportTemplateAuxiliar = async (
 
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
   const maxRows = Math.max(sortedStudents.length, 10);
+
+  console.log('[EXPORT DEBUG] students:', sortedStudents.map(s => `${s.name}(id=${s.id})`));
+  console.log('[EXPORT DEBUG] period:', period, 'type:', typeof period);
+  console.log('[EXPORT DEBUG] evals count:', instrumentEvaluations.length);
+  if (instrumentEvaluations.length > 0) {
+    const ev0 = instrumentEvaluations[0];
+    console.log('[EXPORT DEBUG] first eval:', { studentId: ev0.studentId, student_id: ev0.student_id, student_name: ev0.student_name, competencyId: ev0.competencyId, competency_id: ev0.competency_id, period: ev0.period, periodo: ev0.periodo });
+  }
 
   for (let si = 0; si < maxRows; si++) {
     const row = 11 + si;
