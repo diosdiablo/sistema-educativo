@@ -424,54 +424,54 @@ function escapeXml(s) {
 
 function xmlSetCellText(xml, ref, text) {
   const escaped = escapeXml(text);
+  const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (emptyRe.test(xml)) {
+    return xml.replace(emptyRe, '$1><is><t>' + escaped + '</t></is></c>');
+  }
   const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
   if (cellRe.test(xml)) {
     return xml.replace(cellRe, (_, open, _inner, close) => {
       let tag = open
         .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
-        .replace(/\s*\/\s*$/, '>');
+        .replace(/\s*\/?>\s*$/, '>');
       return tag + '<is><t>' + escaped + '</t></is>' + close;
     });
-  }
-  const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
-  if (emptyRe.test(xml)) {
-    return xml.replace(emptyRe, '$1><is><t>' + escaped + '</t></is></c>');
   }
   return xml;
 }
 
 function xmlSetValueNoFormula(xml, ref, text) {
   const escaped = escapeXml(text);
-  const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
-  if (!cellRe.test(xml)) {
-    const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
-    if (emptyRe.test(xml)) {
-      return xml.replace(emptyRe, '$1><v>' + escaped + '</v></c>');
-    }
-    return xml;
+  const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (emptyRe.test(xml)) {
+    return xml.replace(emptyRe, '$1><v>' + escaped + '</v></c>');
   }
-  return xml.replace(cellRe, (_, open, _inner, close) => {
-    let tag = open
-      .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
-      .replace(/\s*\/\s*$/, '>');
-    return tag + '<v>' + escaped + '</v>' + close;
-  });
-}
-
-function xmlSetCellNum(xml, ref, num) {
-  const val = String(num);
   const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
   if (cellRe.test(xml)) {
     return xml.replace(cellRe, (_, open, _inner, close) => {
       let tag = open
         .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
-        .replace(/\s*\/\s*$/, '>');
-      return tag + '<v>' + val + '</v>' + close;
+        .replace(/\s*\/?>\s*$/, '>');
+      return tag + '<v>' + escaped + '</v>' + close;
     });
   }
+  return xml;
+}
+
+function xmlSetCellNum(xml, ref, num) {
+  const val = String(num);
   const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
   if (emptyRe.test(xml)) {
     return xml.replace(emptyRe, '$1><v>' + val + '</v></c>');
+  }
+  const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
+  if (cellRe.test(xml)) {
+    return xml.replace(cellRe, (_, open, _inner, close) => {
+      let tag = open
+        .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
+        .replace(/\s*\/?>\s*$/, '>');
+      return tag + '<v>' + val + '</v>' + close;
+    });
   }
   return xml;
 }
