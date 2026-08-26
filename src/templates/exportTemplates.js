@@ -631,6 +631,9 @@ export const exportTemplateAuxiliar = async (
 
         xml = xmlSetValueNoFormula(xml, `${col.nivel}${row}`, avgQual);
         xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual ? (QUAL_TO_CONCLUSION[avgQual] || '') : '');
+
+        const summaryCols = ['AO', 'AP', 'AQ', 'AR'];
+        xml = xmlSetValueNoFormula(xml, `${summaryCols[ci]}${row}`, avgQual);
       });
     } else {
       xml = xmlSetCellNum(xml, `A${row}`, si + 1);
@@ -642,6 +645,9 @@ export const exportTemplateAuxiliar = async (
         }
         xml = xmlSetValueNoFormula(xml, `${col.nivel}${row}`, '');
         xml = xmlSetCellText(xml, `${col.conclusion}${row}`, '');
+
+        const summaryCols = ['AO', 'AP', 'AQ', 'AR'];
+        xml = xmlSetValueNoFormula(xml, `${summaryCols[ci]}${row}`, '');
       });
     }
   }
