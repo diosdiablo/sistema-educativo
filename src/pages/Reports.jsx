@@ -219,17 +219,23 @@ const Reports = () => {
     const periodLabels = { 1: 'PRIMERO', 2: 'SEGUNDO', 3: 'TERCERO', 4: 'CUARTO' };
     const periodLabel = periodLabels[selectedPeriodAux] || `BIMESTRE ${selectedPeriodAux}`;
 
-    const workbook = await exportTemplateAuxiliar(
+    const buf = await exportTemplateAuxiliar(
       classStudents, instrumentEvaluations, subjects,
       selectedSubjectAux, selectedPeriodAux,
       selectedClassAux, periodLabel,
       { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado }
     );
-    if (!workbook) {
+    if (!buf) {
       alert('No se pudo generar el reporte');
       return;
     }
-    XLSX.writeFile(workbook, `Registro_Auxiliar_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`);
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Registro_Auxiliar_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (

@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import JSZip from 'jszip';
 
 export const TEMPLATE_CONFIG = {
   attendance: {
@@ -417,16 +418,50 @@ const getQualFromScore = (score) => {
   return 'C';
 };
 
-function setCell(ws, ref, value) {
-  const cell = { v: value, t: 's' };
-  cell.s = (ws[ref] && ws[ref].s) ? ws[ref].s : {};
-  ws[ref] = cell;
+function escapeXml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function setCellNum(ws, ref, value) {
-  const cell = { v: Number(value), t: 'n' };
-  cell.s = (ws[ref] && ws[ref].s) ? ws[ref].s : {};
-  ws[ref] = cell;
+function xmlSetCellText(xml, ref, text) {
+  const escaped = escapeXml(text);
+  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(<f[^>]*>[\\s\\S]*?</f>)<v>[^<]*</v>');
+  if (reFormula.test(xml)) {
+    return xml.replace(reFormula, '$1$2<v>' + escaped + '</v>');
+  }
+  const reShared = new RegExp('(<c r="' + ref + '"[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
+  if (reShared.test(xml)) {
+    return xml.replace(reShared, '$1$2<is><t>' + escaped + '</t></is></c>');
+  }
+  const reInline = new RegExp('(<c r="' + ref + '"[^>]*>)<is><t>[^<]*</t></is></c>');
+  if (reInline.test(xml)) {
+    return xml.replace(reInline, '$1<is><t>' + escaped + '</t></is></c>');
+  }
+  const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)<v>[^<]*</v></c>');
+  if (reValue.test(xml)) {
+    return xml.replace(reValue, '$1<is><t>' + escaped + '</t></is></c>');
+  }
+  const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (reEmpty.test(xml)) {
+    return xml.replace(reEmpty, '$1><is><t>' + escaped + '</t></is></c>');
+  }
+  return xml;
+}
+
+function xmlSetCellNum(xml, ref, num) {
+  const val = String(num);
+  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(<f[^>]*>[\\s\\S]*?</f>)<v>[^<]*</v>');
+  if (reFormula.test(xml)) {
+    return xml.replace(reFormula, '$1$2<v>' + val + '</v>');
+  }
+  const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<v>[^<]*</v>|<is>[^<]*</is>)?</c>');
+  if (reValue.test(xml)) {
+    return xml.replace(reValue, '$1<v>' + val + '</v></c>');
+  }
+  const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (reEmpty.test(xml)) {
+    return xml.replace(reEmpty, '$1><v>' + val + '</v></c>');
+  }
+  return xml;
 }
 
 export const exportTemplateAuxiliar = async (
@@ -438,102 +473,152 @@ export const exportTemplateAuxiliar = async (
 
   const resp = await fetch('/templates/plantilla-registro-auxiliar.xlsx');
   const buf = await resp.arrayBuffer();
-  const wb = XLSX.read(buf, { type: 'array' });
-  const ws = wb.Sheets[wb.SheetNames[0]];
+  const zip = await JSZip.loadAsync(buf);
+  let xml = await zip.file('xl/worksheets/sheet1.xml').async('string');
 
   const iep = config.iep || 'IEP';
   const docente = config.docente || '';
-  const seccion = config.seccion || className || '';
+  const seccion = config.seccion || '';
   const grado = config.grado || '';
   const trimestre = periodName || `Bimestre ${period}`;
   const year = new Date().getFullYear();
 
-  setCell(ws, 'M3', iep);
-  setCell(ws, 'M4', subject.name.toUpperCase());
-  setCell(ws, 'M5', docente);
-  setCell(ws, 'AH4', grado.toUpperCase());
-  setCell(ws, 'AH5', seccion.toUpperCase());
-  setCell(ws, 'AH3', trimestre.toUpperCase());
+  xml = xmlSetCellText(xml, 'M3', iep);
+  xml = xmlSetCellText(xml, 'M4', subject.name.toUpperCase());
+  xml = xmlSetCellText(xml, 'M5', docente);
+  xml = xmlSetCellText(xml, 'AH3', trimestre.toUpperCase());
+  xml = xmlSetCellText(xml, 'AH4', grado.toUpperCase());
+  xml = xmlSetCellText(xml, 'AH5', seccion.toUpperCase());
 
-  if (ws['D1'] && ws['D1'].v) {
-    ws['D1'].v = ws['D1'].v.replace(/20\d\d/, String(year));
+  const newTitle = `REGISTRO AUXILIAR DE EVALUACIÓN ${year} - SECUNDARIA`;
+  const titleRe = /(<c r="D1"[^>]*>)(?:<v>[^<]*<\/v>|<is>[^<]*<\/is>)?<\/c>/;
+  if (titleRe.test(xml)) {
+    xml = xml.replace(titleRe, '$1><is><t>' + escapeXml(newTitle) + '</t></is></c>');
   }
 
   const competencies = (subject.competencies || []).slice(0, 4);
   const compCols = [
-    { criteria: ['D', 'E', 'F', 'G', 'H', 'I', 'J'], nivel: 'K', conclusion: 'L' },
-    { criteria: ['M', 'N', 'O', 'P', 'Q', 'R', 'S'], nivel: 'T', conclusion: 'U' },
-    { criteria: ['V', 'W', 'X', 'Y', 'Z', 'AA', 'AB'], nivel: 'AC', conclusion: 'AD' },
-    { criteria: ['AE', 'AF', 'AG', 'AH_c', 'AI', 'AJ', 'AK'], nivel: 'AL', conclusion: 'AM' },
+    { criteria: ['D', 'E', 'F', 'G'], nivel: 'K', conclusion: 'L' },
+    { criteria: ['M', 'N', 'O', 'P'], nivel: 'T', conclusion: 'U' },
+    { criteria: ['V', 'W', 'X', 'Y'], nivel: 'AC', conclusion: 'AD' },
+    { criteria: ['AE', 'AF', 'AG', 'AH'], nivel: 'AL', conclusion: 'AM' },
   ];
 
   competencies.forEach((comp, ci) => {
     const col = compCols[ci];
-    setCell(ws, `${col.criteria[0]}8`, comp.name);
-
-    for (let c = 0; c < 7; c++) {
-      setCell(ws, `${col.criteria[c]}10`, `Criterio ${c + 1}`);
+    xml = xmlSetCellText(xml, `${col.criteria[0]}8`, comp.name);
+    for (let c = 0; c < 4; c++) {
+      xml = xmlSetCellText(xml, `${col.criteria[c]}10`, `Criterio ${c + 1}`);
     }
   });
 
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
-  sortedStudents.forEach((student, si) => {
+  const maxRows = Math.max(sortedStudents.length, 10);
+
+  for (let si = 0; si < maxRows; si++) {
     const row = 11 + si;
-    setCellNum(ws, `A${row}`, si + 1);
-    setCell(ws, `B${row}`, student.name.toUpperCase());
+    const rowRe = new RegExp('<row r="' + row + '"[^>]*>[\\s\\S]*?</row>');
 
-    competencies.forEach((comp, ci) => {
-      const col = compCols[ci];
-
-      const stdEvals = instrumentEvaluations.filter(ev => {
-        const cid = ev.competencyId || ev.competency_id;
-        if (cid !== comp.id) return false;
-        if (ev.period !== period) return false;
-        const idMatch = ev.studentId === student.id || ev.student_id === student.id;
-        const nameMatch = ev.student_name && ev.student_name === student.name;
-        return idMatch || nameMatch;
-      });
-
-      const groupedByInstrument = {};
-      stdEvals.forEach(ev => {
-        const key = ev.activityName || ev.instrumentId;
-        if (!groupedByInstrument[key]) groupedByInstrument[key] = ev;
-      });
-      const instruments = Object.values(groupedByInstrument);
-
-      const maxC = Math.min(instruments.length, 7);
-      const quals = [];
-      for (let c = 0; c < 7; c++) {
-        if (c < maxC) {
-          const ev = instruments[c];
-          const qual = ev ? (ev.qualitative || getQualFromScore(ev.score) || '-') : '-';
-          quals.push(qual);
-          setCell(ws, `${col.criteria[c]}${row}`, qual);
+    if (!rowRe.test(xml)) {
+      const newRowXml = `<row r="${row}" spans="1:128" ht="49.95" customHeight="1" thickTop="1" thickBot="1" x14ac:dyDescent="0.35">` +
+        `<c r="A${row}" s="6"/><c r="B${row}" s="72"/><c r="C${row}" s="35"/>` +
+        `<c r="D${row}" s="7"/><c r="E${row}" s="8"/><c r="F${row}" s="8"/><c r="G${row}" s="8"/>` +
+        `<c r="H${row}" s="8"/><c r="I${row}" s="8"/><c r="J${row}" s="9"/>` +
+        `<c r="K${row}" s="60"/><c r="L${row}" s="67"/>` +
+        `<c r="M${row}" s="7"/><c r="N${row}" s="8"/><c r="O${row}" s="8"/><c r="P${row}" s="8"/>` +
+        `<c r="Q${row}" s="8"/><c r="R${row}" s="8"/><c r="S${row}" s="9"/>` +
+        `<c r="T${row}" s="60"/><c r="U${row}" s="67"/>` +
+        `<c r="V${row}" s="7"/><c r="W${row}" s="8"/><c r="X${row}" s="8"/><c r="Y${row}" s="8"/>` +
+        `<c r="Z${row}" s="8"/><c r="AA${row}" s="8"/><c r="AB${row}" s="9"/>` +
+        `<c r="AC${row}" s="60"/><c r="AD${row}" s="67"/>` +
+        `<c r="AE${row}" s="7"/><c r="AF${row}" s="8"/><c r="AG${row}" s="8"/><c r="AH${row}" s="8"/>` +
+        `<c r="AI${row}" s="8"/><c r="AJ${row}" s="8"/><c r="AK${row}" s="9"/>` +
+        `<c r="AL${row}" s="60"/><c r="AM${row}" s="67"/>` +
+        `<c r="AN${row}" s="2"/>` +
+        `<c r="AO${row}" s="34"/><c r="AP${row}" s="34"/><c r="AQ${row}" s="34"/><c r="AR${row}" s="33"/>` +
+        `</row>`;
+      const prevRowRe = new RegExp('</row>\\s*(<row r="' + (row + 1) + '"|</sheetData>)');
+      if (prevRowRe.test(xml)) {
+        xml = xml.replace(prevRowRe, '</row>\n' + newRowXml + '\n$1');
+      } else {
+        const insertRef = new RegExp('</row>\\s*(<row r="' + (row - 1) + '")');
+        if (insertRef.test(xml)) {
+          xml = xml.replace(insertRef, '</row>\n' + newRowXml + '\n$1');
         } else {
-          setCell(ws, `${col.criteria[c]}${row}`, '-');
+          xml = xml.replace(/<\/sheetData>/, newRowXml + '\n</sheetData>');
         }
       }
+    }
 
-      const validQuals = quals.filter(q => q && q !== '-');
-      let avgQual = '-';
-      if (validQuals.length > 0) {
-        const nums = validQuals.map(q => QUAL_TO_NUMBER[q]).filter(n => n);
-        if (nums.length > 0) {
-          const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-          if (avg >= 3.5) avgQual = 'AD';
-          else if (avg >= 2.5) avgQual = 'A';
-          else if (avg >= 1.5) avgQual = 'B';
-          else avgQual = 'C';
+    if (si < sortedStudents.length) {
+      const student = sortedStudents[si];
+      xml = xmlSetCellNum(xml, `A${row}`, si + 1);
+      xml = xmlSetCellText(xml, `B${row}`, student.name.toUpperCase());
+
+      competencies.forEach((comp, ci) => {
+        const col = compCols[ci];
+
+        const stdEvals = instrumentEvaluations.filter(ev => {
+          const cid = ev.competencyId || ev.competency_id;
+          if (cid !== comp.id) return false;
+          const evPeriod = ev.period !== undefined ? ev.period : ev.periodo;
+          if (String(evPeriod) !== String(period)) return false;
+          const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+          const nameMatch = ev.student_name && ev.student_name === student.name;
+          return idMatch || nameMatch;
+        });
+
+        const groupedByInstrument = {};
+        stdEvals.forEach(ev => {
+          const key = ev.activityName || ev.instrumentId;
+          if (!groupedByInstrument[key]) groupedByInstrument[key] = ev;
+        });
+        const instrs = Object.values(groupedByInstrument);
+
+        const quals = [];
+        for (let c = 0; c < 4; c++) {
+          if (c < instrs.length) {
+            const ev = instrs[c];
+            const qual = ev ? (ev.qualitative || getQualFromScore(ev.score) || '') : '';
+            quals.push(qual);
+            xml = xmlSetCellText(xml, `${col.criteria[c]}${row}`, qual || '');
+          } else {
+            xml = xmlSetCellText(xml, `${col.criteria[c]}${row}`, '');
+          }
         }
-      }
 
-      setCell(ws, `${col.nivel}${row}`, avgQual);
-      setCell(ws, `${col.conclusion}${row}`, QUAL_TO_CONCLUSION[avgQual] || '');
+        const validQuals = quals.filter(q => q && q !== '');
+        let avgQual = '';
+        if (validQuals.length > 0) {
+          const nums = validQuals.map(q => QUAL_TO_NUMBER[q]).filter(n => n);
+          if (nums.length > 0) {
+            const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+            if (avg >= 3.5) avgQual = 'AD';
+            else if (avg >= 2.5) avgQual = 'A';
+            else if (avg >= 1.5) avgQual = 'B';
+            else avgQual = 'C';
+          }
+        }
 
-      const resumenCol = ['AO', 'AP', 'AQ', 'AR'][ci];
-      setCell(ws, `${resumenCol}${row}`, avgQual);
-    });
-  });
+        xml = xmlSetCellText(xml, `${col.nivel}${row}`, avgQual);
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual ? (QUAL_TO_CONCLUSION[avgQual] || '') : '');
+      });
+    } else {
+      xml = xmlSetCellNum(xml, `A${row}`, si + 1);
+      xml = xmlSetCellText(xml, `B${row}`, '');
+      competencies.forEach((comp, ci) => {
+        const col = compCols[ci];
+        for (let c = 0; c < 4; c++) {
+          xml = xmlSetCellText(xml, `${col.criteria[c]}${row}`, '');
+        }
+        xml = xmlSetCellText(xml, `${col.nivel}${row}`, '');
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, '');
+      });
+    }
+  }
 
-  return wb;
+  zip.file('xl/worksheets/sheet1.xml', xml);
+
+  const outBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
+  return outBuf;
 };
