@@ -424,76 +424,54 @@ function escapeXml(s) {
 
 function xmlSetCellText(xml, ref, text) {
   const escaped = escapeXml(text);
-  const cellTag = '<c r="' + ref + '"';
-  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(<f[^>]*>[\\s\\S]*?</f>)<v>[^<]*</v>');
-  if (reFormula.test(xml)) {
-    return xml.replace(reFormula, '$1$2<v>' + escaped + '</v>');
+  const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
+  if (cellRe.test(xml)) {
+    return xml.replace(cellRe, (_, open, _inner, close) => {
+      let tag = open
+        .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
+        .replace(/\s*\/\s*$/, '>');
+      return tag + '<is><t>' + escaped + '</t></is>' + close;
+    });
   }
-  const reShared = new RegExp('(<' + cellTag.slice(1) + '[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
-  if (reShared.test(xml)) {
-    return xml.replace(reShared, '$1$2<is><t>' + escaped + '</t></is></c>');
-  }
-  const reInline = new RegExp('(<c r="' + ref + '"[^>]*>)<is><t>[^<]*</t></is></c>');
-  if (reInline.test(xml)) {
-    return xml.replace(reInline, '$1<is><t>' + escaped + '</t></is></c>');
-  }
-  const reValue = new RegExp('(<' + cellTag.slice(1) + '[^>]*?)t="(?:s|str)"([^>]*>)(<v>[^<]*</v></c>|<v/>)');
-  if (reValue.test(xml)) {
-    return xml.replace(reValue, '$1$2<is><t>' + escaped + '</t></is></c>');
-  }
-  const reValueNoType = new RegExp('(<c r="' + ref + '"[^>]*>)(<v>[^<]*</v></c>|<v/>)');
-  if (reValueNoType.test(xml)) {
-    return xml.replace(reValueNoType, '$1<is><t>' + escaped + '</t></is></c>');
-  }
-  const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
-  if (reEmpty.test(xml)) {
-    return xml.replace(reEmpty, '$1><is><t>' + escaped + '</t></is></c>');
+  const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (emptyRe.test(xml)) {
+    return xml.replace(emptyRe, '$1><is><t>' + escaped + '</t></is></c>');
   }
   return xml;
 }
 
 function xmlSetValueNoFormula(xml, ref, text) {
   const escaped = escapeXml(text);
-  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<f[^>]*>[\\s\\S]*?</f>)?<v>[^<]*</v>');
-  if (reFormula.test(xml)) {
-    return xml.replace(reFormula, '$1<v>' + escaped + '</v>');
+  const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
+  if (!cellRe.test(xml)) {
+    const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+    if (emptyRe.test(xml)) {
+      return xml.replace(emptyRe, '$1><v>' + escaped + '</v></c>');
+    }
+    return xml;
   }
-  const reShared = new RegExp('(<c r="' + ref + '"[^>]*?)t="s"([^>]*>)<v>\\d+</v></c>');
-  if (reShared.test(xml)) {
-    return xml.replace(reShared, '$1$2<v>' + escaped + '</v>');
-  }
-  const reInline = new RegExp('(<c r="' + ref + '"[^>]*>)<is><t>[^<]*</t></is></c>');
-  if (reInline.test(xml)) {
-    return xml.replace(reInline, '$1<v>' + escaped + '</v>');
-  }
-  const reValueType = new RegExp('(<c r="' + ref + '"[^>]*?)t="(?:s|str)"([^>]*>)(?:<v>[^<]*</v>|<v/>|<is>[^<]*</is>)?</c>');
-  if (reValueType.test(xml)) {
-    return xml.replace(reValueType, '$1$2<v>' + escaped + '</v></c>');
-  }
-  const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<v>[^<]*</v>|<v/>|<is>[^<]*</is>)?</c>');
-  if (reValue.test(xml)) {
-    return xml.replace(reValue, '$1<v>' + escaped + '</v></c>');
-  }
-  const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
-  if (reEmpty.test(xml)) {
-    return xml.replace(reEmpty, '$1><v>' + escaped + '</v></c>');
-  }
-  return xml;
+  return xml.replace(cellRe, (_, open, _inner, close) => {
+    let tag = open
+      .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
+      .replace(/\s*\/\s*$/, '>');
+    return tag + '<v>' + escaped + '</v>' + close;
+  });
 }
 
 function xmlSetCellNum(xml, ref, num) {
   const val = String(num);
-  const reFormula = new RegExp('(<c r="' + ref + '"[^>]*>)(<f[^>]*>[\\s\\S]*?</f>)<v>[^<]*</v>');
-  if (reFormula.test(xml)) {
-    return xml.replace(reFormula, '$1$2<v>' + val + '</v>');
+  const cellRe = new RegExp('(<c r="' + ref + '"[^>]*?>)([\\s\\S]*?)(</c>)');
+  if (cellRe.test(xml)) {
+    return xml.replace(cellRe, (_, open, _inner, close) => {
+      let tag = open
+        .replace(/\st="(?:s|str|inlineStr|e)"/g, '')
+        .replace(/\s*\/\s*$/, '>');
+      return tag + '<v>' + val + '</v>' + close;
+    });
   }
-  const reValue = new RegExp('(<c r="' + ref + '"[^>]*>)(?:<v>[^<]*</v>|<v/>|<is>[^<]*</is>)?</c>');
-  if (reValue.test(xml)) {
-    return xml.replace(reValue, '$1<v>' + val + '</v></c>');
-  }
-  const reEmpty = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
-  if (reEmpty.test(xml)) {
-    return xml.replace(reEmpty, '$1><v>' + val + '</v></c>');
+  const emptyRe = new RegExp('(<c r="' + ref + '"[^>]*?)/>');
+  if (emptyRe.test(xml)) {
+    return xml.replace(emptyRe, '$1><v>' + val + '</v></c>');
   }
   return xml;
 }
