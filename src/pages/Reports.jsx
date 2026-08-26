@@ -33,13 +33,7 @@ const Reports = () => {
     const cleanClass = (s.classId || '').trim().toLowerCase();
     if (cleanGrade === cleanSelected || cleanClass === cleanSelected) return true;
     const matchedClass = classes.find(c => c.name.trim().toLowerCase() === cleanSelected);
-    if (!matchedClass) return false;
-    if (cleanClass === matchedClass.id.toLowerCase()) return true;
-    const classParts = matchedClass.name.trim().toLowerCase().split(/\s+/);
-    const gradeSearch = classParts.slice(0, -1).join(' ');
-    const sectionSearch = classParts[classParts.length - 1];
-    if (gradeSearch && cleanGrade.includes(gradeSearch) && (cleanClass.includes(sectionSearch) || cleanGrade.includes(sectionSearch))) return true;
-    if (gradeSearch && cleanGrade === gradeSearch) return true;
+    if (matchedClass && cleanClass === matchedClass.id.toLowerCase()) return true;
     return false;
   };
 
