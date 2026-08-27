@@ -678,6 +678,7 @@ export const exportRegNotas = async (
   const buf = await resp.arrayBuffer();
   const zip = await JSZip.loadAsync(buf);
   let xml = await zip.file('xl/worksheets/sheet3.xml').async('string');
+  let xml1 = await zip.file('xl/worksheets/sheet1.xml').async('string');
 
   const competencies = (subject.competencies || []).slice(0, 3);
   const compCols = [
@@ -697,6 +698,13 @@ export const exportRegNotas = async (
     xml = xmlSetCellText(xml, `${col.nl}2`, 'NL');
     xml = xmlSetCellText(xml, `${col.conclusion}1`, String(ci + 1).padStart(2, '0'));
     xml = xmlSetCellText(xml, `${col.conclusion}2`, 'Conclusión descriptiva de la competencia');
+  });
+
+  const legendCompCodes = ['01', '02', '03'];
+  competencies.forEach((comp, ci) => {
+    if (ci < 3) {
+      xml = xmlSetCellText(xml, `B${37 + ci}`, `${legendCompCodes[ci]} = ${comp.name}`);
+    }
   });
 
   xml = xml.replace(/(<row r="([3-9]|1\d|2\d|3[0-2])"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, _rowNum, content, close) => {
@@ -794,6 +802,16 @@ export const exportRegNotas = async (
   }
 
   zip.file('xl/worksheets/sheet3.xml', xml);
+
+  const parts = (className || '').split(' ');
+  const grado = parts.length > 1 ? parts.slice(0, -1).join(' ').toUpperCase() : (parts[0] || '').toUpperCase();
+  const seccion = parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '';
+
+  xml1 = xmlSetCellText(xml1, 'C14', subject.name.toUpperCase());
+  xml1 = xmlSetCellText(xml1, 'H10', grado);
+  xml1 = xmlSetCellText(xml1, 'J10', seccion);
+
+  zip.file('xl/worksheets/sheet1.xml', xml1);
 
   let wbXml = await zip.file('xl/workbook.xml').async('string');
   const sheetName = `REGISTRO FINAL ${subject.name} ${className}`.toUpperCase();
