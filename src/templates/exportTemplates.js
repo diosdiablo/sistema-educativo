@@ -663,6 +663,14 @@ export const exportTemplateAuxiliar = async (
 
   zip.file('xl/worksheets/sheet1.xml', xml);
 
+  let wbXml = await zip.file('xl/workbook.xml').async('string');
+  const sheetName = `REGISTRO AUXILIAR ${subject.name} ${className}`.toUpperCase();
+  wbXml = wbXml.replace(
+    /<sheet name="[^"]*"[^>]*>/,
+    `<sheet name="${escapeXml(sheetName)}" sheetId="1" r:id="rId1"/>`
+  );
+  zip.file('xl/workbook.xml', wbXml);
+
   const outBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
   return outBuf;
 };
