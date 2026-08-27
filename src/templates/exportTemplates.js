@@ -699,7 +699,7 @@ export const exportRegNotas = async (
     xml = xmlSetCellText(xml, `${col.conclusion}2`, 'Conclusión descriptiva de la competencia');
   });
 
-  xml = xml.replace(/(<row r="(3[0-2]|[12]?\d)"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, _rowNum, content, close) => {
+  xml = xml.replace(/(<row r="([3-9]|1\d|2\d|3[0-2])"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, _rowNum, content, close) => {
     return open + content.replace(/<v>[^<]*<\/v>/g, '').replace(/<is><t>[^<]*<\/t><\/is>/g, '<is><t></t></is>') + close;
   });
 
