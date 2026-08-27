@@ -712,9 +712,8 @@ export const exportRegNotas = async (
   headerRow1 += `<c r="B1" s="3"><is><t>Cód. Estudiante</t></is></c>`;
   headerRow1 += `<c r="C1" s="3"><is><t>Nombres</t></is></c>`;
   competencies.forEach((comp, ci) => {
-    const code = String(ci + 1).padStart(2, '0');
-    headerRow1 += `<c r="${compCols[ci].nl}1" s="2"><is><t>${code}</t></is></c>`;
-    headerRow1 += `<c r="${compCols[ci].conclusion}1" s="3"><is><t>${code}</t></is></c>`;
+    headerRow1 += `<c r="${compCols[ci].nl}1" s="39"><is><t>NL</t></is></c>`;
+    headerRow1 += `<c r="${compCols[ci].conclusion}1" s="3"><is><t>${String(ci + 1).padStart(2, '0')}</t></is></c>`;
   });
   headerRow1 += `</row>`;
   rowsXml += headerRow1 + '\n';
@@ -722,8 +721,7 @@ export const exportRegNotas = async (
   let headerRow2 = `<row r="2" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
   headerRow2 += `<c r="A2" s="3"/><c r="B2" s="3"/><c r="C2" s="3"/>`;
   competencies.forEach((comp, ci) => {
-    headerRow2 += `<c r="${compCols[ci].nl}2" s="39"><is><t>NL</t></is></c>`;
-    headerRow2 += `<c r="${compCols[ci].conclusion}2" s="38"><is><t>Conclusión descriptiva de la competencia</t></is></c>`;
+    headerRow2 += `<c r="${compCols[ci].nl}2" s="3"/><c r="${compCols[ci].conclusion}2" s="38"><is><t>Conclusión descriptiva de la competencia</t></is></c>`;
   });
   headerRow2 += `</row>`;
   rowsXml += headerRow2 + '\n';
@@ -823,10 +821,11 @@ ${competencies.map((_, ci) => {
 </cols>
 <sheetData>
 ${rowsXml}</sheetData>
-<mergeCells count="3">
+<mergeCells count="${3 + numComp}">
 <mergeCell ref="A1:A2"/>
 <mergeCell ref="B1:B2"/>
 <mergeCell ref="C1:C2"/>
+${competencies.map((_, ci) => `<mergeCell ref="${compCols[ci].nl}1:${compCols[ci].nl}2"/>`).join('\n')}
 </mergeCells>
 </worksheet>`;
 
