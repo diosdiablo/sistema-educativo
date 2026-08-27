@@ -12,6 +12,27 @@ export default function PlanningDocuments() {
   const [docFiles, setDocFiles] = useState({});
   const [docFileLoading, setDocFileLoading] = useState(false);
 
+  const blobUrls = useMemo(() => ({}), []);
+
+  const dataUrlToBlobUrl = (dataUrl) => {
+    if (!dataUrl) return null;
+    if (blobUrls[dataUrl]) return blobUrls[dataUrl];
+    try {
+      const [meta, b64] = dataUrl.split(',');
+      const mime = (meta.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: mime });
+      const url = URL.createObjectURL(blob);
+      blobUrls[dataUrl] = url;
+      return url;
+    } catch (e) {
+      console.error('Error converting data URL to blob URL:', e);
+      return dataUrl;
+    }
+  };
+
   const openDoc = async (doc) => {
     const cached = doc.fileData || docFiles[doc.id];
     if (cached) { setViewingDoc({ ...doc, fileData: cached }); return; }
@@ -37,7 +58,7 @@ export default function PlanningDocuments() {
       }
       if (!fd) return;
       const a = document.createElement('a');
-      a.href = fd;
+      a.href = fd.startsWith('data:') ? dataUrlToBlobUrl(fd) : fd;
       a.download = doc.fileName || 'documento.pdf';
       document.body.appendChild(a);
       a.click();
@@ -1292,9 +1313,9 @@ export default function PlanningDocuments() {
               </div>
             </div>
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-muted)' }}>
-              {(viewingDoc.fileData && (viewingDoc.fileName?.toLowerCase().endsWith('.pdf'))) ? (
+              {viewingDoc.fileData && viewingDoc.fileName?.toLowerCase().endsWith('.pdf') ? (
                 <iframe
-                  src={viewingDoc.fileData}
+                  src={dataUrlToBlobUrl(viewingDoc.fileData)}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   title={viewingDoc.title}
                 />
