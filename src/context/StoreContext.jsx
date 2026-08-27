@@ -311,11 +311,14 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
       if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => normalizeDocSections({
         ...d,
         fileData: d.file_data || d.fileData,
+        fileName: d.file_name || d.fileName,
         uploadedBy: d.uploaded_by,
         uploadedById: d.uploaded_by_id
       })));
       if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => normalizeDocSections({
         ...s,
+        fileData: s.file_data || s.fileData,
+        fileName: s.file_name || s.fileName,
         uploadedBy: s.uploaded_by,
         uploadedById: s.uploaded_by_id
       })));
@@ -456,6 +459,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'planning_documents' }, handleUpsert(setPlanningDocuments, (d) => normalizeDocSections({
       ...d,
       fileData: d.file_data || d.fileData,
+      fileName: d.file_name || d.fileName,
       uploadedBy: d.uploaded_by,
       uploadedById: d.uploaded_by_id,
     })));
@@ -463,6 +467,8 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     // -- learning_sessions --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'learning_sessions' }, handleUpsert(setLearningSessions, (d) => normalizeDocSections({
       ...d,
+      fileData: d.file_data || d.fileData,
+      fileName: d.file_name || d.fileName,
       uploadedBy: d.uploaded_by,
       uploadedById: d.uploaded_by_id,
     })));
@@ -723,11 +729,14 @@ if (studentsData?.length > 0) {
       if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => normalizeDocSections({
         ...d,
         fileData: d.file_data || d.fileData,
+        fileName: d.file_name || d.fileName,
         uploadedBy: d.uploaded_by,
         uploadedById: d.uploaded_by_id
       })));
       if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => normalizeDocSections({
         ...s,
+        fileData: s.file_data || s.fileData,
+        fileName: s.file_name || s.fileName,
         uploadedBy: s.uploaded_by,
         uploadedById: s.uploaded_by_id
       })));

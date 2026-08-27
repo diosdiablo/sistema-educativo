@@ -33,6 +33,13 @@ export default function PlanningDocuments() {
     }
   };
 
+  const isPdf = (doc) => {
+    const name = (doc.fileName || doc.file_name || '').toLowerCase();
+    if (name.endsWith('.pdf')) return true;
+    if (name) return false;
+    return String(doc.fileData || '').startsWith('data:application/pdf');
+  };
+
   const openDoc = async (doc) => {
     const cached = doc.fileData || docFiles[doc.id];
     if (cached) { setViewingDoc({ ...doc, fileData: cached }); return; }
@@ -1313,7 +1320,7 @@ export default function PlanningDocuments() {
               </div>
             </div>
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-muted)' }}>
-              {viewingDoc.fileData && viewingDoc.fileName?.toLowerCase().endsWith('.pdf') ? (
+              {viewingDoc.fileData && isPdf(viewingDoc) ? (
                 <iframe
                   src={dataUrlToBlobUrl(viewingDoc.fileData)}
                   style={{ width: '100%', height: '100%', border: 'none' }}
