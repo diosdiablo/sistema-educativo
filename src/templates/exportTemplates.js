@@ -776,14 +776,12 @@ export const exportRegNotas = async (
           }
         }
 
-        const CONCLUSION_C = [
-          'No logra indagar mediante métodos científicos de manera autónoma.',
-          'No logra explicar el mundo físico de manera autónoma.',
-          'No logra diseñar soluciones tecnológicas de manera autónoma.'
-        ];
+        const conclusionC = avgQual === 'C' && comp?.name
+          ? `No logra ${comp.name.toLowerCase()} de manera autónoma.`
+          : '';
 
         xml = xmlSetCellText(xml, `${col.nl}${row}`, avgQual);
-        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual === 'C' ? (CONCLUSION_C[ci] || '') : '');
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, conclusionC);
       });
     } else {
       xml = xmlSetCellText(xml, `C${row}`, '');
