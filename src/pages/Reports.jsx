@@ -126,88 +126,35 @@ const Reports = () => {
     const subject = subjects.find(s => s.id === selectedSubjectFinal);
     if (!subject) return;
 
-    const headerRows = [
-      ['REGISTRO FINAL'],
-      [''],
-      ['Área:', subject.name],
-      ['Grado y Sección:', selectedClassFinal],
-      ['Docente:', currentUser?.name || 'Administrador'],
-      ['Periodo:', `Bimestre ${selectedPeriodFinal}`],
-      ['']
-    ];
-
-    const dataHeaders = ['N°', 'Estudiante'];
-    subject.competencies.forEach(comp => {
-      dataHeaders.push(comp.name);
-      dataHeaders.push('Conclusión Descriptiva');
-    });
-
-    const studentData = classStudents.map((student, index) => {
-      const row = [index + 1, student.name];
-      
-      const studentEvals = instrumentEvaluations.filter(ev => {
-        if (ev.period !== selectedPeriodFinal) return false;
-        const idMatch = ev.studentId === student.id || ev.student_id === student.id;
-        const nameMatch = ev.student_name && ev.student_name === student.name;
-        return idMatch || nameMatch;
-      });
-      
-      subject.competencies.forEach(comp => {
-        const compEvals = studentEvals.filter(ev => {
-          const cid = ev.competencyId || ev.competency_id;
-          return cid === comp.id || cid === '__all__';
-        });
-        const scores = compEvals.map(ev => ev.score).filter(s => typeof s === 'number');
-        
-        if (scores.length > 0) {
-          row.push(getAverageQualitative(scores));
-        } else {
-          const qualScores = compEvals.map(ev => ev.qualitative).filter(q => q);
-          const grade = qualScores.length > 0 
-            ? (qualScores.length === 1 ? qualScores[0] : getAverageQualitative(qualScores)) 
-            : '-';
-          row.push(grade);
-        }
-        
-        row.push('-');
-      });
-      return row;
-    });
-
-    const template = await loadTemplate('reporte_final.xlsx');
-    let workbook;
-    
-    if (template) {
-      const sheetName = template.SheetNames[0];
-      const worksheet = template.Sheets[sheetName];
-      
-      const worksheetData = [...headerRows, dataHeaders, ...studentData];
-      const newWorksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-      
-      workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, newWorksheet, 'Reporte Final');
-      
-      const wscols = [{ wch: 5 }, { wch: 40 }];
-      subject.competencies.forEach(() => {
-        wscols.push({ wch: 15 });
-        wscols.push({ wch: 50 });
-      });
-      newWorksheet['!cols'] = wscols;
-    } else {
-      const worksheetData = [...headerRows, dataHeaders, ...studentData];
-      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-      workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Final');
-
-      const wscols = [{ wch: 5 }, { wch: 40 }];
-      subject.competencies.forEach(() => {
-        wscols.push({ wch: 15 });
-        wscols.push({ wch: 50 });
-      });
-      worksheet['!cols'] = wscols;
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
     }
 
-    XLSX.writeFile(workbook, `Reporte_Final_${subject.name.replace(/ /g, '_')}_${selectedClassFinal.replace(/ /g, '_')}_B${selectedPeriodFinal}.xlsx`);
+    const parts = (selectedClassFinal || '').split(' ');
+    const grado = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || '';
+    const seccion = parts.length > 1 ? parts[parts.length - 1] : '';
+
+    const periodLabels = { 1: 'BIMESTRE 1', 2: 'BIMESTRE 2', 3: 'BIMESTRE 3', 4: 'BIMESTRE 4' };
+    const periodLabel = periodLabels[selectedPeriodFinal] || `BIMESTRE ${selectedPeriodFinal}`;
+
+    const buf = await exportRegNotas(
+      classStudents, instrumentEvaluations, subjects,
+      selectedSubjectFinal, selectedPeriodFinal,
+      selectedClassFinal, periodLabel,
+      { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado }
+    );
+    if (!buf) {
+      alert('No se pudo generar el reporte');
+      return;
+    }
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RegNotas_${subject.name}_${selectedClassFinal.replace(/ /g, '_')}_B${selectedPeriodFinal}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const exportDetailedGrades = async () => {
@@ -250,50 +197,6 @@ const Reports = () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = `Registro_Auxiliar_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportRegNotasHandler = async () => {
-    if (!selectedClassAux || !selectedSubjectAux) {
-      alert('Por favor selecciona un grado/sección y un área');
-      return;
-    }
-
-    const classStudents = students
-      .filter(s => cleanClassFilter(s, selectedClassAux))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    
-    const subject = subjects.find(s => s.id === selectedSubjectAux);
-    if (!subject) return;
-
-    if (classStudents.length === 0) {
-      alert('No hay estudiantes en esta sección');
-      return;
-    }
-
-    const parts = (selectedClassAux || '').split(' ');
-    const grado = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || '';
-    const seccion = parts.length > 1 ? parts[parts.length - 1] : '';
-
-    const periodLabels = { 1: 'BIMESTRE 1', 2: 'BIMESTRE 2', 3: 'BIMESTRE 3', 4: 'BIMESTRE 4' };
-    const periodLabel = periodLabels[selectedPeriodAux] || `BIMESTRE ${selectedPeriodAux}`;
-
-    const buf = await exportRegNotas(
-      classStudents, instrumentEvaluations, subjects,
-      selectedSubjectAux, selectedPeriodAux,
-      selectedClassAux, periodLabel,
-      { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado }
-    );
-    if (!buf) {
-      alert('No se pudo generar el reporte');
-      return;
-    }
-    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `RegNotas_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -460,22 +363,6 @@ const Reports = () => {
             >
               <Download size={20} />
               Exportar Registro Auxiliar
-            </button>
-
-            <button 
-              onClick={exportRegNotasHandler}
-              className="btn-primary"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: '8px', 
-                padding: '0.9rem',
-                marginTop: '0.75rem'
-              }}
-            >
-              <Download size={20} />
-              Exportar Registro de Notas (Oficial)
             </button>
           </div>
 
