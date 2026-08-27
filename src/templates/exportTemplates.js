@@ -782,27 +782,13 @@ export const exportRegNotas = async (
 
   zip.file('xl/worksheets/sheet3.xml', xml);
 
-  zip.remove('xl/worksheets/sheet1.xml');
-
   let wbXml = await zip.file('xl/workbook.xml').async('string');
   const sheetName = `REGISTRO FINAL ${subject.name} ${className}`.toUpperCase();
   wbXml = wbXml.replace(
     /<sheet name="0004-CIENC TEC"[^>]*>/,
     `<sheet name="${escapeXml(sheetName)}" sheetId="6" r:id="rId3">`
   );
-  wbXml = wbXml.replace(
-    /<sheet name="Generalidades"[^>]*\/>/g,
-    ''
-  );
   zip.file('xl/workbook.xml', wbXml);
-
-  let relsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
-  relsXml = relsXml.replace(/<Relationship[^>]*Id="rId1"[^>]*\/>\s*/g, '');
-  zip.file('xl/_rels/workbook.xml.rels', relsXml);
-
-  let ctXml = await zip.file('[Content_Types].xml').async('string');
-  ctXml = ctXml.replace(/<Override PartName="\/xl\/worksheets\/sheet1.xml"[^>]*\/>\s*/g, '');
-  zip.file('[Content_Types].xml', ctXml);
 
   const outBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
   return outBuf;
