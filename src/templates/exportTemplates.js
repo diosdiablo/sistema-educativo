@@ -720,9 +720,7 @@ export const exportRegNotas = async (
   rowsXml += headerRow1 + '\n';
 
   let headerRow2 = `<row r="2" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
-  headerRow2 += `<c r="A2" s="3"><is><t>ID</t></is></c>`;
-  headerRow2 += `<c r="B2" s="3"><is><t>Cód. Estudiante</t></is></c>`;
-  headerRow2 += `<c r="C2" s="3"><is><t>Nombres</t></is></c>`;
+  headerRow2 += `<c r="A2" s="3"/><c r="B2" s="3"/><c r="C2" s="3"/>`;
   competencies.forEach((comp, ci) => {
     headerRow2 += `<c r="${compCols[ci].nl}2" s="39"><is><t>NL</t></is></c>`;
     headerRow2 += `<c r="${compCols[ci].conclusion}2" s="38"><is><t>Conclusión descriptiva de la competencia</t></is></c>`;
@@ -825,6 +823,11 @@ ${competencies.map((_, ci) => {
 </cols>
 <sheetData>
 ${rowsXml}</sheetData>
+<mergeCells count="3">
+<mergeCell ref="A1:A2"/>
+<mergeCell ref="B1:B2"/>
+<mergeCell ref="C1:C2"/>
+</mergeCells>
 </worksheet>`;
 
   zip.file('xl/worksheets/sheet3.xml', sheetXml);
