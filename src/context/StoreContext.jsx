@@ -1699,6 +1699,23 @@ if (studentsData?.length > 0) {
     }
   };
 
+  const removeDuplicateEvents = async () => {
+    const seen = new Map();
+    const duplicates = [];
+    events.forEach(ev => {
+      const key = `${ev.date}|${(ev.title || '').trim().toLowerCase()}`;
+      if (!seen.has(key)) {
+        seen.set(key, ev.id);
+      } else {
+        duplicates.push(ev);
+      }
+    });
+    if (duplicates.length === 0) return 0;
+    setEvents(prev => prev.filter(ev => !duplicates.some(d => d.id === ev.id)));
+    await Promise.all(duplicates.map(d => deleteFromSupabase('events', d.id)));
+    return duplicates.length;
+  };
+
   const markNotificationRead = (notificationId) => {
     if (!currentUser) return;
     const target = notifications.find(n => n.id === notificationId && !(n.readBy || []).includes(currentUser.id));
@@ -1790,7 +1807,7 @@ if (studentsData?.length > 0) {
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
       planningDocuments, addPlanningDocument, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
-      events, addEvent, updateEvent, deleteEvent, seedEvents,
+      events, addEvent, updateEvent, deleteEvent, seedEvents, removeDuplicateEvents,
       notifications, markNotificationRead, addNotification, deleteNotification,
       behavior, addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,

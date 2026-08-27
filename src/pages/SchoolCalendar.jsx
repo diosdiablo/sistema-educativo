@@ -69,7 +69,7 @@ function EventTooltip({ data }) {
 }
 
 export default function SchoolCalendar() {
-  const { events, addEvent, updateEvent, deleteEvent, seedEvents } = useStore();
+  const { events, addEvent, updateEvent, deleteEvent, seedEvents, removeDuplicateEvents } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -82,6 +82,16 @@ export default function SchoolCalendar() {
     const onResize = () => setIsMobile(window.innerWidth <= 600);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    removeDuplicateEvents().then(removed => {
+      if (removed > 0 && !cancelled) {
+        alert(`Se eliminaron ${removed} evento(s) duplicado(s) del calendario.`);
+      }
+    }).catch(err => console.error('Error removing duplicate events:', err));
+    return () => { cancelled = true; };
   }, []);
 
   const loadCivicCalendar = async () => {
