@@ -1292,12 +1292,29 @@ export default function PlanningDocuments() {
               </div>
             </div>
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-muted)' }}>
-              {viewingDoc.fileData ? (
-                <embed
+              {(viewingDoc.fileData && (viewingDoc.fileName?.toLowerCase().endsWith('.pdf'))) ? (
+                <iframe
                   src={viewingDoc.fileData}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  type={viewingDoc.fileName?.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream'}
+                  title={viewingDoc.title}
                 />
+              ) : viewingDoc.fileData ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                  <FileText size={64} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+                  <p style={{ fontSize: '0.95rem', marginBottom: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {viewingDoc.fileName || 'Documento'}
+                  </p>
+                  <p style={{ fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                    Este tipo de archivo no puede previsualizarse en el navegador. Descárgalo para verlo en Word o Excel.
+                  </p>
+                  <button
+                    onClick={() => downloadDoc(viewingDoc)}
+                    className="btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.4rem', borderRadius: '20px', fontSize: '0.9rem', cursor: 'pointer' }}
+                  >
+                    <Download size={16} /> Descargar {viewingDoc.fileName || ''}
+                  </button>
+                </div>
               ) : docFileLoading ? (
                 <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Cargando archivo...</p>
               ) : (
