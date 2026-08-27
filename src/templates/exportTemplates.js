@@ -686,12 +686,21 @@ export const exportRegNotas = async (
     { nl: 'H', conclusion: 'I' },
   ];
 
+  xml = xmlSetCellText(xml, 'A1', '');
+  xml = xmlSetCellText(xml, 'B1', '');
+  xml = xmlSetCellText(xml, 'A2', '');
+  xml = xmlSetCellText(xml, 'B2', '');
+
   competencies.forEach((comp, ci) => {
     const col = compCols[ci];
     xml = xmlSetCellText(xml, `${col.nl}1`, String(ci + 1).padStart(2, '0'));
     xml = xmlSetCellText(xml, `${col.nl}2`, 'NL');
     xml = xmlSetCellText(xml, `${col.conclusion}1`, String(ci + 1).padStart(2, '0'));
     xml = xmlSetCellText(xml, `${col.conclusion}2`, 'Conclusión descriptiva de la competencia');
+  });
+
+  xml = xml.replace(/(<row r="(3[0-2]|[12]?\d)"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, _rowNum, content, close) => {
+    return open + content.replace(/<v>[^<]*<\/v>/g, '').replace(/<is><t>[^<]*<\/t><\/is>/g, '<is><t></t></is>') + close;
   });
 
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
@@ -767,8 +776,32 @@ export const exportRegNotas = async (
           }
         }
 
+        const CONCLUSION_MAP = {
+          'AD': [
+            'Demuestra dominio en la indagación mediante métodos científicos para construir conocimientos.',
+            'Demuestra dominio al explicar el mundo físico basándose en conocimientos científicos.',
+            'Demuestra dominio al diseñar y construir soluciones tecnológicas para resolver problemas.'
+          ],
+          'A': [
+            'Indaga mediante métodos científicos para construir conocimientos.',
+            'Explica el mundo físico basándose en conocimientos científicos.',
+            'Diseña y construye soluciones tecnológicas para resolver problemas.'
+          ],
+          'B': [
+            'Está en proceso de indagar mediante métodos científicos.',
+            'Está en proceso de explicar el mundo físico con apoyo.',
+            'Está en proceso de diseñar soluciones tecnológicas con apoyo.'
+          ],
+          'C': [
+            'No logra indagar mediante métodos científicos de manera autónoma.',
+            'No logra explicar el mundo físico de manera autónoma.',
+            'No logra diseñar soluciones tecnológicas de manera autónoma.'
+          ]
+        };
+
         xml = xmlSetCellText(xml, `${col.nl}${row}`, avgQual);
-        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual === 'C' ? (QUAL_TO_CONCLUSION['C'] || '') : '');
+        const conclusion = avgQual ? (CONCLUSION_MAP[avgQual]?.[ci] || '') : '';
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, conclusion);
       });
     } else {
       xml = xmlSetCellText(xml, `C${row}`, '');
