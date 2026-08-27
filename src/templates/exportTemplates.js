@@ -708,7 +708,9 @@ export const exportRegNotas = async (
   let rowsXml = '';
 
   let headerRow1 = `<row r="1" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
-  headerRow1 += `<c r="A1" s="3"/><c r="B1" s="3"/><c r="C1" s="3"/>`;
+  headerRow1 += `<c r="A1" s="3"><is><t>ID</t></is></c>`;
+  headerRow1 += `<c r="B1" s="3"><is><t>Cód. Estudiante</t></is></c>`;
+  headerRow1 += `<c r="C1" s="3"><is><t>Nombres</t></is></c>`;
   competencies.forEach((comp, ci) => {
     const code = String(ci + 1).padStart(2, '0');
     headerRow1 += `<c r="${compCols[ci].nl}1" s="2"><is><t>${code}</t></is></c>`;
@@ -718,7 +720,9 @@ export const exportRegNotas = async (
   rowsXml += headerRow1 + '\n';
 
   let headerRow2 = `<row r="2" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
-  headerRow2 += `<c r="A2" s="3"/><c r="B2" s="3"/><c r="C2" s="3"/>`;
+  headerRow2 += `<c r="A2" s="3"><is><t>ID</t></is></c>`;
+  headerRow2 += `<c r="B2" s="3"><is><t>Cód. Estudiante</t></is></c>`;
+  headerRow2 += `<c r="C2" s="3"><is><t>Nombres</t></is></c>`;
   competencies.forEach((comp, ci) => {
     headerRow2 += `<c r="${compCols[ci].nl}2" s="39"><is><t>NL</t></is></c>`;
     headerRow2 += `<c r="${compCols[ci].conclusion}2" s="38"><is><t>Conclusión descriptiva de la competencia</t></is></c>`;
