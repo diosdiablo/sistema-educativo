@@ -786,7 +786,7 @@ export const exportRegNotas = async (
   const sheetName = `REGISTRO FINAL ${subject.name} ${className}`.toUpperCase();
   wbXml = wbXml.replace(
     /<sheet name="0004-CIENC TEC"[^>]*>/,
-    `<sheet name="${escapeXml(sheetName)}" sheetId="6" r:id="rId3">`
+    `<sheet name="${escapeXml(sheetName)}" sheetId="6" r:id="rId3"/>`
   );
   zip.file('xl/workbook.xml', wbXml);
 
