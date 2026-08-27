@@ -38,6 +38,18 @@ const Reports = () => {
     return subjects.filter(s => ids.includes(s.id));
   }, [selectedClassAux, isAdmin, currentUser, classes, subjects]);
 
+  const availableSubjectsFinal = useMemo(() => {
+    if (!selectedClassFinal) return subjects;
+    const classObj = classes.find(c => c.name === selectedClassFinal);
+    if (!classObj) return subjects;
+    if (isAdmin) return subjects;
+    if (!currentUser?.assignments) return [];
+    const ids = currentUser.assignments
+      .filter(a => a.classId === classObj.id)
+      .map(a => a.subjectId);
+    return subjects.filter(s => ids.includes(s.id));
+  }, [selectedClassFinal, isAdmin, currentUser, classes, subjects]);
+
   const cleanClassFilter = (s, selected) => {
     if (!selected) return false;
     const cleanSelected = selected.trim().toLowerCase();
@@ -397,7 +409,7 @@ const Reports = () => {
                 <select 
                   className="input-field"
                   value={selectedClassFinal}
-                  onChange={(e) => setSelectedClassFinal(e.target.value)}
+                  onChange={(e) => { setSelectedClassFinal(e.target.value); setSelectedSubjectFinal(''); }}
                 >
                   <option value="">-- Sección --</option>
                   {classes.map(c => (
@@ -431,7 +443,7 @@ const Reports = () => {
                 onChange={(e) => setSelectedSubjectFinal(e.target.value)}
               >
                 <option value="">-- Selecciona el Área --</option>
-                {availableSubjects.map(s => (
+                {availableSubjectsFinal.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
