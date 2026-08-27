@@ -694,10 +694,6 @@ export const exportRegNotas = async (
     xml = xmlSetCellText(xml, `${col.conclusion}2`, 'Conclusión descriptiva de la competencia');
   });
 
-  xml = xml.replace(/(<row r="[3-9]"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, content, close) => {
-    return open + content.replace(/<v>[^<]*<\/v>/g, '<v></v>').replace(/<is><t>[^<]*<\/t><\/is>/g, '<is><t></t></is>') + close;
-  });
-
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
   const maxRows = Math.max(sortedStudents.length, 30);
 
@@ -727,6 +723,8 @@ export const exportRegNotas = async (
 
     if (si < sortedStudents.length) {
       const student = sortedStudents[si];
+      xml = xmlSetCellText(xml, `A${row}`, '');
+      xml = xmlSetCellText(xml, `B${row}`, '');
       xml = xmlSetCellText(xml, `C${row}`, student.name.toUpperCase());
 
       competencies.forEach((comp, ci) => {
@@ -783,6 +781,28 @@ export const exportRegNotas = async (
   }
 
   zip.file('xl/worksheets/sheet3.xml', xml);
+
+  zip.remove('xl/worksheets/sheet1.xml');
+
+  let wbXml = await zip.file('xl/workbook.xml').async('string');
+  const sheetName = `REGISTRO FINAL ${subject.name} ${className}`.toUpperCase();
+  wbXml = wbXml.replace(
+    /<sheet name="0004-CIENC TEC"[^>]*>/,
+    `<sheet name="${escapeXml(sheetName)}" sheetId="6" r:id="rId3">`
+  );
+  wbXml = wbXml.replace(
+    /<sheet name="Generalidades"[^>]*\/>/g,
+    ''
+  );
+  zip.file('xl/workbook.xml', wbXml);
+
+  let relsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+  relsXml = relsXml.replace(/<Relationship[^>]*Id="rId1"[^>]*\/>\s*/g, '');
+  zip.file('xl/_rels/workbook.xml.rels', relsXml);
+
+  let ctXml = await zip.file('[Content_Types].xml').async('string');
+  ctXml = ctXml.replace(/<Override PartName="\/xl\/worksheets\/sheet1.xml"[^>]*\/>\s*/g, '');
+  zip.file('[Content_Types].xml', ctXml);
 
   const outBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
   return outBuf;
