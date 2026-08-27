@@ -666,3 +666,124 @@ export const exportTemplateAuxiliar = async (
   const outBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
   return outBuf;
 };
+
+export const exportRegNotas = async (
+  students, instrumentEvaluations, subjects, subjectId, period,
+  className, periodName, config = {}
+) => {
+  const subject = subjects.find(s => s.id === subjectId);
+  if (!subject) return null;
+
+  const resp = await fetch('/templates/RegNotas_05790860_20_F02026_B2_9156.xlsx');
+  const buf = await resp.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  let xml = await zip.file('xl/worksheets/sheet3.xml').async('string');
+
+  const competencies = (subject.competencies || []).slice(0, 3);
+  const compCols = [
+    { nl: 'D', conclusion: 'E' },
+    { nl: 'F', conclusion: 'G' },
+    { nl: 'H', conclusion: 'I' },
+  ];
+
+  competencies.forEach((comp, ci) => {
+    const col = compCols[ci];
+    xml = xmlSetCellText(xml, `${col.nl}1`, String(ci + 1).padStart(2, '0'));
+    xml = xmlSetCellText(xml, `${col.nl}2`, 'NL');
+    xml = xmlSetCellText(xml, `${col.conclusion}1`, String(ci + 1).padStart(2, '0'));
+    xml = xmlSetCellText(xml, `${col.conclusion}2`, 'Conclusión descriptiva de la competencia');
+  });
+
+  xml = xml.replace(/(<row r="[3-9]"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, content, close) => {
+    return open + content.replace(/<v>[^<]*<\/v>/g, '<v></v>').replace(/<is><t>[^<]*<\/t><\/is>/g, '<is><t></t></is>') + close;
+  });
+
+  const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
+  const maxRows = Math.max(sortedStudents.length, 30);
+
+  for (let si = 0; si < maxRows; si++) {
+    const row = 3 + si;
+    const rowRe = new RegExp('<row r="' + row + '"[^>]*>[\\s\\S]*?</row>');
+
+    if (!rowRe.test(xml)) {
+      const newRowXml = `<row r="${row}" spans="1:9" x14ac:dyDescent="0.3">` +
+        `<c r="A${row}" s="40"/><c r="B${row}" s="41"/><c r="C${row}" s="40"/>` +
+        `<c r="D${row}" s="42"/><c r="E${row}" s="43"/>` +
+        `<c r="F${row}" s="42"/><c r="G${row}" s="43"/>` +
+        `<c r="H${row}" s="42"/><c r="I${row}" s="43"/>` +
+        `</row>`;
+      const prevRowRe = new RegExp('</row>\\s*(<row r="' + (row + 1) + '"|</sheetData>)');
+      if (prevRowRe.test(xml)) {
+        xml = xml.replace(prevRowRe, '</row>\n' + newRowXml + '\n$1');
+      } else {
+        const insertRef = new RegExp('</row>\\s*(<row r="' + (row - 1) + '")');
+        if (insertRef.test(xml)) {
+          xml = xml.replace(insertRef, '</row>\n' + newRowXml + '\n$1');
+        } else {
+          xml = xml.replace(/<\/sheetData>/, newRowXml + '\n</sheetData>');
+        }
+      }
+    }
+
+    if (si < sortedStudents.length) {
+      const student = sortedStudents[si];
+      xml = xmlSetCellText(xml, `C${row}`, student.name.toUpperCase());
+
+      competencies.forEach((comp, ci) => {
+        const col = compCols[ci];
+
+        const stdEvals = instrumentEvaluations.filter(ev => {
+          const cid = ev.competencyId || ev.competency_id;
+          if (cid !== comp.id) return false;
+          const evPeriod = ev.period !== undefined ? ev.period : ev.periodo;
+          if (String(evPeriod) !== String(period)) return false;
+          const idMatch = ev.studentId === student.id || ev.student_id === student.id;
+          const nameMatch = ev.student_name && ev.student_name === student.name;
+          return idMatch || nameMatch;
+        });
+
+        const groupedByInstrument = {};
+        stdEvals.forEach(ev => {
+          const key = ev.activityName || ev.instrumentId;
+          if (!groupedByInstrument[key]) groupedByInstrument[key] = ev;
+        });
+        const instrs = Object.values(groupedByInstrument);
+
+        const quals = [];
+        for (let c = 0; c < instrs.length; c++) {
+          const ev = instrs[c];
+          const qual = ev ? (ev.qualitative || getQualFromScore(ev.score) || '') : '';
+          quals.push(qual);
+        }
+
+        const validQuals = quals.filter(q => q && q !== '');
+        let avgQual = '';
+        if (validQuals.length > 0) {
+          const nums = validQuals.map(q => QUAL_TO_NUMBER[q]).filter(n => n);
+          if (nums.length > 0) {
+            const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+            if (avg >= 3.5) avgQual = 'AD';
+            else if (avg >= 2.5) avgQual = 'A';
+            else if (avg >= 1.5) avgQual = 'B';
+            else avgQual = 'C';
+          }
+        }
+
+        xml = xmlSetCellText(xml, `${col.nl}${row}`, avgQual);
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual === 'C' ? (QUAL_TO_CONCLUSION['C'] || '') : '');
+      });
+    } else {
+      xml = xmlSetCellText(xml, `C${row}`, '');
+      competencies.forEach((comp, ci) => {
+        const col = compCols[ci];
+        xml = xmlSetCellText(xml, `${col.nl}${row}`, '');
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, '');
+      });
+    }
+  }
+
+  zip.file('xl/worksheets/sheet3.xml', xml);
+
+  const outBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
+  return outBuf;
+};

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative, exportTemplateAuxiliar } from '../templates/exportTemplates';
+import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative, exportTemplateAuxiliar, exportRegNotas } from '../templates/exportTemplates';
 
 const Reports = () => {
   const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments, isAdmin } = useStore();
@@ -254,6 +254,50 @@ const Reports = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportRegNotasHandler = async () => {
+    if (!selectedClassAux || !selectedSubjectAux) {
+      alert('Por favor selecciona un grado/sección y un área');
+      return;
+    }
+
+    const classStudents = students
+      .filter(s => cleanClassFilter(s, selectedClassAux))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const subject = subjects.find(s => s.id === selectedSubjectAux);
+    if (!subject) return;
+
+    if (classStudents.length === 0) {
+      alert('No hay estudiantes en esta sección');
+      return;
+    }
+
+    const parts = (selectedClassAux || '').split(' ');
+    const grado = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || '';
+    const seccion = parts.length > 1 ? parts[parts.length - 1] : '';
+
+    const periodLabels = { 1: 'BIMESTRE 1', 2: 'BIMESTRE 2', 3: 'BIMESTRE 3', 4: 'BIMESTRE 4' };
+    const periodLabel = periodLabels[selectedPeriodAux] || `BIMESTRE ${selectedPeriodAux}`;
+
+    const buf = await exportRegNotas(
+      classStudents, instrumentEvaluations, subjects,
+      selectedSubjectAux, selectedPeriodAux,
+      selectedClassAux, periodLabel,
+      { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado }
+    );
+    if (!buf) {
+      alert('No se pudo generar el reporte');
+      return;
+    }
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RegNotas_${subject.name}_${selectedClassAux.replace(/ /g, '_')}_B${selectedPeriodAux}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       <div style={{
@@ -416,6 +460,22 @@ const Reports = () => {
             >
               <Download size={20} />
               Exportar Registro Auxiliar
+            </button>
+
+            <button 
+              onClick={exportRegNotasHandler}
+              className="btn-primary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '0.9rem',
+                marginTop: '0.75rem'
+              }}
+            >
+              <Download size={20} />
+              Exportar Registro de Notas (Oficial)
             </button>
           </div>
 
