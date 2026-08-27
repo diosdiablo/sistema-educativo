@@ -667,6 +667,16 @@ export const exportTemplateAuxiliar = async (
   return outBuf;
 };
 
+function colLetter(index) {
+  let result = '';
+  let i = index;
+  while (i >= 0) {
+    result = String.fromCharCode(65 + (i % 26)) + result;
+    i = Math.floor(i / 26) - 1;
+  }
+  return result;
+}
+
 export const exportRegNotas = async (
   students, instrumentEvaluations, subjects, subjectId, period,
   className, periodName, config = {}
@@ -677,72 +687,53 @@ export const exportRegNotas = async (
   const resp = await fetch('/templates/RegNotas_05790860_20_F02026_B2_9156.xlsx');
   const buf = await resp.arrayBuffer();
   const zip = await JSZip.loadAsync(buf);
-  let xml = await zip.file('xl/worksheets/sheet3.xml').async('string');
   let xml1 = await zip.file('xl/worksheets/sheet1.xml').async('string');
 
-  const competencies = (subject.competencies || []).slice(0, 3);
-  const compCols = [
-    { nl: 'D', conclusion: 'E' },
-    { nl: 'F', conclusion: 'G' },
-    { nl: 'H', conclusion: 'I' },
-  ];
+  const competencies = subject.competencies || [];
+  const numComp = competencies.length;
 
-  xml = xmlSetCellText(xml, 'A1', '');
-  xml = xmlSetCellText(xml, 'B1', '');
-  xml = xmlSetCellText(xml, 'A2', '');
-  xml = xmlSetCellText(xml, 'B2', '');
+  const lastCol = colLetter(2 + numComp * 2 - 1);
+  const totalCols = 3 + numComp * 2;
 
-  competencies.forEach((comp, ci) => {
-    const col = compCols[ci];
-    xml = xmlSetCellText(xml, `${col.nl}1`, String(ci + 1).padStart(2, '0'));
-    xml = xmlSetCellText(xml, `${col.nl}2`, 'NL');
-    xml = xmlSetCellText(xml, `${col.conclusion}1`, String(ci + 1).padStart(2, '0'));
-    xml = xmlSetCellText(xml, `${col.conclusion}2`, 'Conclusión descriptiva de la competencia');
-  });
-
-  const legendCompCodes = ['01', '02', '03'];
-  competencies.forEach((comp, ci) => {
-    if (ci < 3) {
-      xml = xmlSetCellText(xml, `B${37 + ci}`, `${legendCompCodes[ci]} = ${comp.name}`);
-    }
-  });
-
-  xml = xml.replace(/(<row r="([3-9]|1\d|2\d|3[0-2])"[^>]*>)([\s\S]*?)(<\/row>)/g, (match, open, _rowNum, content, close) => {
-    return open + content.replace(/<v>[^<]*<\/v>/g, '').replace(/<is><t>[^<]*<\/t><\/is>/g, '<is><t></t></is>') + close;
-  });
+  const compCols = [];
+  for (let ci = 0; ci < numComp; ci++) {
+    const nlCol = colLetter(3 + ci * 2);
+    const concCol = colLetter(4 + ci * 2);
+    compCols.push({ nl: nlCol, conclusion: concCol });
+  }
 
   const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
   const maxRows = Math.max(sortedStudents.length, 30);
 
+  let rowsXml = '';
+
+  let headerRow1 = `<row r="1" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
+  headerRow1 += `<c r="A1" s="3"/><c r="B1" s="3"/><c r="C1" s="3"/>`;
+  competencies.forEach((comp, ci) => {
+    const code = String(ci + 1).padStart(2, '0');
+    headerRow1 += `<c r="${compCols[ci].nl}1" s="2"><is><t>${code}</t></is></c>`;
+    headerRow1 += `<c r="${compCols[ci].conclusion}1" s="3"><is><t>${code}</t></is></c>`;
+  });
+  headerRow1 += `</row>`;
+  rowsXml += headerRow1 + '\n';
+
+  let headerRow2 = `<row r="2" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
+  headerRow2 += `<c r="A2" s="3"/><c r="B2" s="3"/><c r="C2" s="3"/>`;
+  competencies.forEach((comp, ci) => {
+    headerRow2 += `<c r="${compCols[ci].nl}2" s="39"><is><t>NL</t></is></c>`;
+    headerRow2 += `<c r="${compCols[ci].conclusion}2" s="38"><is><t>Conclusión descriptiva de la competencia</t></is></c>`;
+  });
+  headerRow2 += `</row>`;
+  rowsXml += headerRow2 + '\n';
+
   for (let si = 0; si < maxRows; si++) {
     const row = 3 + si;
-    const rowRe = new RegExp('<row r="' + row + '"[^>]*>[\\s\\S]*?</row>');
-
-    if (!rowRe.test(xml)) {
-      const newRowXml = `<row r="${row}" spans="1:9" x14ac:dyDescent="0.3">` +
-        `<c r="A${row}" s="40"/><c r="B${row}" s="41"/><c r="C${row}" s="40"/>` +
-        `<c r="D${row}" s="42"/><c r="E${row}" s="43"/>` +
-        `<c r="F${row}" s="42"/><c r="G${row}" s="43"/>` +
-        `<c r="H${row}" s="42"/><c r="I${row}" s="43"/>` +
-        `</row>`;
-      const prevRowRe = new RegExp('</row>\\s*(<row r="' + (row + 1) + '"|</sheetData>)');
-      if (prevRowRe.test(xml)) {
-        xml = xml.replace(prevRowRe, '</row>\n' + newRowXml + '\n$1');
-      } else {
-        const insertRef = new RegExp('</row>\\s*(<row r="' + (row - 1) + '")');
-        if (insertRef.test(xml)) {
-          xml = xml.replace(insertRef, '</row>\n' + newRowXml + '\n$1');
-        } else {
-          xml = xml.replace(/<\/sheetData>/, newRowXml + '\n</sheetData>');
-        }
-      }
-    }
+    let rowXml = `<row r="${row}" spans="1:${totalCols}" x14ac:dyDescent="0.3">`;
+    rowXml += `<c r="A${row}" s="40"/><c r="B${row}" s="41"/>`;
 
     if (si < sortedStudents.length) {
       const student = sortedStudents[si];
-      xml = xmlSetCellText(xml, `A${row}`, '');
-      xml = xmlSetCellText(xml, `B${row}`, '');
-      xml = xmlSetCellText(xml, `C${row}`, student.name.toUpperCase());
+      rowXml += `<c r="C${row}" s="40"><is><t>${escapeXml(student.name.toUpperCase())}</t></is></c>`;
 
       competencies.forEach((comp, ci) => {
         const col = compCols[ci];
@@ -788,20 +779,51 @@ export const exportRegNotas = async (
           ? `No logra ${comp.name.toLowerCase()} de manera autónoma.`
           : '';
 
-        xml = xmlSetCellText(xml, `${col.nl}${row}`, avgQual);
-        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, conclusionC);
+        rowXml += `<c r="${col.nl}${row}" s="42"><is><t>${escapeXml(avgQual)}</t></is></c>`;
+        rowXml += `<c r="${col.conclusion}${row}" s="43"><is><t>${escapeXml(conclusionC)}</t></is></c>`;
       });
     } else {
-      xml = xmlSetCellText(xml, `C${row}`, '');
+      rowXml += `<c r="C${row}" s="40"/>`;
       competencies.forEach((comp, ci) => {
         const col = compCols[ci];
-        xml = xmlSetCellText(xml, `${col.nl}${row}`, '');
-        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, '');
+        rowXml += `<c r="${col.nl}${row}" s="42"/><c r="${col.conclusion}${row}" s="43"/>`;
       });
     }
+
+    rowXml += `</row>`;
+    rowsXml += rowXml + '\n';
   }
 
-  zip.file('xl/worksheets/sheet3.xml', xml);
+  const legendStartRow = maxRows + 3;
+  rowsXml += `<row r="${legendStartRow}" spans="1:${totalCols}" x14ac:dyDescent="0.3"><c r="B${legendStartRow}" s="44"><is><t>LEYENDA</t></is></c></row>\n`;
+  rowsXml += `<row r="${legendStartRow + 1}" spans="1:${totalCols}" x14ac:dyDescent="0.3"><c r="B${legendStartRow + 1}" s="1"><is><t>NL = Nivel de logro alcanzado</t></is></c></row>\n`;
+  competencies.forEach((comp, ci) => {
+    const code = String(ci + 1).padStart(2, '0');
+    rowsXml += `<row r="${legendStartRow + 2 + ci}" spans="1:${totalCols}" x14ac:dyDescent="0.3"><c r="B${legendStartRow + 2 + ci}" s="1"><is><t>${code} = ${escapeXml(comp.name)}</t></is></c></row>\n`;
+  });
+
+  const dimRef = `A1:${lastCol}${legendStartRow + 2 + numComp}`;
+  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac xr xr2 xr3" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2" xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3" xr:uid="{00000000-0001-0000-0200-000000000000}">
+<dimension ref="${dimRef}"/>
+<sheetViews><sheetView tabSelected="1" workbookViewId="0"><selection activeCell="D7" sqref="D7"/></sheetView></sheetViews>
+<sheetFormatPr baseColWidth="10" defaultColWidth="8.88671875" defaultRowHeight="14.4" x14ac:dyDescent="0.3"/>
+<cols>
+<col min="1" max="1" width="10.33203125" customWidth="1"/>
+<col min="2" max="2" width="16.6640625" customWidth="1"/>
+<col min="3" max="3" width="36.33203125" customWidth="1"/>
+${competencies.map((_, ci) => {
+  const nlIdx = 4 + ci * 2;
+  const concIdx = nlIdx + 1;
+  return `<col min="${nlIdx}" max="${nlIdx}" width="12.6640625" style="37" customWidth="1"/>
+<col min="${concIdx}" max="${concIdx}" width="45.6640625" customWidth="1"/>`;
+}).join('\n')}
+</cols>
+<sheetData>
+${rowsXml}</sheetData>
+</worksheet>`;
+
+  zip.file('xl/worksheets/sheet3.xml', sheetXml);
 
   const parts = (className || '').split(' ');
   const grado = parts.length > 1 ? parts.slice(0, -1).join(' ').toUpperCase() : (parts[0] || '').toUpperCase();
