@@ -2,10 +2,11 @@ import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Plus, Trash2, Upload, FileText, X, Download, Eye, Search, FolderOpen, Calendar, BookOpen, GraduationCap, ChevronRight, ChevronDown, Folder, LayoutGrid, List, BookMarked, Briefcase, Users, UserCheck } from 'lucide-react';
 import AIPlanningGenerator from '../components/AIPlanningGenerator';
+import PdfAnnotator from '../components/PdfAnnotator';
 
 export default function PlanningDocuments() {
   try {
-    const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser, getPlanningFileData } = useStore();
+    const { classes = [], subjects = [], planningDocuments = [], learningSessions = [], addPlanningDocument, updatePlanningFileData, addLearningSession, deletePlanningDocument, deleteLearningSession, isAdmin, currentUser, getPlanningFileData } = useStore();
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
@@ -1262,7 +1263,22 @@ export default function PlanningDocuments() {
       )}
 
       {/* Modal de visualización */}
-      {viewingDoc && (
+      {viewingDoc && viewingDoc.fileData && isPdf(viewingDoc) && (
+        <PdfAnnotator
+          fileData={viewingDoc.fileData}
+          fileName={viewingDoc.fileName || viewingDoc.file_name || 'documento.pdf'}
+          title={viewingDoc.title}
+          onClose={() => setViewingDoc(null)}
+          onSave={async (newFileData) => {
+            await updatePlanningFileData(viewingDoc.id, newFileData);
+            setDocFiles(prev => ({ ...prev, [viewingDoc.id]: newFileData }));
+            setViewingDoc(null);
+            alert('Cambios guardados en el PDF.');
+          }}
+        />
+      )}
+
+      {viewingDoc && (!viewingDoc.fileData || !isPdf(viewingDoc)) && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',

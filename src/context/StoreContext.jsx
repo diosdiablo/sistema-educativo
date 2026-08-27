@@ -1476,6 +1476,15 @@ if (studentsData?.length > 0) {
     deleteFromSupabase('planning_documents', id);
   };
 
+  const updatePlanningFileData = (id, fileData) => {
+    setPlanningDocuments(prev => prev.map(d => d.id === id ? { ...d, fileData } : d));
+    try {
+      syncToSupabase('planning_documents', [{ id, file_data: fileData }]);
+    } catch (err) {
+      console.error('Error updating planning file data:', err);
+    }
+  };
+
   const addLearningSession = async (session) => {
     const newSession = { ...session, id: generateId(), createdAt: new Date().toISOString(), uploadedBy: currentUser?.name || 'Admin', uploadedById: currentUser?.id };
     setLearningSessions(prev => [...prev, newSession]);
@@ -1814,7 +1823,7 @@ if (studentsData?.length > 0) {
       schedule, saveScheduleItem, deleteScheduleItem,
       periodDates, updatePeriodDates,
       saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
-      planningDocuments, addPlanningDocument, deletePlanningDocument,
+      planningDocuments, addPlanningDocument, updatePlanningFileData, deletePlanningDocument,
       learningSessions, addLearningSession, deleteLearningSession,
       events, addEvent, updateEvent, deleteEvent, seedEvents, removeDuplicateEvents,
       notifications, markNotificationRead, addNotification, deleteNotification,
