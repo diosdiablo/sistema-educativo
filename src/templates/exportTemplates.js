@@ -776,32 +776,14 @@ export const exportRegNotas = async (
           }
         }
 
-        const CONCLUSION_MAP = {
-          'AD': [
-            'Demuestra dominio en la indagación mediante métodos científicos para construir conocimientos.',
-            'Demuestra dominio al explicar el mundo físico basándose en conocimientos científicos.',
-            'Demuestra dominio al diseñar y construir soluciones tecnológicas para resolver problemas.'
-          ],
-          'A': [
-            'Indaga mediante métodos científicos para construir conocimientos.',
-            'Explica el mundo físico basándose en conocimientos científicos.',
-            'Diseña y construye soluciones tecnológicas para resolver problemas.'
-          ],
-          'B': [
-            'Está en proceso de indagar mediante métodos científicos.',
-            'Está en proceso de explicar el mundo físico con apoyo.',
-            'Está en proceso de diseñar soluciones tecnológicas con apoyo.'
-          ],
-          'C': [
-            'No logra indagar mediante métodos científicos de manera autónoma.',
-            'No logra explicar el mundo físico de manera autónoma.',
-            'No logra diseñar soluciones tecnológicas de manera autónoma.'
-          ]
-        };
+        const CONCLUSION_C = [
+          'No logra indagar mediante métodos científicos de manera autónoma.',
+          'No logra explicar el mundo físico de manera autónoma.',
+          'No logra diseñar soluciones tecnológicas de manera autónoma.'
+        ];
 
         xml = xmlSetCellText(xml, `${col.nl}${row}`, avgQual);
-        const conclusion = avgQual ? (CONCLUSION_MAP[avgQual]?.[ci] || '') : '';
-        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, conclusion);
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual === 'C' ? (CONCLUSION_C[ci] || '') : '');
       });
     } else {
       xml = xmlSetCellText(xml, `C${row}`, '');
