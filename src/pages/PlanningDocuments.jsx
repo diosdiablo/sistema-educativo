@@ -41,13 +41,17 @@ export default function PlanningDocuments() {
     return String(doc.fileData || '').startsWith('data:application/pdf');
   };
 
+  const getDocTable = (doc) =>
+    learningSessions.some(s => s.id === doc.id) ? 'learning_sessions' : 'planning_documents';
+
   const openDoc = async (doc) => {
     const cached = doc.fileData || docFiles[doc.id];
     if (cached) { setViewingDoc({ ...doc, fileData: cached }); return; }
     setViewingDoc(doc);
     setDocFileLoading(true);
     try {
-      const fd = await getPlanningFileData(doc.id);
+      const table = getDocTable(doc);
+      const fd = await getPlanningFileData(table, doc.id);
       if (fd) setDocFiles(prev => ({ ...prev, [doc.id]: fd }));
       setViewingDoc(v => (v && v.id === doc.id) ? { ...v, fileData: fd } : v);
     } catch (e) {
@@ -61,7 +65,8 @@ export default function PlanningDocuments() {
     try {
       let fd = doc.fileData || docFiles[doc.id];
       if (!fd) {
-        fd = await getPlanningFileData(doc.id);
+        const table = getDocTable(doc);
+        fd = await getPlanningFileData(table, doc.id);
         if (fd) setDocFiles(prev => ({ ...prev, [doc.id]: fd }));
       }
       if (!fd) return;
@@ -1270,7 +1275,7 @@ export default function PlanningDocuments() {
           title={viewingDoc.title}
           onClose={() => setViewingDoc(null)}
           onSave={async (newFileData) => {
-            await updatePlanningFileData(viewingDoc.id, newFileData);
+            await updatePlanningFileData(getDocTable(viewingDoc), viewingDoc.id, newFileData);
             setDocFiles(prev => ({ ...prev, [viewingDoc.id]: newFileData }));
             setViewingDoc(null);
             alert('Cambios guardados en el PDF.');

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
+import { uploadDocFile, getDocFile, deleteDocFile } from '../lib/storage';
 
 const StoreContext = createContext();
 
@@ -292,7 +293,7 @@ useEffect(() => {
         mkQ('users'),
         (() => {
           let query = supabase.from('learning_sessions')
-            .select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at');
+            .select('id,title,description,sections,subject_id,period,grade_level,file_name,storage_path,uploaded_by,uploaded_at,updated_at');
           if (isDelta) query = query.gte('updated_at', lastSync);
           return query;
         })(),
@@ -302,7 +303,7 @@ useEffect(() => {
 
       const [{ data: planningDocsData }, { data: periodDatesData }, { data: loginHistoryData }] = await Promise.all([
         supabase.from('planning_documents')
-          .select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at'),
+          .select('id,title,description,sections,subject_id,period,grade_level,file_name,storage_path,uploaded_by,uploaded_at,updated_at'),
         supabase.from('period_dates').select('*'),
         supabase.from('login_history').select('*').order('login_at', { ascending: false })
       ]);
@@ -685,8 +686,8 @@ useEffect(() => {
     schedule: ['id', 'class_id', 'subject_id', 'created_at', 'updated_at', 'user_id', 'day', 'time', 'color'],
     diagnostic_evaluations: ['id', 'class_id', 'subject_id', 'period', 'proficiency_level', 'student_results', 'observations', 'created_at', 'updated_at'],
     period_dates: ['id', 'start_date', 'end_date', 'updated_at'],
-    planning_documents: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'updated_at'],
-    learning_sessions: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'uploaded_by', 'uploaded_at', 'updated_at'],
+    planning_documents: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'storage_path', 'uploaded_by', 'uploaded_at', 'updated_at'],
+    learning_sessions: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'storage_path', 'uploaded_by', 'uploaded_at', 'updated_at'],
     login_history: ['id', 'user_id', 'user_name', 'username', 'login_at', 'logout_at', 'duration', 'updated_at'],
     events: ['id', 'title', 'date', 'type', 'description', 'created_at', 'updated_at', 'createdAt'],
     behavior: ['id', 'student_id', 'student_name', 'class_id', 'type', 'description', 'date', 'user_id', 'user_name', 'created_at'],
@@ -1302,6 +1303,7 @@ useEffect(() => {
 
     if (isOnline) {
       try {
+        const storagePath = newDoc.fileData ? await uploadDocFile('planning_documents', newDoc.id, newDoc.fileData) : null;
         const supabaseDoc = {
           id: newDoc.id,
           title: newDoc.title,
@@ -1310,7 +1312,8 @@ useEffect(() => {
           subject_id: newDoc.subjectId,
           period: newDoc.period,
           grade_level: newDoc.gradeLevel,
-          file_data: newDoc.fileData,
+          storage_path: storagePath,
+          file_data: storagePath ? null : newDoc.fileData,
           file_name: newDoc.fileName,
           uploaded_by: newDoc.uploadedBy,
           uploaded_at: newDoc.uploadedAt
@@ -1324,16 +1327,40 @@ useEffect(() => {
 
   const deletePlanningDocument = (id) => {
     setPlanningDocuments(prev => prev.filter(d => d.id !== id));
-    deleteFromSupabase('planning_documents', id);
+    deleteDocFileFromTable('planning_documents', id);
   };
 
-  const updatePlanningFileData = (id, fileData) => {
-    setPlanningDocuments(prev => prev.map(d => d.id === id ? { ...d, fileData } : d));
+  const updatePlanningFileData = async (table, id, fileData) => {
+    if (table === 'learning_sessions') {
+      setLearningSessions(prev => prev.map(d => d.id === id ? { ...d, fileData } : d));
+    } else {
+      setPlanningDocuments(prev => prev.map(d => d.id === id ? { ...d, fileData } : d));
+    }
     try {
-      syncToSupabase('planning_documents', [{ id, file_data: fileData }]);
+      if (!isOnline) return;
+      const storagePath = await uploadDocFile(table, id, fileData);
+      await syncToSupabase(table, [{
+        id,
+        storage_path: storagePath,
+        file_data: storagePath ? null : fileData
+      }]);
     } catch (err) {
       console.error('Error updating planning file data:', err);
     }
+  };
+
+  const deleteDocFileFromTable = async (table, id) => {
+    if (isOnline) {
+      try {
+        const { data } = await supabase.from(table).select('storage_path').eq('id', id).single();
+        if (data?.storage_path) {
+          await deleteDocFile(data.storage_path);
+        }
+      } catch (e) {
+        console.warn('Error reading storage path for delete:', e);
+      }
+    }
+    deleteFromSupabase(table, id);
   };
 
   const addLearningSession = async (session) => {
@@ -1342,6 +1369,7 @@ useEffect(() => {
     
     if (isOnline) {
       try {
+        const storagePath = newSession.fileData ? await uploadDocFile('learning_sessions', newSession.id, newSession.fileData) : null;
         const supabaseSession = {
           id: newSession.id,
           title: newSession.title,
@@ -1350,7 +1378,8 @@ useEffect(() => {
           subject_id: newSession.subjectId,
           period: newSession.period,
           grade_level: newSession.gradeLevel,
-          file_data: newSession.fileData,
+          storage_path: storagePath,
+          file_data: storagePath ? null : newSession.fileData,
           file_name: newSession.fileName,
           uploaded_by: newSession.uploadedBy,
           uploaded_at: newSession.uploadedAt
@@ -1364,7 +1393,7 @@ useEffect(() => {
 
   const deleteLearningSession = (id) => {
     setLearningSessions(prev => prev.filter(d => d.id !== id));
-    deleteFromSupabase('learning_sessions', id);
+    deleteDocFileFromTable('learning_sessions', id);
   };
 
   const cleanupOrphanedData = async () => {
@@ -1615,9 +1644,12 @@ useEffect(() => {
     deleteFromSupabase('behavior', id);
   };
 
-  const getPlanningFileData = async (id) => {
-    const { data, error } = await supabase.from('planning_documents').select('file_data').eq('id', id).single();
+  const getPlanningFileData = async (table, id) => {
+    const { data, error } = await supabase.from(table).select('file_data, storage_path').eq('id', id).single();
     if (error) throw error;
+    if (data?.storage_path) {
+      return getDocFile(data.storage_path, data?.file_data || null);
+    }
     return data?.file_data || null;
   };
 
