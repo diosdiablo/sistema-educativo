@@ -26,13 +26,14 @@ const safeParse = (val, fallback) => {
   try { return JSON.parse(val); } catch { return fallback; }
 };
 
-const fetchAllRows = async (table, orderBy = 'created_at') => {
+const fetchAllRows = async (table, { orderBy = 'created_at', filter } = {}) => {
   const PAGE = 1000;
   let from = 0;
   const all = [];
   for (;;) {
     let query = supabase.from(table).select('*').range(from, from + PAGE - 1);
     if (orderBy) query = query.order(orderBy, { ascending: true });
+    if (filter) query = filter(query);
     const { data, error } = await query;
     if (error) throw error;
     if (!data || data.length === 0) break;
@@ -41,6 +42,15 @@ const fetchAllRows = async (table, orderBy = 'created_at') => {
     from += PAGE;
   }
   return { data: all };
+};
+
+const upsertById = (existing, incoming) => {
+  if (!incoming || incoming.length === 0) return existing || [];
+  const map = new Map((existing || []).map(i => [i.id, i]));
+  for (const item of incoming) {
+    if (item && item.id) map.set(item.id, item);
+  }
+  return Array.from(map.values());
 };
 
 const DEFAULT_SUBJECTS = [
@@ -110,7 +120,8 @@ export const StoreProvider = ({ children }) => {
       return { ...r, records: records && typeof records === 'object' ? records : {} };
     });
   });
-  const [grades, setGrades] = useState(() => loadData('edu_grades', []));
+const [grades, setGrades] = useState(() => loadData('edu_grades', []));
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
     const savedUser = sessionStorage.getItem('edu_current_user_session') || localStorage.getItem('edu_current_user_session');
@@ -124,6 +135,7 @@ export const StoreProvider = ({ children }) => {
       }
     }
     setIsLoading(false);
+    setSessionReady(true);
   }, []);
 
   // Auto-refresh when new version is deployed
@@ -146,204 +158,244 @@ export const StoreProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    console.log('DEBUG useEffect: isOnline:', isOnline);
-    if (isOnline) {
-      const loadData = async () => {
-        setSyncStatus('syncing');
-        supabase.from('instruments').select('*').then(({ data, error }) => {
-          if (error || !data?.length) return;
-          try {
-            setInstruments(data.map(i => ({
-              ...i,
-              instrumentId: i.instrument_id,
-              subjectId: i.subject_id,
-              classId: i.class_id,
-              criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
-            })));
-          } catch { /* noop */ }
-        });
-        try {
-          const [
-            { data: studentsData },
-            { data: classesData },
-            { data: subjectsData },
-            { data: gradesData },
-            { data: attendanceData },
-            { data: instrumentsData },
-            { data: instrumentEvalsData },
-            { data: scheduleData },
-            { data: diagnosticData },
-            { data: usersData },
-            { data: planningDocsData },
-            { data: learningSessionsData },
-            { data: periodDatesData },
-            { data: loginHistoryData },
-            { data: eventsData },
-            { data: behaviorData }
-          ] = await Promise.all([
-            supabase.from('students').select('*'),
-            supabase.from('classes').select('*'),
-            supabase.from('subjects').select('*'),
-            supabase.from('grades').select('*'),
-            supabase.from('attendance').select('*'),
-            supabase.from('instruments').select('*'),
-            fetchAllRows('instrument_evaluations'),
-            supabase.from('schedule').select('*'),
-            supabase.from('diagnostic_evaluations').select('*'),
-            supabase.from('users').select('*'),
-            supabase.from('planning_documents').select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at'),
-            supabase.from('learning_sessions').select('*'),
-            supabase.from('period_dates').select('*'),
-            supabase.from('login_history').select('*').order('login_at', { ascending: false }),
-            supabase.from('events').select('*'),
-            supabase.from('behavior').select('*')
-          ]);
-          
-      if (studentsData?.length > 0) {
-        const normalizedStudents = studentsData.map(s => ({
-          ...s,
-          name: s.name,
-          dni: s.dni,
-          gradeLevel: s.grade_level || s.gradeLevel || s.grade || s.class_id,
-          classId: s.class_id || s.classId,
-          guardianName: s.guardian_name || s.guardianName,
-          guardianDni: s.guardian_dni || s.guardianDni,
-          guardianPhone: s.guardian_phone || s.guardianPhone,
-          birthDate: s.birth_date || s.birthDate,
-          address: s.address,
-          phone: s.phone,
-          photo_url: s.photo_url || s.photoUrl
+useEffect(() => {
+    if (isOnline && sessionReady) {
+      performLoad();
+    }
+  }, [isOnline, sessionReady, currentUser?.id]);
+
+  const performLoad = async () => {
+    if (!isOnline) return;
+    setSyncStatus('syncing');
+
+    const now = Date.now();
+    let lastSync = null;
+    try {
+      const raw = localStorage.getItem('edu_last_sync');
+      const ts = raw ? new Date(raw).getTime() : NaN;
+      if (!isNaN(ts) && now - ts > 0 && now - ts < 24 * 3600 * 1000) lastSync = raw;
+    } catch { lastSync = null; }
+    const isDelta = !!lastSync;
+
+    const isAdminUser = currentUser?.role === 'admin' || currentUser?.username === 'admin';
+    let roleFilter = null;
+    if (!isAdminUser && Array.isArray(currentUser?.assignments)) {
+      const ids = [...new Set(currentUser.assignments
+        .map(a => a.classId || a.class_id)
+        .filter(Boolean))];
+      if (ids.length > 0) roleFilter = ids;
+    }
+
+    const mkQ = (table) => {
+      let query = supabase.from(table).select('*');
+      if (isDelta) query = query.gte('updated_at', lastSync);
+      return query;
+    };
+
+    const normStudent = (s) => ({
+      ...s,
+      name: s.name,
+      dni: s.dni,
+      gradeLevel: s.grade_level || s.gradeLevel || s.grade || s.class_id,
+      classId: s.class_id || s.classId,
+      guardianName: s.guardian_name || s.guardianName,
+      guardianDni: s.guardian_dni || s.guardianDni,
+      guardianPhone: s.guardian_phone || s.guardianPhone,
+      birthDate: s.birth_date || s.birthDate,
+      address: s.address,
+      phone: s.phone,
+      photo_url: s.photo_url || s.photoUrl
+    });
+    const normSubject = (s) => ({
+      ...s,
+      competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
+    });
+    const normGrade = (g) => ({ ...g, studentId: g.student_id, competencyId: g.competency_id });
+    const normInstrument = (i) => ({
+      ...i,
+      instrumentId: i.instrument_id,
+      subjectId: i.subject_id,
+      classId: i.class_id,
+      criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
+    });
+    const normEval = (ev) => ({
+      ...ev,
+      instrumentId: ev.instrument_id,
+      studentId: ev.student_id,
+      competencyId: ev.competency_id,
+      subjectId: ev.subject_id,
+      classId: ev.class_id,
+      maxPossible: ev.max_possible,
+      activityName: ev.activity_name || '',
+      userId: ev.user_id,
+      scores: safeParse(ev.scores, {}),
+      criteria: safeParse(ev.criteria, []),
+      instrumentType: ev.instrument_type,
+      createdAt: ev.created_at
+    });
+    const normDoc = (d) => normalizeDocSections({
+      ...d,
+      fileData: d.file_data || d.fileData,
+      fileName: d.file_name || d.fileName,
+      uploadedBy: d.uploaded_by,
+      uploadedById: d.uploaded_by_id
+    });
+    const setMerged = (setter, data, normalize) => {
+      if (!data || data.length === 0) return;
+      setter(prev => isDelta ? upsertById(prev, normalize ? data.map(normalize) : data) : (normalize ? data.map(normalize) : data));
+    };
+
+    try {
+      let studentsQuery = supabase.from('students').select('*');
+      if (isDelta) studentsQuery = studentsQuery.gte('updated_at', lastSync);
+      if (roleFilter) studentsQuery = studentsQuery.in('class_id', roleFilter);
+      const { data: studentsData } = await studentsQuery;
+
+      const studentIdSet = roleFilter ? new Set((studentsData || []).map(s => s.id)) : null;
+
+      const [
+        { data: classesData },
+        { data: subjectsData },
+        { data: gradesData },
+        { data: attendanceData },
+        { data: instrumentsData },
+        { data: instrumentEvalsData },
+        { data: scheduleData },
+        { data: diagnosticData },
+        { data: usersData },
+        { data: learningSessionsData },
+        { data: eventsData },
+        { data: behaviorData }
+      ] = await Promise.all([
+        mkQ('classes'),
+        mkQ('subjects'),
+        (() => {
+          let query = mkQ('grades');
+          if (studentIdSet) query = query.in('student_id', [...studentIdSet]);
+          return query;
+        })(),
+        supabase.from('attendance').select('*'),
+        mkQ('instruments'),
+        fetchAllRows('instrument_evaluations', {
+          filter: (q) => {
+            if (isDelta) q = q.gte('updated_at', lastSync);
+            if (roleFilter) q = q.in('class_id', roleFilter);
+            return q;
+          }
+        }),
+        mkQ('schedule'),
+        (() => {
+          let query = mkQ('diagnostic_evaluations');
+          if (roleFilter) query = query.in('class_id', roleFilter);
+          return query;
+        })(),
+        mkQ('users'),
+        (() => {
+          let query = supabase.from('learning_sessions')
+            .select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at');
+          if (isDelta) query = query.gte('updated_at', lastSync);
+          return query;
+        })(),
+        mkQ('events'),
+        supabase.from('behavior').select('*')
+      ]);
+
+      const [{ data: planningDocsData }, { data: periodDatesData }, { data: loginHistoryData }] = await Promise.all([
+        supabase.from('planning_documents')
+          .select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at'),
+        supabase.from('period_dates').select('*'),
+        supabase.from('login_history').select('*').order('login_at', { ascending: false })
+      ]);
+
+      setMerged(setStudents, studentsData, normStudent);
+      setMerged(setClasses, classesData);
+      setMerged(setSubjects, subjectsData, normSubject);
+      setMerged(setGrades, gradesData, normGrade);
+      setMerged(setInstruments, instrumentsData, normInstrument);
+      setMerged(setInstrumentEvaluations, instrumentEvalsData, normEval);
+      setMerged(setDiagnosticEvaluations, diagnosticData);
+      setMerged(setUsers, usersData);
+      setMerged(setLearningSessions, learningSessionsData, normDoc);
+      setMerged(setEvents, eventsData);
+
+      if (attendanceData?.length > 0) {
+        setAttendance(attendanceData.map(a => {
+          let records = a.records;
+          if (typeof records === 'string') {
+            try { records = JSON.parse(records); } catch { records = {}; }
+          }
+          return { ...a, records: records || {} };
         }));
-setStudents(prev => {
-          const merged = [...normalizedStudents];
-          const supabaseIds = new Set(normalizedStudents.map(s => s.id));
-          for (const ls of prev) {
-            if (!supabaseIds.has(ls.id)) {
-              merged.push(ls);
-            }
-          }
-          localStorage.setItem('edu_students', JSON.stringify(merged));
-          return merged;
-        });
       }
-      if (classesData?.length > 0) {
-            console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
-            setClasses(classesData);
-          }
-          if (usersData?.length > 0) setUsers(usersData);
-          if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
+      if (behaviorData?.length > 0) setBehavior(behaviorData);
+
+      if (scheduleData?.length > 0) {
+        const classMap = {};
+        classesData?.forEach(c => { classMap[c.id] = c.color; });
+        const normalizedSchedule = scheduleData.map(s => {
+          let color = s.color || classMap[s.class_id] || '#10b981';
+          if (s.class_id === '__ATENCION__') color = '#6366f1';
+          if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
+          return {
             ...s,
-            competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
-          })));
-          if (gradesData?.length > 0) setGrades(gradesData.map(g => ({
-            ...g,
-            studentId: g.student_id,
-            competencyId: g.competency_id
-          })));
-          if (attendanceData?.length > 0) {
-            setAttendance(attendanceData.map(a => {
-              let records = a.records;
-              if (typeof records === 'string') {
-                try { records = JSON.parse(records); } catch { records = {}; }
-              }
-              return { ...a, records: records || {} };
-            }));
-          }
-          if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
-            ...i,
-            instrumentId: i.instrument_id,
-            subjectId: i.subject_id,
-            classId: i.class_id,
-            criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
-          })));
-          if (instrumentEvalsData?.length > 0) {
-            const seenIds = new Set();
-            const mappedEvals = [];
-            for (const ev of instrumentEvalsData) {
-              if (seenIds.has(ev.id)) continue;
-              seenIds.add(ev.id);
-              mappedEvals.push({
-                ...ev,
-                instrumentId: ev.instrument_id,
-                studentId: ev.student_id,
-                competencyId: ev.competency_id,
-                subjectId: ev.subject_id,
-                classId: ev.class_id,
-                maxPossible: ev.max_possible,
-                activityName: ev.activity_name || '',
-                userId: ev.user_id,
-                scores: safeParse(ev.scores, {}),
-                criteria: safeParse(ev.criteria, []),
-                instrumentType: ev.instrument_type,
-                createdAt: ev.created_at
-              });
-            }
-            setInstrumentEvaluations(mappedEvals);
-          }
-if (scheduleData?.length > 0) {
-          const classMap = {};
-          classesData?.forEach(c => { classMap[c.id] = c.color; });
-          setSchedule(scheduleData.map(s => {
-            let color = s.color || classMap[s.class_id] || '#10b981';
-            if (s.class_id === '__ATENCION__') color = '#6366f1';
-            if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
-            return {
-              ...s,
-              userId: s.user_id,
-              classId: s.class_id,
-              subjectId: s.subject_id,
-              color
-            };
-          }));
-          const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
-          if (isOnline && schedulesNeedingColorUpdate.length > 0) {
-            try {
-              await Promise.all(schedulesNeedingColorUpdate.map(s => 
-                supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
-              ));
-            } catch (err) {
-              console.error('Error updating schedule colors:', err);
-            }
+            userId: s.user_id,
+            classId: s.class_id,
+            subjectId: s.subject_id,
+            color
+          };
+        });
+        setSchedule(prev => isDelta ? upsertById(prev, normalizedSchedule) : normalizedSchedule);
+        const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
+        if (schedulesNeedingColorUpdate.length > 0) {
+          try {
+            await Promise.all(schedulesNeedingColorUpdate.map(s =>
+              supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
+            ));
+          } catch (err) {
+            console.error('Error updating schedule colors:', err);
           }
         }
-if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
-      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => normalizeDocSections({
-        ...d,
-        fileData: d.file_data || d.fileData,
-        fileName: d.file_name || d.fileName,
-        uploadedBy: d.uploaded_by,
-        uploadedById: d.uploaded_by_id
-      })));
-      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => normalizeDocSections({
-        ...s,
-        fileData: s.file_data || s.fileData,
-        fileName: s.file_name || s.fileName,
-        uploadedBy: s.uploaded_by,
-        uploadedById: s.uploaded_by_id
-      })));
+      }
+
+      setMerged(setPlanningDocuments, planningDocsData, normDoc);
+
       if (periodDatesData?.length > 0) {
         const periodDatesMap = {};
         periodDatesData.forEach(p => {
-          periodDatesMap[p.id] = {
-            start: p.start_date,
-            end: p.end_date
-          };
+          periodDatesMap[p.id] = { start: p.start_date, end: p.end_date };
         });
         setPeriodDates(periodDatesMap);
       }
-      if (eventsData?.length > 0) setEvents(eventsData);
-      else if (events.length > 0) await syncToSupabase('events', events, true);
-      
+
+      if (loginHistoryData?.length > 0) {
+        const remoteHistory = loginHistoryData.map(h => ({
+          ...h,
+          userId: h.user_id,
+          userName: h.user_name,
+          loginAt: h.login_at,
+          logoutAt: h.logout_at
+        }));
+        const localIds = new Set(loginHistory.map(l => l.id));
+        const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
+        merged.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
+        setLoginHistory(merged);
+      }
+
+      if (!isDelta && !eventsData?.length && events.length > 0) {
+        await syncToSupabase('events', events, true);
+      }
+
+      try {
+        localStorage.setItem('edu_last_sync', new Date().toISOString());
+      } catch (e) { /* ignore quota errors */ }
+
+      console.log('Loaded:', studentsData?.length, 'students | delta:', isDelta);
       setSyncStatus('synced');
-        } catch (err) {
-          console.error('Fetch error:', err);
-          setSyncStatus('error');
-        }
-      };
-      loadData();
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setSyncStatus('error');
     }
-  }, [isOnline]);
+  };
 
   useEffect(() => {
     if (!isOnline || !supabase || typeof supabase.channel !== 'function') return;
@@ -577,208 +629,7 @@ if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
     console.log('Current user changed:', currentUser?.name, 'assignments:', currentUser?.assignments);
   }, [currentUser]);
 
-  const fetchFromSupabase = async () => {
-    if (!isOnline) return;
-    setSyncStatus('syncing');
-    try {
-const [
-        { data: studentsData },
-        { data: classesData },
-        { data: subjectsData },
-        { data: gradesData },
-        { data: attendanceData },
-        { data: instrumentsData },
-        { data: instrumentEvalsData },
-        { data: scheduleData },
-        { data: diagnosticData },
-        { data: usersData },
-        { data: planningDocsData },
-        { data: learningSessionsData },
-        { data: periodDatesData },
-        { data: loginHistoryData },
-        { data: eventsData },
-        { data: behaviorData }
-      ] = await Promise.all([
-        supabase.from('students').select('*'),
-        supabase.from('classes').select('*'),
-        supabase.from('subjects').select('*'),
-        supabase.from('grades').select('*'),
-        supabase.from('attendance').select('*'),
-        supabase.from('instruments').select('*'),
-        fetchAllRows('instrument_evaluations'),
-        supabase.from('schedule').select('*'),
-        supabase.from('diagnostic_evaluations').select('*'),
-        supabase.from('users').select('*'),
-        supabase.from('planning_documents').select('id,title,description,sections,subject_id,period,grade_level,file_name,uploaded_by,uploaded_at,updated_at'),
-        supabase.from('learning_sessions').select('*'),
-        supabase.from('period_dates').select('*'),
-        supabase.from('login_history').select('*').order('login_at', { ascending: false }),
-        supabase.from('events').select('*'),
-        supabase.from('behavior').select('*')
-      ]);
-      
-if (studentsData?.length > 0) {
-        const normalizedStudents = studentsData.map(s => ({
-          ...s,
-          name: s.name,
-          dni: s.dni,
-          gradeLevel: s.grade_level || s.gradeLevel || s.grade || s.class_id,
-          classId: s.class_id || s.classId,
-          guardianName: s.guardian_name || s.guardianName,
-          guardianDni: s.guardian_dni || s.guardianDni,
-          guardianPhone: s.guardian_phone || s.guardianPhone,
-          birthDate: s.birth_date || s.birthDate,
-          address: s.address,
-          phone: s.phone,
-          photo_url: s.photo_url || s.photoUrl
-        }));
-        setStudents(prev => {
-          const merged = [...normalizedStudents];
-          const supabaseIds = new Set(normalizedStudents.map(s => s.id));
-          for (const ls of prev) {
-            if (!supabaseIds.has(ls.id)) {
-              merged.push(ls);
-            }
-          }
-          localStorage.setItem('edu_students', JSON.stringify(merged));
-          return merged;
-        });
-      }
-      if (classesData?.length > 0) {
-        console.log('Classes loaded:', classesData.length, classesData.map(c => c.id));
-        setClasses(classesData);
-      }
-      if (usersData?.length > 0) setUsers(usersData);
-      if (subjectsData?.length > 0) setSubjects(subjectsData.map(s => ({
-        ...s,
-        competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
-      })));
-      if (gradesData?.length > 0) setGrades(gradesData.map(g => ({
-        ...g,
-        studentId: g.student_id,
-        competencyId: g.competency_id
-      })));
-      if (attendanceData?.length > 0) {
-        setAttendance(attendanceData.map(a => {
-          let records = a.records;
-          if (typeof records === 'string') {
-            try { records = JSON.parse(records); } catch { records = {}; }
-          }
-          return { ...a, records: records || {} };
-        }));
-      }
-      if (instrumentsData?.length > 0) setInstruments(instrumentsData.map(i => ({
-        ...i,
-        instrumentId: i.instrument_id,
-        subjectId: i.subject_id,
-        classId: i.class_id,
-        criteria: typeof i.criteria === 'string' ? JSON.parse(i.criteria) : (i.criteria || [])
-      })));
-          if (instrumentEvalsData?.length > 0) {
-        console.log('Loading', instrumentEvalsData.length, 'instrument evaluations from Supabase');
-        const seenIds = new Set();
-        const mappedEvals = [];
-        for (const ev of instrumentEvalsData) {
-          if (seenIds.has(ev.id)) continue;
-          seenIds.add(ev.id);
-          mappedEvals.push({
-            ...ev,
-            instrumentId: ev.instrument_id,
-            studentId: ev.student_id,
-            competencyId: ev.competency_id,
-            subjectId: ev.subject_id,
-            classId: ev.class_id,
-            maxPossible: ev.max_possible,
-            activityName: ev.activity_name || '',
-            userId: ev.user_id,
-            scores: safeParse(ev.scores, {}),
-            criteria: safeParse(ev.criteria, []),
-            instrumentType: ev.instrument_type,
-            createdAt: ev.created_at
-          });
-        }
-        setInstrumentEvaluations(mappedEvals);
-      }
-      if (scheduleData?.length > 0) {
-        const classMap = {};
-        classesData?.forEach(c => { classMap[c.id] = c.color; });
-        setSchedule(scheduleData.map(s => {
-          let color = s.color || classMap[s.class_id] || '#10b981';
-          if (s.class_id === '__ATENCION__') color = '#6366f1';
-          if (s.class_id === '__TRABAJO__') color = '#8b5cf6';
-          return {
-            ...s,
-            userId: s.user_id,
-            classId: s.class_id,
-            subjectId: s.subject_id,
-            color
-          };
-        }));
-        const schedulesNeedingColorUpdate = scheduleData.filter(s => !s.color && classMap[s.class_id]);
-        if (isOnline && schedulesNeedingColorUpdate.length > 0) {
-          try {
-            await Promise.all(schedulesNeedingColorUpdate.map(s => 
-              supabase.from('schedule').update({ color: classMap[s.class_id] }).eq('id', s.id)
-            ));
-          } catch (err) {
-            console.error('Error updating schedule colors:', err);
-          }
-        }
-      }
-      if (diagnosticData?.length > 0) setDiagnosticEvaluations(diagnosticData);
-      if (planningDocsData?.length > 0) setPlanningDocuments(planningDocsData.map(d => normalizeDocSections({
-        ...d,
-        fileData: d.file_data || d.fileData,
-        fileName: d.file_name || d.fileName,
-        uploadedBy: d.uploaded_by,
-        uploadedById: d.uploaded_by_id
-      })));
-      if (learningSessionsData?.length > 0) setLearningSessions(learningSessionsData.map(s => normalizeDocSections({
-        ...s,
-        fileData: s.file_data || s.fileData,
-        fileName: s.file_name || s.fileName,
-        uploadedBy: s.uploaded_by,
-        uploadedById: s.uploaded_by_id
-      })));
-      if (periodDatesData?.length > 0) {
-        const periodDatesMap = {};
-        periodDatesData.forEach(p => {
-          periodDatesMap[p.id] = {
-            start: p.start_date,
-            end: p.end_date
-          };
-        });
-        setPeriodDates(periodDatesMap);
-      }
-      
-      console.log('DEBUG: loginHistoryData raw:', loginHistoryData);
-      console.log('DEBUG: loginHistoryData:', loginHistoryData?.length);
-      if (loginHistoryData?.length > 0) {
-        const remoteHistory = loginHistoryData.map(h => ({
-          ...h,
-          userId: h.user_id,
-          userName: h.user_name,
-          loginAt: h.login_at,
-          logoutAt: h.logout_at
-        }));
-        console.log('DEBUG: remoteHistory:', remoteHistory);
-        const localIds = new Set(loginHistory.map(l => l.id));
-        const merged = [...loginHistory, ...remoteHistory.filter(r => !localIds.has(r.id))];
-        merged.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
-        setLoginHistory(merged);
-      }
-      
-      if (eventsData?.length > 0) setEvents(eventsData);
-      else if (events.length > 0) await syncToSupabase('events', events, true);
-      if (behaviorData?.length > 0) setBehavior(behaviorData);
-      
-      console.log('Loaded:', studentsData?.length, 'students');
-      setSyncStatus('synced');
-    } catch (err) {
-      console.error('Fetch error:', err);
-      setSyncStatus('error');
-    }
-  };
+  const fetchFromSupabase = performLoad;
 
   const [subjects, setSubjects] = useState(() => {
     const loaded = loadData('edu_subjects', DEFAULT_SUBJECTS);
