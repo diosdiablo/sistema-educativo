@@ -34,8 +34,8 @@ self.addEventListener('push', (e) => {
     const data = e.data.json();
     self.registration.showNotification(data.title || 'Portal Agro', {
       body: data.message || '',
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
       vibrate: [200, 100, 200],
       data: { url: data.url || '/' }
     });

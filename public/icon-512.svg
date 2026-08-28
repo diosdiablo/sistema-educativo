@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(64 56) scale(0.75)">
+    <!-- Escudo amarillo -->
+    <path d="M256 32 L448 96 L448 256 Q448 416 256 480 Q64 416 64 256 L64 96 Z" fill="url(#shieldGrad)" stroke="#d97706" stroke-width="10"/>
+    <!-- Borde verde interno -->
+    <path d="M256 64 L416 120 L416 256 Q416 384 256 440 Q96 384 96 256 L96 120 Z" fill="none" stroke="#059669" stroke-width="6"/>
+    <!-- I.E.P. 110 -->
+    <text x="256" y="132" text-anchor="middle" font-family="Arial" font-size="64" font-weight="bold" fill="#059669">I.E.P. 110</text>
+    <!-- AGROPECUARIO -->
+    <text x="256" y="252" text-anchor="middle" font-family="Arial" font-size="80" font-weight="bold" fill="#059669">AGRO-</text>
+    <text x="256" y="318" text-anchor="middle" font-family="Arial" font-size="64" font-weight="bold" fill="#059669">PECUARIO</text>
+    <!-- Árbol pequeño -->
+    <rect x="240" y="376" width="32" height="48" fill="#059669"/>
+    <circle cx="256" cy="372" r="24" fill="#059669"/>
+  </g>
+</svg>
