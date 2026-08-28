@@ -275,7 +275,11 @@ useEffect(() => {
           if (studentIdSet) query = query.in('student_id', [...studentIdSet]);
           return query;
         })(),
-        supabase.from('attendance').select('*'),
+        (() => {
+          let query = supabase.from('attendance').select('*');
+          if (isDelta) query = query.gte('updated_at', lastSync);
+          return query;
+        })(),
         mkQ('instruments'),
         fetchAllRows('instrument_evaluations', {
           filter: (q) => {
@@ -298,7 +302,11 @@ useEffect(() => {
           return query;
         })(),
         mkQ('events'),
-        supabase.from('behavior').select('*')
+        (() => {
+          let query = supabase.from('behavior').select('*');
+          if (isDelta) query = query.gte('updated_at', lastSync);
+          return query;
+        })(),
       ]);
 
       const [{ data: planningDocsData }, { data: periodDatesData }, { data: loginHistoryData }] = await Promise.all([
@@ -319,16 +327,23 @@ useEffect(() => {
       setMerged(setLearningSessions, learningSessionsData, normDoc);
       setMerged(setEvents, eventsData);
 
-      if (attendanceData?.length > 0) {
-        setAttendance(attendanceData.map(a => {
-          let records = a.records;
-          if (typeof records === 'string') {
-            try { records = JSON.parse(records); } catch { records = {}; }
-          }
-          return { ...a, records: records || {} };
-        }));
-      }
-      if (behaviorData?.length > 0) setBehavior(behaviorData);
+      const normAttendance = (a) => {
+        let records = a.records;
+        if (typeof records === 'string') {
+          try { records = JSON.parse(records); } catch { records = {}; }
+        }
+        return { ...a, records: records || {} };
+      };
+      const normBehavior = (b) => ({
+        ...b,
+        studentId: b.student_id,
+        studentName: b.student_name,
+        classId: b.class_id,
+        userId: b.user_id,
+        userName: b.user_name
+      });
+      setMerged(setAttendance, attendanceData, normAttendance);
+      setMerged(setBehavior, behaviorData, normBehavior);
 
       if (scheduleData?.length > 0) {
         const classMap = {};
@@ -680,7 +695,7 @@ useEffect(() => {
     subjects: ['id', 'name', 'competencies', 'created_at', 'updated_at'],
     classes: ['id', 'name', 'created_at', 'updated_at', 'color'],
     grades: ['id', 'student_id', 'subject', 'competency_id', 'period', 'score', 'conclusion', 'created_at', 'updated_at'],
-    attendance: ['id', 'date', 'records', 'created_at'],
+    attendance: ['id', 'date', 'records', 'created_at', 'updated_at'],
     instruments: ['id', 'name', 'type', 'subject_id', 'class_id', 'date', 'max_score', 'description', 'created_at', 'updated_at', 'title', 'criteria'],
     instrument_evaluations: ['id', 'instrument_id', 'student_id', 'score', 'max_possible', 'qualitative', 'competency_id', 'subject_id', 'subject_name', 'period', 'class_id', 'activity_name', 'observations', 'scores', 'date', 'created_at', 'updated_at', 'student_name', 'criteria', 'instrument_type'],
     schedule: ['id', 'class_id', 'subject_id', 'created_at', 'updated_at', 'user_id', 'day', 'time', 'color'],
@@ -690,7 +705,7 @@ useEffect(() => {
     learning_sessions: ['id', 'title', 'description', 'sections', 'subject_id', 'period', 'grade_level', 'file_data', 'file_name', 'storage_path', 'uploaded_by', 'uploaded_at', 'updated_at'],
     login_history: ['id', 'user_id', 'user_name', 'username', 'login_at', 'logout_at', 'duration', 'updated_at'],
     events: ['id', 'title', 'date', 'type', 'description', 'created_at', 'updated_at', 'createdAt'],
-    behavior: ['id', 'student_id', 'student_name', 'class_id', 'type', 'description', 'date', 'user_id', 'user_name', 'created_at'],
+    behavior: ['id', 'student_id', 'student_name', 'class_id', 'type', 'description', 'date', 'user_id', 'user_name', 'created_at', 'updated_at'],
   }), []);
 
   const prepareForSupabase = useCallback((item, table) => {
