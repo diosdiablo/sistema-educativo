@@ -1750,7 +1750,7 @@ useEffect(() => {
   };
 
   const value = isGuest ? (() => {
-    const noop = () => {};
+    const noop = async () => { return undefined; };
     const blocked = {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
