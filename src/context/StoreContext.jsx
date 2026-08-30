@@ -849,7 +849,7 @@ useEffect(() => {
       id: 'guest',
       username: 'invitado',
       name: 'Invitado',
-      role: 'admin',
+      role: 'teacher',
       isGuest: true,
       assignments: []
     };
