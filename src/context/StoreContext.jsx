@@ -844,6 +844,21 @@ useEffect(() => {
     return false;
   };
 
+  const guestLogin = () => {
+    const guestUser = {
+      id: 'guest',
+      username: 'invitado',
+      name: 'Invitado',
+      role: 'admin',
+      isGuest: true,
+      assignments: []
+    };
+    setCurrentUser(guestUser);
+    sessionStorage.setItem('edu_current_user_session', JSON.stringify(guestUser));
+    localStorage.setItem('edu_current_user_session', JSON.stringify(guestUser));
+    return true;
+  };
+
   const logout = () => {
     if (currentUser) {
       const logoutAt = new Date().toISOString();
@@ -1706,31 +1721,61 @@ useEffect(() => {
     return Array.from(map.values());
   };
 
-  return (
-    <StoreContext.Provider value={{
-      isOnline, isLoading, syncStatus,
-      users, currentUser, login, logout, loginHistory,
-      students, subjects, attendance, grades, classes,
-      instruments, instrumentEvaluations, diagnosticEvaluations,
+  const isGuest = currentUser?.isGuest === true;
+
+  const baseValue = {
+    isOnline, isLoading, syncStatus,
+    users, currentUser, login, guestLogin, logout, loginHistory,
+    students, subjects, attendance, grades, classes,
+    instruments, instrumentEvaluations, diagnosticEvaluations,
+    addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
+    clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
+    addSubject, deleteSubject, addCompetency, deleteCompetency,
+    addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
+    saveAttendanceDate, deleteAttendanceDate, saveGrade,
+    calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
+    schedule, saveScheduleItem, deleteScheduleItem,
+    periodDates, updatePeriodDates,
+    saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
+    planningDocuments, addPlanningDocument, updatePlanningFileData, deletePlanningDocument,
+    learningSessions, addLearningSession, deleteLearningSession,
+    events, addEvent, updateEvent, deleteEvent, seedEvents, removeDuplicateEvents,
+    notifications, markNotificationRead, addNotification, deleteNotification,
+    behavior, addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
+    setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
+    setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
+    autoBackup, syncToSupabaseManual, fetchFromSupabase, getPlanningFileData,
+    isGuest,
+    isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin'
+  };
+
+  const value = isGuest ? (() => {
+    const noop = () => {};
+    const blocked = {
       addStudent, updateStudent, deleteStudent, importStudentsBulk, clearAllStudents,
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
       saveAttendanceDate, deleteAttendanceDate, saveGrade,
-      calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
-      schedule, saveScheduleItem, deleteScheduleItem,
-      periodDates, updatePeriodDates,
-      saveDiagnosticEvaluation, getDiagnosticEvaluation, deleteDiagnosticEvaluation,
-      planningDocuments, addPlanningDocument, updatePlanningFileData, deletePlanningDocument,
-      learningSessions, addLearningSession, deleteLearningSession,
-      events, addEvent, updateEvent, deleteEvent, seedEvents, removeDuplicateEvents,
-      notifications, markNotificationRead, addNotification, deleteNotification,
-      behavior, addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
+      addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
+      saveScheduleItem, deleteScheduleItem,
+      updatePeriodDates,
+      saveDiagnosticEvaluation, deleteDiagnosticEvaluation,
+      addPlanningDocument, updatePlanningFileData, deletePlanningDocument,
+      addLearningSession, deleteLearningSession,
+      addEvent, updateEvent, deleteEvent, seedEvents, removeDuplicateEvents,
+      addNotification, deleteNotification,
+      addBehaviorRecord, deleteBehaviorRecord, recordParentLogin,
       setUsers, setStudents, setAttendance, setGrades, setClasses, setSubjects,
       setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
-      autoBackup, syncToSupabaseManual, fetchFromSupabase, getPlanningFileData,
-      isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin'
-    }}>
+      syncToSupabaseManual
+    };
+    for (const key of Object.keys(blocked)) baseValue[key] = noop;
+    return baseValue;
+  })() : baseValue;
+
+  return (
+    <StoreContext.Provider value={value}>
       {children}
     </StoreContext.Provider>
   );

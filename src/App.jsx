@@ -28,7 +28,7 @@ import ParentDashboard from './pages/ParentDashboard';
 import Behavior from './pages/Behavior';
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
-  const { logout, currentUser, isAdmin } = useStore();
+  const { logout, currentUser, isAdmin, isGuest } = useStore();
 
   const handleNavClick = () => {
     if (window.innerWidth <= 768) onClose();
@@ -134,9 +134,14 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}
+                {isGuest ? 'Invitado' : (currentUser?.role === 'admin' ? 'Administrador' : 'Docente')}
               </span>
               <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentUser?.name}</strong>
+              {isGuest && (
+                <span style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', marginTop: '2px' }}>
+                  Solo lectura
+                </span>
+              )}
             </div>
           </div>
           <button
