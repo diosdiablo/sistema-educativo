@@ -57,7 +57,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Configuración', path: '/settings', icon: <SettingsIcon size={20} /> },
   ];
 
-  const menuItems = isAdmin ? [...allMenuItems, ...adminItems] : allMenuItems.filter(item => item.path !== '/boleta');
+  const menuItems = (isAdmin && !isGuest) ? [...allMenuItems, ...adminItems] : allMenuItems.filter(item => item.path !== '/boleta');
 
   return (
     <>
@@ -162,7 +162,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
 }
 
 function AppContent() {
-  const { currentUser, isAdmin, isLoading, notifications, markNotificationRead, deleteNotification } = useStore();
+  const { currentUser, isAdmin, isGuest, isLoading, notifications, markNotificationRead, deleteNotification } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifPos, setNotifPos] = useState(null);
@@ -227,7 +227,7 @@ function AppContent() {
   }
 
   const AdminOnlyRoute = ({ children }) => {
-    return isAdmin ? children : <Navigate to="/" replace />;
+    return (isAdmin && !isGuest) ? children : <Navigate to="/" replace />;
   };
 
   return (

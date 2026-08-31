@@ -1746,7 +1746,7 @@ useEffect(() => {
     setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
     autoBackup, syncToSupabaseManual, fetchFromSupabase, getPlanningFileData,
     isGuest,
-    isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin'
+    isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin' || isGuest
   };
 
   const value = isGuest ? (() => {
