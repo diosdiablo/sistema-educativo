@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, setSupabaseReadOnly } from '../lib/supabase';
 import { uploadDocFile, getDocFile, deleteDocFile } from '../lib/storage';
 
 const StoreContext = createContext();
@@ -1722,6 +1722,10 @@ useEffect(() => {
   };
 
   const isGuest = currentUser?.isGuest === true;
+
+  useEffect(() => {
+    setSupabaseReadOnly(isGuest);
+  }, [isGuest]);
 
   const baseValue = {
     isOnline, isLoading, syncStatus,
