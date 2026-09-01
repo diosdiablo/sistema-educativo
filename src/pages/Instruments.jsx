@@ -131,6 +131,7 @@ export default function Instruments() {
   } = useStore();
 
   const [view, setView] = useState('list');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [editingInstrument, setEditingInstrument] = useState(null);
   const [applyingInstrument, setApplyingInstrument] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
@@ -220,6 +221,36 @@ export default function Instruments() {
     const subjectIds = [...new Set(currentUser.assignments.map(a => a.subjectId))];
     return subjects.filter(s => subjectIds.includes(s.id));
   }, [isAdmin, currentUser, subjects]);
+
+  // Agrupación de instrumentos por área curricular con filtro por tipo DCNEB
+  const filteredByType = useMemo(() => {
+    if (typeFilter === 'all') return instruments;
+    return instruments.filter(i => (i.type || 'checklist') === typeFilter);
+  }, [instruments, typeFilter]);
+
+  const instrumentGroups = useMemo(() => {
+    const assignedIds = new Set(availableSubjects.map(s => s.id));
+    const groups = [];
+    const map = new Map();
+    const unassigned = [];
+    filteredByType.forEach(ins => {
+      const sub = ins.subjectId ? subjects.find(s => s.id === ins.subjectId) : null;
+      if (sub && assignedIds.has(sub.id)) {
+        if (!map.has(sub.id)) {
+          map.set(sub.id, { subject: sub, instruments: [] });
+          groups.push(map.get(sub.id));
+        }
+        map.get(sub.id).instruments.push(ins);
+      } else {
+        unassigned.push(ins);
+      }
+    });
+    groups.sort((a, b) => a.subject.name.localeCompare(b.subject.name));
+    if (unassigned.length > 0) {
+      groups.push({ subject: null, instruments: unassigned });
+    }
+    return groups;
+  }, [filteredByType, subjects, availableSubjects]);
 
   const selectedSubjectObj = useMemo(() => subjects.find(s => s.id === selectedSubjectId), [subjects, selectedSubjectId]);
   const availableCompetencies = useMemo(() => selectedSubjectObj?.competencies || [], [selectedSubjectObj]);
@@ -1465,99 +1496,167 @@ export default function Instruments() {
         </button>
       </div>
 
-      {/* Grid de instrumentos */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-        {instruments.map(ins => {
-          const typeDef = typeMap[ins.type] || INSTRUMENT_TYPES[0];
-          const Icon = typeDef.icon;
-          const evCount = instrumentEvaluations.filter(e => e.instrumentId === ins.id).length;
-          return (
-            <div key={ins.id} style={{
-              background: 'var(--bg-color-surface)',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              border: '1px solid var(--border-color)',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 1px 2px rgba(60,64,67,0.08)'
+      {/* Filtro por tipo DCNEB */}
+      {instruments.length > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap',
+          marginBottom: '1.5rem', padding: '0.5rem', borderRadius: '12px',
+          background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)'
+        }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, marginRight: '0.25rem' }}>
+            Tipo:
+          </span>
+          <button
+            onClick={() => setTypeFilter('all')}
+            style={{
+              padding: '0.4rem 0.9rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
+              border: typeFilter === 'all' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              background: typeFilter === 'all' ? 'var(--nav-active-bg)' : 'transparent',
+              color: typeFilter === 'all' ? 'var(--nav-active-fg)' : 'var(--text-secondary)'
             }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(60,64,67,0.16)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.08)'; e.currentTarget.style.transform = 'none'; }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <div style={{ 
-                  width: '50px', 
-                  height: '50px', 
-                  borderRadius: '14px', 
-                  background: `${typeDef.color}18`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Icon size={24} color={typeDef.color} />
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => handleEditInstrument(ins)} style={{ 
-                    color: '#3f51b5', 
-                    background: 'var(--surface-muted)', 
-                    border: 'none', 
-                    cursor: 'pointer',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Edit2 size={16} />
-                  </button>
-                  <button onClick={() => { if (window.confirm('¿Eliminar instrumento?')) deleteInstrument(ins.id); }} style={{ 
-                    color: '#d93025', 
-                    background: '#fce8e6', 
-                    border: 'none', 
-                    cursor: 'pointer',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px', color: 'var(--text-primary)' }}>{ins.title}</h3>
-                <span style={{ 
-                  fontSize: '0.78rem', 
-                  color: typeDef.color, 
-                  fontWeight: 600, 
-                  background: `${typeDef.color}15`, 
-                  padding: '4px 10px', 
-                  borderRadius: '6px',
-                  display: 'inline-block'
-                }}>
-                  {typeDef.label}
-                </span>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
-                  {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
-                </p>
-              </div>
-              <button className="btn-primary" style={{ 
-                width: '100%', 
-                padding: '0.75rem', 
-                fontSize: '0.9rem', 
-                gap: '8px',
-                background: typeDef.color,
-                border: 'none'
-              }} onClick={() => handleStartApply(ins)}>
-                <Play size={16} /> Aplicar Evaluación
+          >
+            Todos ({instruments.length})
+          </button>
+          {INSTRUMENT_TYPES.map(t => {
+            const count = instruments.filter(i => i.type === t.id).length;
+            if (count === 0) return null;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTypeFilter(t.id)}
+                style={{
+                  padding: '0.4rem 0.9rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
+                  border: typeFilter === t.id ? `2px solid ${t.color}` : '1px solid var(--border-color)',
+                  background: typeFilter === t.id ? `${t.color}18` : 'transparent',
+                  color: typeFilter === t.id ? t.color : 'var(--text-secondary)',
+                  display: 'flex', alignItems: 'center', gap: '6px'
+                }}
+              >
+                <t.icon size={14} /> {t.label} ({count})
               </button>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+      )}
 
-        {instruments.length === 0 && (
+      {/* Instrumentos agrupados por área curricular */}
+      {instrumentGroups.map(group => {
+        const subj = group.subject;
+        return (
+          <div key={subj ? subj.id : 'sin-area'} style={{ marginBottom: '2.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '10px',
+                background: subj ? `${subj.color || '#1a73e8'}18` : 'var(--surface-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <BookOpen size={18} color={subj ? (subj.color || '#1a73e8') : 'var(--text-secondary)'} />
+              </div>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+                {subj ? subj.name : 'Sin área curricular'}
+              </h2>
+              <span style={{
+                fontSize: '0.75rem', fontWeight: 600, padding: '3px 10px', borderRadius: '20px',
+                background: 'var(--surface-muted)', color: 'var(--text-secondary)'
+              }}>
+                {group.instruments.length} instrumento(s)
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+              {group.instruments.map(ins => {
+                const typeDef = typeMap[ins.type] || INSTRUMENT_TYPES[0];
+                const Icon = typeDef.icon;
+                const evCount = instrumentEvaluations.filter(e => e.instrumentId === ins.id).length;
+                return (
+                  <div key={ins.id} style={{
+                    background: 'var(--bg-color-surface)',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    border: '1px solid var(--border-color)',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 1px 2px rgba(60,64,67,0.08)'
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(60,64,67,0.16)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.08)'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                      <div style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '14px',
+                        background: `${typeDef.color}18`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Icon size={24} color={typeDef.color} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => handleEditInstrument(ins)} style={{
+                          color: '#3f51b5',
+                          background: 'var(--surface-muted)',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '8px',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => { if (window.confirm('¿Eliminar instrumento?')) deleteInstrument(ins.id); }} style={{
+                          color: '#d93025',
+                          background: '#fce8e6',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '8px',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px', color: 'var(--text-primary)' }}>{ins.title}</h3>
+                      <span style={{
+                        fontSize: '0.78rem',
+                        color: typeDef.color,
+                        fontWeight: 600,
+                        background: `${typeDef.color}15`,
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        display: 'inline-block'
+                      }}>
+                        {typeDef.label}
+                      </span>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                        {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
+                      </p>
+                    </div>
+                    <button className="btn-primary" style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      fontSize: '0.9rem',
+                      gap: '8px',
+                      background: typeDef.color,
+                      border: 'none'
+                    }} onClick={() => handleStartApply(ins)}>
+                      <Play size={16} /> Aplicar Evaluación
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {instruments.length === 0 && (
           <div style={{ 
-            gridColumn: '1/-1', 
             textAlign: 'center', 
             padding: '4rem', 
             background: 'var(--surface-muted)',
@@ -1581,7 +1680,6 @@ export default function Instruments() {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Haz clic en <strong style={{ color: 'var(--accent-primary)' }}>Nuevo Instrumento</strong> para comenzar</p>
           </div>
         )}
-      </div>
 
       {/* Evaluaciones recientes */}
       {instrumentEvaluations.length > 0 && (
