@@ -1500,8 +1500,7 @@ export default function Instruments() {
       {instruments.length > 0 && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap',
-          marginBottom: '1.5rem', padding: '0.5rem', borderRadius: '12px',
-          background: 'var(--bg-color-surface)', border: '1px solid var(--border-color)'
+          marginBottom: '1.5rem'
         }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, marginRight: '0.25rem' }}>
             Tipo:
@@ -1509,10 +1508,12 @@ export default function Instruments() {
           <button
             onClick={() => setTypeFilter('all')}
             style={{
-              padding: '0.4rem 0.9rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
-              border: typeFilter === 'all' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              padding: '0.45rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500,
+              border: typeFilter === 'all' ? 'none' : '1px solid var(--border-color)',
               background: typeFilter === 'all' ? 'var(--nav-active-bg)' : 'transparent',
-              color: typeFilter === 'all' ? 'var(--nav-active-fg)' : 'var(--text-secondary)'
+              color: typeFilter === 'all' ? 'var(--nav-active-fg)' : 'var(--text-secondary)',
+              boxShadow: typeFilter === 'all' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           >
             Todos ({instruments.length})
@@ -1520,16 +1521,19 @@ export default function Instruments() {
           {INSTRUMENT_TYPES.map(t => {
             const count = instruments.filter(i => i.type === t.id).length;
             if (count === 0) return null;
+            const active = typeFilter === t.id;
             return (
               <button
                 key={t.id}
                 onClick={() => setTypeFilter(t.id)}
                 style={{
-                  padding: '0.4rem 0.9rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
-                  border: typeFilter === t.id ? `2px solid ${t.color}` : '1px solid var(--border-color)',
-                  background: typeFilter === t.id ? `${t.color}18` : 'transparent',
-                  color: typeFilter === t.id ? t.color : 'var(--text-secondary)',
-                  display: 'flex', alignItems: 'center', gap: '6px'
+                  padding: '0.45rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500,
+                  border: active ? 'none' : '1px solid var(--border-color)',
+                  background: active ? `${t.color}18` : 'transparent',
+                  color: active ? t.color : 'var(--text-secondary)',
+                  boxShadow: active ? 'var(--shadow-sm)' : 'none',
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <t.icon size={14} /> {t.label} ({count})
@@ -1546,18 +1550,18 @@ export default function Instruments() {
           <div key={subj ? subj.id : 'sin-area'} style={{ marginBottom: '2.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <div style={{
-                width: '36px', height: '36px', borderRadius: '10px',
-                background: subj ? `${subj.color || '#1a73e8'}18` : 'var(--surface-muted)',
+                width: '36px', height: '36px', borderRadius: '18px',
+                background: subj ? `${subj.color || '#1a73e8'}18` : 'var(--hover-bg)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
                 <BookOpen size={18} color={subj ? (subj.color || '#1a73e8') : 'var(--text-secondary)'} />
               </div>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 500, margin: 0, color: 'var(--text-primary)', letterSpacing: '0.01em' }}>
                 {subj ? subj.name : 'Sin área curricular'}
               </h2>
               <span style={{
-                fontSize: '0.75rem', fontWeight: 600, padding: '3px 10px', borderRadius: '20px',
-                background: 'var(--surface-muted)', color: 'var(--text-secondary)'
+                fontSize: '0.75rem', fontWeight: 500, padding: '3px 10px', borderRadius: '8px',
+                background: 'var(--hover-bg)', color: 'var(--text-secondary)'
               }}>
                 {group.instruments.length} instrumento(s)
               </span>
@@ -1571,80 +1575,83 @@ export default function Instruments() {
                   <div key={ins.id} style={{
                     background: 'var(--bg-color-surface)',
                     borderRadius: '12px',
-                    padding: '1.5rem',
-                    border: '1px solid var(--border-color)',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 1px 2px rgba(60,64,67,0.08)'
+                    padding: '1.5rem 1.5rem 1.25rem',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)',
+                    transition: 'box-shadow 0.2s ease, background-color 0.2s ease'
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(60,64,67,0.16)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(60,64,67,0.08)'; e.currentTarget.style.transform = 'none'; }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)'; e.currentTarget.style.backgroundColor = `color-mix(in srgb, var(--bg-color-surface) 93%, ${typeDef.color}07)`; }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)'; e.currentTarget.style.backgroundColor = 'var(--bg-color-surface)'; }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                       <div style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '14px',
-                        background: `${typeDef.color}18`,
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        background: `${typeDef.color}14`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        <Icon size={24} color={typeDef.color} />
+                        <Icon size={22} color={typeDef.color} />
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.25rem' }}>
                         <button onClick={() => handleEditInstrument(ins)} style={{
-                          color: '#3f51b5',
-                          background: 'var(--surface-muted)',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '8px',
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Edit2 size={16} />
+                          color: 'var(--text-secondary)',
+                          width: '40px', height: '40px', borderRadius: '50%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+                          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <Edit2 size={18} />
                         </button>
                         <button onClick={() => { if (window.confirm('¿Eliminar instrumento?')) deleteInstrument(ins.id); }} style={{
-                          color: '#d93025',
-                          background: '#fce8e6',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '8px',
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Trash2 size={16} />
+                          color: 'var(--danger-color)',
+                          width: '40px', height: '40px', borderRadius: '50%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--danger-tint-bg)'}
+                          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
                     <div style={{ marginBottom: '1rem' }}>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px', color: 'var(--text-primary)' }}>{ins.title}</h3>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 500, marginBottom: '6px', color: 'var(--text-primary)', lineHeight: 1.4 }}>{ins.title}</h3>
                       <span style={{
-                        fontSize: '0.78rem',
+                        fontSize: '0.75rem',
                         color: typeDef.color,
                         fontWeight: 600,
-                        background: `${typeDef.color}15`,
+                        background: `${typeDef.color}12`,
                         padding: '4px 10px',
                         borderRadius: '6px',
                         display: 'inline-block'
                       }}>
                         {typeDef.label}
                       </span>
-                      <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
                         {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
                       </p>
                     </div>
                     <button className="btn-primary" style={{
                       width: '100%',
-                      padding: '0.75rem',
-                      fontSize: '0.9rem',
+                      padding: '0.7rem',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
                       gap: '8px',
                       background: typeDef.color,
-                      border: 'none'
-                    }} onClick={() => handleStartApply(ins)}>
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: 'var(--shadow-sm)',
+                      transition: 'all 0.15s ease'
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.12)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                      onClick={() => handleStartApply(ins)}
+                    >
                       <Play size={16} /> Aplicar Evaluación
                     </button>
                   </div>
