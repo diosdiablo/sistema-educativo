@@ -1636,23 +1636,29 @@ export default function Instruments() {
                         {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
                       </p>
                     </div>
-                    <button className="btn-primary" style={{
-                      width: '100%',
-                      padding: '0.7rem',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
+                    <button onClick={() => handleStartApply(ins)} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '8px',
+                      width: '100%',
+                      height: '40px',
+                      padding: '0 24px',
                       background: typeDef.color,
-                      border: 'none',
-                      borderRadius: '8px',
-                      boxShadow: 'var(--shadow-sm)',
-                      transition: 'all 0.15s ease'
+                      color: '#ffffff',
+                      borderRadius: '20px',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.1px',
+                      outline: 'none',
+                      transition: 'box-shadow 0.15s ease, filter 0.15s ease'
                     }}
-                      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.12)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                      onClick={() => handleStartApply(ins)}
+                      onMouseEnter={e => { e.currentTarget.style.boxShadow = 'inset 0 0 0 100px rgba(255,255,255,0.08)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; }}
+                      onMouseDown={e => { e.currentTarget.style.boxShadow = 'inset 0 0 0 100px rgba(255,255,255,0.12)'; }}
+                      onMouseUp={e => { e.currentTarget.style.boxShadow = 'inset 0 0 0 100px rgba(255,255,255,0.08)'; }}
                     >
-                      <Play size={16} /> Aplicar Evaluación
+                      <Play size={18} /> Aplicar Evaluación
                     </button>
                   </div>
                 );
