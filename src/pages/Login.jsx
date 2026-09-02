@@ -5,12 +5,11 @@ import { Lock, Mail, ArrowRight, Eye, EyeOff, Users } from 'lucide-react';
 import Logo from '../assets/logo.png';
 
 export default function Login() {
-  const { login, guestLogin } = useStore();
+  const { login } = useStore();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [enteringGuest, setEnteringGuest] = useState(false);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -28,12 +27,6 @@ export default function Login() {
     if (!success) {
       setError('Usuario o contraseña incorrectos.');
     }
-  };
-
-  const handleGuest = () => {
-    setEnteringGuest(true);
-    guestLogin();
-    navigate('/', { replace: true });
   };
 
   return (
@@ -159,31 +152,6 @@ export default function Login() {
             {!loading && <ArrowRight size={18} />}
           </button>
         </form>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1.25rem' }}>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>o</span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-        </div>
-
-        <button
-          type="button"
-          onClick={handleGuest}
-          disabled={enteringGuest}
-          style={{
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            gap: '0.5rem', width: '100%', padding: '0.875rem', marginTop: '1.25rem',
-            background: enteringGuest ? 'var(--hover-bg)' : 'transparent',
-            color: enteringGuest ? 'var(--text-secondary)' : 'var(--accent-primary)',
-            border: '1px solid var(--accent-primary)', borderRadius: '20px',
-            fontWeight: 500, fontSize: '0.9rem',
-            cursor: enteringGuest ? 'not-allowed' : 'pointer',
-            transition: 'all 0.2s'
-          }}
-        >
-          <Eye size={18} />
-          {enteringGuest ? 'Ingresando...' : 'Explorar como invitado (solo lectura)'}
-        </button>
 
         <div style={{ textAlign: 'center', marginTop: '1.75rem' }}>
           <button onClick={() => navigate('/parent')} style={{
