@@ -1,31 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, CalendarCheck, GraduationCap, BookOpen, Layers, LogOut, UserCog, ClipboardCheck, FileText, Clock, Settings as SettingsIcon, ClipboardList, Menu, X, FolderOpen, Calendar as CalendarIcon, Bell, BellRing, MessageCircle, ThumbsUp, Moon, Sun } from 'lucide-react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import './App.css';
 import Logo from './assets/logo.png';
 
-import Dashboard from './pages/Dashboard';
-import Students from './pages/Students';
-import Classes from './pages/Classes';
-import Subjects from './pages/Subjects';
-import Attendance from './pages/Attendance';
-import Grades from './pages/Grades';
-import Login from './pages/Login';
-import UsersPage from './pages/Users';
-import Instruments from './pages/Instruments';
-import Reports from './pages/Reports';
-import Schedule from './pages/Schedule';
-import Settings from './pages/Settings';
-import DiagnosticEvaluation from './pages/DiagnosticEvaluation';
-import PlanningDocuments from './pages/PlanningDocuments';
-import StudentProfile from './pages/StudentProfile';
-import SchoolCalendar from './pages/SchoolCalendar';
-import BoletaNotas from './pages/BoletaNotas';
-import { ChatList, ChatConversationPage } from './pages/Chat';
-import ParentLogin from './pages/ParentLogin';
-import ParentDashboard from './pages/ParentDashboard';
-import Behavior from './pages/Behavior';
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Students = lazy(() => import('./pages/Students'));
+const Classes = lazy(() => import('./pages/Classes'));
+const Subjects = lazy(() => import('./pages/Subjects'));
+const Attendance = lazy(() => import('./pages/Attendance'));
+const Grades = lazy(() => import('./pages/Grades'));
+const Login = lazy(() => import('./pages/Login'));
+const UsersPage = lazy(() => import('./pages/Users'));
+const Instruments = lazy(() => import('./pages/Instruments'));
+const Reports = lazy(() => import('./pages/Reports'));
+const Schedule = lazy(() => import('./pages/Schedule'));
+const Settings = lazy(() => import('./pages/Settings'));
+const DiagnosticEvaluation = lazy(() => import('./pages/DiagnosticEvaluation'));
+const PlanningDocuments = lazy(() => import('./pages/PlanningDocuments'));
+const StudentProfile = lazy(() => import('./pages/StudentProfile'));
+const SchoolCalendar = lazy(() => import('./pages/SchoolCalendar'));
+const BoletaNotas = lazy(() => import('./pages/BoletaNotas'));
+const ChatList = lazy(() => import('./pages/Chat').then(m => ({ default: m.ChatList })));
+const ChatConversationPage = lazy(() => import('./pages/Chat').then(m => ({ default: m.ChatConversationPage })));
+const ParentLogin = lazy(() => import('./pages/ParentLogin'));
+const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
+const Behavior = lazy(() => import('./pages/Behavior'));
 
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin, isGuest } = useStore();
@@ -217,13 +218,15 @@ function AppContent() {
     const path = window.location.pathname;
     if (path.startsWith('/parent')) {
       return (
-        <Routes>
-          <Route path="/parent/dashboard" element={<ParentDashboard />} />
-          <Route path="/parent" element={<ParentLogin />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/parent/dashboard" element={<ParentDashboard />} />
+            <Route path="/parent" element={<ParentLogin />} />
+          </Routes>
+        </Suspense>
       );
     }
-    return <Login />;
+    return <Suspense fallback={<PageLoader />}><Login /></Suspense>;
   }
 
   const AdminOnlyRoute = ({ children }) => {
@@ -295,36 +298,46 @@ function AppContent() {
         </div>
       )}
       <div className="main-content">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/students" element={<Students />} />
-          <Route path="/students/:id" element={<StudentProfile />} />
-          <Route path="/diagnostic-evaluation" element={<DiagnosticEvaluation />} />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route path="/classes" element={<AdminOnlyRoute><Classes /></AdminOnlyRoute>} />
-          <Route path="/subjects" element={<AdminOnlyRoute><Subjects /></AdminOnlyRoute>} />
-          <Route path="/grades" element={<Grades />} />
-          <Route path="/users" element={<AdminOnlyRoute><UsersPage /></AdminOnlyRoute>} />
-          <Route path="/instruments" element={<Instruments />} />
-          <Route path="/schedule" element={<Schedule />} />
-          <Route path="/calendar" element={<SchoolCalendar />} />
-          <Route path="/planning" element={<PlanningDocuments />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
-          <Route path="/chat/:userId" element={<ChatConversationPage />} />
-          <Route path="/chat" element={<ChatList />} />
-          <Route path="/behavior" element={<Behavior />} />
-          <Route path="/parent/dashboard" element={<ParentDashboard />} />
-          <Route path="/parent" element={<ParentLogin />} />
-          <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/students" element={<Students />} />
+            <Route path="/students/:id" element={<StudentProfile />} />
+            <Route path="/diagnostic-evaluation" element={<DiagnosticEvaluation />} />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/classes" element={<AdminOnlyRoute><Classes /></AdminOnlyRoute>} />
+            <Route path="/subjects" element={<AdminOnlyRoute><Subjects /></AdminOnlyRoute>} />
+            <Route path="/grades" element={<Grades />} />
+            <Route path="/users" element={<AdminOnlyRoute><UsersPage /></AdminOnlyRoute>} />
+            <Route path="/instruments" element={<Instruments />} />
+            <Route path="/schedule" element={<Schedule />} />
+            <Route path="/calendar" element={<SchoolCalendar />} />
+            <Route path="/planning" element={<PlanningDocuments />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
+            <Route path="/chat/:userId" element={<ChatConversationPage />} />
+            <Route path="/chat" element={<ChatList />} />
+            <Route path="/behavior" element={<Behavior />} />
+            <Route path="/parent/dashboard" element={<ParentDashboard />} />
+            <Route path="/parent" element={<ParentLogin />} />
+            <Route path="/settings" element={<AdminOnlyRoute><Settings /></AdminOnlyRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );
 }
 
 import { ToastProvider } from './components/Toast';
+
+function PageLoader() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <span className="spinner" style={{ width: 28, height: 28, border: '3px solid var(--border-color)', borderTopColor: '#188038', borderRadius: '50%', display: 'inline-block' }} />
+    </div>
+  );
+}
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
