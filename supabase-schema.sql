@@ -124,7 +124,6 @@ CREATE TABLE IF NOT EXISTS instrument_evaluations (
   period TEXT,
   class_id TEXT,
   activity_name TEXT,
-  observations TEXT,
   scores JSONB DEFAULT '{}',
   criteria JSONB DEFAULT '[]',
   date TEXT,
