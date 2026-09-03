@@ -171,12 +171,15 @@ useEffect(() => {
 
     const now = Date.now();
     let lastSync = null;
+    const hasLocalStudents = Array.isArray(students) && students.length > 0;
     try {
       const raw = localStorage.getItem('edu_last_sync');
       const ts = raw ? new Date(raw).getTime() : NaN;
       if (!isNaN(ts) && now - ts > 0 && now - ts < 24 * 3600 * 1000) lastSync = raw;
     } catch { lastSync = null; }
-    const isDelta = !!lastSync;
+    // Si la caché local de estudiantes está vacía, forzar descarga completa (full load)
+    // para que datos corregidos externamente / caché borrada siempre se reflejen.
+    const isDelta = hasLocalStudents && !!lastSync;
 
     const isAdminUser = currentUser?.role === 'admin' || currentUser?.username === 'admin';
     let roleFilter = null;
