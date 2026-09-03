@@ -407,6 +407,7 @@ useEffect(() => {
 
       console.log('Loaded:', studentsData?.length, 'students | delta:', isDelta);
       setSyncStatus('synced');
+      trimLoginHistory();
     } catch (err) {
       console.error('Fetch error:', err);
       setSyncStatus('error');
@@ -1579,6 +1580,23 @@ useEffect(() => {
     setLearningSessions([]);
     localStorage.clear();
   };
+
+  const trimLoginHistory = useCallback(async () => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+    const cutoffISO = cutoff.toISOString();
+    setLoginHistory(prev => {
+      const trimmed = prev.filter(e => e.loginAt && new Date(e.loginAt) >= cutoff);
+      if (trimmed.length !== prev.length) {
+        localStorage.setItem('edu_login_history', JSON.stringify(trimmed));
+        if (isOnline) {
+          supabase.from('login_history').delete().lt('login_at', cutoffISO)
+            .then(({ error }) => { if (error) console.error('Error trimming login_history:', error); });
+        }
+      }
+      return trimmed;
+    });
+  }, [isOnline]);
 
   const addEvent = async (event) => {
     const newEvent = { ...event, id: generateId(), created_at: new Date().toISOString() };
