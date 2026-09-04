@@ -28,6 +28,16 @@ const ParentLogin = lazy(() => import('./pages/ParentLogin'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
 const Behavior = lazy(() => import('./pages/Behavior'));
 
+function AdminOnlyRoute({ children }) {
+  const { isAdmin, isGuest } = useStore();
+  return (isAdmin && !isGuest) ? children : <Navigate to="/" replace />;
+}
+
+function TeacherOnlyRoute({ children }) {
+  const { currentUser } = useStore();
+  return (currentUser?.role !== 'assistant') ? children : <Navigate to="/" replace />;
+}
+
 function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNotifs, unreadCount, showNotifs }) {
   const { logout, currentUser, isAdmin, isGuest } = useStore();
 
@@ -166,7 +176,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
 }
 
 function AppContent() {
-  const { currentUser, isAdmin, isGuest, isLoading, notifications, markNotificationRead, deleteNotification } = useStore();
+  const { currentUser, isLoading, notifications, markNotificationRead, deleteNotification } = useStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifPos, setNotifPos] = useState(null);
@@ -231,14 +241,6 @@ function AppContent() {
     }
     return <Suspense fallback={<PageLoader />}><Login /></Suspense>;
   }
-
-  const AdminOnlyRoute = ({ children }) => {
-    return (isAdmin && !isGuest) ? children : <Navigate to="/" replace />;
-  };
-
-  const TeacherOnlyRoute = ({ children }) => {
-    return (currentUser?.role !== 'assistant') ? children : <Navigate to="/" replace />;
-  };
 
   return (
     <div className="app-container">
