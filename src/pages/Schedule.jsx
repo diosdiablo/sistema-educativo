@@ -330,15 +330,17 @@ export default function Schedule() {
                         <td
                           key={day}
                           style={{
-                            padding: '2px',
+                            padding: 0,
                             verticalAlign: 'top',
                             borderTop: '1px solid var(--border-color)',
-                            borderLeft: '1px solid var(--border-color)'
+                            borderLeft: '1px solid var(--border-color)',
+                            position: 'relative'
                           }}
                         >
                           {items.length > 0 ? (
                             <div style={{
-                              height: '100%',
+                              position: 'absolute',
+                              top: '2px', left: '2px', right: '2px', bottom: '2px',
                               display: 'flex',
                               flexDirection: 'column',
                               gap: '2px'
@@ -366,7 +368,8 @@ export default function Schedule() {
                             </div>
                           ) : (
                             <div style={{
-                              height: '100%',
+                              position: 'absolute',
+                              top: '2px', left: '2px', right: '2px', bottom: '2px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
