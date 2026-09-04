@@ -327,6 +327,21 @@ useEffect(() => {
       setMerged(setInstrumentEvaluations, instrumentEvalsData, normEval);
       setMerged(setDiagnosticEvaluations, diagnosticData);
       setMerged(setUsers, usersData);
+      if (currentUser?.id && Array.isArray(usersData)) {
+        const freshUser = usersData.find(u => u.id === currentUser.id);
+        if (freshUser) {
+          const refreshed = {
+            ...currentUser,
+            ...freshUser,
+            assignments: normalizeAssignments(freshUser.assignments)
+          };
+          setCurrentUser(refreshed);
+          try {
+            localStorage.setItem('edu_current_user_session', JSON.stringify(refreshed));
+            sessionStorage.setItem('edu_current_user_session', JSON.stringify(refreshed));
+          } catch (e) { console.warn('session persist warning:', e.message); }
+        }
+      }
       setMerged(setLearningSessions, learningSessionsData, normDoc);
       setMerged(setEvents, eventsData);
 
@@ -445,8 +460,19 @@ useEffect(() => {
     };
 
     // -- Simple tables (passthrough) --
+    const handleUserRow = (payload) => {
+      handleUpsert(setUsers)(payload);
+      if (payload.eventType === 'DELETE') {
+        setCurrentUser(prev => prev && prev.id === payload.old.id ? null : prev);
+      } else if (payload.new) {
+        setCurrentUser(prev => prev && prev.id === payload.new.id
+          ? { ...prev, ...payload.new, assignments: normalizeAssignments(payload.new.assignments) }
+          : prev);
+      }
+    };
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, handleUserRow);
+
     const simple = [
-      ['users', setUsers],
       ['classes', setClasses],
       ['attendance', setAttendance],
       ['diagnostic_evaluations', setDiagnosticEvaluations],
@@ -766,6 +792,15 @@ useEffect(() => {
     }
   }, [isOnline]);
 
+  const normalizeAssignments = useCallback((assignments) => {
+    if (!Array.isArray(assignments)) return [];
+    return assignments.map(a => ({
+      ...a,
+      subjectId: a.subject_id || a.subjectId,
+      classId: a.class_id || a.classId
+    }));
+  }, []);
+
   const sendBroadcast = useCallback((table, action, data) => {
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.send({
@@ -791,13 +826,7 @@ useEffect(() => {
           console.log('User logged in:', data.name, 'role:', data.role, 'assignments:', data.assignments);
           const normalizedUser = {
             ...data,
-            assignments: Array.isArray(data.assignments) 
-              ? data.assignments.map(a => ({
-                  ...a,
-                  subjectId: a.subject_id || a.subjectId,
-                  classId: a.class_id || a.classId
-                }))
-              : []
+            assignments: normalizeAssignments(data.assignments)
           };
           setCurrentUser(normalizedUser);
           sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
@@ -1013,7 +1042,16 @@ useEffect(() => {
     if (currentUser?.id === id) {
       setCurrentUser(prev => ({ ...prev, ...updates }));
     }
-    syncToSupabase('users', [{ id, ...updates }]);
+    if (isOnline) {
+      const prepared = prepareForSupabase({ id, ...updates }, 'users');
+      delete prepared.id;
+      supabase.from('users').update(prepared).eq('id', id)
+        .then(({ error }) => {
+          if (error) console.error('Supabase error updating user:', JSON.stringify(error));
+        })
+        .catch(err => console.error('Error updating user:', err));
+      sendBroadcast('users', 'INSERT', { id, ...updates });
+    }
   };
 
   const deleteUser = async (id) => {
