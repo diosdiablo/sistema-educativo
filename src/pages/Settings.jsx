@@ -586,10 +586,10 @@ export default function Settings() {
                         <td>
                           <span style={{
                             display: 'inline-block', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 500,
-                            background: entry.role === 'admin' ? 'var(--danger-tint-bg)' : entry.role === 'parent' ? '#e3740015' : '#18803815',
-                            color: entry.role === 'admin' ? 'var(--danger-tint-fg)' : entry.role === 'parent' ? '#e37400' : '#188038'
+                            background: entry.role === 'admin' ? 'var(--danger-tint-bg)' : entry.role === 'parent' ? '#e3740015' : entry.role === 'assistant' ? '#0d948815' : '#18803815',
+                            color: entry.role === 'admin' ? 'var(--danger-tint-fg)' : entry.role === 'parent' ? '#e37400' : entry.role === 'assistant' ? '#0d9488' : '#188038'
                           }}>
-                            {entry.role === 'admin' ? 'Admin' : entry.role === 'parent' ? 'Padre' : 'Docente'}
+                            {entry.role === 'admin' ? 'Admin' : entry.role === 'parent' ? 'Padre' : entry.role === 'assistant' ? 'Auxiliar' : 'Docente'}
                           </span>
                         </td>
                         <td>{entry.loginAt ? new Date(entry.loginAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>

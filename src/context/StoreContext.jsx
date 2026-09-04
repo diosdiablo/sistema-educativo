@@ -1045,14 +1045,14 @@ useEffect(() => {
     return true;
   };
 
-  const register = (name, username, password) => {
+  const register = (name, username, password, role = 'teacher') => {
     if (users.find(u => u.username === username)) return false;
     const newUser = { 
       id: generateId(), 
       name, 
       username, 
       password, 
-      role: 'teacher',
+      role,
       assignments: [],
       createdAt: new Date().toISOString()
     };
@@ -1773,7 +1773,8 @@ useEffect(() => {
     setInstruments, setInstrumentEvaluations, setSchedule, setDiagnosticEvaluations, setCurrentUser,
     autoBackup, syncToSupabaseManual, fetchFromSupabase, getPlanningFileData,
     isGuest,
-    isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin' || isGuest
+    isAdmin: currentUser?.role === 'admin' || currentUser?.username === 'admin' || isGuest,
+    isAssistant: currentUser?.role === 'assistant'
   };
 
   const value = isGuest ? (() => {

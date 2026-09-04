@@ -83,7 +83,7 @@ export default function Users() {
     if (editingUser) {
       updateUser(editingUser.id, formData);
     } else {
-      const success = register(formData.name, formData.username, formData.password);
+      const success = register(formData.name, formData.username, formData.password, formData.role);
       if (!success) {
         setError('El nombre de usuario ya existe.');
         return;
@@ -204,11 +204,11 @@ export default function Users() {
                   <td>
                     <span style={{ 
                       fontSize: '0.75rem', padding: '5px 12px', borderRadius: '20px',
-                      background: isAdmin ? '#18803815' : '#e3740015',
-                      color: isAdmin ? '#188038' : '#e37400',
+                      background: isAdmin ? '#18803815' : (user.role === 'assistant' ? '#0d948815' : '#e3740015'),
+                      color: isAdmin ? '#188038' : (user.role === 'assistant' ? '#0d9488' : '#e37400'),
                       fontWeight: 500
                     }}>
-                      {isAdmin ? 'Administrador' : 'Docente'}
+                      {isAdmin ? 'Administrador' : (user.role === 'assistant' ? 'Auxiliar' : 'Docente')}
                     </span>
                   </td>
                   <td style={{ textAlign: 'center' }}>
@@ -356,6 +356,7 @@ export default function Users() {
                   >
                     <option value="admin">Administrador</option>
                     <option value="teacher">Docente</option>
+                    <option value="assistant">Auxiliar de Educación</option>
                   </select>
                 </div>
               </div>

@@ -58,7 +58,10 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
     { name: 'Configuración', path: '/settings', icon: <SettingsIcon size={20} /> },
   ];
 
-  const menuItems = (isAdmin && !isGuest) ? [...allMenuItems, ...adminItems] : allMenuItems.filter(item => item.path !== '/boleta');
+  const menuItems = (isAdmin && !isGuest) ? [...allMenuItems, ...adminItems]
+    : currentUser?.role === 'assistant'
+      ? allMenuItems.filter(item => ['/', '/attendance', '/behavior', '/reports', '/schedule', '/chat'].includes(item.path))
+      : allMenuItems.filter(item => item.path !== '/boleta');
 
   return (
     <>
@@ -135,7 +138,7 @@ function Sidebar({ isOpen, onClose, darkMode, setDarkMode, bellBtnRef, toggleNot
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {isGuest ? 'Invitado' : (currentUser?.role === 'admin' ? 'Administrador' : 'Docente')}
+                {isGuest ? 'Invitado' : (currentUser?.role === 'admin' ? 'Administrador' : currentUser?.role === 'assistant' ? 'Auxiliar' : 'Docente')}
               </span>
               <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentUser?.name}</strong>
               {isGuest && (
@@ -233,6 +236,10 @@ function AppContent() {
     return (isAdmin && !isGuest) ? children : <Navigate to="/" replace />;
   };
 
+  const TeacherOnlyRoute = ({ children }) => {
+    return (currentUser?.role !== 'assistant') ? children : <Navigate to="/" replace />;
+  };
+
   return (
     <div className="app-container">
       <div className="mobile-header">
@@ -301,18 +308,18 @@ function AppContent() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/students" element={<Students />} />
-            <Route path="/students/:id" element={<StudentProfile />} />
-            <Route path="/diagnostic-evaluation" element={<DiagnosticEvaluation />} />
+            <Route path="/students" element={<TeacherOnlyRoute><Students /></TeacherOnlyRoute>} />
+            <Route path="/students/:id" element={<TeacherOnlyRoute><StudentProfile /></TeacherOnlyRoute>} />
+            <Route path="/diagnostic-evaluation" element={<TeacherOnlyRoute><DiagnosticEvaluation /></TeacherOnlyRoute>} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/classes" element={<AdminOnlyRoute><Classes /></AdminOnlyRoute>} />
             <Route path="/subjects" element={<AdminOnlyRoute><Subjects /></AdminOnlyRoute>} />
-            <Route path="/grades" element={<Grades />} />
+            <Route path="/grades" element={<TeacherOnlyRoute><Grades /></TeacherOnlyRoute>} />
             <Route path="/users" element={<AdminOnlyRoute><UsersPage /></AdminOnlyRoute>} />
-            <Route path="/instruments" element={<Instruments />} />
+            <Route path="/instruments" element={<TeacherOnlyRoute><Instruments /></TeacherOnlyRoute>} />
             <Route path="/schedule" element={<Schedule />} />
-            <Route path="/calendar" element={<SchoolCalendar />} />
-            <Route path="/planning" element={<PlanningDocuments />} />
+            <Route path="/calendar" element={<TeacherOnlyRoute><SchoolCalendar /></TeacherOnlyRoute>} />
+            <Route path="/planning" element={<TeacherOnlyRoute><PlanningDocuments /></TeacherOnlyRoute>} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/boleta" element={<AdminOnlyRoute><BoletaNotas /></AdminOnlyRoute>} />
             <Route path="/chat/:userId" element={<ChatConversationPage />} />

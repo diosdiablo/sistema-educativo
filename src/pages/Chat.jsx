@@ -101,7 +101,7 @@ function ChatContacts({ onSelect }) {
       if (u.id === currentId) return false;
       const role = (u.role || '').toLowerCase();
       if (role === 'user') return false;
-      return role === 'teacher' || role === 'admin' || u.username === 'admin';
+      return role === 'teacher' || role === 'admin' || role === 'assistant' || u.username === 'admin';
     });
     return filtered.length === 0 && users.length > 1 && currentId
       ? users.filter(u => u.id !== currentId)
@@ -285,7 +285,7 @@ function ChatContacts({ onSelect }) {
                         }}>
                           {preview ? (
                             <>{preview.senderId === currentUser?.id && (preview.readAt ? <CheckCheck size={12} style={{ display: 'inline', marginRight: 4 }} /> : <Check size={12} style={{ display: 'inline', marginRight: 4 }} />)}{preview.message}</>
-                          ) : (contact.role === 'admin' ? 'Administrador · Sin mensajes aún' : 'Docente · Sin mensajes aún')}
+                          ) : (contact.role === 'admin' ? 'Administrador · Sin mensajes aún' : contact.role === 'assistant' ? 'Auxiliar · Sin mensajes aún' : 'Docente · Sin mensajes aún')}
                         </div>
                       </div>
                     </div>
@@ -365,7 +365,7 @@ function ChatContacts({ onSelect }) {
               }}>{currentUser?.name?.charAt(0)?.toUpperCase() || '?'}</div>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{currentUser?.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Tú · {currentUser?.role === 'admin' ? 'Administrador' : 'Docente'}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Tú · {currentUser?.role === 'admin' ? 'Administrador' : currentUser?.role === 'assistant' ? 'Auxiliar' : 'Docente'}</div>
               </div>
             </div>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
@@ -548,7 +548,7 @@ function ChatConversation({ userId, onBack }) {
                 width: '7px', height: '7px', borderRadius: '50%', display: 'inline-block',
                 background: isOnline ? '#188038' : 'var(--text-secondary)'
               }} />
-              {contact?.role === 'admin' ? 'Administrador' : 'Docente'}
+              {contact?.role === 'admin' ? 'Administrador' : contact?.role === 'assistant' ? 'Auxiliar' : 'Docente'}
             </div>
           </div>
         </div>
