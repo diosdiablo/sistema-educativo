@@ -47,8 +47,12 @@ export default function Users() {
   const handleAddAssignment = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!newAssignment.classId || !newAssignment.subjectId) {
-      alert('Por favor selecciona un grado y una materia.');
+    if (!newAssignment.classId) {
+      alert('Por favor selecciona un grado.');
+      return;
+    }
+    if (userForAssignment?.role !== 'assistant' && !newAssignment.subjectId) {
+      alert('Por favor selecciona una materia.');
       return;
     }
     const exists = tempAssignments.some(
@@ -426,9 +430,9 @@ export default function Users() {
                   }}>
                     <BookOpen size={20} color="var(--nav-active-fg)" />
                   </div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)' }}>Asignar Materias</h2>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 400, margin: 0, color: 'var(--text-primary)' }}>{userForAssignment?.role === 'assistant' ? 'Asignar Grados' : 'Asignar Materias'}</h2>
                 </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>Docente: <strong>{userForAssignment.name}</strong></p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>{userForAssignment?.role === 'assistant' ? 'Auxiliar' : 'Docente'}: <strong>{userForAssignment.name}</strong></p>
               </div>
               <button onClick={() => setIsAssignmentModalOpen(false)} style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
                 <X size={24} />
@@ -437,7 +441,7 @@ export default function Users() {
 
             <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: 'var(--surface-muted)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '0.9rem', marginBottom: '1rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Nueva Asignación</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.75rem', alignItems: 'flex-end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: userForAssignment?.role === 'assistant' ? '1fr auto' : '1fr 1fr auto', gap: '0.75rem', alignItems: 'flex-end' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Grado/Sección</label>
                   <select 
@@ -450,18 +454,20 @@ export default function Users() {
                     {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Materia</label>
-                  <select 
-                    className="input-field"
-                    value={newAssignment.subjectId}
-                    onChange={e => setNewAssignment({ ...newAssignment, subjectId: e.target.value })}
-                    style={{ fontSize: '0.875rem' }}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
+                {userForAssignment?.role !== 'assistant' && (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Materia</label>
+                    <select 
+                      className="input-field"
+                      value={newAssignment.subjectId}
+                      onChange={e => setNewAssignment({ ...newAssignment, subjectId: e.target.value })}
+                      style={{ fontSize: '0.875rem' }}
+                    >
+                      <option value="">Seleccionar...</option>
+                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+                )}
                 <button type="button" 
                   className="btn-primary"
                   style={{ 
@@ -497,8 +503,12 @@ export default function Users() {
                             <BookOpen size={16} color="var(--nav-active-fg)" />
                           </div>
                           <div>
-                            <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{subjectObj?.name || 'Materia Desconocida'}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{classObj?.name || 'Grado Desconocido'}</div>
+                            <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                              {userForAssignment?.role === 'assistant' ? (classObj?.name || 'Grado Desconocido') : (subjectObj?.name || 'Materia Desconocida')}
+                            </div>
+                            {userForAssignment?.role !== 'assistant' && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{classObj?.name || 'Grado Desconocido'}</div>
+                            )}
                           </div>
                         </div>
                         <button type="button" 
