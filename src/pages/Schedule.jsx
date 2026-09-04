@@ -27,7 +27,7 @@ export default function Schedule() {
     userId: ''
   });
 
-  const teachers = useMemo(() => users.filter(u => u.role !== 'admin'), [users]);
+  const teachers = useMemo(() => users.filter(u => u.role === 'teacher' || u.role === 'Docente'), [users]);
 
   const viewedUser = useMemo(() => {
     if (selectedUserId === 'all') return null;
@@ -199,8 +199,8 @@ export default function Schedule() {
                 }}
               >
                 {isAdmin && <option value="all">Todos los Docentes</option>}
-                {isAdmin && <option value={currentUser.id}>Mi Horario (Admin)</option>}
-                {teachers.map(t => (
+                <option value={currentUser.id}>{isAdmin ? 'Mi Horario (Admin)' : 'Mi Horario'}</option>
+                {teachers.filter(t => t.id !== currentUser.id).map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
