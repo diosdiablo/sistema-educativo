@@ -83,7 +83,21 @@ const Reports = () => {
       return;
     }
     
-    const data = buildAttendanceData(classStudents, attendance, allDates);
+    const isAssistant = currentUser?.role === 'assistant';
+    let useDates = allDates;
+    if (isAssistant) {
+      useDates = allDates.filter(date => {
+        const record = attendance.find(a => a.date === date);
+        if (!record?.records) return false;
+        return Object.values(record.records).some(v => v && typeof v === 'object' && v.u === currentUser.id);
+      });
+      if (useDates.length === 0) {
+        alert(`Aún no has registrado asistencia en el Bimestre ${selectedPeriodAttendance}. Este reporte solo muestra los registros que tú realizas.`);
+        return;
+      }
+    }
+    
+    const data = buildAttendanceData(classStudents, attendance, useDates, isAssistant, currentUser.id);
 
     const template = await loadTemplate('asistencia.xlsx');
     let workbook;
@@ -113,7 +127,7 @@ const Reports = () => {
       workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencia');
       
-      const dateCols = allDates.length;
+      const dateCols = useDates.length;
       const wscols = [
         { wch: 35 },
         ...Array(dateCols).fill({ wch: 10 }),

@@ -64,3 +64,4 @@ CREATE POLICY "Enable all for push_subscriptions" ON push_subscriptions FOR ALL 
 - Registro de incidencias/disciplina
 - Importación masiva de alumnos desde Excel
 - Fotos de estudiantes
+- **GENERADOR DE HORARIOS** (idea validada 04-set-2026 por el usuario): herramienta en la app que genere horarios automáticamente para varias secciones/docentes (hoy solo hay 1 docente). Requiere: tabla `curriculum` (horas semanales por grado/área), algoritmo de backtracking + heurística MRV sin librerías, vista previa reutilizando las vistas por sección/docente, validación de conflictos y botón "Aplicar" que escribe en `schedule` conservando bloques fijos `__ATENCION__`/`__TRABAJO__`. Pendiente definir con el usuario: horas reales por grado/área y restricciones especiales (dobles bloques, docentes de jornada parcial). El usuario la dejó "en el aire" y pidió que se la recuerde en el futuro próximo.

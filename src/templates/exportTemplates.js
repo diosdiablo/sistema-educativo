@@ -126,18 +126,31 @@ export const createWorkbookFromData = (data, sheetName = 'Sheet1') => {
   return workbook;
 };
 
-export const buildAttendanceData = (students, attendance, dates) => {
+export const buildAttendanceData = (students, attendance, dates, ownRecordsOnly = false, currentUserId = '') => {
   const rows = [];
   
   students.forEach(student => {
     const row = { Estudiante: student.name };
+    let hasOwn = false;
     
     dates.forEach(date => {
       const record = attendance.find(a => a.date === date);
-      const status = record?.records?.[student.id] || '-';
-      row[date] = status;
+      const raw = record?.records?.[student.id];
+      const status = typeof raw === 'string' ? raw : (raw?.s || null);
+      if (ownRecordsOnly) {
+        const isMine = !!raw && typeof raw === 'object' && raw.u === currentUserId;
+        if (isMine && status) {
+          row[date] = status;
+          hasOwn = true;
+        } else {
+          row[date] = '-';
+        }
+      } else {
+        row[date] = status || '-';
+      }
     });
     
+    if (ownRecordsOnly && !hasOwn) return;
     rows.push(row);
   });
   

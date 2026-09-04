@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
+const unwrapStatus = (r) => (typeof r === 'string' ? r : (r?.s || null));
+
 export default function Attendance() {
   const { students, classes, attendance, saveAttendanceDate, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
   const [searchParams] = useSearchParams();
@@ -43,7 +45,7 @@ export default function Attendance() {
     const records = getAttendanceForDate(dateStr);
     const stats = { P: 0, T: 0, F: 0, J: 0, total: 0 };
     studentsList.forEach(student => {
-      const status = records[student.id];
+      const status = unwrapStatus(records[student.id]);
       if (status && stats[status] !== undefined) {
         stats[status]++;
         stats.total++;
@@ -92,7 +94,7 @@ export default function Attendance() {
     
     allRecords.forEach(record => {
       filteredStudents.forEach(student => {
-        const status = record.records?.[student.id];
+        const status = unwrapStatus(record.records?.[student.id]);
         if (status && stats[status] !== undefined) {
           stats[status]++;
         }
@@ -142,7 +144,7 @@ export default function Attendance() {
     let total = 0;
     
     filteredStudents.forEach(student => {
-      const status = currentRecords[student.id];
+      const status = unwrapStatus(currentRecords[student.id]);
       if (status && stats[status] !== undefined) {
         stats[status]++;
         total++;
@@ -629,7 +631,7 @@ export default function Attendance() {
                       <td style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.6rem 1rem' }}>
                           {STATUS_OPTIONS.map(opt => {
-                            const isSelected = currentRecords[student.id] === opt.value;
+                            const isSelected = unwrapStatus(currentRecords[student.id]) === opt.value;
                             return (
                               <button
                                 key={opt.value}
@@ -851,7 +853,7 @@ export default function Attendance() {
                                 }}>
                                   {filteredStudents.map(student => {
                                     const records = getAttendanceForDate(dateStr);
-                                    const status = records[student.id];
+                                    const status = unwrapStatus(records[student.id]);
                                     if (!status) return null;
 
                                     const statusConfig = STATUS_OPTIONS.find(opt => opt.value === status);

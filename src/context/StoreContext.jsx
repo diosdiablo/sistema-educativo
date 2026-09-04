@@ -1100,14 +1100,24 @@ useEffect(() => {
   };
 
   const saveAttendanceDate = (date, records = {}) => {
+    const stamped = {};
+    for (const [studentId, value] of Object.entries(records)) {
+      if (value && typeof value === 'object' && typeof value.s !== 'undefined') {
+        stamped[studentId] = value;
+      } else {
+        const s = value == null ? '-' : String(value);
+        stamped[studentId] = { s, u: currentUser?.id || '', n: currentUser?.name || '' };
+      }
+    }
     setAttendance(prev => {
       const existing = prev.find(a => a.date === date);
       if (existing) {
-        const updated = prev.map(a => a.date === date ? { ...a, records } : a);
+        const merged = existing.records ? { ...existing.records, ...stamped } : stamped;
+        const updated = prev.map(a => a.date === date ? { ...a, records: merged } : a);
         syncToSupabase('attendance', [updated.find(a => a.date === date)]);
         return updated;
       }
-      const newRecord = { id: generateId(), date, records };
+      const newRecord = { id: generateId(), date, records: stamped };
       syncToSupabase('attendance', [newRecord]);
       return [...prev, newRecord];
     });
