@@ -6,7 +6,7 @@ import {
   Users, BookOpen, CheckCircle, TrendingUp, CalendarCheck, ClipboardCheck,
   BarChart3, Clock, Calendar, GraduationCap, Cake,
   AlertTriangle,
-  FileText, Star, CheckSquare
+  FileText, Star, CheckSquare, ShieldAlert
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -521,14 +521,21 @@ export default function Dashboard() {
     });
   }
 
-  const quickActions = [
-    { icon: <CheckSquare size={20} />, label: 'Asistencia', tint: ['#e6f4ea', '#188038'], path: '/attendance' },
-    { icon: <ClipboardCheck size={20} />, label: 'Evaluar', tint: ['#fef7e0', '#b06000'], path: '/instruments' },
-    { icon: <BookOpen size={20} />, label: 'Calificar', tint: ['#e8f0fe', '#1967d2'], path: '/grades' },
-    { icon: <Users size={20} />, label: 'Estudiantes', tint: ['#f3e8fd', '#7627bb'], path: '/students' },
-    { icon: <FileText size={20} />, label: 'Planificar', tint: ['#e4f7fb', '#007b83'], path: '/planning' },
-    { icon: <BarChart3 size={20} />, label: 'Reportes', tint: ['#fce8e6', '#d93025'], path: '/reports' },
-  ];
+  const quickActions = currentUser?.role === 'assistant'
+    ? [
+        { icon: <CheckSquare size={20} />, label: 'Asistencia', tint: ['#e6f4ea', '#188038'], path: '/attendance' },
+        { icon: <ShieldAlert size={20} />, label: 'Conducta', tint: ['#fce8e6', '#d93025'], path: '/behavior' },
+        { icon: <BarChart3 size={20} />, label: 'Reportes', tint: ['#e4f7fb', '#007b83'], path: '/reports' },
+        { icon: <Calendar size={20} />, label: 'Horario', tint: ['#fef7e0', '#b06000'], path: '/schedule' },
+      ]
+    : [
+        { icon: <CheckSquare size={20} />, label: 'Asistencia', tint: ['#e6f4ea', '#188038'], path: '/attendance' },
+        { icon: <ClipboardCheck size={20} />, label: 'Evaluar', tint: ['#fef7e0', '#b06000'], path: '/instruments' },
+        { icon: <BookOpen size={20} />, label: 'Calificar', tint: ['#e8f0fe', '#1967d2'], path: '/grades' },
+        { icon: <Users size={20} />, label: 'Estudiantes', tint: ['#f3e8fd', '#7627bb'], path: '/students' },
+        { icon: <FileText size={20} />, label: 'Planificar', tint: ['#e4f7fb', '#007b83'], path: '/planning' },
+        { icon: <BarChart3 size={20} />, label: 'Reportes', tint: ['#fce8e6', '#d93025'], path: '/reports' },
+      ];
 
   return (
     <motion.div initial="hidden" animate="visible" variants={stagger} style={{ minHeight: '100vh' }}>
