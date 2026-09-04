@@ -132,11 +132,13 @@ export const buildAttendanceData = (students, attendance, dates, ownRecordsOnly 
   students.forEach(student => {
     const row = { Estudiante: student.name };
     let hasOwn = false;
+    const notes = [];
     
     dates.forEach(date => {
       const record = attendance.find(a => a.date === date);
       const raw = record?.records?.[student.id];
       const status = typeof raw === 'string' ? raw : (raw?.s || null);
+      const note = (typeof raw === 'object' && raw && typeof raw.o === 'string') ? raw.o : '';
       if (ownRecordsOnly) {
         const isMine = !!raw && typeof raw === 'object' && raw.u === currentUserId;
         if (isMine && status) {
@@ -145,12 +147,15 @@ export const buildAttendanceData = (students, attendance, dates, ownRecordsOnly 
         } else {
           row[date] = '-';
         }
+        if (isMine && note) notes.push(`${date}: ${note}`);
       } else {
         row[date] = status || '-';
+        if (note) notes.push(`${date}: ${note}`);
       }
     });
     
-    if (ownRecordsOnly && !hasOwn) return;
+    if (ownRecordsOnly && !hasOwn && notes.length === 0) return;
+    row['Observaciones'] = notes.join('; ');
     rows.push(row);
   });
   

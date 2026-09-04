@@ -1123,6 +1123,35 @@ useEffect(() => {
     });
   };
 
+  const saveAttendanceNote = (date, studentId, note) => {
+    const trimmed = (note || '').trim();
+    setAttendance(prev => {
+      const existing = prev.find(a => a.date === date);
+      if (!existing) {
+        if (!trimmed) return prev;
+        const newRecord = {
+          id: generateId(),
+          date,
+          records: { [studentId]: { s: null, u: currentUser?.id || '', n: currentUser?.name || '', o: trimmed } }
+        };
+        syncToSupabase('attendance', [newRecord]);
+        return [...prev, newRecord];
+      }
+      const cur = existing.records?.[studentId];
+      let next;
+      if (cur && typeof cur === 'object' && typeof cur.s !== 'undefined') {
+        next = { ...cur, o: trimmed };
+      } else {
+        const s = typeof cur === 'string' ? cur : null;
+        next = { s, u: currentUser?.id || '', n: currentUser?.name || '', o: trimmed };
+      }
+      const records = { ...existing.records, [studentId]: next };
+      const updated = prev.map(a => a.date === date ? { ...a, records } : a);
+      syncToSupabase('attendance', [updated.find(a => a.date === date)]);
+      return updated;
+    });
+  };
+
   const deleteAttendanceDate = (date) => {
     setAttendance(prev => {
       const record = prev.find(a => a.date === date);
@@ -1807,7 +1836,7 @@ useEffect(() => {
     clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
     addSubject, deleteSubject, addCompetency, deleteCompetency,
     addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-    saveAttendanceDate, deleteAttendanceDate, saveGrade,
+    saveAttendanceDate, saveAttendanceNote, deleteAttendanceDate, saveGrade,
     calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
     schedule, saveScheduleItem, deleteScheduleItem,
     periodDates, updatePeriodDates,
@@ -1832,7 +1861,7 @@ useEffect(() => {
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-      saveAttendanceDate, deleteAttendanceDate, saveGrade,
+      saveAttendanceDate, saveAttendanceNote, deleteAttendanceDate, saveGrade,
       addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
       saveScheduleItem, deleteScheduleItem,
       updatePeriodDates,

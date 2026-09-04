@@ -6,7 +6,7 @@ import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, Graduati
 const unwrapStatus = (r) => (typeof r === 'string' ? r : (r?.s || null));
 
 export default function Attendance() {
-  const { students, classes, attendance, saveAttendanceDate, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
+  const { students, classes, attendance, saveAttendanceDate, saveAttendanceNote, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
   const [searchParams] = useSearchParams();
   
   const availableClasses = useMemo(() => {
@@ -63,9 +63,11 @@ export default function Attendance() {
   
   const selectedDateRecord = attendance.find(a => a.date === date);
   const [currentRecords, setCurrentRecords] = useState(selectedDateRecord?.records || {});
+  const [noteDrafts, setNoteDrafts] = useState({});
 
   useEffect(() => {
     setCurrentRecords(selectedDateRecord?.records || {});
+    setNoteDrafts({});
   }, [date, selectedDateRecord]);
 
   const filteredStudents = useMemo(() => {
@@ -171,7 +173,9 @@ export default function Attendance() {
 
   const handleSave = () => {
     if (!selectedClass) return;
+    Object.entries(noteDrafts).forEach(([sid, txt]) => saveAttendanceNote(date, sid, txt));
     saveAttendanceDate(date, currentRecords);
+    setNoteDrafts({});
     alert('Asistencia guardada con éxito.');
   };
 
@@ -595,12 +599,13 @@ export default function Attendance() {
                   <th style={thStyle()}>Estudiante</th>
                   <th style={thStyle('150px')}>Grado</th>
                   <th style={thStyle()}>Estado de Asistencia</th>
+                  <th style={thStyle()}>Observaciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
                       No hay estudiantes matriculados en esta sección.
                     </td>
                   </tr>
@@ -659,6 +664,25 @@ export default function Attendance() {
                             );
                           })}
                         </div>
+                      </td>
+                      <td style={{ borderBottom: '1px solid var(--border-color)', padding: '0.6rem 1rem' }}>
+                        <input
+                          value={noteDrafts[student.id] ?? ((typeof currentRecords[student.id] === 'object' && currentRecords[student.id]) ? currentRecords[student.id].o || '' : '')}
+                          onChange={e => setNoteDrafts(prev => ({ ...prev, [student.id]: e.target.value }))}
+                          onBlur={e => { if (date) saveAttendanceNote(date, student.id, e.target.value); }}
+                          placeholder="Ej: se retiró por malestar a las 10:00"
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem 0.75rem',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-color)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.82rem',
+                            outline: 'none',
+                            minWidth: '200px'
+                          }}
+                        />
                       </td>
                     </tr>
                   ))
@@ -853,47 +877,65 @@ export default function Attendance() {
                                 }}>
                                   {filteredStudents.map(student => {
                                     const records = getAttendanceForDate(dateStr);
-                                    const status = unwrapStatus(records[student.id]);
-                                    if (!status) return null;
+                                    const raw = records[student.id];
+                                    const status = unwrapStatus(raw);
+                                    const note = (typeof raw === 'object' && raw && typeof raw.o === 'string') ? raw.o : '';
+                                    if (!status && !note) return null;
 
                                     const statusConfig = STATUS_OPTIONS.find(opt => opt.value === status);
                                     return (
                                       <div key={student.id} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
                                         padding: '0.5rem 0.75rem',
                                         borderRadius: '8px',
                                         background: 'var(--bg-color-surface)',
                                         border: '1px solid var(--border-color)'
                                       }}>
-                                        <span style={{
-                                          fontSize: '0.85rem',
-                                          fontWeight: 500,
-                                          color: 'var(--text-primary)',
-                                          flex: 1,
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          whiteSpace: 'nowrap',
-                                          marginRight: '0.5rem'
-                                        }}>
-                                          {student.name}
-                                        </span>
-                                        <span style={{
-                                          display: 'inline-flex',
+                                        <div style={{
+                                          display: 'flex',
                                           alignItems: 'center',
-                                          gap: '6px',
-                                          padding: '0.2rem 0.6rem',
-                                          borderRadius: '12px',
-                                          background: statusConfig?.bg || 'var(--hover-bg)',
-                                          color: statusConfig?.color || 'var(--text-secondary)',
-                                          fontWeight: 500,
-                                          fontSize: '0.75rem',
-                                          whiteSpace: 'nowrap'
+                                          justifyContent: 'space-between',
+                                          gap: '0.5rem'
                                         }}>
-                                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusConfig?.color || 'var(--text-secondary)' }} />
-                                          {statusConfig?.label}
-                                        </span>
+                                          <span style={{
+                                            fontSize: '0.85rem',
+                                            fontWeight: 500,
+                                            color: 'var(--text-primary)',
+                                            flex: 1,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            marginRight: '0.5rem'
+                                          }}>
+                                            {student.name}
+                                          </span>
+                                          {status && (
+                                            <span style={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '6px',
+                                              padding: '0.2rem 0.6rem',
+                                              borderRadius: '12px',
+                                              background: statusConfig?.bg || 'var(--hover-bg)',
+                                              color: statusConfig?.color || 'var(--text-secondary)',
+                                              fontWeight: 500,
+                                              fontSize: '0.75rem',
+                                              whiteSpace: 'nowrap'
+                                            }}>
+                                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusConfig?.color || 'var(--text-secondary)' }} />
+                                              {statusConfig?.label}
+                                            </span>
+                                          )}
+                                        </div>
+                                        {note && (
+                                          <div style={{
+                                            marginTop: '0.35rem',
+                                            fontSize: '0.75rem',
+                                            color: 'var(--text-secondary)',
+                                            lineHeight: 1.4
+                                          }}>
+                                            {note}
+                                          </div>
+                                        )}
                                       </div>
                                     );
                                   })}
