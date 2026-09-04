@@ -694,7 +694,7 @@ useEffect(() => {
   const toSnakeCase = useCallback((str) => str.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`), []);
 
   const TABLE_COLUMNS = useMemo(() => ({
-    users: ['id', 'username', 'password', 'name', 'role', 'created_at', 'updated_at'],
+    users: ['id', 'username', 'password', 'name', 'role', 'assignments', 'created_at', 'updated_at'],
     students: ['id', 'name', 'dni', 'class_id', 'guardian_name', 'guardian_dni', 'guardian_phone', 'birth_date', 'created_at', 'updated_at', 'grade_level', 'photo_url'],
     subjects: ['id', 'name', 'competencies', 'created_at', 'updated_at'],
     classes: ['id', 'name', 'created_at', 'updated_at', 'color'],
