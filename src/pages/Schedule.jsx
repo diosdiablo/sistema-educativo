@@ -30,18 +30,20 @@ export default function Schedule() {
   const teachers = useMemo(() => users.filter(u => u.role !== 'admin'), [users]);
 
   const viewedUser = useMemo(() => {
-    if (!isAdmin) return currentUser;
     if (selectedUserId === 'all') return null;
     const found = users.find(u => u.id === selectedUserId);
     return found || currentUser;
-  }, [selectedUserId, isAdmin, currentUser, users]);
+  }, [selectedUserId, currentUser, users]);
 
   const filteredSchedule = useMemo(() => {
-    if (isAdmin && selectedUserId === 'all') {
+    if (selectedUserId === 'all') {
       return schedule;
     }
     return schedule.filter(s => s.userId === viewedUser?.id);
-  }, [schedule, viewedUser, isAdmin, selectedUserId]);
+  }, [schedule, viewedUser, selectedUserId]);
+
+  const readOnlyAll = isAdmin && selectedUserId === 'all';
+  const readOnlyForeign = !isAdmin && viewedUser && viewedUser.id !== currentUser?.id;
 
   const sectionSchedule = useMemo(() => {
     if (!selectedSectionId) return [];
@@ -153,7 +155,9 @@ export default function Schedule() {
               ? (selectedSectionId
                   ? `Horario de la sección: ${classes.find(c => c.id === selectedSectionId)?.name || ''}`
                   : 'Vista por sección: selecciona un grado para ver el horario completo')
-              : (isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase')}
+              : (readOnlyForeign
+                  ? `Viendo horario de: ${viewedUser?.name || ''} (solo lectura)`
+                  : (isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase'))}
           </p>
         </div>
 
@@ -178,7 +182,7 @@ export default function Schedule() {
             </select>
           </div>
 
-          {viewMode === 'teacher' && isAdmin && (
+          {viewMode === 'teacher' && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               background: 'var(--bg-color-surface)', padding: '0.45rem 0.9rem',
@@ -194,8 +198,8 @@ export default function Schedule() {
                   cursor: 'pointer'
                 }}
               >
-                <option value="all">Todos los Docentes</option>
-                <option value={currentUser.id}>Mi Horario (Admin)</option>
+                {isAdmin && <option value="all">Todos los Docentes</option>}
+                {isAdmin && <option value={currentUser.id}>Mi Horario (Admin)</option>}
                 {teachers.map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
@@ -227,7 +231,7 @@ export default function Schedule() {
             </div>
           )}
 
-          {viewMode === 'teacher' && (
+          {viewMode === 'teacher' && !readOnlyForeign && (
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
@@ -394,7 +398,7 @@ export default function Schedule() {
                   </td>
                 {DAYS.map(day => {
                   const item = getSlotContent(day, time);
-                  const readOnly = isAdmin && selectedUserId === 'all';
+                  const readOnly = readOnlyAll || readOnlyForeign;
 
                   return (
                     <td
