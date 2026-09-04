@@ -841,7 +841,9 @@ export default function Grades() {
                             }
                             const ev = instrumentEvaluations.find(e => {
                               if (e.period !== selectedPeriod || e.competencyId !== comp.id) return false;
-                              const instMatch = (e.activityName || e.instrumentId) === inst.id;
+                              const instMatch = e.instrumentId === inst.id
+                                || (e.activityName || e.instrumentId) === inst.id
+                                || (e.activityName || '') === (inst.activityName || inst.title || '');
                               const idMatch = e.studentId === student.id || e.student_id === student.id;
                               return instMatch && (idMatch || e.student_name === student.name);
                             });
