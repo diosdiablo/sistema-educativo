@@ -15,6 +15,8 @@ export default function Schedule() {
   const [editingItem, setEditingItem] = useState(null);
   
   const [selectedUserId, setSelectedUserId] = useState(isAdmin ? 'all' : currentUser?.id);
+  const [viewMode, setViewMode] = useState('teacher');
+  const [selectedSectionId, setSelectedSectionId] = useState('');
 
   const [formData, setFormData] = useState({
     day: 'Lunes',
@@ -40,6 +42,17 @@ export default function Schedule() {
     }
     return schedule.filter(s => s.userId === viewedUser?.id);
   }, [schedule, viewedUser, isAdmin, selectedUserId]);
+
+  const sectionSchedule = useMemo(() => {
+    if (!selectedSectionId) return [];
+    return schedule.filter(s =>
+      s.classId === selectedSectionId &&
+      s.classId !== '__ATENCION__' &&
+      s.classId !== '__TRABAJO__'
+    );
+  }, [schedule, selectedSectionId]);
+
+  const getSectionSlot = (day, time) => sectionSchedule.filter(s => s.day === day && s.time === time);
 
   const availableClasses = useMemo(() => {
     if (isAdmin || viewedUser?.role === 'admin') return classes;
@@ -136,12 +149,36 @@ export default function Schedule() {
             Horario Escolar
           </h2>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>
-            {isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase'}
+            {viewMode === 'section'
+              ? (selectedSectionId
+                  ? `Horario de la sección: ${classes.find(c => c.id === selectedSectionId)?.name || ''}`
+                  : 'Vista por sección: selecciona un grado para ver el horario completo')
+              : (isAdmin ? `Gestionando: ${viewedUser?.name || 'Todos los docentes'}` : 'Organiza tus sesiones de clase')}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {isAdmin && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'var(--bg-color-surface)', padding: '0.45rem 0.9rem',
+            borderRadius: '20px', border: '1px solid var(--border-color)'
+          }}>
+            <LayoutGrid size={16} color="#5f6368" />
+            <select
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value)}
+              style={{
+                background: 'transparent', border: 'none', color: 'var(--text-primary)',
+                outline: 'none', fontWeight: 500, fontSize: '0.85rem',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="teacher">Vista por Docente</option>
+              <option value="section">Vista por Sección</option>
+            </select>
+          </div>
+
+          {viewMode === 'teacher' && isAdmin && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               background: 'var(--bg-color-surface)', padding: '0.45rem 0.9rem',
@@ -165,6 +202,32 @@ export default function Schedule() {
               </select>
             </div>
           )}
+
+          {viewMode === 'section' && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: 'var(--bg-color-surface)', padding: '0.45rem 0.9rem',
+              borderRadius: '20px', border: '1px solid var(--border-color)'
+            }}>
+              <LayoutGrid size={16} color="#5f6368" />
+              <select
+                value={selectedSectionId}
+                onChange={(e) => setSelectedSectionId(e.target.value)}
+                style={{
+                  background: 'transparent', border: 'none', color: 'var(--text-primary)',
+                  outline: 'none', fontWeight: 500, fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">Seleccionar Sección</option>
+                {availableClasses.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {viewMode === 'teacher' && (
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
@@ -180,6 +243,7 @@ export default function Schedule() {
           >
             <Plus size={18} /> Agregar Bloque
           </button>
+          )}
         </div>
       </div>
 
@@ -240,6 +304,79 @@ export default function Schedule() {
                       fontSize: '0.66rem', color: '#bdc1c6', fontStyle: 'italic',
                       letterSpacing: '0.1em', borderTop: '1px solid var(--border-color)'
                     }}>D E S C A N S O</td>
+                  </tr>
+                );
+              }
+              if (viewMode === 'section') {
+                return (
+                  <tr key={time} style={{ height: '92px' }}>
+                    <td style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 400,
+                      color: 'var(--text-secondary)',
+                      textAlign: 'center',
+                      verticalAlign: 'middle',
+                      borderTop: '1px solid var(--border-color)'
+                    }}>
+                      {time}
+                    </td>
+                    {DAYS.map(day => {
+                      const items = getSectionSlot(day, time);
+                      return (
+                        <td
+                          key={day}
+                          style={{
+                            padding: '2px',
+                            verticalAlign: 'top',
+                            borderTop: '1px solid var(--border-color)',
+                            borderLeft: '1px solid var(--border-color)'
+                          }}
+                        >
+                          {items.length > 0 ? (
+                            <div style={{
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '2px'
+                            }}>
+                              {items.map((item, i) => (
+                                <div key={i} style={{
+                                  backgroundColor: item.color,
+                                  color: 'white',
+                                  borderRadius: '6px',
+                                  padding: '3px 5px',
+                                  flex: 1,
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                  overflow: 'hidden'
+                                }}>
+                                  <span style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.15, display: 'block' }}>
+                                    {subjects.find(s => s.id === item.subjectId)?.name || 'Área...'}
+                                  </span>
+                                  <span style={{ fontSize: '0.55rem', opacity: 0.92, fontWeight: 500, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                                    {users.find(u => u.id === item.userId)?.name || 'Desconocido'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'var(--surface-muted)',
+                              borderRadius: '6px',
+                              color: 'var(--text-secondary)',
+                              fontSize: '0.7rem'
+                            }}>
+                              —
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               }
