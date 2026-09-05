@@ -3,9 +3,15 @@ import { useStore } from '../context/StoreContext';
 import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative, exportTemplateAuxiliar, exportRegNotas } from '../templates/exportTemplates';
+import { LEVELS, markFor, markIsOwn } from '../utils/attendanceLevels';
 
 const Reports = () => {
-  const { students, classes, subjects, attendance, grades, currentUser, periodDates, instrumentEvaluations, instruments, isAdmin } = useStore();
+  const { students, classes, subjects, attendance, grades, users, currentUser, periodDates, instrumentEvaluations, instruments, isAdmin } = useStore();
+
+  const assistantIds = useMemo(
+    () => new Set(users.filter(u => u.role === 'assistant').map(u => u.id)),
+    [users]
+  );
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -84,20 +90,29 @@ const Reports = () => {
     }
     
     const isAssistant = currentUser?.role === 'assistant';
+    const level = isAssistant ? LEVELS.IE : LEVELS.CLASE;
     let useDates = allDates;
     if (isAssistant) {
       useDates = allDates.filter(date => {
         const record = attendance.find(a => a.date === date);
         if (!record?.records) return false;
-        return Object.values(record.records).some(v => v && typeof v === 'object' && v.u === currentUser.id);
+        return Object.values(record.records).some(entry => {
+          const mark = markFor(entry, LEVELS.IE, assistantIds);
+          return markIsOwn(mark, currentUser.id);
+        });
       });
       if (useDates.length === 0) {
-        alert(`Aún no has registrado asistencia en el Bimestre ${selectedPeriodAttendance}. Este reporte solo muestra los registros que tú realizas.`);
+        alert(`Aún no has registrado llegadas a la I.E. en el Bimestre ${selectedPeriodAttendance}. Este reporte solo muestra los registros que tú realizas.`);
         return;
       }
     }
     
-    const data = buildAttendanceData(classStudents, attendance, useDates, isAssistant, currentUser.id);
+    const data = buildAttendanceData(classStudents, attendance, useDates, {
+      ownRecordsOnly: isAssistant,
+      currentUserId: currentUser.id,
+      assistantIds,
+      level
+    });
 
     const template = await loadTemplate('asistencia.xlsx');
     let workbook;

@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
+import { LEVELS, markFor, markIsOwn, statusForEntry, noteFor } from '../utils/attendanceLevels';
 
 export const TEMPLATE_CONFIG = {
   attendance: {
@@ -126,21 +127,29 @@ export const createWorkbookFromData = (data, sheetName = 'Sheet1') => {
   return workbook;
 };
 
-export const buildAttendanceData = (students, attendance, dates, ownRecordsOnly = false, currentUserId = '') => {
+export const buildAttendanceData = (students, attendance, dates, opts = {}) => {
+  const {
+    ownRecordsOnly = false,
+    currentUserId = '',
+    assistantIds = new Set(),
+    level = LEVELS.CLASE
+  } = opts;
   const rows = [];
   
   students.forEach(student => {
     const row = { Estudiante: student.name };
     let hasOwn = false;
     const notes = [];
+    let skippedClassAfterArrival = 0;
     
     dates.forEach(date => {
       const record = attendance.find(a => a.date === date);
-      const raw = record?.records?.[student.id];
-      const status = typeof raw === 'string' ? raw : (raw?.s || null);
-      const note = (typeof raw === 'object' && raw && typeof raw.o === 'string') ? raw.o : '';
+      const entry = record?.records?.[student.id];
+      const mark = markFor(entry, level, assistantIds);
+      const status = mark?.s || null;
+      const note = noteFor(entry);
       if (ownRecordsOnly) {
-        const isMine = !!raw && typeof raw === 'object' && raw.u === currentUserId;
+        const isMine = markIsOwn(mark, currentUserId);
         if (isMine && status) {
           row[date] = status;
           hasOwn = true;
@@ -151,11 +160,16 @@ export const buildAttendanceData = (students, attendance, dates, ownRecordsOnly 
       } else {
         row[date] = status || '-';
         if (note) notes.push(`${date}: ${note}`);
+        if (level === LEVELS.CLASE) {
+          const arrival = statusForEntry(entry, LEVELS.IE, assistantIds);
+          if ((arrival === 'P' || arrival === 'T') && !['P', 'T', 'J'].includes(status)) skippedClassAfterArrival++;
+        }
       }
     });
     
     if (ownRecordsOnly && !hasOwn && notes.length === 0) return;
     row['Observaciones'] = notes.join('; ');
+    if (!ownRecordsOnly && level === LEVELS.CLASE) row['Faltó a clase habiendo llegado'] = skippedClassAfterArrival || '';
     rows.push(row);
   });
   

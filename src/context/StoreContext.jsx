@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase, setSupabaseReadOnly } from '../lib/supabase';
 import { uploadDocFile, getDocFile, deleteDocFile } from '../lib/storage';
+import { LEVELS } from '../utils/attendanceLevels';
 
 const StoreContext = createContext();
 
@@ -1099,21 +1100,29 @@ useEffect(() => {
     return newUser;
   };
 
-  const saveAttendanceDate = (date, records = {}) => {
-    const stamped = {};
-    for (const [studentId, value] of Object.entries(records)) {
-      if (value && typeof value === 'object' && typeof value.s !== 'undefined') {
-        stamped[studentId] = value;
-      } else {
-        const s = value == null ? '-' : String(value);
-        stamped[studentId] = { s, u: currentUser?.id || '', n: currentUser?.name || '' };
-      }
-    }
+  const saveAttendanceDate = (date, records = {}, level = LEVELS.CLASE) => {
     setAttendance(prev => {
       const existing = prev.find(a => a.date === date);
+      const stamped = {};
+      let hasValues = false;
+      for (const [studentId, value] of Object.entries(records)) {
+        const cur = existing?.records?.[studentId];
+        if (value && typeof value === 'object' && !Array.isArray(value) && (value.llega || value.clase)) {
+          stamped[studentId] = value;
+          hasValues = true;
+          continue;
+        }
+        const s = value == null ? null : String(value);
+        if (!s && !cur) continue;
+        const base = cur && typeof cur === 'object' && !Array.isArray(cur) ? cur : {};
+        const mark = s ? { s, u: currentUser?.id || '', n: currentUser?.name || '' } : null;
+        stamped[studentId] = { ...base, [level]: mark };
+        hasValues = true;
+      }
+      if (!hasValues && !existing) return prev;
       if (existing) {
-        const merged = existing.records ? { ...existing.records, ...stamped } : stamped;
-        const updated = prev.map(a => a.date === date ? { ...a, records: merged } : a);
+        const recordsMap = existing.records ? { ...existing.records, ...stamped } : stamped;
+        const updated = prev.map(a => a.date === date ? { ...a, records: recordsMap } : a);
         syncToSupabase('attendance', [updated.find(a => a.date === date)]);
         return updated;
       }
@@ -1123,33 +1132,30 @@ useEffect(() => {
     });
   };
 
-  const saveAttendanceNote = (date, studentId, note) => {
-    const trimmed = (note || '').trim();
+  const setAttendanceForStudent = (date, studentId, patch) => {
     setAttendance(prev => {
       const existing = prev.find(a => a.date === date);
-      if (!existing) {
-        if (!trimmed) return prev;
-        const newRecord = {
-          id: generateId(),
-          date,
-          records: { [studentId]: { s: null, u: currentUser?.id || '', n: currentUser?.name || '', o: trimmed } }
-        };
-        syncToSupabase('attendance', [newRecord]);
-        return [...prev, newRecord];
+      if (existing) {
+        const cur = existing.records?.[studentId];
+        const base = cur && typeof cur === 'object' && !Array.isArray(cur) ? cur : {};
+        const next = { ...base, ...patch };
+        const records = { ...existing.records, [studentId]: next };
+        const updated = prev.map(a => a.date === date ? { ...a, records } : a);
+        syncToSupabase('attendance', [updated.find(a => a.date === date)]);
+        return updated;
       }
-      const cur = existing.records?.[studentId];
-      let next;
-      if (cur && typeof cur === 'object' && typeof cur.s !== 'undefined') {
-        next = { ...cur, o: trimmed };
-      } else {
-        const s = typeof cur === 'string' ? cur : null;
-        next = { s, u: currentUser?.id || '', n: currentUser?.name || '', o: trimmed };
-      }
-      const records = { ...existing.records, [studentId]: next };
-      const updated = prev.map(a => a.date === date ? { ...a, records } : a);
-      syncToSupabase('attendance', [updated.find(a => a.date === date)]);
-      return updated;
+      const newRecord = { id: generateId(), date, records: { [studentId]: { ...patch } } };
+      syncToSupabase('attendance', [newRecord]);
+      return [...prev, newRecord];
     });
+  };
+
+  const saveAttendanceNote = (date, studentId, note) => {
+    const trimmed = (note || '').trim();
+    const record = attendance.find(a => a.date === date);
+    const cur = record?.records?.[studentId];
+    if (!cur && !trimmed) return;
+    setAttendanceForStudent(date, studentId, { o: trimmed });
   };
 
   const deleteAttendanceDate = (date) => {
@@ -1836,7 +1842,7 @@ useEffect(() => {
     clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
     addSubject, deleteSubject, addCompetency, deleteCompetency,
     addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-    saveAttendanceDate, saveAttendanceNote, deleteAttendanceDate, saveGrade,
+    saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, saveGrade,
     calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
     schedule, saveScheduleItem, deleteScheduleItem,
     periodDates, updatePeriodDates,
@@ -1861,7 +1867,7 @@ useEffect(() => {
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-      saveAttendanceDate, saveAttendanceNote, deleteAttendanceDate, saveGrade,
+      saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, saveGrade,
       addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
       saveScheduleItem, deleteScheduleItem,
       updatePeriodDates,

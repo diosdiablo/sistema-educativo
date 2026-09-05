@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { LEVELS, statusForEntry, noteFor } from '../utils/attendanceLevels';
 import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
-const unwrapStatus = (r) => (typeof r === 'string' ? r : (r?.s || null));
-
 export default function Attendance() {
-  const { students, classes, attendance, saveAttendanceDate, saveAttendanceNote, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
+  const { students, classes, users, attendance, saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, currentUser, isAdmin, periodDates } = useStore();
   const [searchParams] = useSearchParams();
+
+  const isAssistant = currentUser?.role === 'assistant';
+  const assistantIds = useMemo(() => new Set(users.filter(u => u.role === 'assistant').map(u => u.id)), [users]);
+  const level = isAssistant ? LEVELS.IE : LEVELS.CLASE;
+  const statusOf = (entry) => statusForEntry(entry, level, assistantIds);
   
   const availableClasses = useMemo(() => {
     if (isAdmin) return classes;
@@ -45,7 +49,7 @@ export default function Attendance() {
     const records = getAttendanceForDate(dateStr);
     const stats = { P: 0, T: 0, F: 0, J: 0, total: 0 };
     studentsList.forEach(student => {
-      const status = unwrapStatus(records[student.id]);
+      const status = statusOf(records[student.id]);
       if (status && stats[status] !== undefined) {
         stats[status]++;
         stats.total++;
@@ -82,21 +86,36 @@ export default function Attendance() {
       .sort((a, b) => a.name.localeCompare(b.name, 'es'));
   }, [students, selectedClass]);
 
-  // Estadísticas consolidadas de TODAS las fechas para el grado seleccionado
+  const registerStudents = useMemo(() => {
+    if (!isAssistant) return filteredStudents;
+    const assignedClassIds = new Set(availableClasses.map(c => c.id));
+    let list = students.filter(s => assignedClassIds.has(s.classId));
+    if (selectedClass) {
+      const cleanSelected = selectedClass.trim().toLowerCase();
+      list = list.filter(s => {
+        const cleanGrade = (s.gradeLevel || '').trim().toLowerCase();
+        const cleanClass = (s.classId || '').trim().toLowerCase();
+        return cleanGrade === cleanSelected || cleanClass === cleanSelected;
+      });
+    }
+    return list.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  }, [isAssistant, filteredStudents, availableClasses, students, selectedClass]);
+
+  // Estadísticas consolidadas de TODAS las fechas para el grado/sección (o todas las secciones del auxiliar)
   const attendanceStats = useMemo(() => {
-    if (!selectedClass || filteredStudents.length === 0) return null;
+    if ((!selectedClass && !isAssistant) || registerStudents.length === 0) return null;
     
-    // Obtener TODOS los registros de asistencia para estudiantes de este grado
+    // Obtener TODOS los registros de asistencia para estudiantes del alcance
     const allRecords = attendance.filter(record => {
-      return filteredStudents.some(student => record.records && record.records[student.id]);
+      return registerStudents.some(student => record.records && record.records[student.id]);
     });
 
     const stats = { P: 0, T: 0, F: 0, J: 0 };
     const datesCount = allRecords.length;
     
     allRecords.forEach(record => {
-      filteredStudents.forEach(student => {
-        const status = unwrapStatus(record.records?.[student.id]);
+      registerStudents.forEach(student => {
+        const status = statusOf(record.records?.[student.id]);
         if (status && stats[status] !== undefined) {
           stats[status]++;
         }
@@ -108,23 +127,23 @@ export default function Attendance() {
 
     return {
       ...stats,
-      total: filteredStudents.length,
+      total: registerStudents.length,
       marked: totalMarked,
       presentRate,
       datesCount,
       dates: allRecords.map(r => r.date).sort()
     };
-  }, [selectedClass, filteredStudents, attendance]);
+  }, [selectedClass, isAssistant, registerStudents, attendance]);
 
   // Fechas con asistencia registrada (para tabla de historial)
   const historicalAttendanceDates = useMemo(() => {
-    if (!selectedClass || filteredStudents.length === 0) return [];
+    if ((!selectedClass && !isAssistant) || registerStudents.length === 0) return [];
     return attendance
-      .filter(a => filteredStudents.some(s => a.records && a.records[s.id]))
+      .filter(a => registerStudents.some(s => a.records && a.records[s.id]))
       .map(a => a.date)
       .sort()
       .reverse();
-  }, [selectedClass, filteredStudents, attendance]);
+  }, [selectedClass, isAssistant, registerStudents, attendance]);
 
   const filteredHistoricalDates = useMemo(() => {
     if (selectedPeriod === 'all') return historicalAttendanceDates;
@@ -140,41 +159,41 @@ export default function Attendance() {
 
   // Estadísticas del día seleccionado
   const todayStats = useMemo(() => {
-    if (!selectedClass || filteredStudents.length === 0) return null;
+    if ((!selectedClass && !isAssistant) || registerStudents.length === 0) return null;
     
     const stats = { P: 0, T: 0, F: 0, J: 0 };
     let total = 0;
     
-    filteredStudents.forEach(student => {
-      const status = unwrapStatus(currentRecords[student.id]);
+    registerStudents.forEach(student => {
+      const status = statusOf(currentRecords[student.id]);
       if (status && stats[status] !== undefined) {
         stats[status]++;
         total++;
       }
     });
 
-    const presentRate = total > 0 ? Math.round(((stats.P + stats.T + stats.J) / filteredStudents.length) * 100) : 0;
+    const presentRate = total > 0 ? Math.round(((stats.P + stats.T + stats.J) / registerStudents.length) * 100) : 0;
 
     return {
       ...stats,
-      total: filteredStudents.length,
+      total: registerStudents.length,
       marked: total,
       presentRate
     };
-  }, [selectedClass, filteredStudents, currentRecords]);
+  }, [selectedClass, isAssistant, registerStudents, currentRecords]);
 
   const handleStatusChange = (studentId, status) => {
+    const patch = { [level]: status ? { s: status, u: currentUser?.id || '', n: currentUser?.name || '' } : null };
     setCurrentRecords(prev => {
-      const updated = { ...prev, [studentId]: status };
-      saveAttendanceDate(date, updated);
-      return updated;
+      const prevEntry = prev[studentId];
+      const newEntry = (prevEntry && typeof prevEntry === 'object' && !Array.isArray(prevEntry)) ? { ...prevEntry, ...patch } : { ...patch };
+      return { ...prev, [studentId]: newEntry };
     });
+    setAttendanceForStudent(date, studentId, patch);
   };
 
   const handleSave = () => {
-    if (!selectedClass) return;
     Object.entries(noteDrafts).forEach(([sid, txt]) => saveAttendanceNote(date, sid, txt));
-    saveAttendanceDate(date, currentRecords);
     setNoteDrafts({});
     alert('Asistencia guardada con éxito.');
   };
@@ -273,7 +292,7 @@ export default function Attendance() {
       </div>
 
       {/* Widgets de estadísticas del día seleccionado */}
-      {selectedClass && todayStats && (
+      {(selectedClass || isAssistant) && todayStats && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
@@ -316,7 +335,7 @@ export default function Attendance() {
       )}
 
       {/* Widget consolidado por BIMESTRE */}
-      {selectedClass && attendanceStats && (
+      {(selectedClass || isAssistant) && attendanceStats && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
@@ -523,7 +542,7 @@ export default function Attendance() {
       )}
 
       {/* Mensaje si no hay registros en el bimestre */}
-      {selectedClass && attendanceStats && attendanceStats.datesCount === 0 && (
+      {(selectedClass || isAssistant) && attendanceStats && attendanceStats.datesCount === 0 && (
         <div style={{
           background: 'var(--bg-color-surface)',
           borderRadius: '12px',
@@ -554,7 +573,7 @@ export default function Attendance() {
       )}
 
       {/* Estado vacío */}
-      {!selectedClass && (
+      {!selectedClass && !isAssistant && (
         <div style={{
           background: 'var(--bg-color-surface)',
           borderRadius: '12px',
@@ -584,7 +603,7 @@ export default function Attendance() {
       )}
 
       {/* Tabla */}
-      {selectedClass && (
+      {(selectedClass || isAssistant) && (
         <div style={{
           background: 'var(--bg-color-surface)',
           borderRadius: '12px',
@@ -598,19 +617,19 @@ export default function Attendance() {
                   <th style={thStyle('60px', 'center')}>N°</th>
                   <th style={thStyle()}>Estudiante</th>
                   <th style={thStyle('150px')}>Grado</th>
-                  <th style={thStyle()}>Estado de Asistencia</th>
+                  <th style={thStyle()}>{isAssistant ? 'Llegada a la I.E.' : 'Asistencia a Clase'}</th>
                   <th style={thStyle()}>Observaciones</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.length === 0 ? (
+                {registerStudents.length === 0 ? (
                   <tr>
                     <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                      No hay estudiantes matriculados en esta sección.
+                      {isAssistant ? 'No tienes grados asignados o no hay estudiantes matriculados.' : 'No hay estudiantes matriculados en esta sección.'}
                     </td>
                   </tr>
                 ) : (
-                  filteredStudents.map((student, idx) => (
+                  registerStudents.map((student, idx) => (
                     <tr key={student.id}>
                       <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>{idx + 1}</td>
                       <td style={{ fontWeight: 500, padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
@@ -636,7 +655,7 @@ export default function Attendance() {
                       <td style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.6rem 1rem' }}>
                           {STATUS_OPTIONS.map(opt => {
-                            const isSelected = unwrapStatus(currentRecords[student.id]) === opt.value;
+                            const isSelected = statusOf(currentRecords[student.id]) === opt.value;
                             return (
                               <button
                                 key={opt.value}
@@ -694,7 +713,7 @@ export default function Attendance() {
       )}
 
       {/* Tabla de Historial de Asistencias Tomadas */}
-      {selectedClass && historicalAttendanceDates.length > 0 && (
+      {(selectedClass || isAssistant) && historicalAttendanceDates.length > 0 && (
         <div style={{
           marginTop: '2rem'
         }}>
@@ -878,8 +897,8 @@ export default function Attendance() {
                                   {filteredStudents.map(student => {
                                     const records = getAttendanceForDate(dateStr);
                                     const raw = records[student.id];
-                                    const status = unwrapStatus(raw);
-                                    const note = (typeof raw === 'object' && raw && typeof raw.o === 'string') ? raw.o : '';
+                                    const status = statusOf(raw);
+                                    const note = noteFor(raw);
                                     if (!status && !note) return null;
 
                                     const statusConfig = STATUS_OPTIONS.find(opt => opt.value === status);
@@ -954,7 +973,7 @@ export default function Attendance() {
         </div>
       )}
 
-      {selectedClass && historicalAttendanceDates.length === 0 && attendanceStats && (
+      {(selectedClass || isAssistant) && historicalAttendanceDates.length === 0 && attendanceStats && (
         <div style={{
           marginTop: '2rem',
           background: 'var(--bg-color-surface)',
@@ -984,7 +1003,7 @@ export default function Attendance() {
         </div>
       )}
 
-      {selectedClass && filteredHistoricalDates.length === 0 && historicalAttendanceDates.length > 0 && (
+      {(selectedClass || isAssistant) && filteredHistoricalDates.length === 0 && historicalAttendanceDates.length > 0 && (
         <div style={{
           marginTop: '2rem',
           background: 'var(--bg-color-surface)',
