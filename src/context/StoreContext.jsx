@@ -215,7 +215,13 @@ useEffect(() => {
       ...s,
       competencies: typeof s.competencies === 'string' ? JSON.parse(s.competencies) : (s.competencies || [])
     });
-    const normGrade = (g) => ({ ...g, studentId: g.student_id, competencyId: g.competency_id });
+    const normGrade = (g) => {
+      let score = g.score;
+      if (typeof score === 'number') {
+        score = ({ 4: 'AD', 3: 'A', 2.5: 'B', 2: 'B', 1: 'C' })[score] || score;
+      }
+      return { ...g, studentId: g.student_id, competencyId: g.competency_id, score };
+    };
     const normInstrument = (i) => ({
       ...i,
       instrumentId: i.instrument_id,
@@ -762,6 +768,11 @@ useEffect(() => {
     if (table === 'students' && !result.class_id && result.grade_level) {
       result.class_id = result.grade_level;
     }
+    if (table === 'grades' && typeof result.score === 'string' && result.score !== '') {
+      const numMap = { AD: 4, A: 3, B: 2, C: 1 };
+      const n = numMap[result.score.toUpperCase()];
+      if (n !== undefined) result.score = n;
+    }
     return result;
   }, [toSnakeCase, TABLE_COLUMNS]);
 
@@ -1166,13 +1177,24 @@ useEffect(() => {
     });
   };
 
+  const gradeKey = (studentId, subject, competencyId, period) => {
+    const raw = `${studentId}|${subject}|${competencyId}|${period}`;
+    let h = 2166136261;
+    for (let i = 0; i < raw.length; i++) {
+      h ^= raw.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return 'g-' + (h >>> 0).toString(36);
+  };
+
   const saveGrade = (studentId, subject, competencyId, period, score, conclusion) => {
     setGrades(prev => {
       const existing = prev.find(g =>
         g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period
       );
+      const id = existing?.id || gradeKey(studentId, subject, competencyId, period);
       if (existing) {
-        const updated = { ...existing, score, conclusion };
+        const updated = { ...existing, id, score, conclusion };
         syncToSupabase('grades', [updated]);
         return prev.map(g =>
           (g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period)
@@ -1180,7 +1202,7 @@ useEffect(() => {
             : g
         );
       }
-      const newGrade = { id: generateId(), studentId, subject, competencyId, period, score, conclusion };
+      const newGrade = { id, studentId, subject, competencyId, period, score, conclusion };
       syncToSupabase('grades', [newGrade]);
       return [...prev, newGrade];
     });

@@ -106,7 +106,7 @@ const selectPillStyle = {
 };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations, grades, saveGrade } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -591,7 +591,7 @@ export default function Grades() {
                         const totalCols = (existingInstruments.length || 0) + dedupedExtra.length + 1;
                         const [tintBg, tintFg] = compTints[idx % compTints.length];
                         return (
-                          <th key={comp.id} colSpan={totalCols} style={{
+                          <th key={comp.id} colSpan={totalCols + 1} style={{
                             textAlign: 'center',
                             minWidth: Math.max(totalCols * 70, 70),
                             fontSize: '0.75rem',
@@ -639,7 +639,8 @@ export default function Grades() {
                         const items = existingInstruments.length > 0
                           ? [...existingInstruments, ...dedupedExtra, { _isPlus: true }]
                           : [...dedupedExtra, { _isPlus: true }];
-                        return items.map((inst, j) => {
+                        return <>
+                          {items.map((inst, j) => {
                           if (inst._isPlus) {
                             return (
                               <th key={'plus-' + comp.id} style={{
@@ -806,7 +807,19 @@ export default function Grades() {
                                 </div>
                               )}
                             </th>);
-                        });
+                          })}
+                          <th key={'nivel-' + comp.id} style={{
+                            textAlign: 'center', minWidth: '96px', maxWidth: '96px', fontSize: '0.68rem',
+                            color: 'var(--text-primary)', background: '#f1f3f4', padding: '0.75rem 0.25rem',
+                            borderBottom: '1px solid var(--border-color)', borderRight: '2px solid var(--border-color)',
+                            fontWeight: 700
+                          }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                              <Trophy size={12} color="#b06000" />
+                              Nivel de Logro
+                            </div>
+                          </th>
+                        </>
                       })}
                     </tr>
                   </thead>
@@ -832,7 +845,8 @@ export default function Grades() {
                           const items = existingInstruments.length > 0
                             ? [...existingInstruments, ...dedupedExtra, { _isPlus: true }]
                             : [...dedupedExtra, { _isPlus: true }];
-                          return items.map(inst => {
+                          return <>
+                            {items.map(inst => {
                             if (inst._isPlus) {
                               return (
                                 <td key={'plus-' + comp.id} style={{ textAlign: 'center', padding: '0.25rem', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
@@ -898,9 +912,82 @@ export default function Grades() {
                                 <span style={gradeChipStyle(ev.qualitative)}>{ev.qualitative}</span>
                               </td>
                             );
-                          });
-                        })}
-                      </tr>
+                          })}
+                          <td key={'nivel-' + comp.id} style={{
+                            textAlign: 'center', padding: '0.4rem 0.25rem',
+                            borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)',
+                            background: '#fafbfc'
+                          }}>
+                            {(() => {
+                              const studentEvals = instrumentEvaluations.filter(e => {
+                                const cid = e.competencyId || e.competency_id;
+                                return cid === comp.id && e.period === selectedPeriod && (e.studentId === student.id || e.student_id === student.id);
+                              });
+                              const letters = studentEvals
+                                .map(ev => ev.qualitative || NUM_TO_GRADE(((ev.score ?? 0) / (ev.maxPossible || 20)) * 4))
+                                .filter(l => GRADE_TO_NUM[l] !== undefined);
+                              const auto = letters.length > 0
+                                ? NUM_TO_GRADE(letters.reduce((a, b) => a + GRADE_TO_NUM[b], 0) / letters.length)
+                                : null;
+                              const gradeRow = grades.find(g =>
+                                g.studentId === student.id &&
+                                g.subject === currentSubject.name &&
+                                (g.competencyId === comp.id || g.competency_id === comp.id) &&
+                                g.period === selectedPeriod
+                              );
+                              const level = gradeRow?.score || auto || null;
+                              const conclusion = gradeRow?.conclusion || '';
+                              if (!level) {
+                                return (
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    minWidth: '44px', padding: '3px 6px', borderRadius: '6px',
+                                    border: '1.5px dashed var(--border-color)', color: 'var(--text-secondary)',
+                                    fontSize: '0.8rem'
+                                  }}>—</span>
+                                );
+                              }
+                              return (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', minWidth: '90px' }}>
+                                  <select
+                                    value={level}
+                                    onChange={(e) => saveGrade(student.id, currentSubject.name, comp.id, selectedPeriod, e.target.value, conclusion)}
+                                    style={{
+                                      background: GRADE_CHIP_BG[level] || 'var(--bg-color-surface)',
+                                      color: GRADE_CHIP_COLOR[level] || 'var(--text-primary)',
+                                      border: `1px solid ${GRADE_CHIP_COLOR[level] || 'var(--border-color)'}55`,
+                                      borderRadius: '6px', fontWeight: 700, fontSize: '0.78rem',
+                                      padding: '3px 2px', width: '56px', textAlign: 'center', cursor: 'pointer',
+                                      outline: 'none'
+                                    }}
+                                    title="Nivel de logro por competencia"
+                                  >
+                                    <option value="AD">AD</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                  </select>
+                                  {level === 'C' && (
+                                    <input
+                                      type="text"
+                                      placeholder="Conclusión descriptiva"
+                                      defaultValue={conclusion}
+                                      onBlur={(e) => saveGrade(student.id, currentSubject.name, comp.id, selectedPeriod, level, e.target.value.trim())}
+                                      style={{
+                                        width: '88px', fontSize: '0.62rem', padding: '2px 4px', borderRadius: '4px',
+                                        background: 'var(--bg-color-surface)', color: 'var(--text-primary)',
+                                        border: conclusion ? '1px solid var(--border-color)' : '1.5px solid #d93025',
+                                        outline: 'none'
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </td>
+                        </>
+                      })}
+                    </tr>
                       );
                     })}
                   </tbody>

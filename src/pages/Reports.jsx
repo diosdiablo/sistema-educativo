@@ -227,7 +227,8 @@ const Reports = () => {
       classStudents, instrumentEvaluations, subjects,
       selectedSubjectAux, selectedPeriodAux,
       selectedClassAux, periodLabel,
-      { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado }
+      { iep: 'AGROPECUARIO 110 - YURIMAGUAS', docente: currentUser?.name || '', seccion, grado },
+      grades
     );
     if (!buf) {
       alert('No se pudo generar el reporte');

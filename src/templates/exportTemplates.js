@@ -441,6 +441,24 @@ const QUAL_TO_CONCLUSION = {
 
 const QUAL_TO_NUMBER = { 'AD': 4, 'A': 3, 'B': 2, 'C': 1 };
 
+// Replica el cálculo "auto" que muestra la grilla de Calificaciones (nivel no asignado = promedio de evidencias)
+const computeAutoQual = (evs) => {
+  const letters = evs.map(ev => {
+    if (ev.qualitative) return ev.qualitative;
+    const n = ((ev.score ?? 0) / (ev.maxPossible || 20)) * 4;
+    if (n >= 3.5) return 'AD';
+    if (n >= 2.5) return 'A';
+    if (n >= 1.5) return 'B';
+    return 'C';
+  }).filter(l => QUAL_TO_NUMBER[l] !== undefined);
+  if (letters.length === 0) return '';
+  const avg = letters.reduce((a, b) => a + QUAL_TO_NUMBER[b], 0) / letters.length;
+  if (avg >= 3.5) return 'AD';
+  if (avg >= 2.5) return 'A';
+  if (avg >= 1.5) return 'B';
+  return 'C';
+};
+
 const getQualFromScore = (score) => {
   if (score === null || score === undefined) return null;
   const n = Number(score);
@@ -510,7 +528,7 @@ function xmlSetCellNum(xml, ref, num) {
 
 export const exportTemplateAuxiliar = async (
   students, instrumentEvaluations, subjects, subjectId, period,
-  className, periodName, config = {}
+  className, periodName, config = {}, grades = []
 ) => {
   const subject = subjects.find(s => s.id === subjectId);
   if (!subject) return null;
@@ -657,21 +675,27 @@ export const exportTemplateAuxiliar = async (
           }
         }
 
-        const validQuals = quals.filter(q => q && q !== '');
-        let avgQual = '';
-        if (validQuals.length > 0) {
-          const nums = validQuals.map(q => QUAL_TO_NUMBER[q]).filter(n => n);
-          if (nums.length > 0) {
-            const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-            if (avg >= 3.5) avgQual = 'AD';
-            else if (avg >= 2.5) avgQual = 'A';
-            else if (avg >= 1.5) avgQual = 'B';
-            else avgQual = 'C';
-          }
+const gradeRow = grades.find(g =>
+        (g.studentId || g.student_id) === student.id &&
+        g.subject === subject.name &&
+        (g.competencyId || g.competency_id) === comp.id &&
+        String(g.period) === String(period)
+      );
+
+      let avgQual = '';
+      let conclusionText = '';
+      if (gradeRow) {
+        let level = gradeRow.score;
+        if (typeof level === 'number') level = ({ 4: 'AD', 3: 'A', 2: 'B', 1: 'C' })[level] || '';
+        if (['AD', 'A', 'B', 'C'].includes(level)) {
+          avgQual = level;
+          conclusionText = gradeRow.conclusion || '';
         }
+      }
+      if (!avgQual) avgQual = computeAutoQual(stdEvals);
 
         xml = xmlSetValueNoFormula(xml, `${col.nivel}${row}`, avgQual);
-        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, avgQual ? (QUAL_TO_CONCLUSION[avgQual] || '') : '');
+        xml = xmlSetCellText(xml, `${col.conclusion}${row}`, conclusionText);
 
         const summaryCols = ['AO', 'AP', 'AQ', 'AR'];
         xml = xmlSetValueNoFormula(xml, `${summaryCols[ci]}${row}`, avgQual);
