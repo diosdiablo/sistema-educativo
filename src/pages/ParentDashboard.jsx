@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { normalizeDni } from '../utils/dni';
+import { LEVELS, statusForEntry } from '../utils/attendanceLevels';
 import { LogOut, GraduationCap, CalendarCheck, ChevronDown, BookOpen, Target, ArrowLeft, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const PERIODS = ['I Bimestre', 'II Bimestre', 'III Bimestre', 'IV Bimestre'];
@@ -38,10 +39,14 @@ export default function ParentDashboard() {
     const records = [];
     attendance.forEach(a => {
       let recs = a.records;
-      if (typeof recs === 'string') try { recs = JSON.parse(recs); } catch { recs = []; }
-      if (!Array.isArray(recs)) recs = [];
-      const record = recs.find(r => r.studentId === currentChild.id);
-      if (record) records.push({ date: a.date, status: record.status });
+      if (typeof recs === 'string') try { recs = JSON.parse(recs); } catch { recs = {}; }
+      if (!recs || typeof recs !== 'object' || Array.isArray(recs)) recs = {};
+      const entry = recs[currentChild.id];
+      if (entry == null || entry === '-') return;
+      const stat = statusForEntry(entry, LEVELS.CLASE, null) || statusForEntry(entry, LEVELS.IE, null);
+      if (!stat) return;
+      const status = stat === 'P' ? 'presente' : stat === 'T' ? 'tardanza' : stat === 'J' ? 'justificado' : 'falta';
+      records.push({ date: a.date, status });
     });
     return records.sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [attendance, currentChild]);
@@ -52,7 +57,7 @@ export default function ParentDashboard() {
   }, [behavior, currentChild]);
 
   const subjectsWithGrades = useMemo(() => {
-    const periodGrades = childGrades.filter(g => g.period === PERIODS[selectedPeriod]);
+    const periodGrades = childGrades.filter(g => String(g.period) === String(selectedPeriod + 1));
     const subjectIds = [...new Set(periodGrades.map(g => g.subject))];
     return subjectIds.map(sid => {
       const subject = subjects.find(s => s.id === sid || s.name === sid);
