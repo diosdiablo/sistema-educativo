@@ -17,6 +17,11 @@ const GRADE_COLOR = { AD: '#188038', A: '#1a73e8', B: '#e37400', C: '#d93025' };
 const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
 const gradeColor = (g) => GRADE_COLOR[g] || '#94a3b8';
 const gradeLabel = (g) => GRADE_LABEL[g] || '';
+const promAverage = (competencies) => {
+  const nums = competencies.map(c => GRADE_TO_NUM[c.grade]).filter(Boolean);
+  if (nums.length === 0) return '-';
+  return NUM_TO_GRADE(nums.reduce((a, b) => a + b, 0) / nums.length);
+};
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
@@ -80,7 +85,7 @@ export default function ParentDashboard() {
         if (letters.length === 0) return null;
         return { id: comp.id, name: comp.name, grade: NUM_TO_GRADE(letters.reduce((a, b) => a + GRADE_TO_NUM[b], 0) / letters.length) };
       }).filter(Boolean);
-      return { subject: sub, grades: competencies };
+      return { subject: sub, grades: competencies, average: promAverage(competencies) };
     }).filter(r => r.grades.length > 0);
     return results;
   }, [currentChild, grades, instrumentEvaluations, subjects, selectedPeriod]);
@@ -229,7 +234,7 @@ export default function ParentDashboard() {
                     <p>No hay notas registradas para este período</p>
                   </div>
                 ) : (
-                  subjectsWithGrades.map(({ subject, grades: sg }) => (
+                  subjectsWithGrades.map(({ subject, grades: sg, average }) => (
                     <div key={subject.id || subject.name} style={{
                       background: 'var(--bg-color-surface)', borderRadius: '12px',
                       border: '1px solid var(--border-color)',
@@ -264,6 +269,20 @@ export default function ParentDashboard() {
                             </div>
                           );
                         })}
+                        <div style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '0.55rem 0 0', marginTop: '0.25rem'
+                        }}>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                            Promedio del curso
+                          </div>
+                          {average && average !== '-' && (
+                            <div style={{ fontWeight: 700, fontSize: '1rem', minWidth: '110px', textAlign: 'right' }}>
+                              <span style={{ color: gradeColor(average) }}>{average}</span>{' '}
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{gradeLabel(average)}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
