@@ -17,15 +17,10 @@ const GRADE_COLOR = { AD: '#188038', A: '#1a73e8', B: '#e37400', C: '#d93025' };
 const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
 const gradeColor = (g) => GRADE_COLOR[g] || '#94a3b8';
 const gradeLabel = (g) => GRADE_LABEL[g] || '';
-const promAverage = (competencies) => {
-  const nums = competencies.map(c => GRADE_TO_NUM[c.grade]).filter(Boolean);
-  if (nums.length === 0) return '-';
-  return NUM_TO_GRADE(nums.reduce((a, b) => a + b, 0) / nums.length);
-};
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
-  const { students, grades, attendance, subjects, classes, behavior, instrumentEvaluations, periodDates } = useStore();
+  const { students, grades, attendance, subjects, classes, behavior, instrumentEvaluations, instruments, periodDates } = useStore();
   const parentDni = sessionStorage.getItem('edu_parent_dni');
   const [selectedStudentIdx, setSelectedStudentIdx] = useState(0);
   const [view, setView] = useState('grades');
@@ -72,23 +67,44 @@ export default function ParentDashboard() {
     const period = String(selectedPeriod + 1);
     const childGrades = grades.filter(g => g.studentId === currentChild.id && String(g.period) === period);
     const childEvals = instrumentEvaluations.filter(e => e.studentId === currentChild.id && String(e.period) === period);
+    const instrTitle = (id) => instruments.find(i => i.id === id)?.title || '';
     const results = subjects.map(sub => {
       const competencies = (sub.competencies || []).map(comp => {
-        const assigned = childGrades.find(g => (g.subject === sub.name || g.subjectId === sub.id || g.subject_id === sub.id) && (g.competencyId === comp.id || g.competency_id === comp.id));
-        if (assigned && ['AD', 'A', 'B', 'C'].includes(String(assigned.score ?? assigned.conclusion ?? '').toUpperCase())) {
-          return { id: comp.id, name: comp.name, grade: String(assigned.score ?? assigned.conclusion).toUpperCase() };
-        }
-        const letters = childEvals
+        const evals = childEvals
           .filter(e => (e.competencyId === comp.id || e.competency_id === comp.id) && (e.subjectId === sub.id || e.subject_id === sub.id))
-          .map(e => e.qualitative || NUM_TO_GRADE(((e.score ?? 0) / (e.maxPossible ?? 20)) * 4))
-          .filter(l => GRADE_TO_NUM[l] !== undefined);
-        if (letters.length === 0) return null;
-        return { id: comp.id, name: comp.name, grade: NUM_TO_GRADE(letters.reduce((a, b) => a + GRADE_TO_NUM[b], 0) / letters.length) };
+          .sort((a, b) => String(a.activityName || '').localeCompare(String(b.activityName || ''), 'es'));
+        if (evals.length === 0) return null;
+        const assigned = childGrades.find(g => (g.subject === sub.name || g.subjectId === sub.id || g.subject_id === sub.id) && (g.competencyId === comp.id || g.competency_id === comp.id));
+        let level = null;
+        if (assigned && ['AD', 'A', 'B', 'C'].includes(String(assigned.score ?? assigned.conclusion ?? '').toUpperCase())) {
+          level = String(assigned.score ?? assigned.conclusion).toUpperCase();
+        } else {
+          const letters = evals
+            .map(e => e.qualitative || (e.maxPossible ? NUM_TO_GRADE(((e.score ?? 0) / e.maxPossible) * 4) : null))
+            .filter(l => GRADE_TO_NUM[l] !== undefined);
+          if (letters.length > 0) level = NUM_TO_GRADE(letters.reduce((a, b) => a + GRADE_TO_NUM[b], 0) / letters.length);
+        }
+        const activities = evals
+          .filter(ev => ev.score != null && !(ev.score === 0 && !ev.maxPossible))
+          .map(ev => ({
+            id: ev.id || `${comp.id}-${ev.activityName || ev.instrumentId || 'act'}_${ev.score}`,
+            title: ev.activityName || instrTitle(ev.instrumentId) || 'Actividad',
+            score: ev.score,
+            max: ev.maxPossible || 20,
+            qual: ev.qualitative || NUM_TO_GRADE(((ev.score ?? 0) / (ev.maxPossible || 20)) * 4)
+          }));
+        return { id: comp.id, name: comp.name, level, activities };
       }).filter(Boolean);
-      return { subject: sub, grades: competencies, average: promAverage(competencies) };
-    }).filter(r => r.grades.length > 0);
+      if (competencies.length === 0) return null;
+      const avgNums = competencies.map(c => GRADE_TO_NUM[c.level]).filter(Boolean);
+      return {
+        subject: sub,
+        competencies,
+        average: avgNums.length > 0 ? NUM_TO_GRADE(avgNums.reduce((a, b) => a + b, 0) / avgNums.length) : '-'
+      };
+    }).filter(Boolean);
     return results;
-  }, [currentChild, grades, instrumentEvaluations, subjects, selectedPeriod]);
+  }, [currentChild, grades, instrumentEvaluations, instruments, subjects, selectedPeriod]);
 
   const getStudentClass = (student) => {
     return classes.find(c => c.id === student.classId || c.id === student.class_id);
@@ -234,7 +250,7 @@ export default function ParentDashboard() {
                     <p>No hay notas registradas para este período</p>
                   </div>
                 ) : (
-                  subjectsWithGrades.map(({ subject, grades: sg, average }) => (
+                  subjectsWithGrades.map(({ subject, competencies, average }) => (
                     <div key={subject.id || subject.name} style={{
                       background: 'var(--bg-color-surface)', borderRadius: '12px',
                       border: '1px solid var(--border-color)',
@@ -251,24 +267,59 @@ export default function ParentDashboard() {
                         {subject.name}
                       </div>
                       <div style={{ padding: '0.75rem 1rem' }}>
-                        {sg.map(g => {
-                          const qual = gradeLabel(g.grade);
-                          return (
-                            <div key={g.id} style={{
-                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                              padding: '0.5rem 0', borderBottom: '1px solid var(--surface-muted)'
+                        {competencies.map(comp => (
+                          <div key={comp.id} style={{
+                            padding: '0.5rem 0', borderBottom: '1px solid var(--surface-muted)'
+                          }}>
+                            <div style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                             }}>
-                              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', flex: 1 }}>
+                              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', flex: 1, paddingRight: '0.5rem' }}>
                                 <Target size={12} style={{ marginRight: '0.25rem', color: 'var(--text-secondary)' }} />
-                                {g.name || g.competencyId || 'Competencia'}
+                                {comp.name || comp.id || 'Competencia'}
                               </div>
-                              <div style={{ fontWeight: 500, fontSize: '1rem', minWidth: '110px', textAlign: 'right' }}>
-                                <span style={{ color: gradeColor(g.grade), fontWeight: 600 }}>{g.grade}</span>{' '}
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{qual}</span>
-                              </div>
+                              {comp.level && (
+                                <div style={{ fontWeight: 500, fontSize: '0.95rem', minWidth: '110px', textAlign: 'right' }}>
+                                  <span style={{ color: gradeColor(comp.level), fontWeight: 600 }}>{comp.level}</span>{' '}
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{gradeLabel(comp.level)}</span>
+                                </div>
+                              )}
                             </div>
-                          );
-                        })}
+                            {comp.activities.length > 0 && (
+                              <div style={{ marginTop: '0.35rem', paddingLeft: '1.25rem' }}>
+                                <div style={{
+                                  padding: '0.35rem 0.6rem', borderRadius: '8px', background: 'var(--surface-muted)',
+                                  display: 'flex', fontSize: '0.7rem', color: 'var(--text-secondary)',
+                                  fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em'
+                                }}>
+                                  <span style={{ flex: 1 }}>Instrumento / Actividad</span>
+                                  <span style={{ minWidth: '90px', textAlign: 'right' }}>Nota</span>
+                                </div>
+                                {comp.activities.map(act => (
+                                  <div key={act.id} style={{
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    padding: '0.35rem 0.6rem', borderBottom: '1px solid var(--surface-muted)'
+                                  }}>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', flex: 1, paddingRight: '0.5rem' }}>
+                                      {act.title}
+                                    </span>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 600, minWidth: '90px', textAlign: 'right' }}>
+                                      {act.score}<span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> / {act.max}</span>
+                                      {act.qual && (
+                                        <span style={{
+                                          marginLeft: '0.35rem', padding: '0.1rem 0.45rem', borderRadius: '20px',
+                                          fontSize: '0.7rem', fontWeight: 600,
+                                          background: (gradeColor(act.qual) + '18'),
+                                          color: gradeColor(act.qual)
+                                        }}>{act.qual}</span>
+                                      )}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                         <div style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                           padding: '0.55rem 0 0', marginTop: '0.25rem'
