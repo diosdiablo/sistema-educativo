@@ -73,7 +73,6 @@ export default function ParentDashboard() {
         const evals = childEvals
           .filter(e => (e.competencyId === comp.id || e.competency_id === comp.id) && (e.subjectId === sub.id || e.subject_id === sub.id))
           .sort((a, b) => String(a.activityName || '').localeCompare(String(b.activityName || ''), 'es'));
-        if (evals.length === 0) return null;
         const assigned = childGrades.find(g => (g.subject === sub.name || g.subjectId === sub.id || g.subject_id === sub.id) && (g.competencyId === comp.id || g.competency_id === comp.id));
         let level = null;
         if (assigned && ['AD', 'A', 'B', 'C'].includes(String(assigned.score ?? assigned.conclusion ?? '').toUpperCase())) {
@@ -87,15 +86,13 @@ export default function ParentDashboard() {
         const activities = evals
           .filter(ev => ev.score != null || ev.qualitative)
           .map(ev => ({
-            id: ev.id || `${comp.id}-${ev.activityName || ev.instrumentId || 'act'}_${ev.score || ev.qualitative || ''}`,
+            id: ev.id || `${comp.id}-${ev.activityName || ev.instrumentId || 'act'}_${ev.qualitative || ev.score || ''}`,
             title: ev.activityName || instrTitle(ev.instrumentId) || 'Actividad',
-            score: ev.score,
-            max: ev.maxPossible || 20,
             qual: ev.qualitative || (ev.maxPossible ? NUM_TO_GRADE(((ev.score ?? 0) / ev.maxPossible) * 4) : null)
           }));
         return { id: comp.id, name: comp.name, level, activities };
-      }).filter(Boolean);
-      if (competencies.length === 0) return null;
+      });
+      if ((sub.competencies || []).length === 0) return null;
       return {
         subject: sub,
         competencies
@@ -276,12 +273,16 @@ export default function ParentDashboard() {
                                 <Target size={12} style={{ marginRight: '0.25rem', color: 'var(--text-secondary)' }} />
                                 {comp.name || comp.id || 'Competencia'}
                               </div>
-                              {comp.level && (
-                                <div style={{ fontWeight: 500, fontSize: '0.95rem', minWidth: '110px', textAlign: 'right' }}>
-                                  <span style={{ color: gradeColor(comp.level), fontWeight: 600 }}>{comp.level}</span>{' '}
-                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{gradeLabel(comp.level)}</span>
-                                </div>
-                              )}
+                              <div style={{ fontWeight: 500, fontSize: '0.95rem', minWidth: '130px', textAlign: 'right' }}>
+                                {comp.level ? (
+                                  <>
+                                    <span style={{ color: gradeColor(comp.level), fontWeight: 600 }}>{comp.level}</span>{' '}
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{gradeLabel(comp.level)}</span>
+                                  </>
+                                ) : (
+                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin calificar</span>
+                                )}
+                              </div>
                             </div>
                             {comp.activities.length > 0 && (
                               <div style={{ marginTop: '0.35rem', paddingLeft: '1.25rem' }}>
@@ -291,7 +292,7 @@ export default function ParentDashboard() {
                                   fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em'
                                 }}>
                                   <span style={{ flex: 1 }}>Instrumento / Actividad</span>
-                                  <span style={{ minWidth: '90px', textAlign: 'right' }}>Nota</span>
+                                  <span style={{ minWidth: '90px', textAlign: 'right' }}>Nivel</span>
                                 </div>
                                 {comp.activities.map(act => (
                                   <div key={act.id} style={{
@@ -302,18 +303,15 @@ export default function ParentDashboard() {
                                       {act.title}
                                     </span>
                                     <span style={{ fontSize: '0.85rem', fontWeight: 600, minWidth: '90px', textAlign: 'right' }}>
-                                      {act.score != null ? (
-                                        <>{act.score}<span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> / {act.max}</span></>
-                                      ) : (
-                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>—</span>
-                                      )}
-                                      {act.qual && (
+                                      {act.qual ? (
                                         <span style={{
-                                          marginLeft: '0.35rem', padding: '0.1rem 0.45rem', borderRadius: '20px',
+                                          padding: '0.1rem 0.45rem', borderRadius: '20px',
                                           fontSize: '0.7rem', fontWeight: 600,
                                           background: (gradeColor(act.qual) + '18'),
                                           color: gradeColor(act.qual)
                                         }}>{act.qual}</span>
+                                      ) : (
+                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>—</span>
                                       )}
                                     </span>
                                   </div>
