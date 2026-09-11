@@ -79,7 +79,10 @@ const DEFAULT_SUBJECTS = [
   ]}
 ];
 
-const DEFAULT_CLASSES = [
+const sortByName = (a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true });
+const sortClassesByName = (list) => [...(list || [])].sort(sortByName);
+
+const DEFAULT_CLASSES = sortClassesByName([
   { id: '1a', name: '1° GRADO A', color: '#10b981' },
   { id: '1b', name: '1° GRADO B', color: '#3b82f6' },
   { id: '2a', name: '2° GRADO A', color: '#8b5cf6' },
@@ -89,7 +92,7 @@ const DEFAULT_CLASSES = [
   { id: '4a', name: '4° GRADO A', color: '#84cc16' },
   { id: '4b', name: '4° GRADO B', color: '#f97316' },
   { id: '5a', name: '5° GRADO A', color: '#ec4899' }
-];
+]);
 
 const DEFAULT_PERIOD_DATES = {
   '1': { start: '2026-03-01', end: '2026-05-15' },
@@ -328,7 +331,7 @@ useEffect(() => {
       ]);
 
       setMerged(setStudents, studentsData, normStudent);
-      setMerged(setClasses, classesData);
+      setMerged(setClasses, sortClassesByName(classesData));
       setMerged(setSubjects, subjectsData, normSubject);
       setMerged(setGrades, gradesData, normGrade);
       setMerged(setInstruments, instrumentsData, normInstrument);
@@ -691,7 +694,7 @@ useEffect(() => {
     return loaded;
   });
 
-  const [classes, setClasses] = useState(() => loadData('edu_classes', DEFAULT_CLASSES));
+  const [classes, setClasses] = useState(() => sortClassesByName(loadData('edu_classes', DEFAULT_CLASSES)));
   const [instruments, setInstruments] = useState(() => loadData('edu_instruments', []));
   const [instrumentEvaluations, setInstrumentEvaluations] = useState(() => loadData('edu_instrument_evaluations', []));
   const [schedule, setSchedule] = useState(() => loadData('edu_schedule', []));
@@ -1025,7 +1028,7 @@ useEffect(() => {
 
   const addClass = (cls) => {
     const newClass = { ...cls, id: generateId() };
-    setClasses(prev => [...prev, newClass]);
+    setClasses(prev => sortClassesByName([...prev, newClass]));
     syncToSupabase('classes', [newClass]);
   };
 
