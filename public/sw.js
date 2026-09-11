@@ -1,4 +1,4 @@
-const CACHE = 'portal-agro-v2';
+const CACHE = 'portal-agro-v3';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -19,8 +19,13 @@ self.addEventListener('fetch', (e) => {
     fetch(e.request)
       .then(response => {
         if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+          const ctype = response.headers.get('content-type') || '';
+          if (!(url.pathname.endsWith('.js') && ctype.includes('text/html'))) {
+            const clone = response.clone();
+            caches.open(CACHE).then(cache => cache.put(e.request, clone));
+          }
+        } else {
+          return caches.match(e.request).then(cached => cached || response);
         }
         return response;
       })
