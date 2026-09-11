@@ -85,13 +85,13 @@ export default function ParentDashboard() {
           if (letters.length > 0) level = NUM_TO_GRADE(letters.reduce((a, b) => a + GRADE_TO_NUM[b], 0) / letters.length);
         }
         const activities = evals
-          .filter(ev => ev.score != null && !(ev.score === 0 && !ev.maxPossible))
+          .filter(ev => ev.score != null || ev.qualitative)
           .map(ev => ({
-            id: ev.id || `${comp.id}-${ev.activityName || ev.instrumentId || 'act'}_${ev.score}`,
+            id: ev.id || `${comp.id}-${ev.activityName || ev.instrumentId || 'act'}_${ev.score || ev.qualitative || ''}`,
             title: ev.activityName || instrTitle(ev.instrumentId) || 'Actividad',
             score: ev.score,
             max: ev.maxPossible || 20,
-            qual: ev.qualitative || NUM_TO_GRADE(((ev.score ?? 0) / (ev.maxPossible || 20)) * 4)
+            qual: ev.qualitative || (ev.maxPossible ? NUM_TO_GRADE(((ev.score ?? 0) / ev.maxPossible) * 4) : null)
           }));
         return { id: comp.id, name: comp.name, level, activities };
       }).filter(Boolean);
@@ -304,7 +304,11 @@ export default function ParentDashboard() {
                                       {act.title}
                                     </span>
                                     <span style={{ fontSize: '0.85rem', fontWeight: 600, minWidth: '90px', textAlign: 'right' }}>
-                                      {act.score}<span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> / {act.max}</span>
+                                      {act.score != null ? (
+                                        <>{act.score}<span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> / {act.max}</span></>
+                                      ) : (
+                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>—</span>
+                                      )}
                                       {act.qual && (
                                         <span style={{
                                           marginLeft: '0.35rem', padding: '0.1rem 0.45rem', borderRadius: '20px',
