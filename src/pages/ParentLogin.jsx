@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { normalizeDni } from '../utils/dni';
 import { Users, ArrowRight, AlertCircle } from 'lucide-react';
 import Logo from '../assets/logo.png';
 
@@ -13,9 +14,9 @@ export default function ParentLogin() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    const cleanDni = dni.trim();
+    const cleanDni = normalizeDni(dni);
     if (!cleanDni) { setError('Ingresa tu DNI'); return; }
-    const hijos = students.filter(s => s.guardianDni === cleanDni || s.guardian_dni === cleanDni);
+    const hijos = students.filter(s => normalizeDni(s.guardianDni) === cleanDni || normalizeDni(s.guardian_dni) === cleanDni);
     if (hijos.length === 0) { setError('No se encontraron hijos con ese DNI'); return; }
     sessionStorage.setItem('edu_parent_dni', cleanDni);
     recordParentLogin(cleanDni);

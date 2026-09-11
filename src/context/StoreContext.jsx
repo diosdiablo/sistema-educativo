@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, us
 import { supabase, setSupabaseReadOnly } from '../lib/supabase';
 import { uploadDocFile, getDocFile, deleteDocFile } from '../lib/storage';
 import { LEVELS } from '../utils/attendanceLevels';
+import { normalizeDni } from '../utils/dni';
 
 const StoreContext = createContext();
 
@@ -1378,7 +1379,8 @@ useEffect(() => {
   };
 
   const recordParentLogin = (dni) => {
-    const parentName = students.find(s => s.guardianDni === dni || s.guardian_dni === dni)?.guardianName || `Padre (DNI: ${dni})`;
+    const nd = normalizeDni(dni);
+    const parentName = students.find(s => normalizeDni(s.guardianDni) === nd || normalizeDni(s.guardian_dni) === nd)?.guardianName || `Padre (DNI: ${dni})`;
     const entry = {
       id: generateId(),
       userId: dni,

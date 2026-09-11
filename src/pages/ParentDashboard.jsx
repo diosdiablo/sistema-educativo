@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { normalizeDni } from '../utils/dni';
 import { LogOut, GraduationCap, CalendarCheck, ChevronDown, BookOpen, Target, ArrowLeft, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const PERIODS = ['I Bimestre', 'II Bimestre', 'III Bimestre', 'IV Bimestre'];
@@ -21,7 +22,8 @@ export default function ParentDashboard() {
 
   const children = useMemo(() => {
     if (!parentDni) return [];
-    return students.filter(s => (s.guardianDni || s.guardian_dni) === parentDni);
+    const nd = normalizeDni(parentDni);
+    return students.filter(s => normalizeDni(s.guardianDni) === nd || normalizeDni(s.guardian_dni) === nd);
   }, [students, parentDni]);
 
   const currentChild = children[selectedStudentIdx];
