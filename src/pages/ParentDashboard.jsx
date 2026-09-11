@@ -96,11 +96,9 @@ export default function ParentDashboard() {
         return { id: comp.id, name: comp.name, level, activities };
       }).filter(Boolean);
       if (competencies.length === 0) return null;
-      const avgNums = competencies.map(c => GRADE_TO_NUM[c.level]).filter(Boolean);
       return {
         subject: sub,
-        competencies,
-        average: avgNums.length > 0 ? NUM_TO_GRADE(avgNums.reduce((a, b) => a + b, 0) / avgNums.length) : '-'
+        competencies
       };
     }).filter(Boolean);
     return results;
@@ -250,7 +248,7 @@ export default function ParentDashboard() {
                     <p>No hay notas registradas para este período</p>
                   </div>
                 ) : (
-                  subjectsWithGrades.map(({ subject, competencies, average }) => (
+                  subjectsWithGrades.map(({ subject, competencies }) => (
                     <div key={subject.id || subject.name} style={{
                       background: 'var(--bg-color-surface)', borderRadius: '12px',
                       border: '1px solid var(--border-color)',
@@ -324,20 +322,6 @@ export default function ParentDashboard() {
                             )}
                           </div>
                         ))}
-                        <div style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: '0.55rem 0 0', marginTop: '0.25rem'
-                        }}>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                            Promedio del curso
-                          </div>
-                          {average && average !== '-' && (
-                            <div style={{ fontWeight: 700, fontSize: '1rem', minWidth: '110px', textAlign: 'right' }}>
-                              <span style={{ color: gradeColor(average) }}>{average}</span>{' '}
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{gradeLabel(average)}</span>
-                            </div>
-                          )}
-                        </div>
                       </div>
                     </div>
                   ))
