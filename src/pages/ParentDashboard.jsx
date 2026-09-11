@@ -6,10 +6,21 @@ import { LEVELS, statusForEntry } from '../utils/attendanceLevels';
 import { LogOut, GraduationCap, CalendarCheck, ChevronDown, BookOpen, Target, ArrowLeft, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const PERIODS = ['I Bimestre', 'II Bimestre', 'III Bimestre', 'IV Bimestre'];
+const GRADE_TO_NUM = { AD: 4, A: 3, B: 2, C: 1 };
+const NUM_TO_GRADE = (n) => {
+  if (n >= 3.5) return 'AD';
+  if (n >= 2.5) return 'A';
+  if (n >= 1.5) return 'B';
+  return 'C';
+};
+const GRADE_COLOR = { AD: '#188038', A: '#1a73e8', B: '#e37400', C: '#d93025' };
+const GRADE_LABEL = { AD: 'Destacado', A: 'Logrado', B: 'En Proceso', C: 'En Inicio' };
+const gradeColor = (g) => GRADE_COLOR[g] || '#94a3b8';
+const gradeLabel = (g) => GRADE_LABEL[g] || '';
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
-  const { students, grades, attendance, subjects, classes, behavior, periodDates } = useStore();
+  const { students, grades, attendance, subjects, classes, behavior, instrumentEvaluations, periodDates } = useStore();
   const parentDni = sessionStorage.getItem('edu_parent_dni');
   const [selectedStudentIdx, setSelectedStudentIdx] = useState(0);
   const [view, setView] = useState('grades');
@@ -28,11 +39,6 @@ export default function ParentDashboard() {
   }, [students, parentDni]);
 
   const currentChild = children[selectedStudentIdx];
-
-  const childGrades = useMemo(() => {
-    if (!currentChild) return [];
-    return grades.filter(g => g.studentId === currentChild.id);
-  }, [grades, currentChild]);
 
   const childAttendance = useMemo(() => {
     if (!currentChild) return [];
@@ -57,14 +63,27 @@ export default function ParentDashboard() {
   }, [behavior, currentChild]);
 
   const subjectsWithGrades = useMemo(() => {
-    const periodGrades = childGrades.filter(g => String(g.period) === String(selectedPeriod + 1));
-    const subjectIds = [...new Set(periodGrades.map(g => g.subject))];
-    return subjectIds.map(sid => {
-      const subject = subjects.find(s => s.id === sid || s.name === sid);
-      const subjectGrades = periodGrades.filter(g => g.subject === sid);
-      return { subject: subject || { name: sid }, grades: subjectGrades };
-    });
-  }, [childGrades, selectedPeriod, subjects]);
+    if (!currentChild) return [];
+    const period = String(selectedPeriod + 1);
+    const childGrades = grades.filter(g => g.studentId === currentChild.id && String(g.period) === period);
+    const childEvals = instrumentEvaluations.filter(e => e.studentId === currentChild.id && String(e.period) === period);
+    const results = subjects.map(sub => {
+      const competencies = (sub.competencies || []).map(comp => {
+        const assigned = childGrades.find(g => (g.subject === sub.name || g.subjectId === sub.id || g.subject_id === sub.id) && (g.competencyId === comp.id || g.competency_id === comp.id));
+        if (assigned && ['AD', 'A', 'B', 'C'].includes(String(assigned.score ?? assigned.conclusion ?? '').toUpperCase())) {
+          return { id: comp.id, name: comp.name, grade: String(assigned.score ?? assigned.conclusion).toUpperCase() };
+        }
+        const letters = childEvals
+          .filter(e => (e.competencyId === comp.id || e.competency_id === comp.id) && (e.subjectId === sub.id || e.subject_id === sub.id))
+          .map(e => e.qualitative || NUM_TO_GRADE(((e.score ?? 0) / (e.maxPossible ?? 20)) * 4))
+          .filter(l => GRADE_TO_NUM[l] !== undefined);
+        if (letters.length === 0) return null;
+        return { id: comp.id, name: comp.name, grade: NUM_TO_GRADE(letters.reduce((a, b) => a + GRADE_TO_NUM[b], 0) / letters.length) };
+      }).filter(Boolean);
+      return { subject: sub, grades: competencies };
+    }).filter(r => r.grades.length > 0);
+    return results;
+  }, [currentChild, grades, instrumentEvaluations, subjects, selectedPeriod]);
 
   const getStudentClass = (student) => {
     return classes.find(c => c.id === student.classId || c.id === student.class_id);
@@ -228,10 +247,7 @@ export default function ParentDashboard() {
                       </div>
                       <div style={{ padding: '0.75rem 1rem' }}>
                         {sg.map(g => {
-                          const comp = subject.competencies?.find(c => c.id === g.competencyId);
-                          const qual = g.score !== undefined ? (
-                            g.score >= 90 ? 'AD' : g.score >= 75 ? 'A' : g.score >= 60 ? 'B' : 'C'
-                          ) : '-';
+                          const qual = gradeLabel(g.grade);
                           return (
                             <div key={g.id} style={{
                               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -239,14 +255,11 @@ export default function ParentDashboard() {
                             }}>
                               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', flex: 1 }}>
                                 <Target size={12} style={{ marginRight: '0.25rem', color: 'var(--text-secondary)' }} />
-                                {comp?.name || g.competencyId || 'Competencia'}
+                                {g.name || g.competencyId || 'Competencia'}
                               </div>
-                              <div style={{
-                                fontWeight: 500, fontSize: '1rem',
-                                color: qual === 'AD' ? '#188038' : qual === 'A' ? '#1a73e8' : qual === 'B' ? '#e37400' : '#d93025',
-                                minWidth: '40px', textAlign: 'right'
-                              }}>
-                                {g.score !== undefined ? `${g.score} (${qual})` : '-'}
+                              <div style={{ fontWeight: 500, fontSize: '1rem', minWidth: '110px', textAlign: 'right' }}>
+                                <span style={{ color: gradeColor(g.grade), fontWeight: 600 }}>{g.grade}</span>{' '}
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{qual}</span>
                               </div>
                             </div>
                           );
