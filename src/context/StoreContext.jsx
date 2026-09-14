@@ -134,8 +134,13 @@ const [grades, setGrades] = useState(() => loadData('edu_grades', []));
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
-        setCurrentUser(user);
-        sessionStorage.setItem('edu_current_user_session', JSON.stringify(user));
+        if (user && (user.force_logout || user.forceLogout)) {
+          sessionStorage.removeItem('edu_current_user_session');
+          localStorage.removeItem('edu_current_user_session');
+        } else {
+          setCurrentUser(user);
+          sessionStorage.setItem('edu_current_user_session', JSON.stringify(user));
+        }
       } catch {
         sessionStorage.removeItem('edu_current_user_session');
       }
@@ -340,7 +345,13 @@ useEffect(() => {
       setMerged(setUsers, usersData);
       if (currentUser?.id && Array.isArray(usersData)) {
         const freshUser = usersData.find(u => u.id === currentUser.id);
-        if (freshUser) {
+        if (freshUser && (freshUser.force_logout || freshUser.forceLogout)) {
+          setCurrentUser(null);
+          try {
+            localStorage.removeItem('edu_current_user_session');
+            sessionStorage.removeItem('edu_current_user_session');
+          } catch (e) { console.warn('session clear warning:', e.message); }
+        } else if (freshUser) {
           const refreshed = {
             ...currentUser,
             ...freshUser,
@@ -731,7 +742,7 @@ useEffect(() => {
   const toSnakeCase = useCallback((str) => str.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`), []);
 
   const TABLE_COLUMNS = useMemo(() => ({
-    users: ['id', 'username', 'password', 'name', 'role', 'assignments', 'created_at', 'updated_at'],
+    users: ['id', 'username', 'password', 'name', 'role', 'assignments', 'created_at', 'updated_at', 'force_logout'],
     students: ['id', 'name', 'dni', 'class_id', 'guardian_name', 'guardian_dni', 'guardian_phone', 'birth_date', 'created_at', 'updated_at', 'grade_level', 'photo_url'],
     subjects: ['id', 'name', 'competencies', 'created_at', 'updated_at'],
     classes: ['id', 'name', 'created_at', 'updated_at', 'color'],
@@ -865,6 +876,10 @@ useEffect(() => {
     }
     
     if (loggedInUser) {
+      setUsers(prev => prev.map(u => u.id === loggedInUser.id ? { ...u, force_logout: false } : u));
+      if (isOnline) {
+        supabase.from('users').update({ force_logout: false }).eq('id', loggedInUser.id).catch(err => console.warn('force_logout clear:', err.message));
+      }
       const entry = {
         id: generateId(),
         userId: loggedInUser.id,
@@ -1054,9 +1069,14 @@ useEffect(() => {
   };
 
   const updateUser = (id, updates) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+    const prevUser = users.find(u => u.id === id);
+    const passwordChanged = !!updates.password && (!prevUser || prevUser.password !== updates.password);
+    const payload = passwordChanged && prevUser && prevUser.id !== currentUser?.id
+      ? { ...updates, force_logout: true }
+      : updates;
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...payload } : u));
     if (currentUser?.id === id) {
-      setCurrentUser(prev => ({ ...prev, ...updates }));
+      setCurrentUser(prev => ({ ...prev, ...payload }));
     }
     if (isOnline) {
       const prepared = prepareForSupabase({ id, ...updates }, 'users');
