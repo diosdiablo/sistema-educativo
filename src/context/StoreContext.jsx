@@ -504,6 +504,22 @@ useEffect(() => {
       return;
     }
 
+    const pruneRecordsForUser = (records) => {
+      const ids = studentIdSetRef.current;
+      if (!ids || !records || typeof records !== 'object' || Array.isArray(records)) return records;
+      const pruned = {};
+      for (const key of Object.keys(records)) {
+        if (ids.has(key)) pruned[key] = records[key];
+      }
+      return pruned;
+    };
+
+    const isInScope = (studentId) => {
+      const ids = studentIdSetRef.current;
+      if (!ids) return true;
+      return !!studentId && ids.has(studentId);
+    };
+
     const handleUpsert = (setter, normalize) => (payload) => {
       if (payload.eventType === 'DELETE') {
         setter(prev => prev.filter(item => item.id !== payload.old.id));
@@ -532,15 +548,45 @@ useEffect(() => {
     };
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, handleUserRow);
 
+    // -- Attendance: poda los records de estudiantes ajenos antes de guardar en estado --
+    const handleAttendanceRow = (payload) => {
+      if (payload.eventType === 'DELETE') {
+        setAttendance(prev => prev.filter(item => item.id !== payload.old.id));
+      } else if (payload.new) {
+        const pruned = {
+          ...payload.new,
+          records: pruneRecordsForUser(payload.new.records),
+        };
+        setAttendance(prev => {
+          const exists = prev.find(item => item.id === pruned.id);
+          if (exists) {
+            return prev.map(item => item.id === pruned.id ? { ...item, ...pruned, _syncedAt: Date.now() } : item);
+          }
+          return [...prev, { ...pruned, _syncedAt: Date.now() }];
+        });
+      }
+    };
+
+    // -- Behavior: solo registros de estudiantes del docente --
+    const handleBehaviorRow = (payload) => {
+      if (payload.eventType === 'DELETE') {
+        if (!isInScope(payload.old?.student_id || payload.old?.studentId)) return;
+        setBehavior(prev => prev.filter(item => item.id !== payload.old.id));
+      } else if (payload.new) {
+        if (!isInScope(payload.new.student_id || payload.new.studentId)) return;
+        handleUpsert(setBehavior)(payload);
+      }
+    };
+
     const simple = [
       ['classes', setClasses],
-      ['attendance', setAttendance],
       ['diagnostic_evaluations', setDiagnosticEvaluations],
-      ['behavior', setBehavior],
     ];
     simple.forEach(([table, setter]) => {
       channel.on('postgres_changes', { event: '*', schema: 'public', table }, handleUpsert(setter));
     });
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, handleAttendanceRow);
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'behavior' }, handleBehaviorRow);
 
     // -- events --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, handleUpsert(setEvents));
@@ -683,7 +729,22 @@ useEffect(() => {
         case 'subjects': handleUpsert(setSubjects); break;
         case 'classes': handleUpsert(setClasses); break;
         case 'grades': handleUpsert(setGrades); break;
-        case 'attendance': handleUpsert(setAttendance); break;
+        case 'attendance':
+          if (action === 'DELETE') {
+            setAttendance(prev => prev.filter(i => i.id !== data.id));
+          } else {
+            setAttendance(prev => {
+              const pruned = { ...data, records: pruneRecordsForUser(data.records) };
+              const exists = prev.find(i => i.id === pruned.id);
+              if (exists) return prev.map(i => i.id === pruned.id ? { ...i, ...pruned, _syncedAt: Date.now() } : i);
+              return [...prev, { ...pruned, _syncedAt: Date.now() }];
+            });
+          }
+          break;
+        case 'behavior':
+          if (!isInScope(data.student_id || data.studentId)) break;
+          handleUpsert(setBehavior);
+          break;
         case 'instruments': handleUpsert(setInstruments); break;
         case 'instrument_evaluations': handleUpsert(setInstrumentEvaluations); break;
         case 'schedule': handleUpsert(setSchedule); break;
