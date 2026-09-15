@@ -111,6 +111,8 @@ export const StoreProvider = ({ children }) => {
   const [syncStatus, setSyncStatus] = useState('checking');
   const realtimeChannelsRef = useRef([]);
   const broadcastChannelRef = useRef(null);
+  const studentIdSetRef = useRef(null);
+  const attendanceRpcAvailableRef = useRef(false);
 
   const [users, setUsers] = useState(() => loadData('edu_users', []));
   const [currentUser, setCurrentUser] = useState(null);
@@ -193,11 +195,16 @@ useEffect(() => {
 
     const isAdminUser = currentUser?.role === 'admin' || currentUser?.username === 'admin';
     let roleFilter = null;
+    let subjectFilter = null;
     if (!isAdminUser && Array.isArray(currentUser?.assignments)) {
       const ids = [...new Set(currentUser.assignments
         .map(a => a.classId || a.class_id)
         .filter(Boolean))];
       if (ids.length > 0) roleFilter = ids;
+      const subjects = [...new Set(currentUser.assignments
+        .map(a => a.subjectId || a.subject_id)
+        .filter(Boolean))];
+      if (subjects.length > 0) subjectFilter = subjects;
     }
 
     const mkQ = (table) => {
@@ -272,6 +279,7 @@ useEffect(() => {
       const { data: studentsData } = await studentsQuery;
 
       const studentIdSet = roleFilter ? new Set((studentsData || []).map(s => s.id)) : null;
+      studentIdSetRef.current = studentIdSet;
 
       const [
         { data: classesData },
@@ -295,6 +303,20 @@ useEffect(() => {
           return query;
         })(),
         (() => {
+          if (roleFilter && studentIdSet) {
+            return supabase.rpc('get_attendance_for_students', { p_student_ids: [...studentIdSet] })
+              .then(({ data, error }) => {
+                if (error || !data) {
+                  attendanceRpcAvailableRef.current = false;
+                  console.warn('RPC get_attendance_for_students no disponible, usando query completa:', error?.message || 'sin datos');
+                  let query = supabase.from('attendance').select('*');
+                  if (isDelta) query = query.gte('updated_at', lastSync);
+                  return query;
+                }
+                attendanceRpcAvailableRef.current = true;
+                return { data };
+              });
+          }
           let query = supabase.from('attendance').select('*');
           if (isDelta) query = query.gte('updated_at', lastSync);
           return query;
@@ -318,21 +340,27 @@ useEffect(() => {
           let query = supabase.from('learning_sessions')
             .select('id,title,description,sections,subject_id,period,grade_level,file_name,storage_path,uploaded_by,uploaded_at,updated_at');
           if (isDelta) query = query.gte('updated_at', lastSync);
+          if (subjectFilter) query = query.in('subject_id', subjectFilter);
           return query;
         })(),
         mkQ('events'),
         (() => {
           let query = supabase.from('behavior').select('*');
           if (isDelta) query = query.gte('updated_at', lastSync);
+          if (roleFilter && studentIdSet) query = query.in('student_id', [...studentIdSet]);
           return query;
         })(),
       ]);
 
       const [{ data: planningDocsData }, { data: periodDatesData }, { data: loginHistoryData }] = await Promise.all([
-        supabase.from('planning_documents')
-          .select('id,title,description,sections,subject_id,period,grade_level,file_name,storage_path,uploaded_by,uploaded_at,updated_at'),
+        (() => {
+          let query = supabase.from('planning_documents')
+            .select('id,title,description,sections,subject_id,period,grade_level,file_name,storage_path,uploaded_by,uploaded_at,updated_at');
+          if (subjectFilter) query = query.in('subject_id', subjectFilter);
+          return query;
+        })(),
         supabase.from('period_dates').select('*'),
-        supabase.from('login_history').select('*').order('login_at', { ascending: false })
+        supabase.from('login_history').select('*').order('login_at', { ascending: false }).limit(200)
       ]);
 
       setMerged(setStudents, studentsData, normStudent);
@@ -809,6 +837,22 @@ useEffect(() => {
     }
   }, [isOnline, prepareForSupabase]);
 
+  const persistAttendanceRow = useCallback(async (row) => {
+    if (!isOnline || !row) return;
+    if (attendanceRpcAvailableRef.current) {
+      const { error } = await supabase.rpc('merge_attendance', {
+        p_id: row.id, p_date: row.date, p_records: row.records || {}
+      });
+      if (error) {
+        const err = new Error(`merge_attendance error: ${error.message}`);
+        console.error(err);
+        throw err;
+      }
+      return;
+    }
+    await syncToSupabase('attendance', [row]);
+  }, [isOnline, syncToSupabase]);
+
   const deleteFromSupabase = useCallback(async (table, id) => {
     if (!isOnline) return;
     try {
@@ -1158,11 +1202,11 @@ useEffect(() => {
       if (existing) {
         const recordsMap = existing.records ? { ...existing.records, ...stamped } : stamped;
         const updated = prev.map(a => a.date === date ? { ...a, records: recordsMap } : a);
-        syncToSupabase('attendance', [updated.find(a => a.date === date)]);
+        persistAttendanceRow(updated.find(a => a.date === date));
         return updated;
       }
       const newRecord = { id: generateId(), date, records: stamped };
-      syncToSupabase('attendance', [newRecord]);
+      persistAttendanceRow(newRecord);
       return [...prev, newRecord];
     });
   };
@@ -1176,11 +1220,11 @@ useEffect(() => {
         const next = { ...base, ...patch };
         const records = { ...existing.records, [studentId]: next };
         const updated = prev.map(a => a.date === date ? { ...a, records } : a);
-        syncToSupabase('attendance', [updated.find(a => a.date === date)]);
+        persistAttendanceRow(updated.find(a => a.date === date));
         return updated;
       }
       const newRecord = { id: generateId(), date, records: { [studentId]: { ...patch } } };
-      syncToSupabase('attendance', [newRecord]);
+      persistAttendanceRow(newRecord);
       return [...prev, newRecord];
     });
   };
@@ -1637,7 +1681,6 @@ useEffect(() => {
       { name: 'subjects', data: subjects },
       { name: 'classes', data: classes },
       { name: 'grades', data: grades },
-      { name: 'attendance', data: attendance },
       { name: 'instruments', data: instruments },
       { name: 'instrument_evaluations', data: instrumentEvaluations },
       { name: 'schedule', data: schedule },
@@ -1648,13 +1691,15 @@ useEffect(() => {
       { name: 'events', data: events },
       { name: 'behavior', data: behavior },
     ];
-    const results = await Promise.allSettled(
-      tables.map(t =>
-        syncToSupabase(t.name, t.data, true)
-          .then(() => ({ table: t.name, status: 'ok' }))
-          .catch(err => ({ table: t.name, status: 'error', error: err.message }))
-      )
-    );
+    const promises = tables.map(t => syncToSupabase(t.name, t.data, true)
+      .then(() => ({ table: t.name, status: 'ok' }))
+      .catch(err => ({ table: t.name, status: 'error', error: err.message })));
+    for (const row of attendance) {
+      promises.push(persistAttendanceRow(row)
+        .then(() => ({ table: 'attendance', status: 'ok' }))
+        .catch(err => ({ table: 'attendance', status: 'error', error: err.message })));
+    }
+    const results = await Promise.allSettled(promises);
     const errors = results.map(r => r.value).filter(v => v?.status === 'error');
     if (errors.length > 0) {
       errors.forEach(e => console.error(`Error sync ${e.table}:`, e.error));
@@ -1663,9 +1708,9 @@ useEffect(() => {
         : '';
       alert(`Error en:\n${errors.map(e => `- ${e.table}: ${e.error}`).join('\n')}${rlsHint}`);
     } else {
-      alert(`✓ Todos los datos sincronizados (${tables.length} tablas)`);
+      alert(`✓ Todos los datos sincronizados (${tables.length + 1} tablas)`);
     }
-  }, [isOnline, users, students, subjects, classes, grades, attendance, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, behavior, syncToSupabase]);
+  }, [isOnline, users, students, subjects, classes, grades, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, behavior, attendance, syncToSupabase, persistAttendanceRow]);
 
   const clearAllGrades = () => {
     setGrades([]);

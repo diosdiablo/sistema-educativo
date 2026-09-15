@@ -367,3 +367,57 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Enable all for chat_messages" ON chat_messages FOR ALL USING (true) WITH CHECK (true);
+
+-- ══════════════════════════════════════════════════════════════
+-- FILTRADO POR DOCENTE: asistencia con RPC (merge server-side)
+-- ══════════════════════════════════════════════════════════════
+
+-- Asegurar columna updated_at en attendance (usada por delta sync y RPC)
+DO $$BEGIN
+  ALTER TABLE attendance ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+END $$;
+
+-- Lectura: devuelve filas de asistencia con "records" podado solo a los
+-- estudiantes del docente. Evita transferir los registros de toda la I.E.
+CREATE OR REPLACE FUNCTION get_attendance_for_students(p_student_ids TEXT[])
+RETURNS TABLE(id TEXT, date TEXT, records JSONB, created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  r attendance%ROWTYPE;
+  pruned JSONB;
+BEGIN
+  FOR r IN SELECT * FROM attendance ORDER BY date LOOP
+    id := r.id;
+    date := r.date;
+    created_at := r.created_at;
+    updated_at := r.updated_at;
+    IF p_student_ids IS NOT NULL AND array_length(p_student_ids, 1) > 0 THEN
+      SELECT coalesce(jsonb_object_agg(k, v), '{}'::jsonb) INTO pruned
+      FROM jsonb_each(r.records) AS kv(k, v)
+      WHERE kv.k = ANY(p_student_ids);
+      records := pruned;
+    ELSE
+      records := r.records;
+    END IF;
+    RETURN NEXT;
+  END LOOP;
+END;
+$$;
+
+-- Escritura: fusiona los registros del docente con los ya existentes en el
+-- servidor (no pisa los registros de otros docentes para la misma fecha).
+CREATE OR REPLACE FUNCTION merge_attendance(p_id TEXT, p_date TEXT, p_records JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO attendance (id, date, records, created_at, updated_at)
+  VALUES (p_id, p_date, p_records, now(), now())
+  ON CONFLICT (id) DO UPDATE
+    SET records = attendance.records || EXCLUDED.records,
+        updated_at = now();
+END;
+$$;
