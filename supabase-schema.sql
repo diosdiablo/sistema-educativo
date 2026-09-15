@@ -388,19 +388,25 @@ AS $$
 DECLARE
   r attendance%ROWTYPE;
   pruned JSONB;
+  obj JSONB;
 BEGIN
   FOR r IN SELECT * FROM attendance ORDER BY date LOOP
     id := r.id;
     date := r.date;
     created_at := r.created_at;
     updated_at := r.updated_at;
+    obj := CASE
+      WHEN jsonb_typeof(r.records) = 'object' THEN r.records
+      WHEN jsonb_typeof(r.records) = 'string' THEN COALESCE((r.records #>> '{}')::jsonb, '{}'::jsonb)
+      ELSE '{}'::jsonb
+    END;
     IF p_student_ids IS NOT NULL AND array_length(p_student_ids, 1) > 0 THEN
       SELECT coalesce(jsonb_object_agg(k, v), '{}'::jsonb) INTO pruned
-      FROM jsonb_each(r.records) AS kv(k, v)
+      FROM jsonb_each(obj) AS kv(k, v)
       WHERE kv.k = ANY(p_student_ids);
       records := pruned;
     ELSE
-      records := r.records;
+      records := obj;
     END IF;
     RETURN NEXT;
   END LOOP;
@@ -413,11 +419,21 @@ CREATE OR REPLACE FUNCTION merge_attendance(p_id TEXT, p_date TEXT, p_records JS
 RETURNS VOID
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  existing JSONB;
 BEGIN
+  SELECT CASE
+      WHEN jsonb_typeof(records) = 'object' THEN records
+      WHEN jsonb_typeof(records) = 'string' THEN COALESCE((records #>> '{}')::jsonb, '{}'::jsonb)
+      ELSE '{}'::jsonb
+    END
+    INTO existing
+    FROM attendance WHERE id = p_id;
+
   INSERT INTO attendance (id, date, records, created_at, updated_at)
-  VALUES (p_id, p_date, p_records, now(), now())
+  VALUES (p_id, p_date, COALESCE(existing, '{}'::jsonb) || COALESCE(p_records, '{}'::jsonb), now(), now())
   ON CONFLICT (id) DO UPDATE
-    SET records = attendance.records || EXCLUDED.records,
+    SET records = EXCLUDED.records,
         updated_at = now();
 END;
 $$;
