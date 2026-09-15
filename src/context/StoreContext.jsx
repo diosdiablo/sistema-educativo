@@ -207,6 +207,16 @@ useEffect(() => {
       if (subjects.length > 0) subjectFilter = subjects;
     }
 
+    let roleFilterClassMatch = null;
+    if (roleFilter) {
+      const { data: classRefData } = await supabase
+        .from('classes')
+        .select('id,name');
+      const nameById = new Map((classRefData || []).map(c => [c.id, c.name]));
+      const names = [...new Set(roleFilter.map(id => nameById.get(id)).filter(Boolean))];
+      roleFilterClassMatch = [...new Set([...roleFilter, ...names])];
+    }
+
     const mkQ = (table) => {
       let query = supabase.from(table).select('*');
       if (isDelta) query = query.gte('updated_at', lastSync);
@@ -275,7 +285,7 @@ useEffect(() => {
     try {
       let studentsQuery = supabase.from('students').select('*');
       if (isDelta) studentsQuery = studentsQuery.gte('updated_at', lastSync);
-      if (roleFilter) studentsQuery = studentsQuery.in('class_id', roleFilter);
+      if (roleFilterClassMatch) studentsQuery = studentsQuery.in('class_id', roleFilterClassMatch);
       const { data: studentsData } = await studentsQuery;
 
       const studentIdSet = roleFilter ? new Set((studentsData || []).map(s => s.id)) : null;
@@ -325,14 +335,14 @@ useEffect(() => {
         fetchAllRows('instrument_evaluations', {
           filter: (q) => {
             if (isDelta) q = q.gte('updated_at', lastSync);
-            if (roleFilter) q = q.in('class_id', roleFilter);
+            if (roleFilterClassMatch) q = q.in('class_id', roleFilterClassMatch);
             return q;
           }
         }),
         mkQ('schedule'),
         (() => {
           let query = mkQ('diagnostic_evaluations');
-          if (roleFilter) query = query.in('class_id', roleFilter);
+          if (roleFilterClassMatch) query = query.in('class_id', roleFilterClassMatch);
           return query;
         })(),
         mkQ('users'),
