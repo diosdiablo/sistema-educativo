@@ -504,12 +504,21 @@ useEffect(() => {
       return;
     }
 
+    const normalizeRecords = (records) => {
+      let out = records;
+      if (typeof out === 'string') {
+        try { out = JSON.parse(out); } catch { out = {}; }
+      }
+      return out && typeof out === 'object' && !Array.isArray(out) ? out : {};
+    };
+
     const pruneRecordsForUser = (records) => {
+      const normalized = normalizeRecords(records);
       const ids = studentIdSetRef.current;
-      if (!ids || !records || typeof records !== 'object' || Array.isArray(records)) return records;
+      if (!ids) return normalized;
       const pruned = {};
-      for (const key of Object.keys(records)) {
-        if (ids.has(key)) pruned[key] = records[key];
+      for (const key of Object.keys(normalized)) {
+        if (ids.has(key)) pruned[key] = normalized[key];
       }
       return pruned;
     };
