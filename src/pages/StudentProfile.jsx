@@ -15,6 +15,17 @@ const GRADE_COLORS = { AD: '#188038', A: '#1a73e8', B: '#e37400', C: '#d93025' }
 const PERIODS = ['1', '2', '3', '4'];
 const PERIOD_LABELS = { '1': 'I Bimestre', '2': 'II Bimestre', '3': 'III Bimestre', '4': 'IV Bimestre' };
 
+const entryStatus = (entry) => {
+  if (!entry || entry === '-') return null;
+  if (typeof entry !== 'object') return String(entry);
+  if (typeof entry.clase === 'string') return entry.clase;
+  if (typeof entry.llega === 'string') return entry.llega;
+  if (entry.clase && typeof entry.clase === 'object') return entry.clase.s || null;
+  if (entry.llega && typeof entry.llega === 'object') return entry.llega.s || null;
+  if (entry.s) return entry.s;
+  return null;
+};
+
 export default function StudentProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -43,7 +54,7 @@ export default function StudentProfile() {
     if (!student) return { total: 0, present: 0, late: 0, absent: 0, justified: 0, percentage: 0 };
     let present = 0, late = 0, absent = 0, justified = 0, total = 0;
     attendance.forEach(day => {
-      const status = day.records[student.id];
+      const status = entryStatus(day.records?.[student.id]);
       if (!status) return;
       total++;
       if (status === 'P') present++;
@@ -67,7 +78,7 @@ export default function StudentProfile() {
     if (!period) return attendanceStats;
     let present = 0, late = 0, absent = 0, justified = 0, total = 0;
     attendance.forEach(day => {
-      const status = day.records[student.id];
+      const status = entryStatus(day.records?.[student.id]);
       if (!status) return;
       if (day.date < period.start || day.date > period.end) return;
       total++;
@@ -83,7 +94,7 @@ export default function StudentProfile() {
   }, [attendance, student, selectedAttendancePeriod, periodDates, attendanceStats]);
 
   const filteredAttendanceDays = useMemo(() => {
-    let days = [...attendance].reverse().filter(a => a.records[student.id]);
+    let days = [...attendance].reverse().filter(a => entryStatus(a.records?.[student.id]));
     if (selectedAttendancePeriod) {
       const period = periodDates[selectedAttendancePeriod];
       if (period) {
@@ -380,7 +391,7 @@ export default function StudentProfile() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto' }}>
                 {filteredAttendanceDays.map(day => {
-                  const status = day.records[student.id];
+                  const status = entryStatus(day.records?.[student.id]);
                   const statusConfig = {
                     P: { label: 'Presente', color: '#188038', bg: '#18803815' },
                     T: { label: 'Tardanza', color: '#e37400', bg: '#e3740015' },
