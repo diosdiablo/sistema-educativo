@@ -91,7 +91,8 @@ function ChatContacts({ onSelect }) {
 
   useEffect(() => {
     if (isOnline && users.length <= 1) {
-      supabase.from('users').select('*').then(({ data }) => { if (data?.length > users.length) setUsers(data); }).catch(() => {});
+      supabase.from('users').select('id, username, name, role, assignments, force_logout, created_at, updated_at')
+        .then(({ data }) => { if (data?.length > users.length) setUsers(data.map(u => { const { password, ...safe } = u; return safe; })); }).catch(() => {});
     }
   }, [isOnline]);
 

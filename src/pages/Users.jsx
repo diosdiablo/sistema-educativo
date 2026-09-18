@@ -26,7 +26,7 @@ export default function Users() {
       setFormData({
         name: user.name,
         username: user.username,
-        password: user.password,
+        password: '',
         role: user.role || (user.username === 'admin' ? 'admin' : 'teacher')
       });
     } else {
@@ -79,13 +79,20 @@ export default function Users() {
     e.preventDefault();
     setError('');
 
-    if (!formData.name || !formData.username || !formData.password) {
-      setError('Todos los campos son obligatorios.');
+    if (!formData.name || !formData.username) {
+      setError('Nombre y usuario son obligatorios.');
+      return;
+    }
+
+    if (!editingUser && !formData.password) {
+      setError('La contraseña es obligatoria para nuevos usuarios.');
       return;
     }
 
     if (editingUser) {
-      updateUser(editingUser.id, formData);
+      const updates = { name: formData.name, role: formData.role };
+      if (formData.password) updates.password = formData.password;
+      updateUser(editingUser.id, updates);
     } else {
       const success = register(formData.name, formData.username, formData.password, formData.role);
       if (!success) {

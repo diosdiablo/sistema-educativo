@@ -29,6 +29,12 @@ const safeParse = (val, fallback) => {
   try { return JSON.parse(val); } catch { return fallback; }
 };
 
+const sanitizeUser = (u) => {
+  if (!u) return u;
+  const { password, ...safe } = u;
+  return safe;
+};
+
 const fetchAllRows = async (table, { orderBy = 'created_at', filter } = {}) => {
   const PAGE = 1000;
   let from = 0;
@@ -114,7 +120,7 @@ export const StoreProvider = ({ children }) => {
   const studentIdSetRef = useRef(null);
   const attendanceRpcAvailableRef = useRef(false);
 
-  const [users, setUsers] = useState(() => loadData('edu_users', []));
+  const [users, setUsers] = useState(() => loadData('edu_users', []).map(sanitizeUser));
   const [currentUser, setCurrentUser] = useState(null);
   const [loginHistory, setLoginHistory] = useState(() => loadData('edu_login_history', []));
   const [students, setStudents] = useState(() => loadData('edu_students', []));
@@ -345,7 +351,12 @@ useEffect(() => {
           if (roleFilterClassMatch) query = query.in('class_id', roleFilterClassMatch);
           return query;
         })(),
-        mkQ('users'),
+        (() => {
+          let query = supabase.from('users')
+            .select('id, username, name, role, assignments, force_logout, created_at, updated_at');
+          if (isDelta) query = query.gte('updated_at', lastSync);
+          return query;
+        })(),
         (() => {
           let query = supabase.from('learning_sessions')
             .select('id,title,description,sections,subject_id,period,grade_level,file_name,storage_path,uploaded_by,uploaded_at,updated_at');
@@ -546,12 +557,13 @@ useEffect(() => {
 
     // -- Simple tables (passthrough) --
     const handleUserRow = (payload) => {
-      handleUpsert(setUsers)(payload);
+      handleUpsert(setUsers, sanitizeUser)(payload);
       if (payload.eventType === 'DELETE') {
         setCurrentUser(prev => prev && prev.id === payload.old.id ? null : prev);
       } else if (payload.new) {
-        setCurrentUser(prev => prev && prev.id === payload.new.id
-          ? { ...prev, ...payload.new, assignments: normalizeAssignments(payload.new.assignments) }
+        const safe = sanitizeUser(payload.new);
+        setCurrentUser(prev => prev && prev.id === safe.id
+          ? { ...prev, ...safe, assignments: normalizeAssignments(safe.assignments) }
           : prev);
       }
     };
@@ -733,7 +745,7 @@ useEffect(() => {
       };
 
       switch (table) {
-        case 'users': handleUpsert(setUsers); break;
+        case 'users': handleUpsert(setUsers, sanitizeUser); break;
         case 'students': handleUpsert(setStudents); break;
         case 'subjects': handleUpsert(setSubjects); break;
         case 'classes': handleUpsert(setClasses); break;
@@ -835,7 +847,7 @@ useEffect(() => {
   useEffect(() => { try { localStorage.setItem('edu_grades', JSON.stringify(grades)); } catch(e) { console.warn('localStorage edu_grades error:', e.message); } }, [grades]);
   useEffect(() => { try { localStorage.setItem('edu_subjects', JSON.stringify(subjects)); } catch(e) { console.warn('localStorage edu_subjects error:', e.message); } }, [subjects]);
   useEffect(() => { try { localStorage.setItem('edu_classes', JSON.stringify(classes)); } catch(e) { console.warn('localStorage edu_classes error:', e.message); } }, [classes]);
-  useEffect(() => { try { localStorage.setItem('edu_users', JSON.stringify(users)); } catch(e) { console.warn('localStorage edu_users error:', e.message); } }, [users]);
+  useEffect(() => { try { localStorage.setItem('edu_users', JSON.stringify(users.map(sanitizeUser))); } catch(e) { console.warn('localStorage edu_users error:', e.message); } }, [users]);
   useEffect(() => { try { localStorage.setItem('edu_instruments', JSON.stringify(instruments)); } catch(e) { console.warn('localStorage edu_instruments error:', e.message); } }, [instruments]);
   useEffect(() => { try { localStorage.setItem('edu_instrument_evaluations', JSON.stringify(instrumentEvaluations)); } catch(e) { console.warn('localStorage edu_instrument_evaluations error:', e.message); } }, [instrumentEvaluations]);
   useEffect(() => { try { localStorage.setItem('edu_schedule', JSON.stringify(schedule)); } catch(e) { console.warn('localStorage edu_schedule error:', e.message); } }, [schedule]);
@@ -966,18 +978,42 @@ useEffect(() => {
     let loggedInUser = null;
     if (isOnline) {
       try {
-        const { data, error } = await supabase
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (response.ok) {
+          const json = await response.json();
+          if (json && json.ok && json.user) {
+            console.log('User logged in:', json.user.name, 'role:', json.user.role, 'assignments:', json.user.assignments);
+            const normalizedUser = {
+              ...json.user,
+              assignments: normalizeAssignments(json.user.assignments)
+            };
+            setCurrentUser(normalizedUser);
+            sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
+            localStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
+            loggedInUser = normalizedUser;
+          }
+        }
+      } catch (err) {
+        console.error('Login API error, intentando validación local:', err);
+      }
+    }
+    
+    if (!loggedInUser && isOnline) {
+      try {
+        const { data: dbUser } = await supabase
           .from('users')
-          .select('*')
+          .select('id, username, name, role, assignments, force_logout, created_at, updated_at')
           .eq('username', username)
           .eq('password', password)
-          .single();
-        
-        if (data) {
-          console.log('User logged in:', data.name, 'role:', data.role, 'assignments:', data.assignments);
+          .maybeSingle();
+        if (dbUser) {
           const normalizedUser = {
-            ...data,
-            assignments: normalizeAssignments(data.assignments)
+            ...sanitizeUser(dbUser),
+            assignments: normalizeAssignments(dbUser.assignments)
           };
           setCurrentUser(normalizedUser);
           sessionStorage.setItem('edu_current_user_session', JSON.stringify(normalizedUser));
@@ -985,17 +1021,7 @@ useEffect(() => {
           loggedInUser = normalizedUser;
         }
       } catch (err) {
-        console.error('Login error:', err);
-      }
-    }
-    
-    if (!loggedInUser) {
-      const user = users.find(u => u.username === username && u.password === password);
-      if (user) {
-        setCurrentUser(user);
-        sessionStorage.setItem('edu_current_user_session', JSON.stringify(user));
-        localStorage.setItem('edu_current_user_session', JSON.stringify(user));
-        loggedInUser = user;
+        console.error('Supabase login error:', err);
       }
     }
     
@@ -1193,24 +1219,26 @@ useEffect(() => {
   };
 
   const updateUser = (id, updates) => {
+    const cleanUpdates = { ...updates };
     const prevUser = users.find(u => u.id === id);
-    const passwordChanged = !!updates.password && (!prevUser || prevUser.password !== updates.password);
+    const passwordChanged = !!cleanUpdates.password && (!prevUser || prevUser.password !== cleanUpdates.password);
     const payload = passwordChanged && prevUser && prevUser.id !== currentUser?.id
-      ? { ...updates, force_logout: true }
-      : updates;
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...payload } : u));
+      ? { ...cleanUpdates, force_logout: true }
+      : cleanUpdates;
+    setUsers(prev => prev.map(u => u.id === id ? { ...sanitizeUser(u), ...sanitizeUser(payload) } : u));
     if (currentUser?.id === id) {
-      setCurrentUser(prev => ({ ...prev, ...payload }));
+      setCurrentUser(prev => ({ ...prev, ...sanitizeUser(payload) }));
     }
     if (isOnline) {
-      const prepared = prepareForSupabase({ id, ...updates }, 'users');
+      const prepared = prepareForSupabase({ id, ...cleanUpdates }, 'users');
       delete prepared.id;
+      if (!prepared.password) delete prepared.password;
       supabase.from('users').update(prepared).eq('id', id)
         .then(({ error }) => {
           if (error) console.error('Supabase error updating user:', JSON.stringify(error));
         })
         .catch(err => console.error('Error updating user:', err));
-      sendBroadcast('users', 'INSERT', { id, ...updates });
+      sendBroadcast('users', 'INSERT', sanitizeUser({ id, ...cleanUpdates }));
     }
   };
 
@@ -1254,8 +1282,10 @@ useEffect(() => {
       assignments: [],
       createdAt: new Date().toISOString()
     };
-    setUsers(prev => [...prev, newUser]);
-    syncToSupabase('users', [newUser]);
+    setUsers(prev => [...prev, sanitizeUser(newUser)]);
+    syncToSupabase('users', [newUser], true)
+      .then(() => sendBroadcast('users', 'INSERT', sanitizeUser({ ...newUser, created_at: newUser.createdAt })))
+      .catch(err => console.error('Error registering user:', err));
     return newUser;
   };
 
