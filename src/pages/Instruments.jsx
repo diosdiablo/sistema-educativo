@@ -135,6 +135,7 @@ export default function Instruments() {
   const [editingInstrument, setEditingInstrument] = useState(null);
   const [applyingInstrument, setApplyingInstrument] = useState(null);
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
+  const [viewingInstrument, setViewingInstrument] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showAllEvals, setShowAllEvals] = useState(false);
   const fileInputRef = useRef(null);
@@ -1636,7 +1637,7 @@ export default function Instruments() {
                         {ins.criteria?.length ? `${ins.criteria.length} criterio(s)` : 'Evaluación global'} · {evCount} evaluación(es)
                       </p>
                     </div>
-                    <button onClick={() => handleStartApply(ins)} style={{
+                    <button onClick={() => setViewingInstrument(ins)} style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1658,7 +1659,7 @@ export default function Instruments() {
                       onMouseDown={e => { e.currentTarget.style.boxShadow = 'inset 0 0 0 100px rgba(255,255,255,0.12)'; }}
                       onMouseUp={e => { e.currentTarget.style.boxShadow = 'inset 0 0 0 100px rgba(255,255,255,0.08)'; }}
                     >
-                      <Play size={18} /> Aplicar Evaluación
+                      <FileSearch size={18} /> Ver instrumento
                     </button>
                   </div>
                 );
@@ -1935,6 +1936,109 @@ export default function Instruments() {
           </div>
         </div>
       )}
+
+      {/* Modal para ver instrumento */}
+      {viewingInstrument && (() => {
+        const vi = viewingInstrument;
+        const viTypeDef = typeMap[vi.type] || INSTRUMENT_TYPES[0];
+        const ViIcon = viTypeDef.icon;
+        const viSubject = subjects?.find(s => s.id === vi.subjectId || s.id === vi.subject_id);
+        return (
+          <div className="modal-overlay animate-fade-in" style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+            padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
+          }}>
+            <div className="card" style={{ maxWidth: '600px', width: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <div style={{
+                    width: '48px', height: '48px', borderRadius: '12px',
+                    background: `${viTypeDef.color}14`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <ViIcon size={24} color={viTypeDef.color} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--text-primary)' }}>{vi.title}</h3>
+                    <span style={{
+                      fontSize: '0.75rem', color: viTypeDef.color, fontWeight: 600,
+                      background: `${viTypeDef.color}12`, padding: '3px 10px', borderRadius: '6px',
+                      display: 'inline-block', marginTop: '4px'
+                    }}>
+                      {viTypeDef.label}
+                    </span>
+                  </div>
+                </div>
+                <button onClick={() => setViewingInstrument(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}>
+                  <X size={22} color="var(--text-secondary)" />
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  gap: '0.75rem', padding: '1rem', background: 'var(--surface-muted)', borderRadius: '10px',
+                  fontSize: '0.85rem'
+                }}>
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)' }}>Área curricular:</span>
+                    <div style={{ fontWeight: 600 }}>{viSubject?.name || vi.subjectName || '—'}</div>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)' }}>Aplicaciones:</span>
+                    <div style={{ fontWeight: 600 }}>{instrumentEvaluations.filter(e => e.instrumentId === vi.id).length} evaluación(es)</div>
+                  </div>
+                </div>
+
+                {vi.criteria?.length > 0 ? (
+                  <div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                      Criterios de evaluación ({vi.criteria.length})
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {vi.criteria.map((c, i) => (
+                        <div key={c.id || i} style={{
+                          display: 'flex', alignItems: 'flex-start', gap: '0.5rem',
+                          padding: '0.6rem 0.85rem', background: 'var(--bg-color-surface)',
+                          border: '1px solid var(--border-color)', borderRadius: '8px',
+                          fontSize: '0.85rem'
+                        }}>
+                          <span style={{
+                            fontWeight: 700, color: viTypeDef.color, flexShrink: 0,
+                            width: '22px', height: '22px', borderRadius: '6px',
+                            background: `${viTypeDef.color}12`,
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '0.7rem'
+                          }}>{i + 1}</span>
+                          <span>{c.text || c}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    padding: '0.85rem 1rem', borderRadius: '10px',
+                    background: 'var(--surface-muted)', fontSize: '0.85rem',
+                    color: 'var(--text-secondary)', fontStyle: 'italic'
+                  }}>
+                    Evaluación global — sin criterios específicos
+                  </div>
+                )}
+              </div>
+
+              <button
+                className="btn-primary"
+                style={{ width: '100%', marginTop: '1.5rem' }}
+                onClick={() => setViewingInstrument(null)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
