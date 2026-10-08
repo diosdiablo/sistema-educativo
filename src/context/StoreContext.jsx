@@ -1386,6 +1386,19 @@ useEffect(() => {
     });
   };
 
+  const deleteGrade = (studentId, subject, competencyId, period) => {
+    setGrades(prev => {
+      const existing = prev.find(g =>
+        g.studentId === studentId && g.subject === subject && g.competencyId === competencyId && g.period === period
+      );
+      if (existing) {
+        deleteFromSupabase('grades', existing.id);
+        return prev.filter(g => g.id !== existing.id);
+      }
+      return prev;
+    });
+  };
+
   const calculateQualitativeGrade = (score, max = 20) => {
     const percentage = (score / max) * 100;
     if (percentage >= 90) return 'AD';
@@ -2069,7 +2082,7 @@ useEffect(() => {
       clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
       addSubject, deleteSubject, addCompetency, deleteCompetency,
       addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-      saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, saveGrade,
+    saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, saveGrade, deleteGrade,
       addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
       saveScheduleItem, deleteScheduleItem,
       updatePeriodDates,

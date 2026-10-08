@@ -2,6 +2,13 @@
 
 ## Sesión 2026-10-08
 
+- **Bug FIX "Nivel de Logro" no se actualizaba al borrar evaluaciones** (verificado por el usuario ✓, pendiente de commit):
+  - Causa: la columna mostraba `gradeRow?.score || auto || null` — la nota manual (tabla `grades`) tenía prioridad y quedaba huérfana al borrar las evaluaciones.
+  - `Grades.jsx:977` → `auto ?? gradeRow?.score ?? null` (el cálculo automático manda cuando hay evaluaciones).
+  - `StoreContext.jsx` nueva acción `deleteGrade(studentId, subject, competencyId, period)` (borra de estado + Supabase vía `deleteFromSupabase`).
+  - Limpieza de notas huérfanas al borrar: (a) X de columna → si no quedan evaluaciones de esa competencia, borra notas de alumnos afectados; (b) borrado individual desde el modal de detalle → si era la última evaluación del alumno en esa competencia, borra su nota manual.
+  - Build ✓. Dev server en localhost:5173.
+- **Commit `43784d9` pusheado a `main`**: `feat: seleccion multiple de estudiantes y nota grupal en calificaciones` (Grades.jsx + CHAT_HISTORY.md). Flujo AGENTS.md respetado: backup en `$env:TEMP\opencode\backup_grades_commit\`, reset, commit solo de lo autorizado, y rework paralelo de curriculum/horarios (BoletaNotas, Schedule, schema) restaurado al working tree SIN commitear.
 - **Grades.jsx — Selección múltiple + nota grupal CONECTADA a la UI** (antes los helpers estaban huérfanos):
   - Checkbox "seleccionar todos" en el header de la tabla + checkbox por fila de alumno (fila seleccionada se pinta `#e8f0fe`).
   - Barra flotante inferior (azul, pill) cuando hay selección: contador + botón "Nota grupal" + botón limpiar (`X`).

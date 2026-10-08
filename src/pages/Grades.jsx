@@ -106,7 +106,7 @@ const selectPillStyle = {
 };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations, grades, saveGrade } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations, grades, saveGrade, deleteGrade } = useStore();
 
   const currentPeriod = () => {
     const now = new Date().toISOString().split('T')[0];
@@ -814,7 +814,21 @@ export default function Grades() {
                                             const toDelete = instrumentEvaluations.filter(e =>
                                               (e.activityName || e.instrumentId) === name && (e.competencyId === comp.id || e.competency_id === comp.id) && e.period === selectedPeriod
                                             );
-                                            setInstrumentEvaluations(prev => prev.filter(e => !toDelete.find(d => d.id === e.id)));
+                                            setInstrumentEvaluations(prev => {
+                                              const remaining = prev.filter(e => !toDelete.find(d => d.id === e.id));
+                                              const evalsForComp = remaining.filter(e =>
+                                                (e.competencyId === comp.id || e.competency_id === comp.id) && e.period === selectedPeriod
+                                              );
+                                              if (evalsForComp.length === 0) {
+                                                const affectedStudentIds = new Set(toDelete.map(e => e.studentId || e.student_id).filter(Boolean));
+                                                filteredStudents.forEach(st => {
+                                                  if (affectedStudentIds.has(st.id)) {
+                                                    deleteGrade(st.id, currentSubject.name, comp.id, selectedPeriod);
+                                                  }
+                                                });
+                                              }
+                                              return remaining;
+                                            });
                                             toDelete.forEach(e => {
                                               supabase.from('instrument_evaluations').delete().eq('id', e.id).catch(() => {});
                                             });
@@ -974,7 +988,7 @@ export default function Grades() {
                                 (g.competencyId === comp.id || g.competency_id === comp.id) &&
                                 g.period === selectedPeriod
                               );
-                              const level = gradeRow?.score || auto || null;
+                              const level = auto ?? gradeRow?.score ?? null;
                               const conclusion = gradeRow?.conclusion || '';
                               if (!level) {
                                 return (
@@ -1405,7 +1419,17 @@ export default function Grades() {
                   </button>
                   <button onClick={() => {
                     if (confirm('¿Eliminar esta evaluación?')) {
-                      deleteInstrumentEvaluation(viewingEvaluation.id);
+                      const ev = viewingEvaluation;
+                      deleteInstrumentEvaluation(ev.id);
+                      const remaining = instrumentEvaluations.filter(e => {
+                        if (e.id === ev.id) return false;
+                        const cid = e.competencyId || e.competency_id;
+                        return cid === (ev.competencyId || ev.competency_id) && e.period === ev.period &&
+                          (e.studentId === ev.studentId || e.student_id === ev.studentId);
+                      });
+                      if (remaining.length === 0) {
+                        deleteGrade(ev.studentId || ev.student_id, ev.subjectName || currentSubject?.name, ev.competencyId || ev.competency_id, ev.period);
+                      }
                       setViewingEvaluation(null);
                     }
                   }} style={{
