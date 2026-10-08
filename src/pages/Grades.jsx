@@ -183,6 +183,25 @@ export default function Grades() {
   const [quickGradeSaving, setQuickGradeSaving] = useState(false);
   const [quickGradeMsg, setQuickGradeMsg] = useState('');
 
+  const [selectedStudentIds,setSelectedStudentIds]=useState(new Set());
+  const [groupMsg,setGroupMsg]=useState('');
+  const [groupOnlyFirst,setGroupOnlyFirst]=useState(false);
+  const [quickGradeApplyToSelected,setQuickGradeApplyToSelected]=useState(true);
+
+  const clearStudentSelection=()=>{setSelectedStudentIds(new Set());setGroupMsg('');setGroupOnlyFirst(false);};
+  const toggleStudentSelection=id=>{setSelectedStudentIds(prev=>{const n=new Set(prev); if(n.has(id))n.delete(id); else n.add(id); return n;}); setGroupMsg('');};
+  const selectedStudents=useMemo(()=>filteredStudents.filter(st=>selectedStudentIds.has(st.id)),[filteredStudents,selectedStudentIds]);
+  const allVisibleSelected=selectedStudents.length>0&&selectedStudents.length===filteredStudents.length;
+  const toggleSelectAll=()=>{if(allVisibleSelected)setSelectedStudentIds(new Set()); else setSelectedStudentIds(new Set(filteredStudents.map(st=>st.id))); setGroupMsg('');};
+  const findEvalFor=(student,compId,inst)=>instrumentEvaluations.find(e=>{
+    if(e.period!==selectedPeriod||(e.competencyId!==compId&&e.competency_id!==compId))return false;
+    const instMatch=e.instrumentId===inst.id||(e.activityName||e.instrumentId)===inst.id||(e.activityName||'')===(inst.activityName||inst.title||'');
+    const idMatch=e.studentId===student.id||e.student_id===student.id;
+    return instMatch&&(idMatch||e.student_name===student.name);
+  });
+  const [showGroupGrade,setShowGroupGrade]=useState(false);
+  const [groupGrade,setGroupGrade]=useState({activityName:'',competencyId:'',score:''});
+  const [groupSaving,setGroupSaving]=useState(false);
   const [quickAzarOpen, setQuickAzarOpen] = useState(false);
   const [quickAzarSpinning, setQuickAzarSpinning] = useState(false);
   const [quickAzarDeg, setQuickAzarDeg] = useState(0);
@@ -565,7 +584,16 @@ export default function Grades() {
                         borderRight: '2px solid var(--border-color)',
                         textAlign: 'center'
                       }}>
-                        N°
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                          <input
+                            type="checkbox"
+                            checked={allVisibleSelected}
+                            onChange={toggleSelectAll}
+                            title="Seleccionar todos"
+                            style={{ cursor: 'pointer', width: '14px', height: '14px', accentColor: '#1a73e8' }}
+                          />
+                          <span>N°</span>
+                        </div>
                       </th>
                       <th style={{
                         minWidth: '150px',
@@ -834,8 +862,19 @@ export default function Grades() {
                     {filteredStudents.map((student, studentIdx) => {
                       const isHighlighted = quickAzarHighlighted === student.id;
                       return (
-                      <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : {}}>
-                        <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>{studentIdx + 1}</td>
+                      <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : selectedStudentIds.has(student.id) ? { background: '#e8f0fe' } : {}}>
+                        <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedStudentIds.has(student.id)}
+                              onChange={() => toggleStudentSelection(student.id)}
+                              title="Seleccionar estudiante"
+                              style={{ cursor: 'pointer', width: '14px', height: '14px', accentColor: '#1a73e8' }}
+                            />
+                            <span>{studentIdx + 1}</span>
+                          </div>
+                        </td>
                         <td style={{ fontWeight: 500, color: 'var(--text-primary)', minWidth: '150px', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>{student.name}</td>
                         {currentSubject.competencies.map(comp => {
                           const existingInstruments = getInstrumentsForCompetency(comp.id);
@@ -1406,6 +1445,20 @@ export default function Grades() {
               };
               delete evalData._isNew;
               await saveInstrumentEvaluation(evalData);
+              if (quickGradeApplyToSelected && selectedStudentIds.has(editingEvaluation.studentId) && selectedStudents.length > 1) {
+                const instRef = { id: evalData.activityName || evalData.instrumentId, activityName: evalData.activityName, title: evalData.instrumentTitle || evalData.activityName };
+                for (const st of selectedStudents) {
+                  if (st.id === editingEvaluation.studentId) continue;
+                  const existing = findEvalFor(st, evalData.competencyId, instRef);
+                  const copy = {
+                    ...evalData,
+                    id: existing?.id || ('grp-' + Date.now() + '-' + st.id),
+                    studentId: st.id,
+                    studentName: st.name,
+                  };
+                  await saveInstrumentEvaluation(copy);
+                }
+              }
               setEditingEvaluation(null);
             };
 
@@ -1593,6 +1646,19 @@ export default function Grades() {
                     )}
 
                     </div>
+
+                  {/* Opción de aplicar a seleccionados */}
+                  {selectedStudents.length > 1 && selectedStudentIds.has(editingEvaluation.studentId) && (
+                    <label style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem',
+                      fontSize: '0.85rem', color: 'var(--text-primary)', cursor: 'pointer',
+                      background: '#e8f0fe', padding: '0.6rem 0.9rem', borderRadius: '10px'
+                    }}>
+                      <input type="checkbox" checked={quickGradeApplyToSelected} onChange={e => setQuickGradeApplyToSelected(e.target.checked)}
+                        style={{ width: '15px', height: '15px', accentColor: '#1a73e8', cursor: 'pointer' }} />
+                      Aplicar esta nota también a los {selectedStudents.length - 1} seleccionado{selectedStudents.length - 1 !== 1 ? 's' : ''} restante{selectedStudents.length - 1 !== 1 ? 's' : ''}
+                    </label>
+                  )}
 
                   {/* Footer botones */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -1783,6 +1849,176 @@ export default function Grades() {
                     color: 'white', fontWeight: 500, cursor: quickGradeSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
                   }}>
                     <Send size={16} /> {quickGradeSaving ? 'Creando...' : 'Crear columna'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Barra flotante de selección múltiple */}
+          {selectedStudents.length > 0 && (
+            <div style={{
+              position: 'fixed', bottom: '1.25rem', left: '50%', transform: 'translateX(-50%)',
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              background: '#1a73e8', color: 'white',
+              padding: '0.65rem 1.25rem', borderRadius: '999px',
+              boxShadow: '0 8px 24px rgba(26,115,232,0.4)', zIndex: 900,
+              fontSize: '0.88rem', fontWeight: 500, whiteSpace: 'nowrap'
+            }}>
+              <Users size={17} />
+              <span>{selectedStudents.length} seleccionado{selectedStudents.length !== 1 ? 's' : ''}</span>
+              <button
+                onClick={() => { setGroupGrade({ activityName: '', competencyId: currentSubject?.competencies?.[0]?.id || '', score: '' }); setGroupMsg(''); setGroupOnlyFirst(false); setShowGroupGrade(true); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.35rem',
+                  background: 'white', color: '#1a73e8', border: 'none', borderRadius: '999px',
+                  padding: '0.4rem 0.9rem', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer'
+                }}
+              >
+                <Send size={14} /> Nota grupal
+              </button>
+              <button
+                onClick={clearStudentSelection}
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  background: 'rgba(255,255,255,0.18)', color: 'white', border: 'none', borderRadius: '999px',
+                  padding: '0.4rem 0.7rem', fontWeight: 500, fontSize: '0.82rem', cursor: 'pointer'
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          {/* Modal de nota grupal */}
+          {showGroupGrade && (
+            <div className="modal-overlay animate-fade-in" style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+              display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+              padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
+            }}>
+              <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{
+                      width: '40px', height: '40px', borderRadius: '10px',
+                      background: '#e8f0fe',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Users size={20} color="#1a73e8" />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Nota grupal</h3>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{selectedStudents.length} estudiante{selectedStudents.length !== 1 ? 's' : ''}</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowGroupGrade(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                    <X size={20} color="var(--text-secondary)" />
+                  </button>
+                </div>
+
+                {groupMsg && (
+                  <div style={{
+                    padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '1rem',
+                    background: groupMsg.startsWith('✓') ? '#dcfce7' : '#fef2f2',
+                    color: groupMsg.startsWith('✓') ? '#16a34a' : '#dc2626',
+                    fontSize: '0.85rem', fontWeight: 500
+                  }}>{groupMsg}</div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Actividad</label>
+                    <input type="text" className="input-field" placeholder="Ej: Participación oral, Práctica dirigida..." value={groupGrade.activityName}
+                      onChange={e => setGroupGrade(prev => ({ ...prev, activityName: e.target.value }))} style={{ width: '100%' }} />
+                  </div>
+
+                  {currentSubject?.competencies?.length > 0 && (
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Competencia</label>
+                      <select value={groupGrade.competencyId} onChange={e => setGroupGrade(prev => ({ ...prev, competencyId: e.target.value }))} className="input-field" style={{ width: '100%' }}>
+                        {currentSubject.competencies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Nota (0–20)</label>
+                    <input type="number" min="0" max="20" step="0.5" className="input-field" placeholder="Ej: 15" value={groupGrade.score}
+                      onChange={e => setGroupGrade(prev => ({ ...prev, score: e.target.value }))} style={{ width: '100%' }} />
+                  </div>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={groupOnlyFirst} onChange={e => setGroupOnlyFirst(e.target.checked)}
+                      style={{ width: '15px', height: '15px', accentColor: '#1a73e8', cursor: 'pointer' }} />
+                    Solo estudiantes sin nota en esta actividad
+                  </label>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <button onClick={() => setShowGroupGrade(false)} style={{
+                    flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)',
+                    background: 'var(--bg-color-surface)', color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem'
+                  }}>Cancelar</button>
+                  <button onClick={async () => {
+                    if (!groupGrade.activityName.trim()) { setGroupMsg('Ingresa el nombre de la actividad'); return; }
+                    const numScore = Number(groupGrade.score);
+                    if (groupGrade.score === '' || isNaN(numScore) || numScore < 0 || numScore > 20) { setGroupMsg('Ingresa una nota válida entre 0 y 20'); return; }
+                    const compId = groupGrade.competencyId || currentSubject?.competencies?.[0]?.id || '';
+                    const comp = currentSubject?.competencies?.find(c => c.id === compId);
+                    const instRef = { id: groupGrade.activityName.trim(), activityName: groupGrade.activityName.trim(), title: groupGrade.activityName.trim() };
+                    setGroupSaving(true);
+                    setGroupMsg('');
+                    let created = 0, updated = 0, skipped = 0;
+                    try {
+                      for (const st of selectedStudents) {
+                        const existing = findEvalFor(st, compId, instRef);
+                        if (existing && groupOnlyFirst) { skipped++; continue; }
+                        const qual = numToQualitative(numScore, 20);
+                        const evalData = {
+                          ...(existing || {}),
+                          id: existing?.id || ('grp-' + Date.now() + '-' + st.id),
+                          instrumentId: existing?.instrumentId || null,
+                          instrumentTitle: groupGrade.activityName.trim(),
+                          instrumentType: existing?.instrumentType || 'quick_grade',
+                          criteria: existing?.criteria || [],
+                          activityName: groupGrade.activityName.trim(),
+                          scores: existing?.scores || {},
+                          score: numScore,
+                          maxPossible: 20,
+                          qualitative: qual,
+                          subjectId: selectedSubjectId,
+                          subjectName: currentSubject?.name || '',
+                          competencyId: compId,
+                          competencyName: comp?.name || '',
+                          period: selectedPeriod,
+                          classId: classes.find(c => c.name === selectedClass)?.id || '',
+                          studentId: st.id,
+                          studentName: st.name,
+                          date: new Date().toISOString().split('T')[0],
+                          userId: currentUser?.id,
+                        };
+                        await saveInstrumentEvaluation(evalData);
+                        if (existing) updated++; else created++;
+                      }
+                      setGroupMsg(`✓ Listo: ${created} nueva${created !== 1 ? 's' : ''}, ${updated} actualizada${updated !== 1 ? 's' : ''}${skipped ? `, ${skipped} omitida${skipped !== 1 ? 's' : ''}` : ''}`);
+                      if (skipped === 0) {
+                        setTimeout(() => { setShowGroupGrade(false); clearStudentSelection(); }, 900);
+                      }
+                    } catch (err) {
+                      setGroupMsg('Error al guardar las notas');
+                      console.error(err);
+                    } finally {
+                      setGroupSaving(false);
+                    }
+                  }} disabled={groupSaving} style={{
+                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    padding: '0.75rem', borderRadius: '10px', border: 'none',
+                    background: groupSaving ? 'var(--text-secondary)' : '#1a73e8',
+                    color: 'white', fontWeight: 500, cursor: groupSaving ? 'not-allowed' : 'pointer', fontSize: '0.85rem'
+                  }}>
+                    <Send size={16} /> {groupSaving ? 'Guardando...' : `Aplicar a ${selectedStudents.length}`}
                   </button>
                 </div>
               </div>
