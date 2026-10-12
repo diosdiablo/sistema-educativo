@@ -1,5 +1,15 @@
 # Historial de Chat - Sistema Educativo
 
+## Sesión 2026-10-12
+
+- **Commit `e4aac59` pusheado a `main`**: `feat: reemplazar boton aplicar evaluacion por ver instrumento` (`Instruments.jsx`). Reemplaza el botón "Aplicar evaluación" por "Ver instrumento" + modal de detalles (`viewingInstrument`). Se corrigió antes un error de parse JSX (`}}>` → `>`) que rompía el dev server (era caché de Vite).
+- **Bug FIX: el horario no scrollea horizontalmente en el teléfono** (`src/pages/Schedule.jsx`). Detectado y confirmado con Playwright (Chromium móvil 390×844) sobre el dev server:
+  - Causa: la tabla (`min-width:1000px`) estaba dentro de un `<div>` intermedio con `overflow:'hidden'`, que la recortaba a su propio ancho (≈viewport). El contenedor externo con `overflowX:'auto'` por eso **nunca** tenía desbordamiento → no scrolleaba. (Existía también en `main`, no era regresión del rework.)
+  - Fix: al `<div>` intermedio (línea ~289) se le añadió `display:'inline-block'` + `minWidth:'100%'`, de modo que crece al ancho de la tabla (1000px) y el contenedor externo sí desborda (conserva `borderRadius`/`border`/`overflow:hidden` para las esquinas).
+  - Verificado: `box.scrollWidth 1002 > clientWidth 366`; `scrollLeft 0 → 636`; `npm run build` ✓.
+  - **Pendiente**: commitear el fix a `main` (aplicado en el archivo del working tree que también tiene el rework de horarios; ver nota del flujo AGENTS.md).
+- **Estado working tree**: sin commitear siguen `BoletaNotas.jsx`, `Schedule.jsx` (rework curriculum/horarios **+** fix de scroll aplicado) y `supabase-schema.sql`.
+
 ## Sesión 2026-10-08
 
 - **Bug FIX "Nivel de Logro" no se actualizaba al borrar evaluaciones** (verificado por el usuario ✓, pendiente de commit):

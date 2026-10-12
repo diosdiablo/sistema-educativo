@@ -254,6 +254,8 @@ export default function Schedule() {
       {/* Grid de horario */}
       <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div style={{
+          display: 'inline-block',
+          minWidth: '100%',
           borderRadius: '12px',
           border: '1px solid var(--border-color)',
           background: 'var(--bg-color-surface)',
