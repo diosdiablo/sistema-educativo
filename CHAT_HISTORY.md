@@ -2,12 +2,16 @@
 
 ## Sesión 2026-10-12
 
+- **Rule: preseleccionar el bimestre actual en cada página** (según `periodDates` de Configuración). Quedaba registrado en commits viejos (`7fc1b48`/`f6cf594` Instrumentos, `187de2a` Reports/Grades/ParentDashboard) pero los filtros de **Attendance** (`7b141b7`, 26-may) y **StudentProfile** (`b7502ac`, 12-may) se crearon antes y nunca se actualizaron. Aplicada la misma convención `currentPeriod()` → `useState(currentPeriod)`:
+  - `Attendance.jsx`: historial ahora arranca en el bimestre actual (antes "Todos los bimestres").
+  - `StudentProfile.jsx`: filtro de asistencia ahora arranca en el bimestre actual (antes "Todo"/null).
+  - Instruments ya lo hacía (no se tocó). Verificado con Playwright sembrando fechas (hoy 12-oct → III Bimestre): Attendance `select` = "3"/III Bimestre; ficha del alumno pill "3° Bim." activo. Build ✓. Pendiente commit.
 - **Commit `e4aac59` pusheado a `main`**: `feat: reemplazar boton aplicar evaluacion por ver instrumento` (`Instruments.jsx`). Reemplaza el botón "Aplicar evaluación" por "Ver instrumento" + modal de detalles (`viewingInstrument`). Se corrigió antes un error de parse JSX (`}}>` → `>`) que rompía el dev server (era caché de Vite).
 - **Bug FIX: el horario no scrollea horizontalmente en el teléfono** (`src/pages/Schedule.jsx`). Detectado y confirmado con Playwright (Chromium móvil 390×844) sobre el dev server:
   - Causa: la tabla (`min-width:1000px`) estaba dentro de un `<div>` intermedio con `overflow:'hidden'`, que la recortaba a su propio ancho (≈viewport). El contenedor externo con `overflowX:'auto'` por eso **nunca** tenía desbordamiento → no scrolleaba. (Existía también en `main`, no era regresión del rework.)
   - Fix: al `<div>` intermedio (línea ~289) se le añadió `display:'inline-block'` + `minWidth:'100%'`, de modo que crece al ancho de la tabla (1000px) y el contenedor externo sí desborda (conserva `borderRadius`/`border`/`overflow:hidden` para las esquinas).
   - Verificado: `box.scrollWidth 1002 > clientWidth 366`; `scrollLeft 0 → 636`; `npm run build` ✓.
-  - **Pendiente**: commitear el fix a `main` (aplicado en el archivo del working tree que también tiene el rework de horarios; ver nota del flujo AGENTS.md).
+  - **Commit `2149598` pusheado a `main`**: `fix: scroll horizontal del horario en movil` (Schedule.jsx + CHAT_HISTORY.md). Flujo AGENTS.md respetado: backup en `$env:TEMP\opencode\backup_scrollfix_20261012_174722\`, reset de Schedule.jsx a la versión de main, aplicado solo el fix, build ✓, commit + push, y rework de horarios restaurado al working tree (con el fix incluido).
 - **Estado working tree**: sin commitear siguen `BoletaNotas.jsx`, `Schedule.jsx` (rework curriculum/horarios **+** fix de scroll aplicado) y `supabase-schema.sql`.
 
 ## Sesión 2026-10-08

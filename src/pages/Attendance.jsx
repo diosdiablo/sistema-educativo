@@ -24,7 +24,17 @@ export default function Attendance() {
   const [date, setDate] = useState(today);
   const [selectedClass, setSelectedClass] = useState('');
   const [expandedDates, setExpandedDates] = useState({});
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
+
+  // Preselecciona el bimestre actual según las fechas de Configuración
+  const currentPeriod = () => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [periodId, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return periodId;
+    }
+    return 'all';
+  };
+
+  const [selectedPeriod, setSelectedPeriod] = useState(currentPeriod);
 
   const getPeriodForDate = (dateStr) => {
     const date = new Date(dateStr + 'T00:00:00');

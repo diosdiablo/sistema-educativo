@@ -31,7 +31,17 @@ export default function StudentProfile() {
   const navigate = useNavigate();
   const { students, grades, subjects, attendance, instrumentEvaluations, diagnosticEvaluations, periodDates } = useStore();
   const [activeTab, setActiveTab] = useState('info');
-  const [selectedAttendancePeriod, setSelectedAttendancePeriod] = useState(null);
+
+  // Preselecciona el bimestre actual según las fechas de Configuración
+  const currentPeriod = () => {
+    const now = new Date().toISOString().split('T')[0];
+    for (const [periodId, { start, end }] of Object.entries(periodDates)) {
+      if (now >= start && now <= end) return periodId;
+    }
+    return null;
+  };
+
+  const [selectedAttendancePeriod, setSelectedAttendancePeriod] = useState(currentPeriod);
 
   const student = useMemo(() => students.find(s => s.id === id), [students, id]);
 
