@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useCurrentPeriod } from '../lib/useCurrentPeriod';
 import { normalizeDni } from '../utils/dni';
 import { LEVELS, statusForEntry } from '../utils/attendanceLevels';
 import { LogOut, GraduationCap, CalendarCheck, ChevronDown, BookOpen, Target, ArrowLeft, User, ThumbsUp, ThumbsDown } from 'lucide-react';
@@ -24,13 +25,7 @@ export default function ParentDashboard() {
   const parentDni = sessionStorage.getItem('edu_parent_dni');
   const [selectedStudentIdx, setSelectedStudentIdx] = useState(0);
   const [view, setView] = useState('grades');
-  const [selectedPeriod, setSelectedPeriod] = useState(() => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [id, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return Number(id) - 1;
-    }
-    return 0;
-  });
+  const [selectedPeriod, setSelectedPeriod] = useCurrentPeriod(periodDates, { fallback: 0, zeroIndexed: true });
 
   const children = useMemo(() => {
     if (!parentDni) return [];

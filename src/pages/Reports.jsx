@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useCurrentPeriod } from '../lib/useCurrentPeriod';
 import { FileDown, CalendarCheck, Download, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { loadTemplate, buildAttendanceData, exportDetailedGradesToExcel, getAverageQualitative, exportTemplateAuxiliar, exportRegNotas } from '../templates/exportTemplates';
@@ -13,22 +14,14 @@ const Reports = () => {
     [users]
   );
 
-  const currentPeriod = () => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [id, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return id;
-    }
-    return '1';
-  };
-
   const [selectedClassAttendance, setSelectedClassAttendance] = useState('');
-  const [selectedPeriodAttendance, setSelectedPeriodAttendance] = useState(currentPeriod);
+  const [selectedPeriodAttendance, setSelectedPeriodAttendance] = useCurrentPeriod(periodDates, { fallback: '1' });
   const [selectedClassAux, setSelectedClassAux] = useState('');
   const [selectedSubjectAux, setSelectedSubjectAux] = useState('');
-  const [selectedPeriodAux, setSelectedPeriodAux] = useState(currentPeriod);
+  const [selectedPeriodAux, setSelectedPeriodAux] = useCurrentPeriod(periodDates, { fallback: '1' });
   const [selectedClassFinal, setSelectedClassFinal] = useState('');
   const [selectedSubjectFinal, setSelectedSubjectFinal] = useState('');
-  const [selectedPeriodFinal, setSelectedPeriodFinal] = useState(currentPeriod);
+  const [selectedPeriodFinal, setSelectedPeriodFinal] = useCurrentPeriod(periodDates, { fallback: '1' });
 
   const periods = ['1', '2', '3', '4'];
 

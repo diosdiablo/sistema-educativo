@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useCurrentPeriod } from '../lib/useCurrentPeriod';
 import { ArrowLeft, Users, GraduationCap, Calendar, Phone, MapPin, UserCheck, FileText, Clock, CheckCircle, XCircle, AlertCircle, BookOpen, Target, Award, BarChart3, PieChart, CalendarRange } from 'lucide-react';
 
 const GRADE_TO_NUM = { 'AD': 4, 'A': 3, 'B': 2, 'C': 1 };
@@ -31,17 +32,7 @@ export default function StudentProfile() {
   const navigate = useNavigate();
   const { students, grades, subjects, attendance, instrumentEvaluations, diagnosticEvaluations, periodDates } = useStore();
   const [activeTab, setActiveTab] = useState('info');
-
-  // Preselecciona el bimestre actual según las fechas de Configuración
-  const currentPeriod = () => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [periodId, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return periodId;
-    }
-    return null;
-  };
-
-  const [selectedAttendancePeriod, setSelectedAttendancePeriod] = useState(currentPeriod);
+  const [selectedAttendancePeriod, setSelectedAttendancePeriod] = useCurrentPeriod(periodDates, { fallback: null });
 
   const student = useMemo(() => students.find(s => s.id === id), [students, id]);
 

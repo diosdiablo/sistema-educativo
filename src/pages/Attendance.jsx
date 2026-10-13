@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useCurrentPeriod } from '../lib/useCurrentPeriod';
 import { LEVELS, statusForEntry, noteFor } from '../utils/attendanceLevels';
 import { Save, Users, Calendar, CheckCircle, Clock, XCircle, FileCheck, GraduationCap, PieChart, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
@@ -24,17 +25,7 @@ export default function Attendance() {
   const [date, setDate] = useState(today);
   const [selectedClass, setSelectedClass] = useState('');
   const [expandedDates, setExpandedDates] = useState({});
-
-  // Preselecciona el bimestre actual según las fechas de Configuración
-  const currentPeriod = () => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [periodId, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return periodId;
-    }
-    return 'all';
-  };
-
-  const [selectedPeriod, setSelectedPeriod] = useState(currentPeriod);
+  const [selectedPeriod, setSelectedPeriod] = useCurrentPeriod(periodDates, { fallback: 'all' });
 
   const getPeriodForDate = (dateStr) => {
     const date = new Date(dateStr + 'T00:00:00');

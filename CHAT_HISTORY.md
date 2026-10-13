@@ -5,7 +5,8 @@
 - **Rule: preseleccionar el bimestre actual en cada página** (según `periodDates` de Configuración). Quedaba registrado en commits viejos (`7fc1b48`/`f6cf594` Instrumentos, `187de2a` Reports/Grades/ParentDashboard) pero los filtros de **Attendance** (`7b141b7`, 26-may) y **StudentProfile** (`b7502ac`, 12-may) se crearon antes y nunca se actualizaron. Aplicada la misma convención `currentPeriod()` → `useState(currentPeriod)`:
   - `Attendance.jsx`: historial ahora arranca en el bimestre actual (antes "Todos los bimestres").
   - `StudentProfile.jsx`: filtro de asistencia ahora arranca en el bimestre actual (antes "Todo"/null).
-  - Instruments ya lo hacía (no se tocó). Verificado con Playwright sembrando fechas (hoy 12-oct → III Bimestre): Attendance `select` = "3"/III Bimestre; ficha del alumno pill "3° Bim." activo. Build ✓. Pendiente commit.
+  - Instruments ya lo hacía (no se tocó). Verificado con Playwright sembrando fechas (hoy 12-oct → III Bimestre): Attendance `select` = "3"/III Bimestre; ficha del alumno pill "3° Bim." activo. Build ✓.
+  - **Commit `f350acf` pusheado a `main`**: `feat: preseleccionar bimestre actual en asistencia y ficha del estudiante` (Attendance.jsx + StudentProfile.jsx + CHAT_HISTORY.md). Flujo AGENTS.md respetado.
 - **Commit `e4aac59` pusheado a `main`**: `feat: reemplazar boton aplicar evaluacion por ver instrumento` (`Instruments.jsx`). Reemplaza el botón "Aplicar evaluación" por "Ver instrumento" + modal de detalles (`viewingInstrument`). Se corrigió antes un error de parse JSX (`}}>` → `>`) que rompía el dev server (era caché de Vite).
 - **Bug FIX: el horario no scrollea horizontalmente en el teléfono** (`src/pages/Schedule.jsx`). Detectado y confirmado con Playwright (Chromium móvil 390×844) sobre el dev server:
   - Causa: la tabla (`min-width:1000px`) estaba dentro de un `<div>` intermedio con `overflow:'hidden'`, que la recortaba a su propio ancho (≈viewport). El contenedor externo con `overflowX:'auto'` por eso **nunca** tenía desbordamiento → no scrolleaba. (Existía también en `main`, no era regresión del rework.)
@@ -13,6 +14,12 @@
   - Verificado: `box.scrollWidth 1002 > clientWidth 366`; `scrollLeft 0 → 636`; `npm run build` ✓.
   - **Commit `2149598` pusheado a `main`**: `fix: scroll horizontal del horario en movil` (Schedule.jsx + CHAT_HISTORY.md). Flujo AGENTS.md respetado: backup en `$env:TEMP\opencode\backup_scrollfix_20261012_174722\`, reset de Schedule.jsx a la versión de main, aplicado solo el fix, build ✓, commit + push, y rework de horarios restaurado al working tree (con el fix incluido).
 - **Estado working tree**: sin commitear siguen `BoletaNotas.jsx`, `Schedule.jsx` (rework curriculum/horarios **+** fix de scroll aplicado) y `supabase-schema.sql`.
+- **Bug FIX (reportado por el usuario): Calificaciones seguía marcada en el primer bimestre** (`src/pages/Grades.jsx`):
+  - Causa doble: (1) la auto-selección era de un solo disparo (`useState(currentPeriod)` con lazy init) y no se reevaluaba cuando las fechas reales llegaban de Supabase; (2) las fechas configuradas en Supabase dejan un **hueco 10–18 oct** (III termina el 09-oct, IV empieza el 19-oct) y el fallback era `'1'` → hoy caía en I bimestre.
+  - Fix: nuevo hook compartido `src/lib/useCurrentPeriod.js` (`getCurrentPeriod` + `useCurrentPeriod`) que marca el bimestre que **contiene hoy**, si no el **último ya iniciado** (en el hueco → III Bimestre) y se **reactualiza** cuando cambia `periodDates`, sin pisar una selección manual. Aplicado en 6 páginas: Grades, Attendance, StudentProfile, Reports (×3 selects), ParentDashboard (zero-indexed), Instruments (incluido el reset "Nueva evaluación").
+  - Verificado con Playwright sobre las fechas reales (hueco): Calificaciones marca **B3**; la elección manual de B4 se respeta. Build ✓.
+  - **Commit `XXXXXXXX` pusheado a `main`** (pendiente escribir hash real): `fix: preseleccionar el bimestre correspondiente en calificaciones y demas paginas`.
+  - **AVISO al usuario**: revisar en Configuración los límites de los bimestres — hay un hueco del 10 al 18 de oct entre el III (hasta 09-oct) y el IV (desde 19-oct).
 
 ## Sesión 2026-10-08
 

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useCurrentPeriod } from '../lib/useCurrentPeriod';
 import { supabase } from '../lib/supabase';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, GraduationCap, Users, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
 
@@ -108,14 +109,6 @@ const selectPillStyle = {
 export default function Grades() {
   const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations, grades, saveGrade, deleteGrade } = useStore();
 
-  const currentPeriod = () => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [id, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return id;
-    }
-    return '1';
-  };
-
   const availableClasses = useMemo(() => {
     if (isAdmin) return classes;
     if (!currentUser?.assignments) return [];
@@ -124,7 +117,7 @@ export default function Grades() {
   }, [isAdmin, currentUser, classes]);
 
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState(currentPeriod);
+  const [selectedPeriod, setSelectedPeriod] = useCurrentPeriod(periodDates, { fallback: '1' });
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
 
   // Subjects available for this class (teacher-filtered or all for admin)

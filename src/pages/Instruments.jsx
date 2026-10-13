@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useCurrentPeriod, getCurrentPeriod } from '../lib/useCurrentPeriod';
 import { supabase } from '../lib/supabase';
 import { 
   ClipboardCheck, Plus, Trash2, Play, 
@@ -166,7 +167,7 @@ export default function Instruments() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [selectedCompetencyId, setSelectedCompetencyId] = useState('');
   const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedPeriod, setSelectedPeriod] = useState('1');
+  const [selectedPeriod, setSelectedPeriod] = useCurrentPeriod(periodDates, { fallback: '1' });
   const [applyMode, setApplyMode] = useState('individual');
   const [selectedGroupIdx, setSelectedGroupIdx] = useState(null);
   const [randomStudent, setRandomStudent] = useState(null);
@@ -174,16 +175,6 @@ export default function Instruments() {
   const [savedGroupMembers, setSavedGroupMembers] = useState(new Set());
   const [studentNamesFromSupabase, setStudentNamesFromSupabase] = useState({});
 
-  // Auto-select current bimestre based on periodDates
-  useEffect(() => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [id, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) {
-        setSelectedPeriod(id);
-        return;
-      }
-    }
-  }, []);
   const [studentsByName, setStudentsByName] = useState({});
 
   // Cargar nombres de estudiantes desde Supabase para evaluaciones sin nombre
@@ -417,13 +408,7 @@ export default function Instruments() {
     setView('apply');
   };
 
-  const currentPeriod = () => {
-    const now = new Date().toISOString().split('T')[0];
-    for (const [id, { start, end }] of Object.entries(periodDates)) {
-      if (now >= start && now <= end) return id;
-    }
-    return '1';
-  };
+  const currentPeriod = () => getCurrentPeriod(periodDates, '1');
 
   const handleSaveEvaluation = () => {
     if (applyMode === 'individual' && !selectedStudent) { alert('Selecciona un estudiante.'); return; }
