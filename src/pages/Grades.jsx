@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useCurrentPeriod } from '../lib/useCurrentPeriod';
-import { supabase } from '../lib/supabase';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, GraduationCap, Users, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
 
 const TYPE_ICONS = {
@@ -107,7 +106,7 @@ const selectPillStyle = {
 };
 
 export default function Grades() {
-  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations, grades, saveGrade, deleteGrade } = useStore();
+  const { students, subjects, classes, instrumentEvaluations, instruments, currentUser, isAdmin, deleteInstrument, deleteInstrumentEvaluation, periodDates, saveInstrumentEvaluation, setInstrumentEvaluations, grades, saveGrade, deleteGrade } = useStore();
 
   const availableClasses = useMemo(() => {
     if (isAdmin) return classes;
@@ -800,7 +799,7 @@ export default function Grades() {
                                               return { ...prev, [comp.id]: current };
                                             });
                                             if (removed?.id) {
-                                              supabase.from('instruments').delete().eq('id', removed.id).catch(e => console.warn('Error deleting extra instrument:', e));
+                                              deleteInstrument(removed.id);
                                             }
                                           } else {
                                             const name = inst.activityName || inst.title || '';
@@ -821,7 +820,7 @@ export default function Grades() {
                                             }
                                             setInstrumentEvaluations(remaining);
                                             toDelete.forEach(e => {
-                                              supabase.from('instrument_evaluations').delete().eq('id', e.id).catch(() => {});
+                                              deleteInstrumentEvaluation(e.id);
                                             });
                                           }
                                         }}
