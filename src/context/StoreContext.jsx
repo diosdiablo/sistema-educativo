@@ -119,6 +119,59 @@ export const StoreProvider = ({ children }) => {
   const broadcastChannelRef = useRef(null);
   const studentIdSetRef = useRef(null);
   const attendanceRpcAvailableRef = useRef(false);
+  const syncedIdsRef = useRef(null);
+
+  // Ids confirmados en Supabase (edu_synced_ids). Sirven para conciliar
+  // borrados hechos en otros dispositivos: en la carga delta se eliminan del
+  // estado local las filas confirmadas que ya no existen en el servidor.
+  // Nunca se marca lo recibido solo por broadcast (puede no estar subido).
+  const getSyncedIds = () => {
+    if (!syncedIdsRef.current) {
+      try { syncedIdsRef.current = JSON.parse(localStorage.getItem('edu_synced_ids')) || {}; }
+      catch { syncedIdsRef.current = {}; }
+    }
+    return syncedIdsRef.current;
+  };
+  const persistSyncedIds = () => {
+    try { localStorage.setItem('edu_synced_ids', JSON.stringify(syncedIdsRef.current || {})); } catch {}
+  };
+  const markSynced = (table, ids) => {
+    if (!table) return;
+    const map = getSyncedIds();
+    if (!map[table]) map[table] = {};
+    (ids || []).forEach(id => { if (id) map[table][id] = 1; });
+    persistSyncedIds();
+  };
+  const unmarkSynced = (table, ids) => {
+    if (!table) return;
+    const map = getSyncedIds();
+    if (!map[table]) return;
+    (ids || []).forEach(id => { delete map[table][id]; });
+    persistSyncedIds();
+  };
+  const resetSynced = (table, ids) => {
+    if (!table) return;
+    const map = getSyncedIds();
+    map[table] = {};
+    (ids || []).forEach(id => { if (id) map[table][id] = 1; });
+    persistSyncedIds();
+  };
+  const fetchAllIds = async (table, filter) => {
+    const ids = [];
+    const PAGE = 1000;
+    let from = 0;
+    for (;;) {
+      let query = supabase.from(table).select('id').order('id', { ascending: true }).range(from, from + PAGE - 1);
+      if (filter) query = filter(query);
+      const { data, error } = await query;
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      data.forEach(r => { if (r && r.id) ids.push(r.id); });
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return ids;
+  };
 
   const [users, setUsers] = useState(() => loadData('edu_users', []).map(sanitizeUser));
   const [currentUser, setCurrentUser] = useState(null);
@@ -283,9 +336,16 @@ useEffect(() => {
       uploadedBy: d.uploaded_by,
       uploadedById: d.uploaded_by_id
     });
-    const setMerged = (setter, data, normalize) => {
+    const setMerged = (table, setter, data, normalize) => {
       if (!data || data.length === 0) return;
-      setter(prev => isDelta ? upsertById(prev, normalize ? data.map(normalize) : data) : (normalize ? data.map(normalize) : data));
+      const normalized = normalize ? data.map(normalize) : data;
+      if (isDelta) {
+        markSynced(table, normalized.map(item => item && item.id));
+        setter(prev => upsertById(prev, normalized));
+      } else {
+        resetSynced(table, normalized.map(item => item && item.id));
+        setter(normalized);
+      }
     };
 
     try {
@@ -384,14 +444,14 @@ useEffect(() => {
         supabase.from('login_history').select('*').order('login_at', { ascending: false }).limit(200)
       ]);
 
-      setMerged(setStudents, studentsData, normStudent);
-      setMerged(setClasses, sortClassesByName(classesData));
-      setMerged(setSubjects, subjectsData, normSubject);
-      setMerged(setGrades, gradesData, normGrade);
-      setMerged(setInstruments, instrumentsData, normInstrument);
-      setMerged(setInstrumentEvaluations, instrumentEvalsData, normEval);
-      setMerged(setDiagnosticEvaluations, diagnosticData);
-      setMerged(setUsers, usersData);
+      setMerged('students', setStudents, studentsData, normStudent);
+      setMerged('classes', setClasses, sortClassesByName(classesData));
+      setMerged('subjects', setSubjects, subjectsData, normSubject);
+      setMerged('grades', setGrades, gradesData, normGrade);
+      setMerged('instruments', setInstruments, instrumentsData, normInstrument);
+      setMerged('instrument_evaluations', setInstrumentEvaluations, instrumentEvalsData, normEval);
+      setMerged('diagnostic_evaluations', setDiagnosticEvaluations, diagnosticData);
+      setMerged('users', setUsers, usersData);
       if (currentUser?.id && Array.isArray(usersData)) {
         const freshUser = usersData.find(u => u.id === currentUser.id);
         if (freshUser && (freshUser.force_logout || freshUser.forceLogout)) {
@@ -413,8 +473,8 @@ useEffect(() => {
           } catch (e) { console.warn('session persist warning:', e.message); }
         }
       }
-      setMerged(setLearningSessions, learningSessionsData, normDoc);
-      setMerged(setEvents, eventsData);
+      setMerged('learning_sessions', setLearningSessions, learningSessionsData, normDoc);
+      setMerged('events', setEvents, eventsData);
 
       const normAttendance = (a) => {
         let records = a.records;
@@ -431,8 +491,53 @@ useEffect(() => {
         userId: b.user_id,
         userName: b.user_name
       });
-      setMerged(setAttendance, attendanceData, normAttendance);
-      setMerged(setBehavior, behaviorData, normBehavior);
+      setMerged('attendance', setAttendance, attendanceData, normAttendance);
+      setMerged('behavior', setBehavior, behaviorData, normBehavior);
+
+      // Concilia borrados hechos en otros dispositivos. En modo delta la fusión
+      // solo agrega/actualiza; sin esto, lo borrado en otra PC/celular seguiría
+      // visible hasta una descarga completa. Solo se eliminan filas confirmadas
+      // en el servidor que estén dentro del alcance actual; lo nunca confirmado
+      // (posible local sin subir) se conserva.
+      if (isDelta) {
+        const reconcileTable = async (table, setter, fetchIds, inScope) => {
+          try {
+            const remoteIds = await fetchIds();
+            if (!remoteIds) return; // alcance indeterminable: no tocar nada
+            const remoteSet = new Set(remoteIds);
+            markSynced(table, remoteIds);
+            const synced = getSyncedIds()[table] || {};
+            setter(prev => {
+              const next = prev.filter(item => {
+                if (!item || !item.id) return true;
+                if (remoteSet.has(item.id)) return true;
+                if (!synced[item.id]) return true;
+                if (inScope && !inScope(item)) return true;
+                return false;
+              });
+              if (next.length !== prev.length) {
+                const kept = new Set(next.map(item => item && item.id));
+                unmarkSynced(table, prev.filter(item => item && item.id && !kept.has(item.id)).map(item => item.id));
+                return next;
+              }
+              return prev;
+            });
+          } catch (e) { console.warn(`Reconcile ${table}:`, e.message); }
+        };
+
+        if (!roleFilter || (studentIdSet && studentIdSet.size > 0)) {
+          const gradesScope = roleFilter ? studentIdSet : null;
+          await reconcileTable('grades', setGrades,
+            () => fetchAllIds('grades', (q) => studentIdSet ? q.in('student_id', [...studentIdSet]) : q),
+            (g) => !gradesScope || gradesScope.has(g.studentId));
+        }
+        await reconcileTable('instrument_evaluations', setInstrumentEvaluations,
+          () => fetchAllIds('instrument_evaluations', (q) => roleFilterClassMatch ? q.in('class_id', roleFilterClassMatch) : q),
+          (e) => !roleFilterClassMatch || roleFilterClassMatch.includes(e.classId));
+        await reconcileTable('instruments', setInstruments,
+          () => fetchAllIds('instruments'),
+          null);
+      }
 
       if (scheduleData?.length > 0) {
         const classMap = {};
@@ -462,7 +567,7 @@ useEffect(() => {
         }
       }
 
-      setMerged(setPlanningDocuments, planningDocsData, normDoc);
+      setMerged('planning_documents', setPlanningDocuments, planningDocsData, normDoc);
 
       if (periodDatesData?.length > 0) {
         const periodDatesMap = {};
@@ -540,11 +645,13 @@ useEffect(() => {
       return !!studentId && ids.has(studentId);
     };
 
-    const handleUpsert = (setter, normalize) => (payload) => {
+    const handleUpsert = (setter, normalize, table) => (payload) => {
       if (payload.eventType === 'DELETE') {
+        if (table && payload.old && payload.old.id) unmarkSynced(table, [payload.old.id]);
         setter(prev => prev.filter(item => item.id !== payload.old.id));
       } else if (payload.new) {
         const normalized = normalize ? normalize(payload.new) : payload.new;
+        if (table && normalized && normalized.id) markSynced(table, [normalized.id]);
         setter(prev => {
           const exists = prev.find(item => item.id === normalized.id);
           if (exists) {
@@ -626,7 +733,7 @@ useEffect(() => {
         console.error('Error normalizing instrument from Realtime:', err, d);
         return d;
       }
-    }));
+    }, 'instruments'));
 
     // -- students --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, handleUpsert(setStudents, (d) => ({
@@ -651,7 +758,7 @@ useEffect(() => {
       ...d,
       studentId: d.student_id,
       competencyId: d.competency_id,
-    })));
+    }), 'grades'));
 
     // -- instrument_evaluations --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'instrument_evaluations' }, handleUpsert(setInstrumentEvaluations, (d) => ({
@@ -670,7 +777,7 @@ useEffect(() => {
       criteria: typeof d.criteria === 'string' ? JSON.parse(d.criteria) : (d.criteria || []),
       instrumentType: d.instrument_type,
       createdAt: d.created_at,
-    })));
+    }), 'instrument_evaluations'));
 
     // -- schedule --
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'schedule' }, handleUpsert(setSchedule, (d) => ({
@@ -922,6 +1029,7 @@ useEffect(() => {
       console.error(`Supabase error for ${table}:`, JSON.stringify(error));
       throw error;
     }
+    markSynced(table, data.map(item => item && item.id));
     if (!skipBroadcast) {
       for (const item of data) {
         sendBroadcast(table, 'INSERT', item);
@@ -949,6 +1057,7 @@ useEffect(() => {
     if (!isOnline) return;
     try {
       await supabase.from(table).delete().eq('id', id);
+      unmarkSynced(table, [id]);
       sendBroadcast(table, 'DELETE', { id });
     } catch (err) {
       console.error(`Error deleting from ${table}:`, err);
@@ -1469,6 +1578,7 @@ useEffect(() => {
           date: newEval.date, scores: newEval.scores, criteria: [],
           created_at: newEval.createdAt
         }, { onConflict: 'id' });
+        markSynced('instrument_evaluations', [newEval.id]);
       } catch (err) { console.error('Error syncing quick grade:', err); }
       sendBroadcast('instrument_evaluations', 'INSERT', newEval);
     }
@@ -1514,6 +1624,8 @@ useEffect(() => {
         const { error } = await supabase.from('instrument_evaluations').upsert(supabaseData, { onConflict: 'id' });
         if (error) {
           console.error('Error saving evaluation to Supabase:', error, error.details);
+        } else {
+          markSynced('instrument_evaluations', [newEvaluation.id]);
         }
         sendBroadcast('instrument_evaluations', 'INSERT', newEvaluation);
       } catch (err) {
