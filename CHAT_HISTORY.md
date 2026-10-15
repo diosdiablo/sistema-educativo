@@ -1,5 +1,11 @@
 # Historial de Chat - Sistema Educativo
 
+## Sesión 2026-10-14
+
+- **Reporte/posible bug detectado (sin corregir): notas cargadas en otra PC no aparecen en esta PC ni en el celular.** Diagnóstico inicial por código: el guardado es local primero y la subida a Supabase ocurre en ese momento, sin cola ni reintento; si `isOnline` es falso o falla el `upsert`, la nota puede quedar solo en el dispositivo origen. Si sí subieron, los otros dispositivos pueden no descargarlas por carga delta de 24h o filtros por rol/clase. Estado: el usuario confirma que la PC origen sí las muestra, que se guardaron como docente y que tenía internet; entró como administrador y el botón Sincronizar mostró un mensaje de error. Historial verificado: `0e1cac7` creó broadcast para instruments/events; `d147d6b` lo extendió a todas las tablas; `4ad8846` quitó `user_id` del upsert y pasó a emitir broadcast aunque fallara la subida; `41a9bb8` reintrodujo `user_id` con migración. Hipótesis principal actual: la BD productiva puede no tener `user_id` en `instrument_evaluations`; entonces el upsert/sync falla, pero el broadcast solo alcanza a dispositivos abiertos en ese momento. Sigue pendiente copiar el texto exacto del error y revisar la consola/Supabase.
+- El usuario reportó el error exacto: `users: null value in column "password" ... violates not-null constraint`. Causa: el sincronizador manual intentaba subir `users` con el estado local saneado sin password.
+- **Fix aplicado localmente (sin commit/push):** `syncToSupabaseManual` ya no sube la tabla `users`; altas/cambios/bajas siguen por `register`/`updateUser`/`deleteUser`. Build ✓. Pendiente autorización explícita para commit/push y despliegue.
+
 ## Sesión 2026-10-12
 
 - **Rule: preseleccionar el bimestre actual en cada página** (según `periodDates` de Configuración). Quedaba registrado en commits viejos (`7fc1b48`/`f6cf594` Instrumentos, `187de2a` Reports/Grades/ParentDashboard) pero los filtros de **Attendance** (`7b141b7`, 26-may) y **StudentProfile** (`b7502ac`, 12-may) se crearon antes y nunca se actualizaron. Aplicada la misma convención `currentPeriod()` → `useState(currentPeriod)`:
@@ -18,7 +24,7 @@
   - Causa doble: (1) la auto-selección era de un solo disparo (`useState(currentPeriod)` con lazy init) y no se reevaluaba cuando las fechas reales llegaban de Supabase; (2) las fechas configuradas en Supabase dejan un **hueco 10–18 oct** (III termina el 09-oct, IV empieza el 19-oct) y el fallback era `'1'` → hoy caía en I bimestre.
   - Fix: nuevo hook compartido `src/lib/useCurrentPeriod.js` (`getCurrentPeriod` + `useCurrentPeriod`) que marca el bimestre que **contiene hoy**, si no el **último ya iniciado** (en el hueco → III Bimestre) y se **reactualiza** cuando cambia `periodDates`, sin pisar una selección manual. Aplicado en 6 páginas: Grades, Attendance, StudentProfile, Reports (×3 selects), ParentDashboard (zero-indexed), Instruments (incluido el reset "Nueva evaluación").
   - Verificado con Playwright sobre las fechas reales (hueco): Calificaciones marca **B3**; la elección manual de B4 se respeta. Build ✓.
-  - **Commit `XXXXXXXX` pusheado a `main`** (pendiente escribir hash real): `fix: preseleccionar el bimestre correspondiente en calificaciones y demas paginas`.
+  - **Commit `ceed494` pusheado a `main`**: `fix: preseleccionar el bimestre correspondiente en calificaciones y demas paginas`.
   - **AVISO al usuario**: revisar en Configuración los límites de los bimestres — hay un hueco del 10 al 18 de oct entre el III (hasta 09-oct) y el IV (desde 19-oct).
 
 ## Sesión 2026-10-08

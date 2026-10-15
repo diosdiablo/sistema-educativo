@@ -1798,8 +1798,10 @@ useEffect(() => {
 
   const syncToSupabaseManual = useCallback(async () => {
     if (!isOnline) return;
+    // No se sube la tabla users en la sincronización manual: el estado local
+    // está saneado sin password por seguridad, mientras la BD exige password
+    // NOT NULL. Altas/cambios/bajas de usuarios usan register/updateUser/deleteUser.
     const tables = [
-      { name: 'users', data: users },
       { name: 'students', data: students },
       { name: 'subjects', data: subjects },
       { name: 'classes', data: classes },
@@ -1833,7 +1835,7 @@ useEffect(() => {
     } else {
       alert(`✓ Todos los datos sincronizados (${tables.length + 1} tablas)`);
     }
-  }, [isOnline, users, students, subjects, classes, grades, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, behavior, attendance, syncToSupabase, persistAttendanceRow]);
+  }, [isOnline, students, subjects, classes, grades, instruments, instrumentEvaluations, schedule, diagnosticEvaluations, periodDates, events, loginHistory, planningDocuments, behavior, attendance, syncToSupabase, persistAttendanceRow]);
 
   const clearAllGrades = () => {
     setGrades([]);
