@@ -807,21 +807,19 @@ export default function Grades() {
                                             const toDelete = instrumentEvaluations.filter(e =>
                                               (e.activityName || e.instrumentId) === name && (e.competencyId === comp.id || e.competency_id === comp.id) && e.period === selectedPeriod
                                             );
-                                            setInstrumentEvaluations(prev => {
-                                              const remaining = prev.filter(e => !toDelete.find(d => d.id === e.id));
-                                              const evalsForComp = remaining.filter(e =>
-                                                (e.competencyId === comp.id || e.competency_id === comp.id) && e.period === selectedPeriod
-                                              );
-                                              if (evalsForComp.length === 0) {
-                                                const affectedStudentIds = new Set(toDelete.map(e => e.studentId || e.student_id).filter(Boolean));
-                                                filteredStudents.forEach(st => {
-                                                  if (affectedStudentIds.has(st.id)) {
-                                                    deleteGrade(st.id, currentSubject.name, comp.id, selectedPeriod);
-                                                  }
-                                                });
-                                              }
-                                              return remaining;
-                                            });
+                                            const remaining = instrumentEvaluations.filter(e => !toDelete.some(d => d.id === e.id));
+                                            const evalsForComp = remaining.filter(e =>
+                                              (e.competencyId === comp.id || e.competency_id === comp.id) && e.period === selectedPeriod
+                                            );
+                                            if (evalsForComp.length === 0) {
+                                              const affectedStudentIds = new Set(toDelete.map(e => e.studentId || e.student_id).filter(Boolean));
+                                              filteredStudents.forEach(st => {
+                                                if (affectedStudentIds.has(st.id)) {
+                                                  deleteGrade(st.id, currentSubject.name, comp.id, selectedPeriod);
+                                                }
+                                              });
+                                            }
+                                            setInstrumentEvaluations(remaining);
                                             toDelete.forEach(e => {
                                               supabase.from('instrument_evaluations').delete().eq('id', e.id).catch(() => {});
                                             });

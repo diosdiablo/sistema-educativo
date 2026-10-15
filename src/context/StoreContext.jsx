@@ -2059,7 +2059,7 @@ useEffect(() => {
     clearAllAttendance, clearAllGrades, clearAllInstruments, clearAllData,
     addSubject, deleteSubject, addCompetency, deleteCompetency,
     addClass, deleteClass, updateClassColor, reassignClassColors, updateUser, deleteUser, cleanupOrphanedData, register,
-    saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, saveGrade,
+    saveAttendanceDate, saveAttendanceNote, setAttendanceForStudent, deleteAttendanceDate, saveGrade, deleteGrade,
     calculateQualitativeGrade, addInstrument, updateInstrument, deleteInstrument, deleteInstrumentEvaluation, saveInstrumentEvaluation, saveQuickGrade,
     schedule, saveScheduleItem, deleteScheduleItem,
     periodDates, updatePeriodDates,
