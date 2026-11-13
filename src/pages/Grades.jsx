@@ -188,13 +188,18 @@ export default function Grades() {
     }
     const vh = window.innerHeight || 800;
     const cardH = gradeCardRef.current?.offsetHeight || 460;
-    const rowTop = gradeAnchor?.top ?? 32;
-    const rowH = gradeAnchor?.height || 40;
-    // Centrar el modal en la fila del estudiante y, si no cabe, ajustarlo
-    // para que quede visible dentro de la ventana.
-    const centered = rowTop + rowH / 2 - cardH / 2;
-    const top = Math.max(16, Math.min(centered, vh - cardH - 16));
-    setGradeModalTop(top);
+    const rowTop = gradeAnchor?.top;
+
+    // El borde superior del modal se alinea con la fila del estudiante.
+    let top = rowTop == null
+      ? Math.max(12, (vh - Math.min(cardH, vh - 32)) / 2) // sin fila de referencia: centrado
+      : rowTop - 12;
+
+    // Nunca tan abajo que el modal quede casi fuera de la pantalla: si es muy
+    // alto, el overlay hace scroll. Se reserva al menos ~35% de la ventana.
+    const maxTop = Math.max(12, vh - Math.min(cardH, vh * 0.35) - 16);
+    top = Math.max(12, Math.min(top, maxTop));
+    setGradeModalTop(Math.round(top));
   }, [viewingEvaluation, editingEvaluation, gradeAnchor]);
 
   const [showQuickGrade, setShowQuickGrade] = useState(false);
