@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useCurrentPeriod } from '../lib/useCurrentPeriod';
 import { Info, ClipboardCheck, FileText, CheckSquare, BarChart2, Eye, BookOpen, MessageSquare, Star, Grid, X, GraduationCap, Users, Target, TrendingUp, Trophy, Plus, Send, Trash2, Pencil } from 'lucide-react';
@@ -166,6 +166,36 @@ export default function Grades() {
       setEditScores({});
     }
   }, [editingEvaluation]);
+
+  // ── Anclaje del modal de evaluación a la fila del estudiante ──
+  // Guarda la posición de la celda clicada para que el modal se abra
+  // a la altura del estudiante evaluado y no al inicio de la pantalla.
+  const [gradeAnchor, setGradeAnchor] = useState(null); // { top, bottom, left, height }
+  const gradeCardRef = useRef(null);
+  const [gradeModalTop, setGradeModalTop] = useState(null);
+
+  const anchorFromEvent = (e) => {
+    const el = e?.currentTarget;
+    if (!el || typeof el.getBoundingClientRect !== 'function') return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, left: r.left, height: r.height };
+  };
+
+  useLayoutEffect(() => {
+    if (!viewingEvaluation && !editingEvaluation) {
+      setGradeModalTop(null);
+      return;
+    }
+    const vh = window.innerHeight || 800;
+    const cardH = gradeCardRef.current?.offsetHeight || 460;
+    const rowTop = gradeAnchor?.top ?? 32;
+    const rowH = gradeAnchor?.height || 40;
+    // Centrar el modal en la fila del estudiante y, si no cabe, ajustarlo
+    // para que quede visible dentro de la ventana.
+    const centered = rowTop + rowH / 2 - cardH / 2;
+    const top = Math.max(16, Math.min(centered, vh - cardH - 16));
+    setGradeModalTop(top);
+  }, [viewingEvaluation, editingEvaluation, gradeAnchor]);
 
   const [showQuickGrade, setShowQuickGrade] = useState(false);
   const [quickGrade, setQuickGrade] = useState({
@@ -865,8 +895,11 @@ export default function Grades() {
                     )}
                     {filteredStudents.map((student, studentIdx) => {
                       const isHighlighted = quickAzarHighlighted === student.id;
+                      const isEditingRow =
+                        (editingEvaluation && (editingEvaluation.studentId === student.id || editingEvaluation.student_id === student.id)) ||
+                        (viewingEvaluation && (viewingEvaluation.studentId === student.id || viewingEvaluation.student_id === student.id));
                       return (
-                      <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : selectedStudentIds.has(student.id) ? { background: '#e8f0fe' } : {}}>
+                      <tr key={student.id} style={isHighlighted ? { background: '#fef9c3' } : isEditingRow ? { background: '#eef4ff', boxShadow: 'inset 3px 0 0 #1a73e8' } : selectedStudentIds.has(student.id) ? { background: '#e8f0fe' } : {}}>
                         <td style={{ textAlign: 'center', fontWeight: 500, color: 'var(--text-secondary)', minWidth: '50px', borderRight: '2px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                             <input
@@ -909,8 +942,9 @@ export default function Grades() {
                                 <td key={inst.id || inst.instrumentId}
                                   title="Sin calificación — click para evaluar"
                                   style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}
-                                  onClick={() => {
+                                  onClick={(e) => {
                                     setQuickAzarHighlighted(null);
+                                    setGradeAnchor(anchorFromEvent(e));
                                     const newEval = {
                                       id: null,
                                       instrumentId: inst.instrumentId || inst.id,
@@ -950,7 +984,7 @@ export default function Grades() {
                               <td key={inst.id || inst.instrumentId} style={{ textAlign: 'center', cursor: 'pointer', padding: '0.5rem', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}
                                 onMouseEnter={(e) => handleMouseEnterCell(e, [ev])}
                                 onMouseLeave={handleMouseLeaveCell}
-                                onClick={() => { setQuickAzarHighlighted(null); setViewingEvaluation(ev); setHoveredEval(null); }}
+                                onClick={(e) => { setQuickAzarHighlighted(null); setGradeAnchor(anchorFromEvent(e)); setViewingEvaluation(ev); setHoveredEval(null); }}
                               >
                                 <span style={gradeChipStyle(ev.qualitative)}>{ev.qualitative}</span>
                               </td>
@@ -1283,9 +1317,9 @@ export default function Grades() {
               position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
               backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
               display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
-              padding: '2rem 1rem', zIndex: 1000, overflowY: 'auto'
+              padding: `${gradeModalTop ?? 32}px 1rem 2rem`, zIndex: 1000, overflowY: 'auto'
             }}>
-              <div className="card shadow-glass" style={{ maxWidth: '700px', width: '100%' }}>
+              <div ref={gradeCardRef} className="card shadow-glass" style={{ maxWidth: '700px', width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                   <div>
                     <h3 style={{ color: 'var(--accent-primary)', marginBottom: '0.25rem' }}>{viewingEvaluation.activityName || 'Sin actividad'}</h3>
@@ -1481,9 +1515,9 @@ export default function Grades() {
                 position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                 backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
                 display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
-                padding: '2rem 1rem', zIndex: 1001, overflowY: 'auto'
+                padding: `${gradeModalTop ?? 32}px 1rem 2rem`, zIndex: 1001, overflowY: 'auto'
               }}>
-                <div className="card shadow-glass" style={{ maxWidth: '680px', width: '100%' }}>
+                <div ref={gradeCardRef} className="card shadow-glass" style={{ maxWidth: '680px', width: '100%' }}>
                   {/* Header */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                     <div>
